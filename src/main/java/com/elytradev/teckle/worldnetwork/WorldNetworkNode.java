@@ -14,9 +14,14 @@ public class WorldNetworkNode {
 
     public BlockPos position;
     public WorldNetwork network;
+    public boolean isEndpoint;
     private List<WorldNetworkTraveller> travellers;
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller) {
         return false;
+    }
+
+    public void pushToEndpoint(WorldNetworkTraveller traveller){
+
     }
 }

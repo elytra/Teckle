@@ -85,14 +85,35 @@ public class WorldNetworkPath {
                     return pathNode;
                 }
 
-                if (nodeStack.get(0).totalCost > pathNode.totalCost)
-                    nodeStack.add(0, pathNode);
-                else
-                    nodeStack.add(pathNode);
+                addToStack(nodeStack, pathNode);
             }
         }
 
         return null;
+    }
+
+    /**
+     * Add the given node to the given stack at a sorted position.
+     *
+     * @param nodeStack the stack to add to.
+     * @param newNode   the new node to add to the stack.
+     */
+    private void addToStack(ArrayList<PathNode> nodeStack, PathNode newNode) {
+        if (nodeStack.get(0).totalCost >= newNode.totalCost) {
+            nodeStack.add(0, newNode);
+        } else {
+            int addToIndex = nodeStack.size();
+            for (int i = 0; i < nodeStack.size(); i++) {
+                PathNode nodeAtI = nodeStack.get(i);
+
+                if (nodeAtI.totalCost >= newNode.totalCost) {
+                    addToIndex = i;
+                    break;
+                }
+            }
+
+            nodeStack.add(addToIndex, newNode);
+        }
     }
 
     /**
