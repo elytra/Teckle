@@ -10,6 +10,8 @@ public class WorldNetworkTraveller implements ITickable {
     public WorldNetworkNode previousNode, currentNode, nextNode, destinationNode;
     public float travelledDistance = 0F;
 
+    //TODO: static method to find possible nodes to travel to.
+
     @Override
     public void update() {
     }

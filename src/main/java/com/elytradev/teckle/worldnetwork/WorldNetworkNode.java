@@ -9,8 +9,14 @@ import java.util.List;
  */
 public class WorldNetworkNode {
 
+    // Empty node, used instead of null because fuck NPEs.
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
 
     public BlockPos position;
+    public WorldNetwork network;
     private List<WorldNetworkTraveller> travellers;
+
+    public boolean canAcceptTraveller(WorldNetworkTraveller traveller) {
+        return false;
+    }
 }

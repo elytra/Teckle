@@ -1,5 +1,9 @@
 package com.elytradev.teckle.worldnetwork;
 
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -7,15 +11,89 @@ import java.util.List;
  */
 public class WorldNetworkPath {
 
-    private List<WorldNetworkNode> path;
+    public static final WorldNetworkPath NOT_POSSIBLE = new WorldNetworkPath(null, null, null);
+
+    private List<PathNode> path;
     private int index = 0;
+    private WorldNetworkTraveller traveller;
+    private WorldNetworkNode startNode, endNode;
 
     // Private constructor, only create via static method.
-    private WorldNetworkPath() {
+    private WorldNetworkPath(WorldNetworkTraveller traveller, WorldNetworkNode startNode, WorldNetworkNode endNode) {
+        path = new ArrayList<PathNode>();
+        index = 0;
 
+        this.traveller = traveller;
+        this.startNode = startNode;
+        this.endNode = endNode;
     }
 
-    //TODO: Static method to construct a path from two nodes in a network.
+    /**
+     * Create a path through the following nodes for the given traveller.
+     * Assumes the given end node can be reached.
+     *
+     * @param traveller the traveller to create the path for.
+     * @param startNode the starting position.
+     * @param endNode   the end position.
+     * @return a network path to the destination.
+     */
+    public static WorldNetworkPath createPath(WorldNetworkTraveller traveller, WorldNetworkNode startNode, WorldNetworkNode endNode) {
+        WorldNetworkPath path = new WorldNetworkPath(traveller, startNode, endNode);
+        path.generateNodes();
+        return path;
+    }
+
+    /**
+     * Generates nodes for a path.
+     */
+    private void generateNodes() {
+        ArrayList<PathNode> nodeStack = new ArrayList<PathNode>();
+        ArrayList<BlockPos> positions = new ArrayList<BlockPos>();
+
+        PathNode destinationPathNode = createNodesAround(nodeStack, positions, new PathNode(null, startNode, 0));
+        while (destinationPathNode == null && !nodeStack.isEmpty()) {
+            PathNode lowestTotalNode = nodeStack.remove(0);
+            destinationPathNode = createNodesAround(nodeStack, positions, lowestTotalNode);
+        }
+        this.endNode = destinationPathNode.realNode;
+        PathNode currentNode = destinationPathNode;
+
+        while (currentNode != null) {
+            path.add(0, currentNode);
+            currentNode = currentNode.from;
+        }
+    }
+
+    /**
+     * Generates PathNodes for the given node and adds them to the stack, ignores positions given.
+     *
+     * @param nodeStack current node stack.
+     * @param positions positions to ignore.
+     * @param node      node to create around.
+     * @return a node representing the destination if found.
+     */
+    private PathNode createNodesAround(ArrayList<PathNode> nodeStack, ArrayList<BlockPos> positions, PathNode node) {
+        for (EnumFacing facing : EnumFacing.VALUES) {
+            BlockPos neighbourPos = node.realNode.position.add(facing.getDirectionVec());
+            if (positions.contains(neighbourPos) || !node.realNode.network.networkNodes.containsKey(neighbourPos))
+                continue;
+
+            WorldNetworkNode neighbourNode = node.realNode.network.networkNodes.get(neighbourPos);
+            if (neighbourNode.canAcceptTraveller(traveller)) {
+                PathNode pathNode = new PathNode(node, neighbourNode, node.costFromStart + 1);
+                if (pathNode.costToDestination == 0) {
+                    return pathNode;
+                }
+
+                if (nodeStack.get(0).totalCost > pathNode.totalCost)
+                    nodeStack.add(0, pathNode);
+                else
+                    nodeStack.add(pathNode);
+            }
+        }
+
+        return null;
+    }
 
     /**
      * Move to the next path node.
@@ -24,7 +102,7 @@ public class WorldNetworkPath {
      */
     public WorldNetworkNode next() {
         index++;
-        WorldNetworkNode currentNode = path.get(index);
+        WorldNetworkNode currentNode = path.get(index).realNode;
         return currentNode != null ? currentNode : WorldNetworkNode.NONE;
     }
 
@@ -35,8 +113,29 @@ public class WorldNetworkPath {
      */
     public WorldNetworkNode prev() {
         index--;
-        WorldNetworkNode currentNode = path.get(index);
+        WorldNetworkNode currentNode = path.get(index).realNode;
         return currentNode != null ? currentNode : WorldNetworkNode.NONE;
     }
 
+    /**
+     * Used to store data about the usefulness of a node for making a path.
+     */
+    private class PathNode {
+        PathNode from;
+        WorldNetworkNode realNode;
+        int costFromStart, costToDestination, totalCost;
+
+        public PathNode(PathNode from, WorldNetworkNode realNode, int costFromStart) {
+            this.from = from;
+            this.realNode = realNode;
+            this.costFromStart = costFromStart;
+            calculateCost();
+        }
+
+        public void calculateCost() {
+            BlockPos distanceFromDestination = realNode.position.subtract(WorldNetworkPath.this.endNode.position);
+            costToDestination = Math.abs(distanceFromDestination.getX() + distanceFromDestination.getY() + distanceFromDestination.getZ());
+            totalCost = costFromStart + costToDestination;
+        }
+    }
 }
