@@ -1,18 +1,50 @@
 package com.elytradev.teckle.worldnetwork;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
+
+import java.util.List;
 
 /**
  * A piece of data travelling to a node in the network.
  */
 public class WorldNetworkTraveller implements ITickable {
 
-    public WorldNetworkNode previousNode, currentNode, nextNode, destinationNode;
-    public float travelledDistance = 0F;
+    public static final WorldNetworkTraveller CANT_TRAVEL = new WorldNetworkTraveller(null, new NBTTagCompound());
+    private final WorldNetworkEntryPoint entryPoint;
+    public WorldNetwork network;
+    public WorldNetworkNode previousNode, currentNode, nextNode;
+    public WorldNetworkPath activePath;
+    // The current distance travelled between our previous node, and the next node.
 
-    //TODO: static method to find possible nodes to travel to.
+    public float travelledDistance = 0F;
+    public NBTTagCompound data;
+    private List<WorldNetworkNode> triedEndpoints;
+
+    protected WorldNetworkTraveller(WorldNetworkEntryPoint entryPoint, NBTTagCompound data) {
+        this.network = entryPoint.network;
+        this.entryPoint = entryPoint;
+
+        this.data = data;
+    }
 
     @Override
     public void update() {
+        if (travelledDistance >= 1) {
+            if (nextNode.isEndpoint()) {
+                boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this);
+
+                if (!didInject) {
+                    entryPoint.findNodeForTraveller(this);
+                }
+            } else {
+                travelledDistance = 0;
+                previousNode = currentNode;
+                currentNode = nextNode;
+                nextNode = activePath.next();
+            }
+        }
+
+        travelledDistance += (1 / 20);
     }
 }
