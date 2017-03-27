@@ -3,6 +3,7 @@ package com.elytradev.teckle.worldnetwork;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,7 +11,6 @@ import java.util.List;
  */
 public class WorldNetworkTraveller implements ITickable {
 
-    public static final WorldNetworkTraveller CANT_TRAVEL = new WorldNetworkTraveller(null, new NBTTagCompound());
     private final WorldNetworkEntryPoint entryPoint;
     public WorldNetwork network;
     public WorldNetworkNode previousNode, currentNode, nextNode;
@@ -19,7 +19,7 @@ public class WorldNetworkTraveller implements ITickable {
 
     public float travelledDistance = 0F;
     public NBTTagCompound data;
-    private List<WorldNetworkNode> triedEndpoints;
+    public List<WorldNetworkNode> triedEndpoints = new ArrayList<>();
 
     protected WorldNetworkTraveller(WorldNetworkEntryPoint entryPoint, NBTTagCompound data) {
         this.network = entryPoint.network;
@@ -36,6 +36,8 @@ public class WorldNetworkTraveller implements ITickable {
 
                 if (!didInject) {
                     entryPoint.findNodeForTraveller(this);
+                } else {
+                    network.unregisterTraveller(this);
                 }
             } else {
                 travelledDistance = 0;

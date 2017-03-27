@@ -14,7 +14,7 @@ public class WorldNetworkPath {
     public static final WorldNetworkPath NOT_POSSIBLE = new WorldNetworkPath(null, null, null);
 
     private List<PathNode> path;
-    private int index = 0;
+    private int index = -1;
     private WorldNetworkTraveller traveller;
     private WorldNetworkNode startNode, endNode;
 
@@ -75,10 +75,10 @@ public class WorldNetworkPath {
     private PathNode createNodesAround(ArrayList<PathNode> nodeStack, ArrayList<BlockPos> positions, PathNode node) {
         for (EnumFacing facing : EnumFacing.VALUES) {
             BlockPos neighbourPos = node.realNode.position.add(facing.getDirectionVec());
-            if (positions.contains(neighbourPos) || !node.realNode.network.networkNodes.containsKey(neighbourPos))
+            if (positions.contains(neighbourPos) || !node.realNode.network.isNodePresent(neighbourPos))
                 continue;
 
-            WorldNetworkNode neighbourNode = node.realNode.network.networkNodes.get(neighbourPos);
+            WorldNetworkNode neighbourNode = node.realNode.network.getNodeFromPosition(neighbourPos);
             if (neighbourNode.canAcceptTraveller(traveller)) {
                 PathNode pathNode = new PathNode(node, neighbourNode, node.costFromStart + 1);
                 if (pathNode.costToDestination == 0) {
