@@ -3,6 +3,7 @@ package com.elytradev.teckle.worldnetwork;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,10 +16,26 @@ public class WorldNetworkNode {
 
     public BlockPos position;
     public WorldNetwork network;
-    private List<WorldNetworkTraveller> travellers;
+    private List<WorldNetworkTraveller> travellers = new ArrayList<>();
+
+    protected WorldNetworkNode() {
+    }
+
+    public WorldNetworkNode(BlockPos position, WorldNetwork network) {
+        this.position = position;
+        this.network = network;
+    }
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
         return false;
+    }
+
+    public void registerTraveller(WorldNetworkTraveller traveller) {
+        travellers.add(traveller);
+    }
+
+    public void unregisterTraveller(WorldNetworkTraveller traveller) {
+        travellers.remove(traveller);
     }
 
     public boolean isEndpoint() {
@@ -27,5 +44,9 @@ public class WorldNetworkNode {
 
     public boolean isEntrypoint() {
         return this instanceof WorldNetworkEntryPoint;
+    }
+
+    public List<WorldNetworkTraveller> getTravellers() {
+        return travellers;
     }
 }
