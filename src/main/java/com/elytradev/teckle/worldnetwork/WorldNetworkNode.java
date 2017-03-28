@@ -21,7 +21,7 @@ public class WorldNetworkNode {
     protected WorldNetworkNode() {
     }
 
-    public WorldNetworkNode(BlockPos position, WorldNetwork network) {
+    public WorldNetworkNode(WorldNetwork network, BlockPos position) {
         this.position = position;
         this.network = network;
     }

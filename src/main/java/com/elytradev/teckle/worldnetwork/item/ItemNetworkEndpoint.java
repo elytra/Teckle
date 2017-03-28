@@ -1,10 +1,12 @@
 package com.elytradev.teckle.worldnetwork.item;
 
+import com.elytradev.teckle.worldnetwork.WorldNetwork;
 import com.elytradev.teckle.worldnetwork.WorldNetworkEndpoint;
 import com.elytradev.teckle.worldnetwork.WorldNetworkTraveller;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -13,6 +15,10 @@ import net.minecraftforge.items.IItemHandler;
  * Created by darkevilmac on 3/27/2017.
  */
 public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
+
+    public ItemNetworkEndpoint(WorldNetwork network, BlockPos pos) {
+        super(network, pos);
+    }
 
     @Override
     public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {

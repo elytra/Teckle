@@ -1,11 +1,16 @@
 package com.elytradev.teckle.worldnetwork;
 
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 
 /**
  * Created by darkevilmac on 3/26/2017.
  */
 public class WorldNetworkEndpoint extends WorldNetworkNode {
+
+    public WorldNetworkEndpoint(WorldNetwork network, BlockPos position) {
+        super(network, position);
+    }
 
     /**
      * Inject the traveller into the endpoint.
