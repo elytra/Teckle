@@ -1,5 +1,6 @@
 package com.elytradev.teckle.block;
 
+import com.elytradev.teckle.TeckleMod;
 import com.elytradev.teckle.tile.TileItemTube;
 import com.elytradev.teckle.worldnetwork.WorldNetwork;
 import com.elytradev.teckle.worldnetwork.WorldNetworkNode;
@@ -8,11 +9,11 @@ import com.elytradev.teckle.worldnetwork.item.ItemNetworkEndpoint;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -27,8 +28,10 @@ import java.util.List;
  * Created by darkevilmac on 3/27/2017.
  */
 public class BlockItemTube extends BlockContainer {
-    protected BlockItemTube(Material materialIn) {
+    public BlockItemTube(Material materialIn) {
         super(materialIn);
+
+        this.setRegistryName(new ResourceLocation(TeckleMod.MOD_ID, "itemTube"));
     }
 
     @Override
@@ -41,21 +44,18 @@ public class BlockItemTube extends BlockContainer {
         List<WorldNetwork> neighbourNetworks = getNeighbourNetworks(worldIn, pos);
         if (!neighbourNetworks.isEmpty()) {
             // Found neighbour networks, join the network or merge.
-            WorldNetwork network = neighbourNetworks.get(0);
+            WorldNetwork network = neighbourNetworks.remove(0);
+
+            TileItemTube tube = (TileItemTube) worldIn.getTileEntity(pos);
             network.registerNode(new WorldNetworkNode(network, pos));
+            tube.network = network;
 
-            if (neighbourNetworks.size() > 1) {
-                // Merge is needed.
-                List<WorldNetwork> unmergedNetworks = new ArrayList<>();
-                unmergedNetworks.addAll(neighbourNetworks);
-
-                network = unmergedNetworks.remove(0);
-                while (!unmergedNetworks.isEmpty()) {
-                    network = network.merge(unmergedNetworks.remove(0));
-                }
+            while (!neighbourNetworks.isEmpty()) {
+                network = network.merge(neighbourNetworks.remove(0));
             }
         } else {
             // No neighbours, make a new network.
+            System.out.println("Generating new network.");
             WorldNetwork network = new WorldNetwork(worldIn);
             network.registerNode(new WorldNetworkNode(network, pos));
             if (worldIn.getTileEntity(pos) != null) {
@@ -67,11 +67,11 @@ public class BlockItemTube extends BlockContainer {
     @Override
     public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
         super.onNeighborChange(world, pos, neighbor);
-        if (world instanceof WorldClient)
-            return;
-
         // Handles cleanup of endpoint nodes, or nodes that should have been removed but weren't.
         TileItemTube tube = (TileItemTube) world.getTileEntity(pos);
+        if (tube.getWorld().isRemote)
+            return;
+
         if (tube.network.isNodePresent(neighbor)) {
             //Node is already present, run validation on network.
             tube.network.validateNetwork();
@@ -110,11 +110,13 @@ public class BlockItemTube extends BlockContainer {
             BlockPos neighbourPos = pos.add(facing.getDirectionVec());
 
             if (world.getBlockState(neighbourPos).getBlock() instanceof BlockItemTube) {
-                neighbourNetworks.add(((TileItemTube) world.getTileEntity(pos)).network);
+                TileItemTube neighbourTube = (TileItemTube) world.getTileEntity(neighbourPos);
+                neighbourNetworks.add(neighbourTube.network);
             }
         }
 
         return neighbourNetworks;
     }
+
 
 }

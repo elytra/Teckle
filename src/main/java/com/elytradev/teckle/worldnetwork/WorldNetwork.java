@@ -5,6 +5,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +18,7 @@ import java.util.List;
  */
 public class WorldNetwork implements ITickable {
 
+    protected static List<WorldNetwork> NETWORKS = new ArrayList<>();
     protected HashBiMap<BlockPos, WorldNetworkNode> networkNodes;
     protected List<WorldNetworkTraveller> travellers = new ArrayList<>();
     protected World world;
@@ -24,14 +27,31 @@ public class WorldNetwork implements ITickable {
         this.networkNodes = HashBiMap.create();
         this.travellers = new ArrayList<>();
         this.world = world;
+
+        NETWORKS.add(this);
+    }
+
+    @SubscribeEvent
+    public static void onTickEvent(TickEvent.WorldTickEvent e) {
+        if (NETWORKS.isEmpty() || e.phase.equals(TickEvent.Phase.START))
+            return;
+
+        for (WorldNetwork network : NETWORKS) {
+            network.update();
+        }
     }
 
     public void registerNode(WorldNetworkNode node) {
+        System.out.println(this + "/Registering a node, " + node);
         networkNodes.put(node.position, node);
     }
 
     public void unregisterNode(WorldNetworkNode node) {
         networkNodes.remove(node.position);
+
+        if (networkNodes.isEmpty()) {
+            NETWORKS.remove(this);
+        }
     }
 
     public WorldNetworkNode getNodeFromPosition(BlockPos pos) {
@@ -63,6 +83,7 @@ public class WorldNetwork implements ITickable {
     }
 
     public WorldNetwork merge(WorldNetwork otherNetwork) {
+        System.out.println("Performing a merge of " + this + " and " + otherNetwork);
         WorldNetwork mergedNetwork = new WorldNetwork(this.world);
 
         mergedNetwork.networkNodes.putAll(this.networkNodes);
@@ -77,6 +98,7 @@ public class WorldNetwork implements ITickable {
             }
 
             mergedNetwork.registerNode(node);
+            node.network = mergedNetwork;
         });
         mergedNetwork.travellers.forEach(traveller -> {
             if (traveller.network != null) {
@@ -84,6 +106,7 @@ public class WorldNetwork implements ITickable {
             }
 
             mergedNetwork.registerTraveller(traveller);
+            traveller.network = mergedNetwork;
         });
 
         return mergedNetwork;
@@ -123,6 +146,7 @@ public class WorldNetwork implements ITickable {
 
         // Only process a split if there's a new network that needs to be formed. RIP old network </3
         if (networks.size() > 1) {
+            System.out.println("Splitting a network...");
             //Start from 1, leave 0 as this network.
             for (int networkNum = 1; networkNum < networks.size(); networkNum++) {
                 List<WorldNetworkNode> newNetworkData = networks.get(networkNum);
@@ -142,6 +166,8 @@ public class WorldNetwork implements ITickable {
                 }
             }
         }
+
+        System.out.println("Finished validation, resulted in " + networks.size() + " networks.");
     }
 
     @Override

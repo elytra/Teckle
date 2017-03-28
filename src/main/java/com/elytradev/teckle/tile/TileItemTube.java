@@ -12,6 +12,5 @@ public class TileItemTube extends TileEntity implements ITickable {
 
     @Override
     public void update() {
-
     }
 }
