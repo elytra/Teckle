@@ -15,14 +15,13 @@ import net.minecraftforge.items.IItemHandler;
 public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
 
     @Override
-    public boolean inject(WorldNetworkTraveller traveller) {
-        EnumFacing injectionFace = getInjectionFace(traveller);
+    public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {
         TileEntity endPointTile = network.getWorld().getTileEntity(position);
 
         if (endPointTile instanceof ICapabilityProvider) {
             ICapabilityProvider endPointCapabilityProvider = endPointTile;
-            if (endPointCapabilityProvider.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, injectionFace)) {
-                IItemHandler itemHandler = endPointCapabilityProvider.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, injectionFace);
+            if (endPointCapabilityProvider.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from)) {
+                IItemHandler itemHandler = endPointCapabilityProvider.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from);
 
                 ItemStack dataStack = new ItemStack(traveller.data.getCompoundTag("stack"));
                 for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
@@ -36,22 +35,34 @@ public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
             }
         }
 
-        return super.inject(traveller);
+        return super.inject(traveller, from);
     }
 
-    @Override
-    public boolean canAcceptTraveller(WorldNetworkTraveller traveller) {
-        return super.canAcceptTraveller(traveller);
-    }
+    private boolean canInject(WorldNetworkTraveller traveller, EnumFacing from) {
+        TileEntity endPointTile = network.getWorld().getTileEntity(position);
 
-    private EnumFacing getInjectionFace(WorldNetworkTraveller traveller) {
-        for (EnumFacing facing : EnumFacing.VALUES) {
-            if (traveller.previousNode.position.subtract(traveller.currentNode.position).equals(facing.getDirectionVec())) {
-                return facing.getOpposite();
+        if (endPointTile instanceof ICapabilityProvider) {
+            ICapabilityProvider endPointCapabilityProvider = endPointTile;
+            if (endPointCapabilityProvider.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from)) {
+                IItemHandler itemHandler = endPointCapabilityProvider.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from);
+
+                ItemStack dataStack = new ItemStack(traveller.data.getCompoundTag("stack"));
+                ItemStack initialStack = dataStack.copy();
+                for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+                    dataStack = itemHandler.insertItem(slot, dataStack, true);
+
+                    if (dataStack.isEmpty() || dataStack.getCount() != initialStack.getCount())
+                        return true;
+                }
             }
         }
 
-        return EnumFacing.DOWN;
+        return false;
+    }
+
+    @Override
+    public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
+        return super.canAcceptTraveller(traveller, from) && canInject(traveller, from);
     }
 
 }

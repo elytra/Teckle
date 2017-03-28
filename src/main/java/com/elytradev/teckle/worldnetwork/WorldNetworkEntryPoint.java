@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import static com.elytradev.teckle.worldnetwork.WorldNetworkTraveller.getFacingFromVector;
+
 /**
  * A node used to add travellers to a network, handles initial endpoint finding, as well as finding new endpoints when one fails.
  */
@@ -46,11 +48,11 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
                     continue;
 
                 WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
-                if (neighbourNode.canAcceptTraveller(traveller)) {
+                if (neighbourNode.canAcceptTraveller(traveller, getFacingFromVector(pos.subtract(neighbourPos)))) {
                     nodeStack.add(new Tuple<>(neighbourPos, cost + 1));
                     iteratedPositions.add(neighbourPos);
 
-                    if (isValidEndpoint(traveller, neighbourPos)) {
+                    if (isValidEndpoint(traveller, pos, neighbourPos)) {
                         endpoints.add(new Tuple<>(neighbourPos, cost + 1));
                     }
                 }
@@ -89,11 +91,11 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
                     continue;
 
                 WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
-                if (neighbourNode.canAcceptTraveller(traveller)) {
+                if (neighbourNode.canAcceptTraveller(traveller, getFacingFromVector(pos.subtract(neighbourPos)))) {
                     nodeStack.add(new Tuple<>(neighbourPos, cost + 1));
                     iteratedPositions.add(neighbourPos);
 
-                    if (isValidEndpoint(traveller, neighbourPos)) {
+                    if (isValidEndpoint(traveller, pos, neighbourPos)) {
                         endpoints.add(new Tuple<>(neighbourPos, cost + 1));
                     }
                 }
@@ -108,8 +110,9 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         traveller.nextNode = path.next();
     }
 
-    public boolean isValidEndpoint(WorldNetworkTraveller traveller, BlockPos endPoint) {
-        return network.isNodePresent(endPoint) && network.getNodeFromPosition(endPoint).isEndpoint() && network.getNodeFromPosition(position).canAcceptTraveller(traveller);
+    public boolean isValidEndpoint(WorldNetworkTraveller traveller, BlockPos from, BlockPos endPoint) {
+        return network.isNodePresent(endPoint) && network.getNodeFromPosition(endPoint).isEndpoint()
+                && network.getNodeFromPosition(position).canAcceptTraveller(traveller, getFacingFromVector(from.subtract(endPoint)));
     }
 
 }

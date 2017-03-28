@@ -1,7 +1,9 @@
 package com.elytradev.teckle.worldnetwork;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.Vec3i;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,11 +30,20 @@ public class WorldNetworkTraveller implements ITickable {
         this.data = data;
     }
 
+    public static EnumFacing getFacingFromVector(Vec3i vec) {
+        for (EnumFacing facing : EnumFacing.VALUES)
+            if (vec.equals(facing.getDirectionVec()))
+                return facing;
+
+        return EnumFacing.DOWN;
+    }
+
     @Override
     public void update() {
         if (travelledDistance >= 1) {
             if (nextNode.isEndpoint()) {
-                boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this);
+                boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this,
+                        getFacingFromVector(nextNode.position.subtract(currentNode.position)));
 
                 if (!didInject) {
                     entryPoint.findNodeForTraveller(this);
@@ -49,4 +60,5 @@ public class WorldNetworkTraveller implements ITickable {
 
         travelledDistance += (1 / 20);
     }
+
 }

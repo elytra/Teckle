@@ -6,6 +6,8 @@ import net.minecraft.util.math.BlockPos;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.elytradev.teckle.worldnetwork.WorldNetworkTraveller.getFacingFromVector;
+
 /**
  * More or less a wrapper for a list that makes code easier to understand.
  */
@@ -79,7 +81,7 @@ public class WorldNetworkPath {
                 continue;
 
             WorldNetworkNode neighbourNode = node.realNode.network.getNodeFromPosition(neighbourPos);
-            if (neighbourNode.canAcceptTraveller(traveller)) {
+            if (neighbourNode.canAcceptTraveller(traveller, getFacingFromVector(node.realNode.position.subtract(neighbourPos)))) {
                 PathNode pathNode = new PathNode(node, neighbourNode, node.costFromStart + 1);
                 if (pathNode.costToDestination == 0) {
                     return pathNode;

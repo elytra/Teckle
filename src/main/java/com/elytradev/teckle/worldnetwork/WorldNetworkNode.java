@@ -1,5 +1,6 @@
 package com.elytradev.teckle.worldnetwork;
 
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
@@ -16,12 +17,8 @@ public class WorldNetworkNode {
     public WorldNetwork network;
     private List<WorldNetworkTraveller> travellers;
 
-    public boolean canAcceptTraveller(WorldNetworkTraveller traveller) {
+    public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
         return false;
-    }
-
-    public void pushToEndpoint(WorldNetworkTraveller traveller) {
-
     }
 
     public boolean isEndpoint() {
