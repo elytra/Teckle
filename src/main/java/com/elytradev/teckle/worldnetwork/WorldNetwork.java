@@ -3,6 +3,7 @@ package com.elytradev.teckle.worldnetwork;
 import com.google.common.collect.HashBiMap;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +16,7 @@ public class WorldNetwork implements ITickable {
 
     private HashBiMap<BlockPos, WorldNetworkNode> networkNodes;
     private List<WorldNetworkTraveller> travellers = new ArrayList<>();
+    private World world;
 
     public void registerNode(WorldNetworkNode node) {
         networkNodes.put(node.position, node);
@@ -46,6 +48,10 @@ public class WorldNetwork implements ITickable {
 
     public void unregisterTraveller(WorldNetworkTraveller traveller) {
         travellers.remove(traveller);
+    }
+
+    public World getWorld() {
+        return world;
     }
 
     @Override
