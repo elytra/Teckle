@@ -20,6 +20,12 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
     //TODO: round robin for endpoints of same cost.
     private int roundRobinTicker = 0;
 
+    public WorldNetworkEntryPoint(WorldNetwork network, BlockPos position, EnumFacing facing) {
+        this.network = network;
+        this.position = position;
+        this.facing = facing;
+    }
+
     public void addTraveller(NBTTagCompound data) {
         WorldNetworkTraveller traveller = new WorldNetworkTraveller(this, data);
         createInitialPathForTraveller(traveller);
@@ -113,6 +119,10 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
     public boolean isValidEndpoint(WorldNetworkTraveller traveller, BlockPos from, BlockPos endPoint) {
         return network.isNodePresent(endPoint) && network.getNodeFromPosition(endPoint).isEndpoint()
                 && network.getNodeFromPosition(position).canAcceptTraveller(traveller, getFacingFromVector(from.subtract(endPoint)));
+    }
+
+    public EnumFacing getFacing() {
+        return facing;
     }
 
 }

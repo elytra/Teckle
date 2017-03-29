@@ -19,13 +19,11 @@ import java.util.List;
 public class WorldNetwork implements ITickable {
 
     protected static List<WorldNetwork> NETWORKS = new ArrayList<>();
-    protected HashBiMap<BlockPos, WorldNetworkNode> networkNodes;
+    protected HashBiMap<BlockPos, WorldNetworkNode> networkNodes = HashBiMap.create();
     protected List<WorldNetworkTraveller> travellers = new ArrayList<>();
     protected World world;
 
     public WorldNetwork(World world) {
-        this.networkNodes = HashBiMap.create();
-        this.travellers = new ArrayList<>();
         this.world = world;
 
         NETWORKS.add(this);
@@ -36,22 +34,39 @@ public class WorldNetwork implements ITickable {
         if (NETWORKS.isEmpty() || e.phase.equals(TickEvent.Phase.START))
             return;
 
+        List<WorldNetwork> emptyNetworks = new ArrayList<>();
         for (WorldNetwork network : NETWORKS) {
+            if (network.networkNodes.isEmpty()) {
+                if (!emptyNetworks.contains(network))
+                    emptyNetworks.add(network);
+
+                System.out.println("Found dead network " + network);
+                continue;
+            }
             network.update();
+        }
+
+        for (WorldNetwork emptyNetwork : emptyNetworks) {
+            NETWORKS.remove(emptyNetwork);
         }
     }
 
     public void registerNode(WorldNetworkNode node) {
         System.out.println(this + "/Registering a node, " + node);
         networkNodes.put(node.position, node);
+        node.network = this;
+        System.out.println(this + "/Registered node, " + node);
     }
 
     public void unregisterNode(WorldNetworkNode node) {
+        System.out.println(this + "/Unregistering a node, " + node);
         networkNodes.remove(node.position);
+        System.out.println(this + "/Unregistered node, " + node);
+    }
 
-        if (networkNodes.isEmpty()) {
-            NETWORKS.remove(this);
-        }
+    public void unregisterNodeAtPosition(BlockPos nodePosition) {
+        if (isNodePresent(nodePosition))
+            unregisterNode(getNodeFromPosition(nodePosition));
     }
 
     public WorldNetworkNode getNodeFromPosition(BlockPos pos) {
@@ -118,6 +133,7 @@ public class WorldNetwork implements ITickable {
     public void validateNetwork() {
         // Perform flood fill to validate all nodes are connected. Choose an arbitrary node to start from.
 
+        System.out.println("Performing a network validation.");
         List<List<WorldNetworkNode>> networks = new ArrayList<>();
         HashMap<BlockPos, WorldNetworkNode> uncheckedNodes = new HashMap<>();
         uncheckedNodes.putAll(this.networkNodes);
@@ -127,7 +143,8 @@ public class WorldNetwork implements ITickable {
             List<BlockPos> checkedPositions = new ArrayList<>();
             List<WorldNetworkNode> newNetwork = new ArrayList<>();
 
-            nodeStack.add(uncheckedNodes.get(0).position);
+            BlockPos uncheckedNodeKey = (BlockPos) uncheckedNodes.keySet().toArray()[0];
+            nodeStack.add(uncheckedNodes.get(uncheckedNodeKey).position);
             checkedPositions.add(nodeStack.get(0));
             while (!nodeStack.isEmpty()) {
                 BlockPos nodePos = nodeStack.remove(0);
