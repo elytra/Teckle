@@ -32,6 +32,7 @@ public class BlockItemTube extends BlockContainer {
     public static PropertyBool WEST = PropertyBool.create("west");
     public static PropertyBool UP = PropertyBool.create("up");
     public static PropertyBool DOWN = PropertyBool.create("down");
+    public static PropertyBool NODE = PropertyBool.create("node");
 
     public BlockItemTube(Material materialIn) {
         super(materialIn);
@@ -83,13 +84,30 @@ public class BlockItemTube extends BlockContainer {
     @Override
     public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
         List<EnumFacing> connections = getConnections(world, pos);
+        boolean node = connections.isEmpty() || connections.size() > 2;
+
+        for (EnumFacing facing : connections) {
+            if (node)
+                break;
+
+            for (EnumFacing otherFacing : EnumFacing.VALUES) {
+                if (otherFacing.equals(facing.getOpposite()) || otherFacing.equals(facing))
+                    continue;
+
+                if (connections.contains(otherFacing)) {
+                    node = true;
+                    break;
+                }
+            }
+        }
 
         return state.withProperty(NORTH, connections.contains(EnumFacing.SOUTH))
                 .withProperty(EAST, connections.contains(EnumFacing.WEST))
                 .withProperty(SOUTH, connections.contains(EnumFacing.NORTH))
                 .withProperty(WEST, connections.contains(EnumFacing.EAST))
                 .withProperty(DOWN, connections.contains(EnumFacing.UP))
-                .withProperty(UP, connections.contains(EnumFacing.DOWN));
+                .withProperty(UP, connections.contains(EnumFacing.DOWN))
+                .withProperty(NODE, node);
     }
 
     @Override
@@ -99,7 +117,7 @@ public class BlockItemTube extends BlockContainer {
 
     @Override
     public BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, NORTH, EAST, SOUTH, WEST, UP, DOWN);
+        return new BlockStateContainer(this, NORTH, EAST, SOUTH, WEST, UP, DOWN, NODE);
     }
 
     @Override

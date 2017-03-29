@@ -6,9 +6,15 @@
     },
     "uvlock": false,
     "transform": "forge:default-block",
-    "model":"teckle:tube.item_node"
+    "model": "teckle:blocks/empty"
   },
   "variants": {
+    "node": {
+      "false": {},
+      "true": {
+        "model": "teckle:tube.item_node"
+      }
+    },
     "down": {
       "false": {},
       "true": {
@@ -34,7 +40,10 @@
       "false": {},
       "true": {
         "submodel": {
-          "north": { "model": "teckle:tube.item_leg", "x": 90 }
+          "north": {
+            "model": "teckle:tube.item_leg",
+            "x": 90
+          }
         }
       }
     },
@@ -42,7 +51,11 @@
       "false": {},
       "true": {
         "submodel": {
-          "south": { "model": "teckle:tube.item_leg", "x": 90, "y": 180 }
+          "south": {
+            "model": "teckle:tube.item_leg",
+            "x": 90,
+            "y": 180
+          }
         }
       }
     },
@@ -50,7 +63,11 @@
       "false": {},
       "true": {
         "submodel": {
-          "west": { "model": "teckle:tube.item_leg", "x": 90, "y": 270 }
+          "west": {
+            "model": "teckle:tube.item_leg",
+            "x": 90,
+            "y": 270
+          }
         }
       }
     },
@@ -58,7 +75,11 @@
       "false": {},
       "true": {
         "submodel": {
-          "east": { "model": "teckle:tube.item_leg", "x": 90, "y": 90 }
+          "east": {
+            "model": "teckle:tube.item_leg",
+            "x": 90,
+            "y": 90
+          }
         }
       }
     }
