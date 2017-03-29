@@ -1,4 +1,4 @@
-package com.elytradev.teckle.worldnetwork;
+package com.elytradev.teckle.common.worldnetwork;
 
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -6,7 +6,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.elytradev.teckle.worldnetwork.WorldNetworkTraveller.getFacingFromVector;
+import static com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller.getFacingFromVector;
 
 /**
  * More or less a wrapper for a list that makes code easier to understand.

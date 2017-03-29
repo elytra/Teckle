@@ -1,0 +1,21 @@
+{
+  "ambientocclusion": false,
+  "parent": "block/block",
+  "textures": {
+    "main":  "blocks/stone",
+    "particle": "blocks/stone"
+  },
+  "elements": [
+    { "from": [ 6, 11, 6 ],
+      "to": [ 10, 16, 10 ],
+      "faces": {
+        "north": { "texture": "#main" },
+        "south": { "texture": "#main" },
+        "west":  { "texture": "#main" },
+        "east":  { "texture": "#main" },
+        "up"  :  { "texture": "#main" },
+        "down":  { "texture": "#main" }
+      }
+    }
+  ]
+}

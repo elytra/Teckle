@@ -1,0 +1,66 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "textures": {
+      "particle": "blocks/obsidian"
+    },
+    "uvlock": false,
+    "transform": "forge:default-block",
+    "model":"teckle:tube.item_node"
+  },
+  "variants": {
+    "down": {
+      "false": {},
+      "true": {
+        "submodel": {
+          "down": {
+            "model": "teckle:tube.item_leg",
+            "x": 180
+          }
+        }
+      }
+    },
+    "up": {
+      "false": {},
+      "true": {
+        "submodel": {
+          "up": {
+            "model": "teckle:tube.item_leg"
+          }
+        }
+      }
+    },
+    "north": {
+      "false": {},
+      "true": {
+        "submodel": {
+          "north": { "model": "teckle:tube.item_leg", "x": 90 }
+        }
+      }
+    },
+    "south": {
+      "false": {},
+      "true": {
+        "submodel": {
+          "south": { "model": "teckle:tube.item_leg", "x": 90, "y": 180 }
+        }
+      }
+    },
+    "west": {
+      "false": {},
+      "true": {
+        "submodel": {
+          "west": { "model": "teckle:tube.item_leg", "x": 90, "y": 270 }
+        }
+      }
+    },
+    "east": {
+      "false": {},
+      "true": {
+        "submodel": {
+          "east": { "model": "teckle:tube.item_leg", "x": 90, "y": 90 }
+        }
+      }
+    }
+  }
+}

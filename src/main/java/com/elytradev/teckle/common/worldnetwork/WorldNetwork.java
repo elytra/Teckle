@@ -1,4 +1,4 @@
-package com.elytradev.teckle.worldnetwork;
+package com.elytradev.teckle.common.worldnetwork;
 
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;

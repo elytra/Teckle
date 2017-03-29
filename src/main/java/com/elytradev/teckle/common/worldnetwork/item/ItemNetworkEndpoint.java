@@ -1,8 +1,8 @@
-package com.elytradev.teckle.worldnetwork.item;
+package com.elytradev.teckle.common.worldnetwork.item;
 
-import com.elytradev.teckle.worldnetwork.WorldNetwork;
-import com.elytradev.teckle.worldnetwork.WorldNetworkEndpoint;
-import com.elytradev.teckle.worldnetwork.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
+import com.elytradev.teckle.common.worldnetwork.WorldNetworkEndpoint;
+import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;

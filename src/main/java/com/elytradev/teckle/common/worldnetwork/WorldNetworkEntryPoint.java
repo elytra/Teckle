@@ -1,4 +1,4 @@
-package com.elytradev.teckle.worldnetwork;
+package com.elytradev.teckle.common.worldnetwork;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static com.elytradev.teckle.worldnetwork.WorldNetworkTraveller.getFacingFromVector;
+import static com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller.getFacingFromVector;
 
 /**
  * A node used to add travellers to a network, handles initial endpoint finding, as well as finding new endpoints when one fails.

@@ -1,18 +1,20 @@
-package com.elytradev.teckle.block;
+package com.elytradev.teckle.common.block;
 
-import com.elytradev.teckle.TeckleMod;
-import com.elytradev.teckle.tile.TileItemEntrypoint;
-import com.elytradev.teckle.tile.TileItemTube;
-import com.elytradev.teckle.worldnetwork.*;
-import com.elytradev.teckle.worldnetwork.item.ItemNetworkEndpoint;
+import com.elytradev.teckle.common.tile.TileItemEntrypoint;
+import com.elytradev.teckle.common.tile.TileItemNetworkMember;
+import com.elytradev.teckle.common.tile.TileItemTube;
+import com.elytradev.teckle.common.worldnetwork.*;
+import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -23,10 +25,101 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlockItemTube extends BlockContainer {
+
+    public static PropertyBool NORTH = PropertyBool.create("north");
+    public static PropertyBool EAST = PropertyBool.create("east");
+    public static PropertyBool SOUTH = PropertyBool.create("south");
+    public static PropertyBool WEST = PropertyBool.create("west");
+    public static PropertyBool UP = PropertyBool.create("up");
+    public static PropertyBool DOWN = PropertyBool.create("down");
+
     public BlockItemTube(Material materialIn) {
         super(materialIn);
 
-        this.setRegistryName(new ResourceLocation(TeckleMod.MOD_ID, "itemTube"));
+        this.setHarvestLevel("pickaxe", 0);
+        this.setLightOpacity(0);
+
+        this.setDefaultState(blockState.getBaseState()
+                .withProperty(NORTH, false)
+                .withProperty(SOUTH, false)
+                .withProperty(EAST, false)
+                .withProperty(WEST, false)
+                .withProperty(UP, false)
+                .withProperty(DOWN, false)
+        );
+    }
+
+
+    @Override
+    public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+        return getBoundingBox(state, source, pos);
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
+        IBlockState actualState = getActualState(state, world, pos);
+
+        float pixel = 1f / 16f;
+        float min = pixel * 5;
+        float max = 1 - min;
+
+        float x1 = min;
+        float y1 = min;
+        float z1 = min;
+        float x2 = max;
+        float y2 = max;
+        float z2 = max;
+
+        if (actualState.getValue(NORTH)) z1 = 0;
+        if (actualState.getValue(WEST)) x1 = 0;
+        if (actualState.getValue(DOWN)) y1 = 0;
+        if (actualState.getValue(EAST)) x2 = 1;
+        if (actualState.getValue(SOUTH)) z2 = 1;
+        if (actualState.getValue(UP)) y2 = 1;
+
+        return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
+    }
+
+    @Override
+    public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
+        List<EnumFacing> connections = getConnections(world, pos);
+
+        return state.withProperty(NORTH, connections.contains(EnumFacing.SOUTH))
+                .withProperty(EAST, connections.contains(EnumFacing.WEST))
+                .withProperty(SOUTH, connections.contains(EnumFacing.NORTH))
+                .withProperty(WEST, connections.contains(EnumFacing.EAST))
+                .withProperty(DOWN, connections.contains(EnumFacing.UP))
+                .withProperty(UP, connections.contains(EnumFacing.DOWN));
+    }
+
+    @Override
+    public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World world, BlockPos pos) {
+        return getBoundingBox(state, world, pos).offset(pos);
+    }
+
+    @Override
+    public BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, NORTH, EAST, SOUTH, WEST, UP, DOWN);
+    }
+
+    @Override
+    public int getMetaFromState(IBlockState state) {
+        return 0;
+    }
+
+    @Override
+    public IBlockState getStateFromMeta(int meta) {
+        return this.getDefaultState();
+    }
+
+    @Override
+    public boolean isFullCube(IBlockState state) {
+        return false;
+    }
+
+    @Override
+    public boolean isOpaqueCube(IBlockState state) {
+        return false;
     }
 
     @Override
@@ -151,6 +244,36 @@ public class BlockItemTube extends BlockContainer {
         }
 
         return neighbourNodes;
+    }
+
+    public List<EnumFacing> getConnections(IBlockAccess world, BlockPos pos) {
+        List<EnumFacing> connections = new ArrayList<>();
+
+        for (EnumFacing facing : EnumFacing.VALUES) {
+            BlockPos neighbourPos = pos.add(facing.getDirectionVec());
+
+            if (canConnectTo(world, neighbourPos, facing.getOpposite())) {
+                connections.add(facing);
+            }
+        }
+
+        return connections;
+    }
+
+    private boolean canConnectTo(IBlockAccess world, BlockPos pos, EnumFacing side) {
+        TileEntity tileAtPos = world.getTileEntity(pos);
+
+        boolean canConnect = false;
+
+        if (tileAtPos != null) {
+            if (tileAtPos.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)) {
+                canConnect = true;
+            } else if (tileAtPos instanceof TileItemNetworkMember) {
+                canConnect = true;
+            }
+        }
+
+        return canConnect;
     }
 
 }

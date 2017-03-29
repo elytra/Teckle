@@ -1,4 +1,4 @@
-package com.elytradev.teckle.helpers;
+package com.elytradev.teckle.common.helpers;
 
 /**
  * Created by darkevilmac on 3/26/2017.

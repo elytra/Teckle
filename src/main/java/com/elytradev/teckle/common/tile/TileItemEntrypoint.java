@@ -1,12 +1,11 @@
-package com.elytradev.teckle.tile;
+package com.elytradev.teckle.common.tile;
 
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 
 /**
  * Created by darkevilmac on 3/28/2017.
  */
-public class TileItemEntrypoint extends TileEntity{
+public class TileItemEntrypoint extends TileItemNetworkMember {
 
     private EnumFacing facing = EnumFacing.DOWN;
 
