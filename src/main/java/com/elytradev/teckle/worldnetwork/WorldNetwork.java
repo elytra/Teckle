@@ -50,7 +50,10 @@ public class WorldNetwork implements ITickable {
 
     public void registerNode(WorldNetworkNode node) {
         System.out.println(this + "/Registering a node, " + node);
-        networkNodes.put(node.position, node);
+        if (!networkNodes.containsKey(node.position))
+            networkNodes.put(node.position, node);
+        else
+            networkNodes.replace(node.position, node);
         node.network = this;
         System.out.println(this + "/Registered node, " + node);
     }
@@ -96,8 +99,9 @@ public class WorldNetwork implements ITickable {
     }
 
     public WorldNetwork merge(WorldNetwork otherNetwork) {
+        int expectedSize = networkNodes.size() + otherNetwork.networkNodes.size();
         System.out.println("Performing a merge of " + this + " and " + otherNetwork
-                + "\n Expecting a node count of " + this.networkNodes.size() + otherNetwork.networkNodes.size());
+                + "\n Expecting a node count of " + expectedSize);
         WorldNetwork mergedNetwork = new WorldNetwork(this.world);
         transferNetworkData(mergedNetwork);
         otherNetwork.transferNetworkData(mergedNetwork);
