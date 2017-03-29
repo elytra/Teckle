@@ -105,8 +105,7 @@ public class WorldNetwork implements ITickable {
         WorldNetwork mergedNetwork = new WorldNetwork(this.world);
         transferNetworkData(mergedNetwork);
         otherNetwork.transferNetworkData(mergedNetwork);
-        System.out.println("Completed merge, resulted in " + mergedNetwork
-                + "\n Merged network has a node count of " + mergedNetwork.networkNodes.size());
+        System.out.println("Completed merge, resulted in " + mergedNetwork);
         return mergedNetwork;
     }
 
@@ -139,25 +138,10 @@ public class WorldNetwork implements ITickable {
         uncheckedNodes.putAll(this.networkNodes);
 
         while (!uncheckedNodes.isEmpty()) {
-            List<BlockPos> nodeStack = new ArrayList<>();
-            List<BlockPos> checkedPositions = new ArrayList<>();
-            List<WorldNetworkNode> newNetwork = new ArrayList<>();
-
-            BlockPos uncheckedNodeKey = (BlockPos) uncheckedNodes.keySet().toArray()[0];
-            nodeStack.add(uncheckedNodes.get(uncheckedNodeKey).position);
-            checkedPositions.add(nodeStack.get(0));
-            while (!nodeStack.isEmpty()) {
-                BlockPos nodePos = nodeStack.remove(0);
-
-                if (uncheckedNodes.containsKey(nodePos)) {
-                    newNetwork.add(uncheckedNodes.remove(nodePos));
-                    for (EnumFacing direction : EnumFacing.VALUES) {
-                        if (!checkedPositions.contains(nodePos.add(direction.getDirectionVec())))
-                            nodeStack.add(nodePos.add(direction.getDirectionVec()));
-                    }
-                }
+            List<WorldNetworkNode> newNetwork = fillFromPos((BlockPos) uncheckedNodes.keySet().toArray()[0], uncheckedNodes);
+            for (WorldNetworkNode checkedNode : newNetwork) {
+                uncheckedNodes.remove(checkedNode.position);
             }
-
             networks.add(newNetwork);
         }
 
@@ -187,6 +171,31 @@ public class WorldNetwork implements ITickable {
         System.out.println("Finished validation, resulted in " + networks.size() + " networks.");
     }
 
+    public List<WorldNetworkNode> fillFromPos(BlockPos startAt, HashMap<BlockPos, WorldNetworkNode> knownNodes) {
+        List<BlockPos> posStack = new ArrayList<>();
+        List<BlockPos> iteratedPositions = new ArrayList<>();
+        List<WorldNetworkNode> out = new ArrayList<>();
+
+        posStack.add(startAt);
+        iteratedPositions.add(startAt);
+        while (!posStack.isEmpty()) {
+            BlockPos pos = posStack.remove(0);
+            if (knownNodes.containsKey(pos)) {
+                System.out.println("Added " + pos + " to out.");
+                out.add(knownNodes.get(pos));
+            }
+
+            for (EnumFacing direction : EnumFacing.VALUES) {
+                if (!iteratedPositions.contains(pos.add(direction.getDirectionVec())) && knownNodes.containsKey(pos.add(direction.getDirectionVec()))) {
+                    posStack.add(pos.add(direction.getDirectionVec()));
+                    iteratedPositions.add(pos.add(direction.getDirectionVec()));
+                }
+            }
+        }
+
+        return out;
+    }
+
     @Override
     public void update() {
         for (WorldNetworkTraveller traveller : travellers) {
@@ -197,9 +206,9 @@ public class WorldNetwork implements ITickable {
     @Override
     public String toString() {
         return "WorldNetwork{" +
-                "networkNodes=" + networkNodes +
-                ", travellers=" + travellers +
-                ", world=" + world +
+                "nodeCount=" + networkNodes.size() +
+                ", travellerCount=" + travellers.size() +
+                ", worldID=" + world.provider.getDimension() +
                 '}';
     }
 
