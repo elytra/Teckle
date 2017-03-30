@@ -6,7 +6,7 @@
     },
     "uvlock": false,
     "transform": "forge:default-block",
-    "model": "teckle:blocks/empty"
+    "model": "teckle:empty"
   },
   "variants": {
     "node": {

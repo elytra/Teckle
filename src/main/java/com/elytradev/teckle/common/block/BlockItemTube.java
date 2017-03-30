@@ -13,11 +13,15 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 
 import javax.annotation.Nullable;
@@ -101,12 +105,12 @@ public class BlockItemTube extends BlockContainer {
             }
         }
 
-        return state.withProperty(NORTH, connections.contains(EnumFacing.SOUTH))
-                .withProperty(EAST, connections.contains(EnumFacing.WEST))
-                .withProperty(SOUTH, connections.contains(EnumFacing.NORTH))
-                .withProperty(WEST, connections.contains(EnumFacing.EAST))
-                .withProperty(DOWN, connections.contains(EnumFacing.UP))
-                .withProperty(UP, connections.contains(EnumFacing.DOWN))
+        return state.withProperty(NORTH, connections.contains(EnumFacing.NORTH))
+                .withProperty(EAST, connections.contains(EnumFacing.EAST))
+                .withProperty(SOUTH, connections.contains(EnumFacing.SOUTH))
+                .withProperty(WEST, connections.contains(EnumFacing.WEST))
+                .withProperty(DOWN, connections.contains(EnumFacing.DOWN))
+                .withProperty(UP, connections.contains(EnumFacing.UP))
                 .withProperty(NODE, node);
     }
 
@@ -294,4 +298,14 @@ public class BlockItemTube extends BlockContainer {
         return canConnect;
     }
 
+    @Override
+    public EnumBlockRenderType getRenderType(IBlockState state) {
+    	return EnumBlockRenderType.MODEL;
+    }
+    
+    @Override
+    @SideOnly(Side.CLIENT)
+    public BlockRenderLayer getBlockLayer() {
+    	return BlockRenderLayer.CUTOUT;
+    }
 }
