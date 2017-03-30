@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.block;
 
+import com.elytradev.teckle.common.block.property.UnlistedBool;
 import com.elytradev.teckle.common.tile.TileItemEntrypoint;
 import com.elytradev.teckle.common.tile.TileItemNetworkMember;
 import com.elytradev.teckle.common.tile.TileItemTube;
@@ -7,7 +8,7 @@ import com.elytradev.teckle.common.worldnetwork.*;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -20,6 +21,9 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.property.ExtendedBlockState;
+import net.minecraftforge.common.property.IExtendedBlockState;
+import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -30,13 +34,13 @@ import java.util.List;
 
 public class BlockItemTube extends BlockContainer {
 
-    public static PropertyBool NORTH = PropertyBool.create("north");
-    public static PropertyBool EAST = PropertyBool.create("east");
-    public static PropertyBool SOUTH = PropertyBool.create("south");
-    public static PropertyBool WEST = PropertyBool.create("west");
-    public static PropertyBool UP = PropertyBool.create("up");
-    public static PropertyBool DOWN = PropertyBool.create("down");
-    public static PropertyBool NODE = PropertyBool.create("node");
+    public static UnlistedBool NORTH = new UnlistedBool("north");
+    public static UnlistedBool EAST = new UnlistedBool("east");
+    public static UnlistedBool SOUTH = new UnlistedBool("south");
+    public static UnlistedBool WEST = new UnlistedBool("west");
+    public static UnlistedBool UP = new UnlistedBool("up");
+    public static UnlistedBool DOWN = new UnlistedBool("down");
+    public static UnlistedBool NODE = new UnlistedBool("node");
 
     public BlockItemTube(Material materialIn) {
         super(materialIn);
@@ -45,15 +49,8 @@ public class BlockItemTube extends BlockContainer {
         this.setLightOpacity(0);
 
         this.setDefaultState(blockState.getBaseState()
-                .withProperty(NORTH, false)
-                .withProperty(SOUTH, false)
-                .withProperty(EAST, false)
-                .withProperty(WEST, false)
-                .withProperty(UP, false)
-                .withProperty(DOWN, false)
         );
     }
-
 
     @Override
     public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
@@ -61,34 +58,10 @@ public class BlockItemTube extends BlockContainer {
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        IBlockState actualState = getActualState(state, world, pos);
-
-        float pixel = 1f / 16f;
-        float min = pixel * 5;
-        float max = 1 - min;
-
-        float x1 = min;
-        float y1 = min;
-        float z1 = min;
-        float x2 = max;
-        float y2 = max;
-        float z2 = max;
-
-        if (actualState.getValue(NORTH)) z1 = 0;
-        if (actualState.getValue(WEST)) x1 = 0;
-        if (actualState.getValue(DOWN)) y1 = 0;
-        if (actualState.getValue(EAST)) x2 = 1;
-        if (actualState.getValue(SOUTH)) z2 = 1;
-        if (actualState.getValue(UP)) y2 = 1;
-
-        return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
-    }
-
-    @Override
-    public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
+    public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+        IExtendedBlockState extendedBlockState = (IExtendedBlockState) state;
         List<EnumFacing> connections = getConnections(world, pos);
-        boolean node = connections.isEmpty() || connections.size() > 2;
+        boolean node = connections.isEmpty() || connections.size() > 2 || connections.size() == 1;
 
         for (EnumFacing facing : connections) {
             if (node)
@@ -105,7 +78,7 @@ public class BlockItemTube extends BlockContainer {
             }
         }
 
-        return state.withProperty(NORTH, connections.contains(EnumFacing.NORTH))
+        return extendedBlockState.withProperty(NORTH, connections.contains(EnumFacing.NORTH))
                 .withProperty(EAST, connections.contains(EnumFacing.EAST))
                 .withProperty(SOUTH, connections.contains(EnumFacing.SOUTH))
                 .withProperty(WEST, connections.contains(EnumFacing.WEST))
@@ -115,13 +88,38 @@ public class BlockItemTube extends BlockContainer {
     }
 
     @Override
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
+        IExtendedBlockState extendedState = (IExtendedBlockState) getExtendedState(state, world, pos);
+
+        float pixel = 1f / 16f;
+        float min = pixel * 5;
+        float max = 1 - min;
+
+        float x1 = min;
+        float y1 = min;
+        float z1 = min;
+        float x2 = max;
+        float y2 = max;
+        float z2 = max;
+
+        if (extendedState.getValue(NORTH)) z1 = 0;
+        if (extendedState.getValue(WEST)) x1 = 0;
+        if (extendedState.getValue(DOWN)) y1 = 0;
+        if (extendedState.getValue(EAST)) x2 = 1;
+        if (extendedState.getValue(SOUTH)) z2 = 1;
+        if (extendedState.getValue(UP)) y2 = 1;
+
+        return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
+    }
+
+    @Override
     public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World world, BlockPos pos) {
         return getBoundingBox(state, world, pos).offset(pos);
     }
 
     @Override
     public BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, NORTH, EAST, SOUTH, WEST, UP, DOWN, NODE);
+        return new ExtendedBlockState(this, new IProperty[]{}, new IUnlistedProperty[]{NORTH, EAST, SOUTH, WEST, UP, DOWN, NODE});
     }
 
     @Override
@@ -300,12 +298,13 @@ public class BlockItemTube extends BlockContainer {
 
     @Override
     public EnumBlockRenderType getRenderType(IBlockState state) {
-    	return EnumBlockRenderType.MODEL;
+        return EnumBlockRenderType.MODEL;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public BlockRenderLayer getBlockLayer() {
-    	return BlockRenderLayer.CUTOUT;
+        return BlockRenderLayer.CUTOUT;
     }
+
 }

@@ -1,16 +1,12 @@
 package com.elytradev.teckle.common;
 
-import com.elytradev.teckle.common.block.BlockItemTube;
-import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
-import net.minecraft.block.material.Material;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
 
 import static com.elytradev.teckle.common.TeckleMod.MOD_ID;
@@ -36,10 +32,12 @@ public class TeckleMod {
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent e) {
+        MinecraftForge.EVENT_BUS.register(WorldNetwork.class);
+        MinecraftForge.EVENT_BUS.register(PROXY);
+
         LOG = e.getModLog();
         OBJECTS.preInit(e);
 
-        MinecraftForge.EVENT_BUS.register(WorldNetwork.class);
         PROXY.registerRenderers(e.getModState());
     }
 

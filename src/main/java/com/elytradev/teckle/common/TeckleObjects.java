@@ -46,7 +46,7 @@ public class TeckleObjects {
     }
 
     private void registerBlock(String id, Block block, boolean withItemBlock) {
-        block.setUnlocalizedName("teckle." + id);
+        block.setUnlocalizedName(id);
         block.setRegistryName(REGISTRY_PREFIX, id);
         GameRegistry.register(block);
         if (withItemBlock)
@@ -56,7 +56,7 @@ public class TeckleObjects {
 
     private void registerBlock(String id, Block block, Class<? extends ItemBlock> itemBlockClass) {
         try {
-            block.setUnlocalizedName("teckle." + id);
+            block.setUnlocalizedName(id);
             block.setRegistryName(REGISTRY_PREFIX, id);
             GameRegistry.register(block);
 
@@ -70,7 +70,7 @@ public class TeckleObjects {
     }
 
     private void registerItem(String id, Item item) {
-        item.setUnlocalizedName("teckle." + id);
+        item.setUnlocalizedName( id);
         item.setRegistryName(REGISTRY_PREFIX, id);
         GameRegistry.register(item);
         TeckleObjects.registeredItems.put(id, item);
