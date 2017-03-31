@@ -17,7 +17,7 @@ public class WorldNetworkEndpoint extends WorldNetworkNode {
      *
      * @param traveller
      * @param from
-     * @return if injection was successful.
+     * @return if injection was successful, and no product is remaining.
      */
     public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {
         return false;

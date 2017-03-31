@@ -257,7 +257,7 @@ public class BlockItemTube extends BlockContainer {
                     neighbourNodes.add(new WorldNetworkEntryPoint(network, neighbourPos, facing));
                 } else if (neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
                         WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
-                    neighbourNodes.add(new WorldNetworkEndpoint(network, neighbourPos));
+                    neighbourNodes.add(new ItemNetworkEndpoint(network, neighbourPos));
                 }
             }
         }

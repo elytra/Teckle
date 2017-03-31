@@ -1,6 +1,6 @@
 package com.elytradev.teckle.common.block;
 
-import com.elytradev.teckle.common.tile.TileEntityFilter;
+import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.base.TileItemNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkEntryPoint;
@@ -53,7 +53,7 @@ public class BlockFilter extends BlockContainer {
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
-        return new TileEntityFilter();
+        return new TileFilter();
     }
 
     @Override
@@ -62,7 +62,7 @@ public class BlockFilter extends BlockContainer {
         if (worldIn.isRemote)
             return;
         EnumFacing facing = state.getValue(FACING);
-        TileEntityFilter tileEntityFilter = (TileEntityFilter) worldIn.getTileEntity(pos);
+        TileFilter tileEntityFilter = (TileFilter) worldIn.getTileEntity(pos);
         TileEntity neighbour = worldIn.getTileEntity(pos.offset(facing));
         if (neighbour != null && neighbour instanceof TileItemTube) {
             TileItemTube tube = (TileItemTube) neighbour;
@@ -83,7 +83,7 @@ public class BlockFilter extends BlockContainer {
     public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
         super.onNeighborChange(world, pos, neighbor);
         // Handles cleanup of endpoint nodes, or nodes that should have been removed but weren't.
-        TileEntityFilter filter = (TileEntityFilter) world.getTileEntity(pos);
+        TileFilter filter = (TileFilter) world.getTileEntity(pos);
         IBlockState state = world.getBlockState(pos);
         if (filter.getWorld().isRemote || !state.getValue(FACING).getOpposite().getDirectionVec().equals(pos.subtract(neighbor)))
             return;
@@ -126,8 +126,8 @@ public class BlockFilter extends BlockContainer {
             return true;
 
         TileEntity tile = worldIn.getTileEntity(pos);
-        if (tile != null && tile instanceof TileEntityFilter) {
-            return ((TileEntityFilter) tile).pushToNetwork();
+        if (tile != null && tile instanceof TileFilter) {
+            return ((TileFilter) tile).pushToNetwork();
         }
 
         return false;

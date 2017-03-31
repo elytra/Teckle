@@ -18,6 +18,7 @@ public class WorldNetwork implements ITickable {
     protected HashMap<BlockPos, WorldNetworkNode> networkNodes = new HashMap<>();
     protected List<WorldNetworkTraveller> travellers = new ArrayList<>();
     protected World world;
+    private List<WorldNetworkTraveller> travellersToUnregister = new ArrayList<>();
 
     public WorldNetwork(World world) {
         this.world = world;
@@ -94,7 +95,7 @@ public class WorldNetwork implements ITickable {
     }
 
     public void unregisterTraveller(WorldNetworkTraveller traveller) {
-        travellers.remove(traveller);
+        travellersToUnregister.add(traveller);
     }
 
     public World getWorld() {
@@ -204,6 +205,11 @@ public class WorldNetwork implements ITickable {
         for (WorldNetworkTraveller traveller : travellers) {
             traveller.update();
         }
+
+        for (WorldNetworkTraveller traveller : travellersToUnregister) {
+            travellers.remove(traveller);
+        }
+        travellersToUnregister.clear();
     }
 
     @Override

@@ -2,7 +2,7 @@ package com.elytradev.teckle.common;
 
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.block.BlockItemTube;
-import com.elytradev.teckle.common.tile.TileEntityFilter;
+import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -42,7 +42,7 @@ public class TeckleObjects {
 
     public void init(FMLInitializationEvent e) {
         GameRegistry.registerTileEntity(TileItemTube.class, "teckleItemTube");
-        GameRegistry.registerTileEntity(TileEntityFilter.class, "teckleFilter");
+        GameRegistry.registerTileEntity(TileFilter.class, "teckleFilter");
     }
 
     public void postInit(FMLPostInitializationEvent e) {

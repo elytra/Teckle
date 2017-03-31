@@ -15,7 +15,7 @@ import net.minecraftforge.items.IItemHandler;
 /**
  * Created by darkevilmac on 3/30/2017.
  */
-public class TileEntityFilter extends TileItemEntrypoint implements ITickable {
+public class TileFilter extends TileItemEntrypoint implements ITickable {
 
     /**
      * Attempt to push to our network, by pulling from our input position.
@@ -42,7 +42,7 @@ public class TileEntityFilter extends TileItemEntrypoint implements ITickable {
 
                     if (extractionData != ItemStack.EMPTY) {
                         NBTTagCompound tagCompound = new NBTTagCompound();
-                        tagCompound.setTag("stack", extractionData.getTagCompound());
+                        tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
                         thisNode.addTraveller(tagCompound);
                         result = true;
                     }

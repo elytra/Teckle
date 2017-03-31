@@ -4,6 +4,7 @@ import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkEndpoint;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -37,7 +38,7 @@ public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
                         return true;
                 }
 
-                traveller.data.setTag("stack", dataStack.getTagCompound());
+                traveller.data.setTag("stack", dataStack.writeToNBT(new NBTTagCompound()));
             }
         }
 
