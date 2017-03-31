@@ -23,7 +23,7 @@ public class WorldNetworkPath {
     // Private constructor, only create via static method.
     private WorldNetworkPath(WorldNetworkTraveller traveller, WorldNetworkNode startNode, WorldNetworkNode endNode) {
         path = new ArrayList<PathNode>();
-        index = 0;
+        index = -1;
 
         this.traveller = traveller;
         this.startNode = startNode;
@@ -101,7 +101,7 @@ public class WorldNetworkPath {
      * @param newNode   the new node to add to the stack.
      */
     private void addToStack(ArrayList<PathNode> nodeStack, PathNode newNode) {
-        if (nodeStack.get(0).totalCost >= newNode.totalCost) {
+        if (nodeStack.isEmpty() || nodeStack.get(0).totalCost >= newNode.totalCost) {
             nodeStack.add(0, newNode);
         } else {
             int addToIndex = nodeStack.size();

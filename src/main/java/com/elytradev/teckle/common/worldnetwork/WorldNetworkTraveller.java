@@ -58,7 +58,7 @@ public class WorldNetworkTraveller implements ITickable {
             }
         }
 
-        travelledDistance += (1 / 20);
+        travelledDistance += (1F / 20F);
     }
 
 
