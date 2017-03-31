@@ -166,7 +166,7 @@ public class BlockItemTube extends BlockContainer {
         } else {
             // No neighbours, make a new network.
             WorldNetwork network = new WorldNetwork(worldIn);
-            WorldNetworkNode node = new WorldNetworkNode(network,pos);
+            WorldNetworkNode node = new WorldNetworkNode(network, pos);
             network.registerNode(node);
             if (worldIn.getTileEntity(pos) != null) {
                 tube.node = node;

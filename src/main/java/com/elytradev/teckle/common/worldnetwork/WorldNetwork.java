@@ -170,7 +170,7 @@ public class WorldNetwork implements ITickable {
         }
 
         System.out.println("Finished validation, resulted in " + networks.size() + " networks.\n Network sizes follow.");
-        for(List<WorldNetworkNode> n : networks){
+        for (List<WorldNetworkNode> n : networks) {
             System.out.println(n.size());
         }
     }

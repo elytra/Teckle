@@ -1,9 +1,6 @@
 package com.elytradev.teckle.client;
 
 import com.elytradev.teckle.common.tile.base.TileItemNetworkMember;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 
 /**

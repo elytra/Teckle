@@ -77,7 +77,7 @@ public class TeckleObjects {
     }
 
     private void registerItem(String id, Item item) {
-        item.setUnlocalizedName( id);
+        item.setUnlocalizedName(id);
         item.setRegistryName(REGISTRY_PREFIX, id);
         GameRegistry.register(item);
         TeckleObjects.registeredItems.put(id, item);
