@@ -4,7 +4,6 @@ import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.base.TileItemNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkEntryPoint;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyDirection;
@@ -66,9 +65,9 @@ public class BlockFilter extends BlockContainer {
         TileEntity neighbour = worldIn.getTileEntity(pos.offset(facing));
         if (neighbour != null && neighbour instanceof TileItemTube) {
             TileItemTube tube = (TileItemTube) neighbour;
-            tube.network.registerNode(new WorldNetworkEntryPoint(tube.network, pos, facing));
-            tileEntityFilter.network = tube.network;
-            System.out.println(tileEntityFilter + " Setting network to " + tube.network);
+            tileEntityFilter.node = new WorldNetworkEntryPoint(tube.node.network, pos, facing);
+            tube.node.network.registerNode(tileEntityFilter.node);
+            System.out.println(tileEntityFilter + " Setting network to " + tube.node.network);
         }
     }
 
@@ -83,19 +82,29 @@ public class BlockFilter extends BlockContainer {
     public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
         super.onNeighborChange(world, pos, neighbor);
         // Handles cleanup of endpoint nodes, or nodes that should have been removed but weren't.
+        EnumFacing sideChanged = EnumFacing.DOWN;
+        for (EnumFacing facing : EnumFacing.VALUES) {
+            if (facing.getDirectionVec().equals(pos.subtract(neighbor))) {
+                sideChanged = facing;
+                break;
+            }
+        }
+
         TileFilter filter = (TileFilter) world.getTileEntity(pos);
         IBlockState state = world.getBlockState(pos);
-        if (filter.getWorld().isRemote || !state.getValue(FACING).getOpposite().getDirectionVec().equals(pos.subtract(neighbor)))
+        if (filter.getWorld().isRemote || !state.getValue(FACING).getOpposite().equals(sideChanged))
             return;
 
         TileEntity neighbourTile = world.getTileEntity(neighbor);
-        if (filter.network == null) {
+        if (filter.node == null || filter.node.network == null) {
             if (neighbourTile != null && neighbourTile instanceof TileItemTube) {
-                ((TileItemTube) neighbourTile).network.registerNode(new WorldNetworkNode(((TileItemTube) neighbourTile).network, pos));
+                filter.node = new WorldNetworkEntryPoint(((TileItemTube) neighbourTile).node.network, pos, state.getValue(FACING));
+                ((TileItemTube) neighbourTile).node.network.registerNode(filter.node);
             }
         } else {
             if (neighbourTile == null || !(neighbourTile instanceof TileItemTube)) {
-                filter.network.unregisterNodeAtPosition(pos);
+                filter.node.network.unregisterNodeAtPosition(pos);
+                filter.node = null;
             }
         }
     }
@@ -110,10 +119,11 @@ public class BlockFilter extends BlockContainer {
         TileEntity tileAtPos = worldIn.getTileEntity(pos);
         if (tileAtPos != null) {
             TileItemNetworkMember networkMember = (TileItemNetworkMember) tileAtPos;
-            if (networkMember.network == null)
+            if (networkMember.node == null)
                 return;
-            networkMember.network.unregisterNodeAtPosition(pos);
-            networkMember.network.validateNetwork();
+            networkMember.node.network.unregisterNodeAtPosition(pos);
+            networkMember.node.network.validateNetwork();
+            networkMember.node = null;
         }
 
         // Call super after we're done so we still have access to the tile.

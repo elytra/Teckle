@@ -50,9 +50,6 @@ public class WorldNetwork implements ITickable {
     }
 
     public void registerNode(WorldNetworkNode node) {
-        if (node instanceof WorldNetworkEntryPoint)
-            System.out.println("NETW");
-
         System.out.println(this + "/Registering a node, " + node);
         if (!networkNodes.containsKey(node.position))
             networkNodes.put(node.position, node);
@@ -172,7 +169,10 @@ public class WorldNetwork implements ITickable {
             }
         }
 
-        System.out.println("Finished validation, resulted in " + networks.size() + " networks.");
+        System.out.println("Finished validation, resulted in " + networks.size() + " networks.\n Network sizes follow.");
+        for(List<WorldNetworkNode> n : networks){
+            System.out.println(n.size());
+        }
     }
 
     public List<WorldNetworkNode> fillFromPos(BlockPos startAt, HashMap<BlockPos, WorldNetworkNode> knownNodes) {

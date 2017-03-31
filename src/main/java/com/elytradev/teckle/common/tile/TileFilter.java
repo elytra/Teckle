@@ -27,8 +27,8 @@ public class TileFilter extends TileItemEntrypoint implements ITickable {
 
         IBlockState state = world.getBlockState(pos);
 
-        if (network != null && !world.isRemote) {
-            WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) network.getNodeFromPosition(pos);
+        if (node != null && node.network != null && !world.isRemote) {
+            WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) node.network.getNodeFromPosition(pos);
             EnumFacing facing = state.getValue(BlockFilter.FACING);
 
             if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
@@ -55,10 +55,10 @@ public class TileFilter extends TileItemEntrypoint implements ITickable {
 
     @Override
     public void update() {
-        if (world.isRemote || network == null)
+        if (world.isRemote || node == null || node.network == null)
             return;
 
-        if (!network.isNodePresent(pos))
-            System.out.println(this + " Network " + network);
+        if (!node.network.isNodePresent(pos))
+            System.out.println(this + " Network " + node.network);
     }
 }

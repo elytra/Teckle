@@ -117,7 +117,8 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
     }
 
     public boolean isValidEndpoint(WorldNetworkTraveller traveller, BlockPos from, BlockPos endPoint) {
-        return network.isNodePresent(endPoint) && network.getNodeFromPosition(endPoint).isEndpoint()
+        return network.isNodePresent(endPoint)
+                && network.getNodeFromPosition(endPoint).isEndpoint()
                 && network.getNodeFromPosition(position).canAcceptTraveller(traveller, getFacingFromVector(from.subtract(endPoint)));
     }
 
