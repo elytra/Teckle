@@ -27,7 +27,7 @@ public class WorldNetworkNode {
     }
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        return false;
+        return true;
     }
 
     public void registerTraveller(WorldNetworkTraveller traveller) {

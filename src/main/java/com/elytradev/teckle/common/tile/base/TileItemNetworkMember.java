@@ -1,4 +1,4 @@
-package com.elytradev.teckle.common.tile;
+package com.elytradev.teckle.common.tile.base;
 
 import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
 import net.minecraft.tileentity.TileEntity;

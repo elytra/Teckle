@@ -1,4 +1,4 @@
-package com.elytradev.teckle.common.tile;
+package com.elytradev.teckle.common.tile.base;
 
 import net.minecraft.util.EnumFacing;
 

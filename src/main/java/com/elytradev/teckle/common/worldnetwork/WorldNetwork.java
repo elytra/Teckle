@@ -49,6 +49,9 @@ public class WorldNetwork implements ITickable {
     }
 
     public void registerNode(WorldNetworkNode node) {
+        if (node instanceof WorldNetworkEntryPoint)
+            System.out.println("NETW");
+
         System.out.println(this + "/Registering a node, " + node);
         if (!networkNodes.containsKey(node.position))
             networkNodes.put(node.position, node);

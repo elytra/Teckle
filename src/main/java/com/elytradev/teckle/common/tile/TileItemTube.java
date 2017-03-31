@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.tile;
 
+import com.elytradev.teckle.common.tile.base.TileItemNetworkMember;
 import net.minecraft.util.ITickable;
 
 /**
@@ -10,4 +11,5 @@ public class TileItemTube extends TileItemNetworkMember implements ITickable {
     @Override
     public void update() {
     }
+
 }

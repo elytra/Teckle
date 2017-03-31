@@ -1,6 +1,8 @@
 package com.elytradev.teckle.common;
 
+import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.block.BlockItemTube;
+import com.elytradev.teckle.common.tile.TileEntityFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -20,6 +22,7 @@ import java.util.HashMap;
 public class TeckleObjects {
 
     public static BlockItemTube blockItemTube;
+    public static BlockFilter blockFilter;
 
     public static HashMap<String, Block> registeredBlocks;
     public static HashMap<String, Item> registeredItems;
@@ -32,10 +35,14 @@ public class TeckleObjects {
 
         blockItemTube = new BlockItemTube(Material.CIRCUITS);
         registerBlock("tube.item", blockItemTube, true);
+
+        blockFilter = new BlockFilter(Material.CIRCUITS);
+        registerBlock("filter", blockFilter, true);
     }
 
     public void init(FMLInitializationEvent e) {
         GameRegistry.registerTileEntity(TileItemTube.class, "teckleItemTube");
+        GameRegistry.registerTileEntity(TileEntityFilter.class, "teckleFilter");
     }
 
     public void postInit(FMLPostInitializationEvent e) {

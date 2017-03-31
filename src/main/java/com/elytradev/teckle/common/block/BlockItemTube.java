@@ -1,8 +1,8 @@
 package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.common.block.property.UnlistedBool;
-import com.elytradev.teckle.common.tile.TileItemEntrypoint;
-import com.elytradev.teckle.common.tile.TileItemNetworkMember;
+import com.elytradev.teckle.common.tile.base.TileItemEntrypoint;
+import com.elytradev.teckle.common.tile.base.TileItemNetworkMember;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.worldnetwork.*;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
@@ -154,7 +154,6 @@ public class BlockItemTube extends BlockContainer {
         if (!neighbourNetworks.isEmpty()) {
             // Found neighbour networks, join the network or merge.
             WorldNetwork network = neighbourNetworks.remove(0);
-
             network.registerNode(new WorldNetworkNode(network, pos));
             tube.network = network;
 
