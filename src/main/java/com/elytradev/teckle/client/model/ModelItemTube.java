@@ -44,13 +44,22 @@ public class ModelItemTube implements IBakedModel {
 
             IModel unbakedNodeModel = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_node"));
             IModel unbakedLegModel = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_leg"));
+            IModel unbakedLegModelInside = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_leg_inside"));
             IModel unbakedLegNodeModel = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_leg_node"));
+            IModel unbakedLegNodeModelInside = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_leg_node_inside"));
 
             nodeModel = unbakedNodeModel.bake(new TRSRTransformation(ModelRotation.X0_Y0), DefaultVertexFormats.BLOCK, textureGetter);
 
             for (EnumFacing facing : EnumFacing.VALUES) {
-                legModels.put(facing, unbakedLegModel.bake(new TRSRTransformation(rotations.get(facing)), DefaultVertexFormats.BLOCK, textureGetter));
-                legModelsNode.put(facing, unbakedLegNodeModel.bake(new TRSRTransformation(rotations.get(facing)), DefaultVertexFormats.BLOCK, textureGetter));
+                MultipartBakedModel.Builder legBuilder = new MultipartBakedModel.Builder();
+                legBuilder.putModel(input -> true, unbakedLegModel.bake(new TRSRTransformation(rotations.get(facing)), DefaultVertexFormats.BLOCK, textureGetter));
+                legBuilder.putModel(input -> true, unbakedLegModelInside.bake(new TRSRTransformation(rotations.get(facing)), DefaultVertexFormats.BLOCK, textureGetter));
+                legModels.put(facing, legBuilder.makeMultipartModel());
+
+                MultipartBakedModel.Builder legNodeBuilder = new MultipartBakedModel.Builder();
+                legNodeBuilder.putModel(input -> true, unbakedLegNodeModel.bake(new TRSRTransformation(rotations.get(facing)), DefaultVertexFormats.BLOCK, textureGetter));
+                legNodeBuilder.putModel(input -> true, unbakedLegNodeModelInside.bake(new TRSRTransformation(rotations.get(facing)), DefaultVertexFormats.BLOCK, textureGetter));
+                legModelsNode.put(facing, legNodeBuilder.makeMultipartModel());
             }
         } catch (Exception e) {
             TeckleMod.LOG.error("Something went really wrong while loading models for item tubes... :(", e);
