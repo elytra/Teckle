@@ -47,6 +47,21 @@ public class WorldNetworkPath {
     }
 
     /**
+     * Get all positions in the path, used for data sync.
+     *
+     * @return the data sorted from beginning to end.
+     */
+    public List<BlockPos> pathPositions() {
+        List<BlockPos> out = new ArrayList<>();
+
+        for (int i = 0; i < path.size(); i++) {
+            out.add(path.get(i).realNode.position);
+        }
+
+        return out;
+    }
+
+    /**
      * Generates nodes for a path.
      */
     private void generateNodes() {
@@ -119,9 +134,9 @@ public class WorldNetworkPath {
     }
 
     /**
-     * Move to the next path node.
+     * Move to the increment path node.
      *
-     * @return the next node.
+     * @return the increment node.
      */
     public WorldNetworkNode next() {
         index++;
@@ -141,7 +156,7 @@ public class WorldNetworkPath {
     }
 
     /**
-     * Used to store data about the usefulness of a node for making a path.
+     * Used to store tagCompound about the usefulness of a node for making a path.
      */
     private class PathNode {
         PathNode from;

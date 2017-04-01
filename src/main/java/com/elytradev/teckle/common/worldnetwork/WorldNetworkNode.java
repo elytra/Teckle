@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork;
 
+import com.elytradev.teckle.common.network.TravellerDataMessage;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 

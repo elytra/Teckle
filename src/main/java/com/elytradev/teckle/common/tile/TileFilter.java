@@ -55,10 +55,9 @@ public class TileFilter extends TileItemEntrypoint implements ITickable {
 
     @Override
     public void update() {
+        super.update();
+
         if (world.isRemote || node == null || node.network == null)
             return;
-
-        if (!node.network.isNodePresent(pos))
-            System.out.println(this + " Network " + node.network);
     }
 }

@@ -4,12 +4,14 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.Vec3i;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A piece of data travelling to a node in the network.
+ * A piece of tagCompound travelling to a node in the network.
  */
 public class WorldNetworkTraveller implements ITickable {
 
@@ -17,7 +19,7 @@ public class WorldNetworkTraveller implements ITickable {
     public WorldNetwork network;
     public WorldNetworkNode previousNode, currentNode, nextNode;
     public WorldNetworkPath activePath;
-    // The current distance travelled between our previous node, and the next node.
+    // The current distance travelled between our previous node, and the increment node.
 
     public float travelledDistance = 0F;
     public NBTTagCompound data;

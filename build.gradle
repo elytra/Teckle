@@ -11,11 +11,18 @@ buildscript {
     }
 }
 
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
+}
+
 apply plugin: "net.minecraftforge.gradle.forge"
 
 version = modVersion
 group = modGroup
 archivesBaseName = modBaseName
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 minecraft {
     version = project.forgeVersion
@@ -54,10 +61,6 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude "mcmod.info"
     }
-}
-
-plugins {
-    id 'com.github.johnrengelman.shadow' version '1.2.3'
 }
 
 dependencies {

@@ -1,4 +1,4 @@
-package com.elytradev.teckle.client.model;
+package com.elytradev.teckle.client.render.model;
 
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.block.BlockItemTube;

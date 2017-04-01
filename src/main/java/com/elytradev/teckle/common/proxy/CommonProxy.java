@@ -1,4 +1,4 @@
-package com.elytradev.teckle.common;
+package com.elytradev.teckle.common.proxy;
 
 import net.minecraftforge.fml.common.LoaderState;
 

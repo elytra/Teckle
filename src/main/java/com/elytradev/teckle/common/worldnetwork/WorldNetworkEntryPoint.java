@@ -98,7 +98,7 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
     }
 
     /**
-     * Finds the next valid node for the given traveller, if no nodes are available sends it back to it's source.
+     * Finds the increment valid node for the given traveller, if no nodes are available sends it back to it's source.
      *
      * @param traveller
      */

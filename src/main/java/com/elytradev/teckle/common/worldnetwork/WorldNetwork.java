@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork;
 
+import com.elytradev.teckle.common.network.TravellerDataMessage;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
@@ -28,7 +29,7 @@ public class WorldNetwork implements ITickable {
 
     @SubscribeEvent
     public static void onTickEvent(TickEvent.WorldTickEvent e) {
-        if (NETWORKS.isEmpty() || e.phase.equals(TickEvent.Phase.START))
+        if (NETWORKS.isEmpty() || e.phase.equals(TickEvent.Phase.START) || e.side.isClient())
             return;
 
         List<WorldNetwork> emptyNetworks = new ArrayList<>();
@@ -40,7 +41,8 @@ public class WorldNetwork implements ITickable {
                 System.out.println("Found empty network " + network);
                 continue;
             }
-            network.update();
+            if (e.world.equals(network.world))
+                network.update();
         }
 
         for (WorldNetwork emptyNetwork : emptyNetworks) {
@@ -89,10 +91,15 @@ public class WorldNetwork implements ITickable {
     public void registerTraveller(WorldNetworkTraveller traveller) {
         travellers.add(traveller);
         traveller.network = this;
+
+        new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
     }
 
     public void unregisterTraveller(WorldNetworkTraveller traveller) {
         travellersToUnregister.add(traveller);
+
+        if (!traveller.currentNode.isEndpoint())
+            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
     }
 
     public World getWorld() {

@@ -10,6 +10,7 @@ public class TileItemTube extends TileItemNetworkMember implements ITickable {
 
     @Override
     public void update() {
+        super.update();
     }
 
 }

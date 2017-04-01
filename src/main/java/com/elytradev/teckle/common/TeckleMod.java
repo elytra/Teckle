@@ -1,5 +1,7 @@
 package com.elytradev.teckle.common;
 
+import com.elytradev.teckle.common.network.TeckleNetworking;
+import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -27,7 +29,7 @@ public class TeckleMod {
 
     public static Logger LOG;
 
-    @SidedProxy(serverSide = "com.elytradev.teckle.common.CommonProxy", clientSide = "com.elytradev.teckle.client.ClientProxy")
+    @SidedProxy(serverSide = "com.elytradev.teckle.common.proxy.CommonProxy", clientSide = "com.elytradev.teckle.client.proxy.ClientProxy")
     public static CommonProxy PROXY;
 
     @Mod.EventHandler
@@ -37,6 +39,7 @@ public class TeckleMod {
 
         LOG = e.getModLog();
         OBJECTS.preInit(e);
+        TeckleNetworking.setupNetwork();
 
         PROXY.registerRenderers(e.getModState());
     }

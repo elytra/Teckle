@@ -1,7 +1,8 @@
-package com.elytradev.teckle.client;
+package com.elytradev.teckle.client.proxy;
 
-import com.elytradev.teckle.client.model.ModelItemTube;
-import com.elytradev.teckle.common.CommonProxy;
+import com.elytradev.teckle.client.render.model.ModelItemTube;
+import com.elytradev.teckle.client.render.tile.TileTubeRenderer;
+import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.TileFilter;
@@ -44,8 +45,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     public void registerTileEntitySpecialRenderers() {
-        ClientRegistry.bindTileEntitySpecialRenderer(TileItemTube.class, new TileEntityNetworkMemberDebugRenderer());
-        ClientRegistry.bindTileEntitySpecialRenderer(TileFilter.class, new TileEntityNetworkMemberDebugRenderer());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileItemTube.class, new TileTubeRenderer());
     }
 
     public void registerItemRenderers() {
