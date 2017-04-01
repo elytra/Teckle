@@ -12,11 +12,25 @@ public class EndpointData {
     public EnumFacing side;
     public BlockPos pos;
     public int cost;
+    public WorldNetworkEndpoint node;
 
-    public EndpointData(BlockPos pos, EnumFacing side, int cost) {
+    public EndpointData(WorldNetworkEndpoint endpoint, BlockPos pos, EnumFacing side, int cost) {
         this.pos = pos;
         this.side = side;
         this.cost = cost;
+        this.node = endpoint;
+
+        System.out.println("Created endpointData " + this.toString());
+    }
+
+    @Override
+    public String toString() {
+        return "EndpointData{" +
+                "side=" + side +
+                ", pos=" + pos +
+                ", cost=" + cost +
+                ", node=" + node +
+                '}';
     }
 
     @Override

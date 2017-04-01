@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller.getFacingFromVector;
 
@@ -40,8 +39,7 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         if (!network.isNodePresent(startPos))
             return;
 
-        HashMap<BlockPos, EndpointData> endpoints = new HashMap<>();
-
+        HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();
         List<Tuple<BlockPos, Integer>> nodeStack = new ArrayList<>();
         List<BlockPos> iteratedPositions = new ArrayList<>();
 
@@ -52,29 +50,45 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             Integer cost = tuple.getSecond();
             for (EnumFacing direction : EnumFacing.VALUES) {
                 BlockPos neighbourPos = pos.add(direction.getDirectionVec());
-                EnumFacing injectionFacing = getFacingFromVector(pos.subtract(neighbourPos));
-                if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(position))
+                if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(position)) {
+                    System.out.println("Skipping due to lack of network presence " + neighbourPos);
                     continue;
+                }
 
-                boolean hasEndpointAndFacing = endpoints.containsKey(neighbourPos) ? endpoints.get(neighbourPos).side.equals(injectionFacing) : true;
-                if (hasEndpointAndFacing && iteratedPositions.contains(neighbourPos))
+                if (iteratedPositions.contains(neighbourPos)) {
+                    System.out.println("Skipping due to presence in iteratedPositions " + neighbourPos);
                     continue;
+                }
+
+                if (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())) {
+                    System.out.println("Skipping due to an already existing node with the same injection side. " + neighbourPos);
+                    continue;
+                }
 
                 WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
-                if (neighbourNode.canAcceptTraveller(traveller, getFacingFromVector(pos.subtract(neighbourPos)))) {
-                    nodeStack.add(new Tuple<>(neighbourPos, cost + 1));
-                    iteratedPositions.add(neighbourPos);
-
+                if (neighbourNode.canAcceptTraveller(traveller, direction.getOpposite())) {
                     if (isValidEndpoint(traveller, pos, neighbourPos)) {
-                        endpoints.put(pos, new EndpointData(pos, getFacingFromVector(pos.subtract(neighbourPos)), cost + 1));
+                        if (!endpoints.containsKey(neighbourPos)) {
+                            endpoints.put(neighbourPos, new HashMap<>());
+                        }
+                        endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData((WorldNetworkEndpoint) neighbourNode, neighbourPos, direction.getOpposite(), cost + 1));
+                    } else {
+                        nodeStack.add(new Tuple<>(neighbourPos, cost + 1));
+                        iteratedPositions.add(neighbourPos);
                     }
                 }
             }
         }
 
-        List<EndpointData> endpointDatas = endpoints.values().stream().sorted(Comparator.comparingInt(o -> o.cost)).collect(Collectors.toList());
-        WorldNetworkPath path = WorldNetworkPath.createPath(traveller, network.getNodeFromPosition(startPos), network.getNodeFromPosition(endpointDatas.get(0).pos));
-        traveller.triedEndpoints.add(endpointDatas.get(0));
+        List<EndpointData> sortedEndpointData = new ArrayList<>();
+        for (HashMap.Entry<BlockPos, HashMap<EnumFacing, EndpointData>> entry : endpoints.entrySet()) {
+            sortedEndpointData.addAll(entry.getValue().values());
+        }
+        sortedEndpointData.sort(Comparator.comparingInt(o -> o.cost));
+
+        System.out.println("Found " + sortedEndpointData.size() + " endpoints. Using: " + sortedEndpointData.get(0));
+        WorldNetworkPath path = WorldNetworkPath.createPath(traveller, network.getNodeFromPosition(startPos), sortedEndpointData.get(0));
+        traveller.triedEndpoints.add(sortedEndpointData.get(0));
         traveller.activePath = path;
         traveller.previousNode = WorldNetworkNode.NONE;
         traveller.currentNode = this;
@@ -89,7 +103,7 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
     public void findNodeForTraveller(WorldNetworkTraveller traveller) {
         List<Tuple<BlockPos, Integer>> nodeStack = new ArrayList<>();
         List<BlockPos> iteratedPositions = new ArrayList<>();
-        HashMap<BlockPos, EndpointData> endpoints = new HashMap<>();
+        HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();
 
         nodeStack.add(new Tuple<>(traveller.currentNode.position, 0));
         while (!nodeStack.isEmpty()) {
@@ -98,30 +112,44 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             Integer cost = tuple.getSecond();
             for (EnumFacing direction : EnumFacing.VALUES) {
                 BlockPos neighbourPos = pos.add(direction.getDirectionVec());
-                EnumFacing injectionFacing = getFacingFromVector(pos.subtract(neighbourPos));
-
-                if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(position) || traveller.triedEndpoints.contains(network.getNodeFromPosition(neighbourPos)))
+                if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(position)) {
+                    System.out.println("Skipping due to lack of network presence " + neighbourPos);
                     continue;
+                }
 
-                boolean hasEndpointAndFacing = endpoints.containsKey(neighbourPos) ? endpoints.get(neighbourPos).side.equals(injectionFacing) : true;
-                if (hasEndpointAndFacing && iteratedPositions.contains(neighbourPos))
+                if (iteratedPositions.contains(neighbourPos)) {
+                    System.out.println("Skipping due to presence in iteratedPositions " + neighbourPos);
                     continue;
+                }
+
+                if (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())) {
+                    System.out.println("Skipping due to an already existing node with the same injection side. " + neighbourPos);
+                    continue;
+                }
 
                 WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
-                if (neighbourNode.canAcceptTraveller(traveller, getFacingFromVector(pos.subtract(neighbourPos)))) {
-                    nodeStack.add(new Tuple<>(neighbourPos, cost + 1));
-                    iteratedPositions.add(neighbourPos);
-
+                if (neighbourNode.canAcceptTraveller(traveller, direction.getOpposite())) {
                     if (isValidEndpoint(traveller, pos, neighbourPos)) {
-                        endpoints.put(pos, new EndpointData(pos, getFacingFromVector(pos.subtract(neighbourPos)), cost + 1));
+                        if (!endpoints.containsKey(neighbourPos)) {
+                            endpoints.put(neighbourPos, new HashMap<>());
+                        }
+                        endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData((WorldNetworkEndpoint) neighbourNode, neighbourPos, direction.getOpposite(), cost + 1));
+                    } else {
+                        nodeStack.add(new Tuple<>(neighbourPos, cost + 1));
+                        iteratedPositions.add(neighbourPos);
                     }
                 }
             }
         }
 
-        List<EndpointData> endpointDatas = endpoints.values().stream().sorted(Comparator.comparingInt(o -> o.cost)).collect(Collectors.toList());
-        WorldNetworkPath path = WorldNetworkPath.createPath(traveller, traveller.currentNode, network.getNodeFromPosition(endpointDatas.get(0).pos));
-        traveller.triedEndpoints.add(endpointDatas.get(0));
+        List<EndpointData> sortedEndpointData = new ArrayList<>();
+        for (HashMap.Entry<BlockPos, HashMap<EnumFacing, EndpointData>> entry : endpoints.entrySet()) {
+            sortedEndpointData.addAll(entry.getValue().values());
+        }
+        sortedEndpointData.sort(Comparator.comparingInt(o -> o.cost));
+
+        WorldNetworkPath path = WorldNetworkPath.createPath(traveller, traveller.currentNode, sortedEndpointData.get(0));
+        traveller.triedEndpoints.add(sortedEndpointData.get(0));
         traveller.activePath = path;
         traveller.previousNode = WorldNetworkNode.NONE;
         traveller.currentNode = this;

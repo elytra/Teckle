@@ -18,10 +18,11 @@ public class WorldNetworkPath {
     private List<PathNode> path;
     private int index = -1;
     private WorldNetworkTraveller traveller;
-    private WorldNetworkNode startNode, endNode;
+    private WorldNetworkNode startNode;
+    private EndpointData endNode;
 
     // Private constructor, only create via static method.
-    private WorldNetworkPath(WorldNetworkTraveller traveller, WorldNetworkNode startNode, WorldNetworkNode endNode) {
+    private WorldNetworkPath(WorldNetworkTraveller traveller, WorldNetworkNode startNode, EndpointData endNode) {
         path = new ArrayList<PathNode>();
         index = -1;
 
@@ -39,7 +40,7 @@ public class WorldNetworkPath {
      * @param endNode   the end position.
      * @return a network path to the destination.
      */
-    public static WorldNetworkPath createPath(WorldNetworkTraveller traveller, WorldNetworkNode startNode, WorldNetworkNode endNode) {
+    public static WorldNetworkPath createPath(WorldNetworkTraveller traveller, WorldNetworkNode startNode, EndpointData endNode) {
         WorldNetworkPath path = new WorldNetworkPath(traveller, startNode, endNode);
         path.generateNodes();
         return path;
@@ -57,9 +58,8 @@ public class WorldNetworkPath {
             PathNode lowestTotalNode = nodeStack.remove(0);
             destinationPathNode = createNodesAround(nodeStack, positions, lowestTotalNode);
         }
-        this.endNode = destinationPathNode.realNode;
-        PathNode currentNode = destinationPathNode;
 
+        PathNode currentNode = destinationPathNode;
         while (currentNode != null) {
             path.add(0, currentNode);
             currentNode = currentNode.from;
@@ -83,7 +83,7 @@ public class WorldNetworkPath {
             WorldNetworkNode neighbourNode = node.realNode.network.getNodeFromPosition(neighbourPos);
             if (neighbourNode.canAcceptTraveller(traveller, getFacingFromVector(node.realNode.position.subtract(neighbourPos)))) {
                 PathNode pathNode = new PathNode(node, neighbourNode, node.costFromStart + 1);
-                if (pathNode.costToDestination == 0) {
+                if (pathNode.costToDestination == 0 && getFacingFromVector(node.realNode.position.subtract(neighbourPos)).equals(endNode.side)) {
                     return pathNode;
                 }
 
@@ -156,7 +156,7 @@ public class WorldNetworkPath {
         }
 
         public void calculateCost() {
-            BlockPos distanceFromDestination = realNode.position.subtract(WorldNetworkPath.this.endNode.position);
+            BlockPos distanceFromDestination = realNode.position.subtract(WorldNetworkPath.this.endNode.pos);
             costToDestination = Math.abs(distanceFromDestination.getX() + distanceFromDestination.getY() + distanceFromDestination.getZ());
             totalCost = costFromStart + costToDestination;
         }

@@ -14,6 +14,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -50,6 +51,7 @@ public class BlockItemTube extends BlockContainer {
 
         this.setHarvestLevel("pickaxe", 0);
         this.setLightOpacity(0);
+        this.setCreativeTab(CreativeTabs.TOOLS);
 
         this.setDefaultState(blockState.getBaseState()
         );

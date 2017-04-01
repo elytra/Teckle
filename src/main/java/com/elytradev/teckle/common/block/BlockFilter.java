@@ -9,6 +9,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -37,6 +38,7 @@ public class BlockFilter extends BlockContainer {
 
         this.setHarvestLevel("pickaxe", 0);
         this.setDefaultState(blockState.getBaseState());
+        this.setCreativeTab(CreativeTabs.TOOLS);
     }
 
     @Override

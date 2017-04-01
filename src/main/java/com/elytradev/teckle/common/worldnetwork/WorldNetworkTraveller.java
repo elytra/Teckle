@@ -43,7 +43,7 @@ public class WorldNetworkTraveller implements ITickable {
         if (travelledDistance >= 1) {
             if (nextNode.isEndpoint()) {
                 boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this,
-                        getFacingFromVector(nextNode.position.subtract(currentNode.position)));
+                        getFacingFromVector(nextNode.position.subtract(currentNode.position)).getOpposite());
 
                 if (!didInject) {
                     entryPoint.findNodeForTraveller(this);
