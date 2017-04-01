@@ -21,7 +21,7 @@ public class WorldNetworkTraveller implements ITickable {
 
     public float travelledDistance = 0F;
     public NBTTagCompound data;
-    public List<WorldNetworkNode> triedEndpoints = new ArrayList<>();
+    public List<EndpointData> triedEndpoints = new ArrayList<>();
 
     protected WorldNetworkTraveller(WorldNetworkEntryPoint entryPoint, NBTTagCompound data) {
         this.network = entryPoint.network;
