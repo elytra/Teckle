@@ -7,7 +7,9 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller.getFacingFromVector;
 
@@ -38,9 +40,10 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         if (!network.isNodePresent(startPos))
             return;
 
+        HashMap<BlockPos, EndpointData> endpoints = new HashMap<>();
+
         List<Tuple<BlockPos, Integer>> nodeStack = new ArrayList<>();
         List<BlockPos> iteratedPositions = new ArrayList<>();
-        List<Tuple<BlockPos, Integer>> endpoints = new ArrayList<>();
 
         nodeStack.add(new Tuple<>(startPos, 0));
         while (!nodeStack.isEmpty()) {
@@ -49,8 +52,12 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             Integer cost = tuple.getSecond();
             for (EnumFacing direction : EnumFacing.VALUES) {
                 BlockPos neighbourPos = pos.add(direction.getDirectionVec());
+                EnumFacing injectionFacing = getFacingFromVector(pos.subtract(neighbourPos));
+                if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(position))
+                    continue;
 
-                if (!network.isNodePresent(neighbourPos) || iteratedPositions.contains(neighbourPos) || neighbourPos.equals(position))
+                boolean hasEndpointAndFacing = endpoints.containsKey(neighbourPos) ? endpoints.get(neighbourPos).side.equals(injectionFacing) : true;
+                if (hasEndpointAndFacing && iteratedPositions.contains(neighbourPos))
                     continue;
 
                 WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
@@ -59,14 +66,14 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
                     iteratedPositions.add(neighbourPos);
 
                     if (isValidEndpoint(traveller, pos, neighbourPos)) {
-                        endpoints.add(new Tuple<>(neighbourPos, cost + 1));
+                        endpoints.put(pos, new EndpointData(pos, getFacingFromVector(pos.subtract(neighbourPos)), cost + 1));
                     }
                 }
             }
         }
 
-        endpoints.sort(Comparator.comparingInt(Tuple::getSecond));
-        WorldNetworkPath path = WorldNetworkPath.createPath(traveller, network.getNodeFromPosition(startPos), network.getNodeFromPosition(endpoints.get(0).getFirst()));
+        List<EndpointData> endpointDatas = endpoints.values().stream().sorted(Comparator.comparingInt(o -> o.cost)).collect(Collectors.toList());
+        WorldNetworkPath path = WorldNetworkPath.createPath(traveller, network.getNodeFromPosition(startPos), network.getNodeFromPosition(endpointDatas.get(0).pos));
         traveller.triedEndpoints.add(traveller.currentNode);
         traveller.activePath = path;
         traveller.previousNode = WorldNetworkNode.NONE;

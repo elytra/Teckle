@@ -11,10 +11,12 @@ import java.util.Objects;
 public class EndpointData {
     public EnumFacing side;
     public BlockPos pos;
+    public int cost;
 
-    public EndpointData(BlockPos pos, EnumFacing side) {
+    public EndpointData(BlockPos pos, EnumFacing side, int cost) {
         this.pos = pos;
         this.side = side;
+        this.cost = cost;
     }
 
     @Override
