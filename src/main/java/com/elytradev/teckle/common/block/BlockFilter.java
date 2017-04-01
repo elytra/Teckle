@@ -4,8 +4,11 @@ import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.base.TileItemNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkEntryPoint;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
+import net.minecraft.block.BlockPistonBase;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -25,6 +28,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
+import java.util.Random;
 
 /**
  * Created by darkevilmac on 3/30/2017.
@@ -32,6 +36,7 @@ import javax.annotation.Nullable;
 public class BlockFilter extends BlockContainer {
 
     public static PropertyDirection FACING = PropertyDirection.create("facing");
+    public static PropertyBool TRIGGERED = PropertyBool.create("triggered");
 
     public BlockFilter(Material materialIn) {
         super(materialIn);
@@ -43,12 +48,18 @@ public class BlockFilter extends BlockContainer {
 
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        return getDefaultState().withProperty(FACING, EnumFacing.values()[meta]);
+        return this.getDefaultState().withProperty(FACING, BlockPistonBase.getFacing(meta)).withProperty(TRIGGERED, Boolean.valueOf((meta & 8) > 0));
     }
 
     @Override
     public int getMetaFromState(IBlockState state) {
-        return state.getValue(FACING).ordinal();
+        int i = 0;
+        i = i | state.getValue(FACING).getIndex();
+        if (state.getValue(TRIGGERED).booleanValue()) {
+            i |= 8;
+        }
+
+        return i;
     }
 
     @Nullable
@@ -67,9 +78,9 @@ public class BlockFilter extends BlockContainer {
         TileEntity neighbour = worldIn.getTileEntity(pos.offset(facing));
         if (neighbour != null && neighbour instanceof TileItemTube) {
             TileItemTube tube = (TileItemTube) neighbour;
-            tileEntityFilter.node = new WorldNetworkEntryPoint(tube.node.network, pos, facing);
-            tube.node.network.registerNode(tileEntityFilter.node);
-            System.out.println(tileEntityFilter + " Setting network to " + tube.node.network);
+            tileEntityFilter.setNode( new WorldNetworkEntryPoint(tube.getNode().network, pos, facing));
+            tube.getNode().network.registerNode(tileEntityFilter.getNode());
+            System.out.println(tileEntityFilter + " Setting network to " + tube.getNode().network);
         }
     }
 
@@ -77,7 +88,7 @@ public class BlockFilter extends BlockContainer {
     public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
         EnumFacing direction = EnumFacing.getDirectionFromEntityLiving(pos, placer);
 
-        return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer, hand).withProperty(FACING, direction);
+        return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer, hand).withProperty(FACING, direction).withProperty(TRIGGERED, false);
     }
 
     @Override
@@ -98,22 +109,56 @@ public class BlockFilter extends BlockContainer {
             return;
 
         TileEntity neighbourTile = world.getTileEntity(neighbor);
-        if (filter.node == null || filter.node.network == null) {
+        if (filter.getNode() == null || filter.getNode().network == null) {
             if (neighbourTile != null && neighbourTile instanceof TileItemTube) {
-                filter.node = new WorldNetworkEntryPoint(((TileItemTube) neighbourTile).node.network, pos, state.getValue(FACING));
-                ((TileItemTube) neighbourTile).node.network.registerNode(filter.node);
+                filter.setNode(new WorldNetworkEntryPoint(((TileItemTube) neighbourTile).getNode().network, pos, state.getValue(FACING)));
+                ((TileItemTube) neighbourTile).getNode().network.registerNode(filter.getNode());
             }
         } else {
             if (neighbourTile == null || !(neighbourTile instanceof TileItemTube)) {
-                filter.node.network.unregisterNodeAtPosition(pos);
-                filter.node = null;
+                filter.getNode().network.unregisterNodeAtPosition(pos);
+                filter.setNode( null);
+            }
+        }
+    }
+
+    @Override
+    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+        if (worldIn.isRemote)
+            return;
+
+        boolean powered = worldIn.isBlockPowered(pos);
+        boolean hadPower = state.getValue(TRIGGERED);
+        TileEntity tileentity = worldIn.getTileEntity(pos);
+        if (tileentity instanceof TileFilter) {
+            if (powered) {
+                worldIn.setBlockState(pos, state.withProperty(TRIGGERED, true));
+                if (!hadPower)
+                    ((TileFilter) tileentity).pushToNetwork();
+            } else {
+                worldIn.setBlockState(pos, state.withProperty(TRIGGERED, false));
+            }
+        }
+    }
+
+    @Override
+    public int tickRate(World worldIn) {
+        return 3;
+    }
+
+    @Override
+    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
+        if (!worldIn.isRemote) {
+            TileEntity tileEntity = worldIn.getTileEntity(pos);
+            if (tileEntity != null && tileEntity instanceof TileFilter) {
+                ((TileFilter) tileEntity).pushToNetwork();
             }
         }
     }
 
     @Override
     public BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, FACING);
+        return new BlockStateContainer(this, FACING, TRIGGERED);
     }
 
     @Override
@@ -121,11 +166,11 @@ public class BlockFilter extends BlockContainer {
         TileEntity tileAtPos = worldIn.getTileEntity(pos);
         if (tileAtPos != null) {
             TileItemNetworkMember networkMember = (TileItemNetworkMember) tileAtPos;
-            if (networkMember.node == null)
+            if (networkMember.getNode() == null)
                 return;
-            networkMember.node.network.unregisterNodeAtPosition(pos);
-            networkMember.node.network.validateNetwork();
-            networkMember.node = null;
+            networkMember.getNode().network.unregisterNodeAtPosition(pos);
+            networkMember.getNode().network.validateNetwork();
+            networkMember.setNode(null);
         }
 
         // Call super after we're done so we still have access to the tile.
@@ -136,6 +181,8 @@ public class BlockFilter extends BlockContainer {
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         if (worldIn.isRemote)
             return true;
+
+        //TODO: Gui.
 
         TileEntity tile = worldIn.getTileEntity(pos);
         if (tile != null && tile instanceof TileFilter) {

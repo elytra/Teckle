@@ -17,6 +17,8 @@ import net.minecraftforge.items.IItemHandler;
  */
 public class TileFilter extends TileItemEntrypoint implements ITickable {
 
+    private int cooldown = 0;
+
     /**
      * Attempt to push to our network, by pulling from our input position.
      *
@@ -26,9 +28,8 @@ public class TileFilter extends TileItemEntrypoint implements ITickable {
         boolean result = false;
 
         IBlockState state = world.getBlockState(pos);
-
-        if (node != null && node.network != null && !world.isRemote) {
-            WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) node.network.getNodeFromPosition(pos);
+        if (getNode() != null && getNode().network != null && !world.isRemote && cooldown == 0) {
+            WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) getNode().network.getNodeFromPosition(pos);
             EnumFacing facing = state.getValue(BlockFilter.FACING);
 
             if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
@@ -50,6 +51,7 @@ public class TileFilter extends TileItemEntrypoint implements ITickable {
             }
         }
 
+        cooldown = 5;
         return result;
     }
 
@@ -57,7 +59,11 @@ public class TileFilter extends TileItemEntrypoint implements ITickable {
     public void update() {
         super.update();
 
-        if (world.isRemote || node == null || node.network == null)
+        if (world.isRemote || getNode() == null || getNode().network == null)
             return;
+
+        if (cooldown > 0) {
+            cooldown--;
+        }
     }
 }

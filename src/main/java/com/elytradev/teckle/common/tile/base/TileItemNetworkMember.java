@@ -1,9 +1,11 @@
 package com.elytradev.teckle.common.tile.base;
 
 import com.elytradev.teckle.client.sync.TravellerData;
+import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -20,10 +22,18 @@ public class TileItemNetworkMember extends TileEntity implements ITickable {
     @SideOnly(Side.CLIENT)
     public HashMap<NBTTagCompound, TravellerData> travellers = new HashMap<>();
 
-    public WorldNetworkNode node;
+    private WorldNetworkNode node;
 
     public void addTraveller(TravellerData data) {
         travellers.put(data.tagCompound, data);
+    }
+
+    public WorldNetworkNode getNode() {
+        return node;
+    }
+
+    public void setNode(WorldNetworkNode node) {
+        this.node = node;
     }
 
     @Override
@@ -50,5 +60,15 @@ public class TileItemNetworkMember extends TileEntity implements ITickable {
             }
             move.forEach(data -> travellers.remove(data.tagCompound));
         }
+    }
+
+    public boolean isValidNetworkMember(WorldNetwork network, EnumFacing side) {
+        return true;
+    }
+
+    public WorldNetworkNode getNode(WorldNetwork network) {
+        this.node = new WorldNetworkNode(network, pos);
+
+        return node;
     }
 }
