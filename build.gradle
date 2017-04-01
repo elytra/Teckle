@@ -32,9 +32,9 @@ minecraft {
 
 repositories {
     mavenCentral()
-}
-
-dependencies {
+    maven {
+        url = 'http://repo.elytradev.com'
+    }
 }
 
 processResources {
@@ -54,4 +54,37 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude "mcmod.info"
     }
+}
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
+}
+
+dependencies {
+}
+
+jar {
+    classifier = 'slim'
+}
+
+shadowJar {
+    classifier = ''
+    relocate 'com.elytradev.concrete', 'com.elytradev.teckle.repack.concrete'
+    configurations = [project.configurations.shadow]
+}
+
+reobf {
+    shadowJar { mappingType = 'SEARGE' }
+}
+
+tasks.build.dependsOn reobfShadowJar
+
+
+artifacts {
+    archives shadowJar
+}
+
+dependencies {
+    compile 'com.elytradev:concrete:0.1.0'
+    shadow 'com.elytradev:concrete:0.1.0'
 }

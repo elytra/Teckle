@@ -55,6 +55,9 @@ public class WorldNetworkTraveller implements ITickable {
                 previousNode = currentNode;
                 currentNode = nextNode;
                 nextNode = activePath.next();
+
+                previousNode.unregisterTraveller(this);
+                currentNode.registerTraveller(this);
             }
         }
 

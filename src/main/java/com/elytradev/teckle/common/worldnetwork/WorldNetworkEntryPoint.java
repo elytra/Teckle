@@ -93,6 +93,8 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         traveller.previousNode = WorldNetworkNode.NONE;
         traveller.currentNode = this;
         traveller.nextNode = path.next();
+
+        traveller.currentNode.registerTraveller(traveller);
     }
 
     /**
