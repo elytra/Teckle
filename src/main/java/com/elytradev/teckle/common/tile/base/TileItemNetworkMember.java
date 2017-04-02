@@ -21,7 +21,6 @@ public class TileItemNetworkMember extends TileEntity implements ITickable {
 
     @SideOnly(Side.CLIENT)
     public HashMap<NBTTagCompound, TravellerData> travellers = new HashMap<>();
-
     private WorldNetworkNode node;
 
     public void addTraveller(TravellerData data) {

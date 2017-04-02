@@ -51,17 +51,14 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             for (EnumFacing direction : EnumFacing.VALUES) {
                 BlockPos neighbourPos = pos.add(direction.getDirectionVec());
                 if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(position)) {
-                    System.out.println("Skipping due to lack of network presence " + neighbourPos);
                     continue;
                 }
 
                 if (iteratedPositions.contains(neighbourPos)) {
-                    System.out.println("Skipping due to presence in iteratedPositions " + neighbourPos);
                     continue;
                 }
 
                 if (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())) {
-                    System.out.println("Skipping due to an already existing node with the same injection side. " + neighbourPos);
                     continue;
                 }
 
@@ -115,17 +112,14 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             for (EnumFacing direction : EnumFacing.VALUES) {
                 BlockPos neighbourPos = pos.add(direction.getDirectionVec());
                 if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(position)) {
-                    System.out.println("Skipping due to lack of network presence " + neighbourPos);
                     continue;
                 }
 
                 if (iteratedPositions.contains(neighbourPos)) {
-                    System.out.println("Skipping due to presence in iteratedPositions " + neighbourPos);
                     continue;
                 }
 
                 if (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())) {
-                    System.out.println("Skipping due to an already existing node with the same injection side. " + neighbourPos);
                     continue;
                 }
 

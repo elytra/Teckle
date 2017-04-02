@@ -3,12 +3,15 @@ package com.elytradev.teckle.common.tile;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.tile.base.TileItemEntrypoint;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkEntryPoint;
+import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -18,6 +21,22 @@ import net.minecraftforge.items.IItemHandler;
 public class TileFilter extends TileItemEntrypoint implements ITickable {
 
     private int cooldown = 0;
+
+    @Override
+    public WorldNetworkNode getNode() {
+        if (super.getNode() == null) {
+            System.out.println("Getnode is null on filter.");
+        }
+
+        return super.getNode();
+    }
+
+    @Override
+    public void setNode(WorldNetworkNode node) {
+        System.out.println("SetNode called on filter.");
+
+        super.setNode(node);
+    }
 
     /**
      * Attempt to push to our network, by pulling from our input position.
@@ -53,6 +72,15 @@ public class TileFilter extends TileItemEntrypoint implements ITickable {
 
         cooldown = 5;
         return result;
+    }
+
+    @Override
+    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
+        if (oldState.getBlock() == newSate.getBlock()) {
+            return false;
+        }
+
+        return super.shouldRefresh(world, pos, oldState, newSate);
     }
 
     @Override

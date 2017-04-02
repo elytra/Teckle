@@ -78,7 +78,7 @@ public class BlockFilter extends BlockContainer {
         TileEntity neighbour = worldIn.getTileEntity(pos.offset(facing));
         if (neighbour != null && neighbour instanceof TileItemTube) {
             TileItemTube tube = (TileItemTube) neighbour;
-            tileEntityFilter.setNode( new WorldNetworkEntryPoint(tube.getNode().network, pos, facing));
+            tileEntityFilter.setNode(new WorldNetworkEntryPoint(tube.getNode().network, pos, facing));
             tube.getNode().network.registerNode(tileEntityFilter.getNode());
             System.out.println(tileEntityFilter + " Setting network to " + tube.getNode().network);
         }
@@ -117,7 +117,7 @@ public class BlockFilter extends BlockContainer {
         } else {
             if (neighbourTile == null || !(neighbourTile instanceof TileItemTube)) {
                 filter.getNode().network.unregisterNodeAtPosition(pos);
-                filter.setNode( null);
+                filter.setNode(null);
             }
         }
     }
@@ -132,11 +132,11 @@ public class BlockFilter extends BlockContainer {
         TileEntity tileentity = worldIn.getTileEntity(pos);
         if (tileentity instanceof TileFilter) {
             if (powered) {
-                worldIn.setBlockState(pos, state.withProperty(TRIGGERED, true));
+                worldIn.setBlockState(pos, state.withProperty(TRIGGERED, true), 4);
                 if (!hadPower)
                     ((TileFilter) tileentity).pushToNetwork();
             } else {
-                worldIn.setBlockState(pos, state.withProperty(TRIGGERED, false));
+                worldIn.setBlockState(pos, state.withProperty(TRIGGERED, false), 4);
             }
         }
     }
@@ -184,10 +184,10 @@ public class BlockFilter extends BlockContainer {
 
         //TODO: Gui.
 
-        TileEntity tile = worldIn.getTileEntity(pos);
-        if (tile != null && tile instanceof TileFilter) {
-            return ((TileFilter) tile).pushToNetwork();
-        }
+        //TileEntity tile = worldIn.getTileEntity(pos);
+        //if (tile != null && tile instanceof TileFilter) {
+        //    return ((TileFilter) tile).pushToNetwork();
+        //}
 
         return false;
     }

@@ -40,7 +40,7 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
 
                 translateForMovement(travellerData, partialTicks);
                 GlStateManager.rotate((((float) te.getWorld().getWorldTime() + partialTicks) / 20.0F + 0) * (180F / (float) Math.PI), 0.0F, 1.0F, 0.0F);
-                GlStateManager.scale(0.35, 0.35, 0.35);
+                GlStateManager.scale(0.25, 0.25, 0.25);
                 itemRenderer.renderItem(stack, ibakedmodel);
 
                 GlStateManager.popMatrix();
