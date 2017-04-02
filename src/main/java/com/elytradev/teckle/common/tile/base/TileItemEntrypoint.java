@@ -5,11 +5,6 @@ import net.minecraft.util.EnumFacing;
 /**
  * Created by darkevilmac on 3/28/2017.
  */
-public class TileItemEntrypoint extends TileItemNetworkMember {
-
-    private EnumFacing facing = EnumFacing.DOWN;
-
-    public EnumFacing getFacing() {
-        return facing;
-    }
+public abstract class TileItemEntrypoint extends TileItemNetworkMember {
+    public abstract EnumFacing getFacing();
 }

@@ -29,7 +29,7 @@ public class TravellerData {
     public BlockPos last() {
         try {
             return path.get(index - 1);
-        } catch (ArrayIndexOutOfBoundsException e){
+        } catch (ArrayIndexOutOfBoundsException e) {
             return current().add(WorldNetworkTraveller.getFacingFromVector(current().subtract(next())).getDirectionVec());
         }
     }

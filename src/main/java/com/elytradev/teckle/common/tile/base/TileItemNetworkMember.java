@@ -27,14 +27,6 @@ public class TileItemNetworkMember extends TileEntity implements ITickable {
         travellers.put(data.tagCompound, data);
     }
 
-    public WorldNetworkNode getNode() {
-        return node;
-    }
-
-    public void setNode(WorldNetworkNode node) {
-        this.node = node;
-    }
-
     @Override
     public void update() {
         if (world.isRemote) {
@@ -51,7 +43,6 @@ public class TileItemNetworkMember extends TileEntity implements ITickable {
             for (TravellerData travellerData : move) {
                 travellerData.increment();
                 TileEntity nextTile = world.getTileEntity(travellerData.current());
-
                 if (nextTile != null && nextTile instanceof TileItemNetworkMember) {
                     ((TileItemNetworkMember) nextTile).addTraveller(travellerData);
                 }
@@ -63,6 +54,14 @@ public class TileItemNetworkMember extends TileEntity implements ITickable {
 
     public boolean isValidNetworkMember(WorldNetwork network, EnumFacing side) {
         return true;
+    }
+
+    public WorldNetworkNode getNode() {
+        return node;
+    }
+
+    public void setNode(WorldNetworkNode node) {
+        this.node = node;
     }
 
     public WorldNetworkNode getNode(WorldNetwork network) {

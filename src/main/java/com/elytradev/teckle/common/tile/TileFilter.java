@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.tile;
 
+import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.tile.base.TileItemEntrypoint;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkEntryPoint;
@@ -72,6 +73,18 @@ public class TileFilter extends TileItemEntrypoint implements ITickable {
 
         cooldown = 5;
         return result;
+    }
+
+    @Override
+    public EnumFacing getFacing() {
+        if (world != null) {
+            IBlockState thisState = world.getBlockState(pos);
+            if (thisState.getBlock().equals(TeckleObjects.blockFilter)) {
+                return thisState.getValue(BlockFilter.FACING);
+            }
+        }
+
+        return EnumFacing.DOWN;
     }
 
     @Override

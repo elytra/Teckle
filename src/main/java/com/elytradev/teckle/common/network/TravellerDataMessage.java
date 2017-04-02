@@ -35,7 +35,11 @@ public class TravellerDataMessage extends Message {
         super(TeckleNetworking.NETWORK);
         this.action = action;
         this.data = traveller.data;
-        this.start = traveller.currentNode.position;
+        if (!action.equals(Action.REPATH)) {
+            this.start = traveller.currentNode.position;
+        } else {
+            this.start = traveller.previousNode.position;
+        }
         this.path = traveller.activePath.pathPositions();
     }
 
@@ -48,13 +52,16 @@ public class TravellerDataMessage extends Message {
 
         if (action.equals(Action.REGISTER)) {
             ((TileItemNetworkMember) tileAtPosition).addTraveller(new TravellerData(data, path));
-        } else {
+        } else if (action.equals(Action.UNREGISTER)) {
             ((TileItemNetworkMember) tileAtPosition).travellers.remove(data);
+        } else {
+            ((TileItemNetworkMember) tileAtPosition).travellers.get(data).path.addAll(this.path);
         }
     }
 
     public enum Action {
         REGISTER,
-        UNREGISTER
+        UNREGISTER,
+        REPATH
     }
 }

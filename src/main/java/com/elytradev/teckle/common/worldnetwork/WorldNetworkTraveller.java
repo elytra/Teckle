@@ -1,14 +1,14 @@
 package com.elytradev.teckle.common.worldnetwork;
 
+import com.elytradev.teckle.common.network.TravellerDataMessage;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.Vec3i;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * A piece of tagCompound travelling to a node in the network.
@@ -30,6 +30,7 @@ public class WorldNetworkTraveller implements ITickable {
         this.entryPoint = entryPoint;
 
         this.data = data;
+        this.data.setUniqueId("id", UUID.randomUUID());
     }
 
     public static EnumFacing getFacingFromVector(Vec3i vec) {
@@ -49,6 +50,7 @@ public class WorldNetworkTraveller implements ITickable {
 
                 if (!didInject) {
                     entryPoint.findNodeForTraveller(this);
+                    new TravellerDataMessage(TravellerDataMessage.Action.REPATH, this).sendToAllWatching(this.network.world, this.currentNode.position);
                 } else {
                     network.unregisterTraveller(this);
                 }

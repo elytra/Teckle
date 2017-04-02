@@ -278,9 +278,7 @@ public class BlockItemTube extends BlockContainer {
             TileEntity neighbourTile = world.getTileEntity(neighbourPos);
 
             if (neighbourTile != null) {
-                if (neighbourTile instanceof TileItemEntrypoint
-                        && ((TileItemEntrypoint) neighbourTile).getFacing().equals
-                        (WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)).getOpposite())) {
+                if (neighbourTile instanceof TileItemEntrypoint && ((TileItemEntrypoint) neighbourTile).getFacing().equals(facing.getOpposite())) {
                     neighbourNodes.add(new WorldNetworkEntryPoint(network, neighbourPos, facing));
                 } else if (neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
                         WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
