@@ -92,14 +92,14 @@ public class WorldNetwork implements ITickable {
         travellers.add(traveller);
         traveller.network = this;
 
-        new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
+        new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller, traveller.currentNode.position).sendToAllWatching(world, traveller.currentNode.position);
     }
 
     public void unregisterTraveller(WorldNetworkTraveller traveller) {
         travellersToUnregister.add(traveller);
 
         if (!traveller.currentNode.isEndpoint())
-            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
+            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, traveller, traveller.currentNode.position).sendToAllWatching(world, traveller.currentNode.position);
     }
 
     public World getWorld() {

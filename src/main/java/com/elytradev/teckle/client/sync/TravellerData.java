@@ -38,4 +38,11 @@ public class TravellerData {
         return path.get(index + 1);
     }
 
+    public void trimAfter() {
+        System.out.println("Trimming path on client...");
+        for (int i = path.size() - 1; i > index; i--) {
+            path.remove(path.size() - 1);
+        }
+    }
+
 }

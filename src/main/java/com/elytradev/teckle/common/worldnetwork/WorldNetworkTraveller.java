@@ -45,12 +45,17 @@ public class WorldNetworkTraveller implements ITickable {
     public void update() {
         if (travelledDistance >= 1) {
             if (nextNode.isEndpoint()) {
+                travelledDistance = 0F;
                 boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this,
                         getFacingFromVector(nextNode.position.subtract(currentNode.position)).getOpposite());
 
                 if (!didInject) {
+                    previousNode = currentNode;
+                    currentNode = nextNode;
+                    nextNode = WorldNetworkNode.NONE;
                     entryPoint.findNodeForTraveller(this);
-                    new TravellerDataMessage(TravellerDataMessage.Action.REPATH, this).sendToAllWatching(this.network.world, this.currentNode.position);
+
+                    new TravellerDataMessage(TravellerDataMessage.Action.REPATH, this, previousNode.position).sendToAllWatching(this.network.world, this.currentNode.position);
                 } else {
                     network.unregisterTraveller(this);
                 }

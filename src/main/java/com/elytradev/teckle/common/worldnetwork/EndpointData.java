@@ -19,8 +19,6 @@ public class EndpointData {
         this.side = side;
         this.cost = cost;
         this.node = endpoint;
-
-        System.out.println("Created endpointData " + this.toString());
     }
 
     @Override

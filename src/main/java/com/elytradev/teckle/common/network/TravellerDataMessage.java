@@ -31,15 +31,11 @@ public class TravellerDataMessage extends Message {
         super(ctx);
     }
 
-    public TravellerDataMessage(Action action, WorldNetworkTraveller traveller) {
+    public TravellerDataMessage(Action action, WorldNetworkTraveller traveller, BlockPos start) {
         super(TeckleNetworking.NETWORK);
         this.action = action;
         this.data = traveller.data;
-        if (!action.equals(Action.REPATH)) {
-            this.start = traveller.currentNode.position;
-        } else {
-            this.start = traveller.previousNode.position;
-        }
+        this.start = start;
         this.path = traveller.activePath.pathPositions();
     }
 
@@ -55,7 +51,15 @@ public class TravellerDataMessage extends Message {
         } else if (action.equals(Action.UNREGISTER)) {
             ((TileItemNetworkMember) tileAtPosition).travellers.remove(data);
         } else {
-            ((TileItemNetworkMember) tileAtPosition).travellers.get(data).path.addAll(this.path);
+            TileItemNetworkMember networkMember = (TileItemNetworkMember) tileAtPosition;
+            if (!networkMember.travellers.containsKey(data)) {
+                TravellerData travellerData = new TravellerData(data, path);
+                travellerData.increment();// Prevents crash, odds are this is a tube so we need to be at least 0.
+                travellerData.increment();
+                networkMember.addTraveller(travellerData);
+            } else {
+                networkMember.addRepathTraveller(new TravellerData(data, path));
+            }
         }
     }
 

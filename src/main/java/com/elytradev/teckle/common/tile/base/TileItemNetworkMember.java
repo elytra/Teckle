@@ -20,18 +20,22 @@ import java.util.List;
 public class TileItemNetworkMember extends TileEntity implements ITickable {
 
     @SideOnly(Side.CLIENT)
-    public HashMap<NBTTagCompound, TravellerData> travellers = new HashMap<>();
+    public HashMap<NBTTagCompound, TravellerData> travellers = new HashMap<>(), repathingTravellers = new HashMap<>();
     private WorldNetworkNode node;
 
     public void addTraveller(TravellerData data) {
         travellers.put(data.tagCompound, data);
     }
 
+    public void addRepathTraveller(TravellerData data) {
+        repathingTravellers.put(data.tagCompound, data);
+    }
+
     @Override
     public void update() {
         if (world.isRemote) {
             List<TravellerData> move = new ArrayList<>();
-
+            List<TravellerData> cancelledMoves = new ArrayList<>();
             for (TravellerData travellerData : travellers.values()) {
                 if (travellerData.travelled >= 1F) {
                     move.add(travellerData);
@@ -43,11 +47,19 @@ public class TileItemNetworkMember extends TileEntity implements ITickable {
             for (TravellerData travellerData : move) {
                 travellerData.increment();
                 TileEntity nextTile = world.getTileEntity(travellerData.current());
-                if (nextTile != null && nextTile instanceof TileItemNetworkMember) {
-                    ((TileItemNetworkMember) nextTile).addTraveller(travellerData);
+                if (repathingTravellers.containsKey(travellerData.tagCompound)) {
+                    travellerData = repathingTravellers.get(travellerData.tagCompound);
+                    travellers.replace(travellerData.tagCompound, travellerData);
+                    repathingTravellers.remove(travellerData.tagCompound).increment();
+                    cancelledMoves.add(travellerData);
+                } else {
+                    if (nextTile != null && nextTile instanceof TileItemNetworkMember) {
+                        ((TileItemNetworkMember) nextTile).addTraveller(travellerData);
+                    }
                 }
                 travellerData.travelled = 0F;
             }
+            move.removeAll(cancelledMoves);
             move.forEach(data -> travellers.remove(data.tagCompound));
         }
     }
