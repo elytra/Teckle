@@ -3,6 +3,7 @@ package com.elytradev.teckle.common.tile;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.tile.base.TileItemEntrypoint;
+import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import net.minecraft.block.state.IBlockState;
@@ -22,6 +23,11 @@ import net.minecraftforge.items.IItemHandler;
 public class TileFilter extends TileItemEntrypoint implements ITickable {
 
     private int cooldown = 0;
+
+    @Override
+    public WorldNetworkNode getNode(WorldNetwork network) {
+        return new WorldNetworkEntryPoint(network, pos, getFacing());
+    }
 
     @Override
     public WorldNetworkNode getNode() {

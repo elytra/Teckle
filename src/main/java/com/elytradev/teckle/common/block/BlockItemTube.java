@@ -2,10 +2,8 @@ package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.common.block.property.UnlistedBool;
 import com.elytradev.teckle.common.tile.TileItemTube;
-import com.elytradev.teckle.common.tile.base.TileItemEntrypoint;
 import com.elytradev.teckle.common.tile.base.TileItemNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
@@ -176,10 +174,17 @@ public class BlockItemTube extends BlockContainer {
         }
 
         //Check for possible neighbour nodes...
-        List<WorldNetworkNode> neighbourNodes = getPotentialNeighbourNodes(worldIn, pos, tube.getNode().network);
-        for (WorldNetworkNode neighbourNode : neighbourNodes) {
-            if (!tube.getNode().network.isNodePresent(neighbourNode.position)) {
-                tube.getNode().network.registerNode(neighbourNode);
+        List<TileEntity> neighbourNodes = getPotentialNeighbourNodes(worldIn, pos, tube.getNode().network);
+        for (TileEntity neighbourNode : neighbourNodes) {
+            if (neighbourNode instanceof TileItemNetworkMember) {
+                if (!tube.getNode().network.isNodePresent(neighbourNode.getPos())) {
+                    tube.getNode().network.registerNode(((TileItemNetworkMember) neighbourNode).getNode(tube.getNode().network));
+                    ((TileItemNetworkMember) neighbourNode).setNode(tube.getNode().network.getNodeFromPosition(neighbourNode.getPos()));
+                }
+            } else {
+                if (!tube.getNode().network.isNodePresent(neighbourNode.getPos())) {
+                    tube.getNode().network.registerNode(new ItemNetworkEndpoint(tube.getNode().network, neighbourNode.getPos()));
+                }
             }
         }
     }
@@ -270,19 +275,19 @@ public class BlockItemTube extends BlockContainer {
         return neighbourNetworks;
     }
 
-    private List<WorldNetworkNode> getPotentialNeighbourNodes(IBlockAccess world, BlockPos pos, WorldNetwork network) {
-        List<WorldNetworkNode> neighbourNodes = new ArrayList<>();
+    private List<TileEntity> getPotentialNeighbourNodes(IBlockAccess world, BlockPos pos, WorldNetwork network) {
+        List<TileEntity> neighbourNodes = new ArrayList<>();
 
         for (EnumFacing facing : EnumFacing.VALUES) {
             BlockPos neighbourPos = pos.add(facing.getDirectionVec());
             TileEntity neighbourTile = world.getTileEntity(neighbourPos);
 
             if (neighbourTile != null) {
-                if (neighbourTile instanceof TileItemEntrypoint && ((TileItemEntrypoint) neighbourTile).getFacing().equals(facing.getOpposite())) {
-                    neighbourNodes.add(new WorldNetworkEntryPoint(network, neighbourPos, facing));
+                if (neighbourTile instanceof TileItemNetworkMember && ((TileItemNetworkMember) neighbourTile).isValidNetworkMember(network, facing.getOpposite())) {
+                    neighbourNodes.add(neighbourTile);
                 } else if (neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
                         WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
-                    neighbourNodes.add(new ItemNetworkEndpoint(network, neighbourPos));
+                    neighbourNodes.add(neighbourTile);
                 }
             }
         }

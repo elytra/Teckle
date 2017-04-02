@@ -52,6 +52,13 @@ public class TileItemNetworkMember extends TileEntity implements ITickable {
         }
     }
 
+    /**
+     * Check if this tile can be added to a given network with a neighbour on a specified side.
+     *
+     * @param network the network to add to
+     * @param side    the direction of the neighbour that wants to add
+     * @return true if can be added false otherwise.
+     */
     public boolean isValidNetworkMember(WorldNetwork network, EnumFacing side) {
         return true;
     }
