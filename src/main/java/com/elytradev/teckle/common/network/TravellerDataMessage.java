@@ -20,7 +20,7 @@ import net.minecraftforge.fml.relauncher.Side;
 public class TravellerDataMessage extends Message {
 
     public NBTTagCompound data;
-    public BlockPos start;
+    public BlockPos prev, start;
     public WorldNetworkPath path;
     public Action action;
 
@@ -28,18 +28,19 @@ public class TravellerDataMessage extends Message {
         super(ctx);
     }
 
-    public TravellerDataMessage(Action action, WorldNetworkTraveller traveller, BlockPos start) {
+    public TravellerDataMessage(Action action, WorldNetworkTraveller traveller) {
         super(TeckleNetworking.NETWORK);
         this.action = action;
         this.data = traveller.data;
-        this.start = start;
+        this.prev = traveller.previousNode == null ? BlockPos.ORIGIN : traveller.previousNode.position;
+        this.start = traveller.currentNode.position;
         this.path = traveller.activePath;
     }
 
     @Override
     protected void handle(EntityPlayer sender) {
         if (action.equals(Action.REGISTER)) {
-            ClientTravellerManager.travellers.put(data, new DumbNetworkTraveller(data, path, new WorldNetworkNode(null, start)));
+            ClientTravellerManager.travellers.put(data, new DumbNetworkTraveller(data, path, new WorldNetworkNode(null, prev), new WorldNetworkNode(null, start)));
         } else if (action.equals(Action.UNREGISTER)) {
             ClientTravellerManager.travellers.remove(data);
         }
