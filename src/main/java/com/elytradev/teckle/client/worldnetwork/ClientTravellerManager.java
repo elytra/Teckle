@@ -31,6 +31,11 @@ public class ClientTravellerManager {
         for (DumbNetworkTraveller traveller : travellers.values()) {
             if (traveller.travelledDistance >= 1) {
                 if (traveller.nextNode.isEndpoint() || traveller.nextNode == WorldNetworkNode.NONE) {
+                    World clientWorld = Minecraft.getMinecraft().world;
+                    TileEntity tileAtPrev = clientWorld.getTileEntity(traveller.previousNode.position);
+
+                    if (tileAtPrev != null && tileAtPrev instanceof TileItemNetworkMember)
+                        ((TileItemNetworkMember) tileAtPrev).removeTraveller(traveller.data);
                     travellersToRemove.add(traveller.data);
                 } else {
                     traveller.travelledDistance = 0;
