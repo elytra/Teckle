@@ -5,6 +5,7 @@ import com.elytradev.concrete.NetworkContext;
 import com.elytradev.concrete.annotation.type.ReceivedOn;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.client.worldnetwork.DumbNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkPath;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
 import net.minecraft.entity.player.EntityPlayer;
@@ -38,7 +39,7 @@ public class TravellerDataMessage extends Message {
     @Override
     protected void handle(EntityPlayer sender) {
         if (action.equals(Action.REGISTER)) {
-            ClientTravellerManager.travellers.put(data, new DumbNetworkTraveller(data, path));
+            ClientTravellerManager.travellers.put(data, new DumbNetworkTraveller(data, path, new WorldNetworkNode(null, start)));
         } else if (action.equals(Action.UNREGISTER)) {
             ClientTravellerManager.travellers.remove(data);
         }

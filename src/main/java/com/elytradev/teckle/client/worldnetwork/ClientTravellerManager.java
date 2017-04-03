@@ -23,11 +23,11 @@ public class ClientTravellerManager {
 
     @SubscribeEvent
     public static void onTickEvent(TickEvent.ClientTickEvent e) {
-        if (e.getPhase().equals(TickEvent.Phase.END) || Minecraft.getMinecraft().world == null)
+        if (e.phase.equals(TickEvent.Phase.END) || Minecraft.getMinecraft().world == null)
             return;
 
-        List<NBTTagCompound> travellersToRemove = new ArrayList<>();
 
+        List<NBTTagCompound> travellersToRemove = new ArrayList<>();
         for (DumbNetworkTraveller traveller : travellers.values()) {
             if (traveller.travelledDistance >= 1) {
                 if (traveller.nextNode.isEndpoint() || traveller.nextNode == WorldNetworkNode.NONE) {
