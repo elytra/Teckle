@@ -24,7 +24,10 @@ public class WorldNetworkPath implements Marshallable {
     private WorldNetworkNode startNode;
     private EndpointData endNode;
 
-    // Private constructor, only create via static method.
+    // Default constructor to calm concrete down.
+    private WorldNetworkPath() {
+    }
+
     private WorldNetworkPath(WorldNetworkTraveller traveller, WorldNetworkNode startNode, EndpointData endNode) {
         path = new ArrayList<PathNode>();
         index = -1;
