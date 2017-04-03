@@ -138,7 +138,7 @@ public class WorldNetwork implements ITickable {
      * Checks that the network's connections are fully valid, performs a split if needed.
      */
     public void validateNetwork() {
-        // Perform flood fill to validate all nodes are connected. Choose an arbitrary node to start from.
+        // Perform flood fill to validate all nodes are connected. Choose an arbitrary node to current from.
 
         System.out.println("Performing a network validation.");
         List<List<WorldNetworkNode>> networks = new ArrayList<>();

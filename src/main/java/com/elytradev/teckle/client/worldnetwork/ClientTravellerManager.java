@@ -67,4 +67,13 @@ public class ClientTravellerManager {
         }
     }
 
+    public static DumbNetworkTraveller put(NBTTagCompound key, DumbNetworkTraveller value) {
+        World clientWorld = Minecraft.getMinecraft().world;
+        TileEntity tileAtCur = clientWorld.getTileEntity(value.currentNode.position);
+
+        if (tileAtCur != null && tileAtCur instanceof TileItemNetworkMember)
+            ((TileItemNetworkMember) tileAtCur).addTraveller(value);
+
+        return travellers.put(key, value);
+    }
 }

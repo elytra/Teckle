@@ -143,14 +143,14 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             sortedEndpointData.addAll(entry.getValue().values());
         }
         sortedEndpointData.sort(Comparator.comparingInt(o -> o.cost));
+        BlockPos startPos = traveller.nextNode.position;
+        WorldNetworkPath path = WorldNetworkPath.createPath(traveller, new WorldNetworkNode(network, startPos), sortedEndpointData.get(0));
 
-        WorldNetworkPath path = WorldNetworkPath.createPath(traveller, traveller.currentNode, sortedEndpointData.get(0));
         traveller.triedEndpoints.add(sortedEndpointData.get(0));
-        traveller.activePath = path;
-
-        traveller.previousNode = traveller.nextNode;
+        traveller.previousNode = path.next();
+        traveller.currentNode = path.next();
         traveller.nextNode = path.next();
-        // Make a fake node to represent what we just tried.
+        traveller.activePath = path;
     }
 
     public boolean isValidEndpoint(WorldNetworkTraveller traveller, BlockPos from, BlockPos endPoint) {

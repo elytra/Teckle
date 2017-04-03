@@ -20,7 +20,7 @@ import net.minecraftforge.fml.relauncher.Side;
 public class TravellerDataMessage extends Message {
 
     public NBTTagCompound data;
-    public BlockPos prev, start;
+    public BlockPos prev, current;
     public WorldNetworkPath path;
     public Action action;
 
@@ -32,15 +32,37 @@ public class TravellerDataMessage extends Message {
         super(TeckleNetworking.NETWORK);
         this.action = action;
         this.data = traveller.data;
-        this.prev = traveller.previousNode == null ? BlockPos.ORIGIN : traveller.previousNode.position;
-        this.start = traveller.currentNode.position;
+        this.current = traveller.currentNode.position;
+        this.path = traveller.activePath;
+
+        this.prev = BlockPos.ORIGIN;
+    }
+
+    public TravellerDataMessage(Action action, WorldNetworkTraveller traveller, BlockPos current, BlockPos previous) {
+        super(TeckleNetworking.NETWORK);
+        this.action = action;
+        this.data = traveller.data;
+        this.current = current;
+        this.prev = previous;
         this.path = traveller.activePath;
     }
 
     @Override
     protected void handle(EntityPlayer sender) {
         if (action.equals(Action.REGISTER)) {
-            ClientTravellerManager.travellers.put(data, new DumbNetworkTraveller(data, path, new WorldNetworkNode(null, prev), new WorldNetworkNode(null, start)));
+            DumbNetworkTraveller traveller = new DumbNetworkTraveller(data, path);
+            traveller.activePath = path;
+            if (!prev.equals(BlockPos.ORIGIN)) {
+                traveller.previousNode = path.next();
+                traveller.currentNode = path.next();
+                traveller.nextNode = path.next();
+            } else {
+                traveller.previousNode = new WorldNetworkNode(null, prev);
+                traveller.currentNode = new WorldNetworkNode(null, current);
+                traveller.nextNode = path.next();
+            }
+
+            ClientTravellerManager.put(data, traveller);
         } else if (action.equals(Action.UNREGISTER)) {
             ClientTravellerManager.travellers.remove(data);
         }

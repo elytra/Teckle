@@ -58,8 +58,7 @@ public class WorldNetworkTraveller implements ITickable {
 
                 if (!didInject) {
                     entryPoint.findNodeForTraveller(this);
-                    travelledDistance = 0.5F;
-                    new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this).sendToAllWatching(this.network.world, this.currentNode.position);
+                    new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position).sendToAllWatching(this.network.world, this.currentNode.position);
                 } else {
                     network.unregisterTraveller(this);
                 }
