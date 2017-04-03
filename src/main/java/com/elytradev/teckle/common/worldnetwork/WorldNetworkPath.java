@@ -26,6 +26,7 @@ public class WorldNetworkPath implements Marshallable {
 
     // Default constructor to calm concrete down.
     public WorldNetworkPath() {
+        path = new ArrayList<PathNode>();
     }
 
     private WorldNetworkPath(WorldNetworkTraveller traveller, WorldNetworkNode startNode, EndpointData endNode) {
@@ -74,7 +75,7 @@ public class WorldNetworkPath implements Marshallable {
         ArrayList<PathNode> nodeStack = new ArrayList<PathNode>();
         ArrayList<BlockPos> positions = new ArrayList<BlockPos>();
 
-        PathNode destinationPathNode = createNodesAround(nodeStack, positions, new PathNode(null, startNode, 0));
+        PathNode destinationPathNode = createNodesAround(nodeStack, positions, new PathNode(null, startNode, 0, true));
         while (destinationPathNode == null && !nodeStack.isEmpty()) {
             PathNode lowestTotalNode = nodeStack.remove(0);
             destinationPathNode = createNodesAround(nodeStack, positions, lowestTotalNode);
@@ -103,7 +104,7 @@ public class WorldNetworkPath implements Marshallable {
 
             WorldNetworkNode neighbourNode = node.realNode.network.getNodeFromPosition(neighbourPos);
             if (neighbourNode.canAcceptTraveller(traveller, getFacingFromVector(node.realNode.position.subtract(neighbourPos)))) {
-                PathNode pathNode = new PathNode(node, neighbourNode, node.costFromStart + 1);
+                PathNode pathNode = new PathNode(node, neighbourNode, node.costFromStart + 1, true);
                 if (pathNode.costToDestination == 0 && getFacingFromVector(node.realNode.position.subtract(neighbourPos)).equals(endNode.side)) {
                     return pathNode;
                 }
@@ -181,7 +182,7 @@ public class WorldNetworkPath implements Marshallable {
                 networkNode = new WorldNetworkEndpoint(null, pos);
             }
 
-            path.add(new PathNode(i == 0 ? null : path.get(i - 1), networkNode, 0));
+            path.add(new PathNode(i == 0 ? null : path.get(i - 1), networkNode, 0, false));
         }
     }
 
@@ -193,11 +194,12 @@ public class WorldNetworkPath implements Marshallable {
         WorldNetworkNode realNode;
         int costFromStart, costToDestination, totalCost;
 
-        public PathNode(PathNode from, WorldNetworkNode realNode, int costFromStart) {
+        public PathNode(PathNode from, WorldNetworkNode realNode, int costFromStart, boolean doCostCalc) {
             this.from = from;
             this.realNode = realNode;
             this.costFromStart = costFromStart;
-            calculateCost();
+            if (doCostCalc)
+                calculateCost();
         }
 
         public void calculateCost() {

@@ -22,8 +22,8 @@ public class ClientTravellerManager {
     public static HashMap<NBTTagCompound, DumbNetworkTraveller> travellers = new HashMap<>();
 
     @SubscribeEvent
-    public static void onTickEvent(TickEvent.WorldTickEvent e) {
-        if (!e.world.isRemote || e.getPhase().equals(TickEvent.Phase.END))
+    public static void onTickEvent(TickEvent.ClientTickEvent e) {
+        if (e.getPhase().equals(TickEvent.Phase.END) || Minecraft.getMinecraft().world == null)
             return;
 
         List<NBTTagCompound> travellersToRemove = new ArrayList<>();
