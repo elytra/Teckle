@@ -151,6 +151,7 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         traveller.currentNode = path.next();
         traveller.nextNode = path.next();
         traveller.activePath = path;
+        traveller.travelledDistance = -0.25F;
     }
 
     public boolean isValidEndpoint(WorldNetworkTraveller traveller, BlockPos from, BlockPos endPoint) {
