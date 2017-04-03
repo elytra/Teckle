@@ -25,6 +25,13 @@ public class WorldNetworkTraveller implements ITickable {
     public NBTTagCompound data;
     public List<EndpointData> triedEndpoints = new ArrayList<>();
 
+    protected WorldNetworkTraveller(NBTTagCompound data){
+        this.entryPoint = null;
+
+        this.data = data;
+        this.data.setUniqueId("id", UUID.randomUUID());
+    }
+
     protected WorldNetworkTraveller(WorldNetworkEntryPoint entryPoint, NBTTagCompound data) {
         this.network = entryPoint.network;
         this.entryPoint = entryPoint;
@@ -54,8 +61,8 @@ public class WorldNetworkTraveller implements ITickable {
                     currentNode = nextNode;
                     nextNode = WorldNetworkNode.NONE;
                     entryPoint.findNodeForTraveller(this);
-
-                    new TravellerDataMessage(TravellerDataMessage.Action.REPATH, this, previousNode.position).sendToAllWatching(this.network.world, this.currentNode.position);
+                    new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this, previousNode.position).sendToAllWatching(this.network.world, this.currentNode.position);
+                    new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, previousNode.position).sendToAllWatching(this.network.world, this.currentNode.position);
                 } else {
                     network.unregisterTraveller(this);
                 }

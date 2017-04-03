@@ -1,5 +1,7 @@
 package com.elytradev.teckle.common.proxy;
 
+import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.LoaderState;
 
 /**
@@ -8,5 +10,10 @@ import net.minecraftforge.fml.common.LoaderState;
 public class CommonProxy {
 
     public void registerRenderers(LoaderState.ModState state) {
+    }
+
+    public void registerHandlers() {
+        MinecraftForge.EVENT_BUS.register(WorldNetwork.class);
+        MinecraftForge.EVENT_BUS.register(this);
     }
 }

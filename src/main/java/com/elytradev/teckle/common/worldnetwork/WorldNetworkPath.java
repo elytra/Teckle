@@ -1,7 +1,10 @@
 package com.elytradev.teckle.common.worldnetwork;
 
+import com.elytradev.concrete.Marshallable;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +14,7 @@ import static com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller.get
 /**
  * More or less a wrapper for a list that makes code easier to understand.
  */
-public class WorldNetworkPath {
+public class WorldNetworkPath implements Marshallable {
 
     public static final WorldNetworkPath NOT_POSSIBLE = new WorldNetworkPath(null, null, null);
 
@@ -153,6 +156,30 @@ public class WorldNetworkPath {
         index--;
         WorldNetworkNode currentNode = path.get(index).realNode;
         return currentNode != null ? currentNode : WorldNetworkNode.NONE;
+    }
+
+    @Override
+    public void writeToNetwork(ByteBuf buf) {
+        ByteBufUtils.writeVarInt(buf, path.size(), 3);
+
+        for (int i = 0; i < path.size(); i++) {
+            buf.writeLong(path.get(i).realNode.position.toLong());
+        }
+    }
+
+    @Override
+    public void readFromNetwork(ByteBuf buf) {
+        int size = ByteBufUtils.readVarInt(buf, 3);
+
+        for (int i = 0; i < size; i++) {
+            BlockPos pos = BlockPos.fromLong(buf.readLong());
+            WorldNetworkNode networkNode = new WorldNetworkNode(null, pos);
+            if (i == size - 1) {
+                networkNode = new WorldNetworkEndpoint(null, pos);
+            }
+
+            path.add(new PathNode(i == 0 ? null : path.get(i - 1), networkNode, 0));
+        }
     }
 
     /**

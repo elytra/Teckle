@@ -1,6 +1,6 @@
 package com.elytradev.teckle.client.render.tile;
 
-import com.elytradev.teckle.client.sync.TravellerData;
+import com.elytradev.teckle.client.worldnetwork.DumbNetworkTraveller;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
 import net.minecraft.client.Minecraft;
@@ -23,8 +23,8 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
         GlStateManager.pushMatrix();
         GlStateManager.translate(x, y, z);
         GlStateManager.translate(.5, .5, .5);
-        for (TravellerData travellerData : te.travellers.values()) {
-            ItemStack stack = new ItemStack(travellerData.tagCompound.getCompoundTag("stack"));
+        for (DumbNetworkTraveller traveller : te.travellers.values()) {
+            ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
             if (!stack.isEmpty()) {
                 RenderItem itemRenderer = Minecraft.getMinecraft().getRenderItem();
                 GlStateManager.enableRescaleNormal();
@@ -38,7 +38,7 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
                 GlStateManager.pushMatrix();
                 GlStateManager.pushMatrix();
 
-                translateForMovement(travellerData, partialTicks);
+                translateForMovement(traveller, partialTicks);
                 GlStateManager.rotate((((float) te.getWorld().getWorldTime() + partialTicks) / 20.0F + 0) * (180F / (float) Math.PI), 0.0F, 1.0F, 0.0F);
                 GlStateManager.scale(0.25, 0.25, 0.25);
                 itemRenderer.renderItem(stack, ibakedmodel);
@@ -53,13 +53,13 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
         GlStateManager.popMatrix();
     }
 
-    public void translateForMovement(TravellerData data, float partialTicks) {
-        EnumFacing facing = data.travelled < 0.5F ? WorldNetworkTraveller.getFacingFromVector(data.current().subtract(data.last()))
-                : WorldNetworkTraveller.getFacingFromVector(data.current().subtract(data.next())).getOpposite();
+    public void translateForMovement(DumbNetworkTraveller traveller, float partialTicks) {
+        EnumFacing facing = traveller.travelledDistance < 0.5F ? WorldNetworkTraveller.getFacingFromVector(traveller.currentNode.position.subtract(traveller.previousNode.position))
+                : WorldNetworkTraveller.getFacingFromVector(traveller.currentNode.position.subtract(traveller.nextNode.position)).getOpposite();
 
         Vec3d offset = new Vec3d(facing.getDirectionVec());
         // Smooth the variables out.
-        float dataTravelledOffset = data.travelled - 0.5F;
+        float dataTravelledOffset = traveller.travelledDistance - 0.5F;
         float lastTravelled = dataTravelledOffset - (1F / 20F);
         double newX = (lastTravelled * offset.xCoord) + ((dataTravelledOffset * offset.xCoord) - (lastTravelled * offset.xCoord)) * partialTicks;
         double newY = (lastTravelled * offset.yCoord) + ((dataTravelledOffset * offset.yCoord) - (lastTravelled * offset.yCoord)) * partialTicks;

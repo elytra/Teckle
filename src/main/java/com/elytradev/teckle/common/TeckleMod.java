@@ -34,8 +34,7 @@ public class TeckleMod {
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent e) {
-        MinecraftForge.EVENT_BUS.register(WorldNetwork.class);
-        MinecraftForge.EVENT_BUS.register(PROXY);
+PROXY.registerHandlers();
 
         LOG = e.getModLog();
         OBJECTS.preInit(e);

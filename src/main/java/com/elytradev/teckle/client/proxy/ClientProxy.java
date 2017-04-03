@@ -2,10 +2,10 @@ package com.elytradev.teckle.client.proxy;
 
 import com.elytradev.teckle.client.render.model.ModelItemTube;
 import com.elytradev.teckle.client.render.tile.TileTubeRenderer;
-import com.elytradev.teckle.common.proxy.CommonProxy;
+import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
-import com.elytradev.teckle.common.tile.TileFilter;
+import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.LoaderState;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -75,5 +76,11 @@ public class ClientProxy extends CommonProxy {
         ModelItemTube tubeModel = new ModelItemTube();
         e.getModelRegistry().putObject(new ModelResourceLocation("teckle:tube.item", "normal"), tubeModel);
         e.getModelRegistry().putObject(new ModelResourceLocation("teckle:tube.item", "inventory"), tubeModel);
+    }
+
+    @Override
+    public void registerHandlers() {
+        super.registerHandlers();
+        MinecraftForge.EVENT_BUS.register(ClientTravellerManager.class);
     }
 }
