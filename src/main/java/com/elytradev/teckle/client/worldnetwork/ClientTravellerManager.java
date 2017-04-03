@@ -32,10 +32,10 @@ public class ClientTravellerManager {
             if (traveller.travelledDistance >= 1) {
                 if (traveller.nextNode.isEndpoint() || traveller.nextNode == WorldNetworkNode.NONE) {
                     World clientWorld = Minecraft.getMinecraft().world;
-                    TileEntity tileAtPrev = clientWorld.getTileEntity(traveller.previousNode.position);
+                    TileEntity tileAtCur = clientWorld.getTileEntity(traveller.currentNode.position);
 
-                    if (tileAtPrev != null && tileAtPrev instanceof TileItemNetworkMember)
-                        ((TileItemNetworkMember) tileAtPrev).removeTraveller(traveller.data);
+                    if (tileAtCur != null && tileAtCur instanceof TileItemNetworkMember)
+                        ((TileItemNetworkMember) tileAtCur).removeTraveller(traveller.data);
                     travellersToRemove.add(traveller.data);
                 } else {
                     traveller.travelledDistance = 0;
