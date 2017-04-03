@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class ClientTravellerManager {
 
-    public static HashMap<NBTTagCompound, DumbNetworkTraveller> travellers;
+    public static HashMap<NBTTagCompound, DumbNetworkTraveller> travellers = new HashMap<>();
 
     @SubscribeEvent
     public static void onTickEvent(TickEvent.ClientTickEvent e) {
