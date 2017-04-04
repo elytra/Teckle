@@ -65,6 +65,7 @@ public class BlockFilter extends BlockContainer {
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
+
         return new TileFilter();
     }
 

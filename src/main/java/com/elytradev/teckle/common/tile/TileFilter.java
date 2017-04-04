@@ -7,11 +7,13 @@ import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -75,6 +77,10 @@ public class TileFilter extends TileItemEntrypoint implements ITickable {
                     }
                 }
             }
+        }
+
+        if(result){
+            this.world.playEvent(1000,pos, 0);
         }
 
         cooldown = 5;
