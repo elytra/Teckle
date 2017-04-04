@@ -34,6 +34,9 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         this.network = network;
         this.position = position;
         this.facing = facing;
+
+        this.endpoint.position = this.position;
+        this.endpoint.network = this.network;
     }
 
     public void addTraveller(NBTTagCompound data) {
@@ -156,19 +159,26 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             sortedEndpointData.addAll(entry.getValue().values());
         }
         sortedEndpointData.sort(Comparator.comparingInt(o -> o.cost));
+        BlockPos startPos = traveller.nextNode.position;
+        WorldNetworkPath path = null;
         if (sortedEndpointData.isEmpty()) {
             EndpointData returnToSenderData = new EndpointData(endpoint, position, facing, 0);
             sortedEndpointData.add(returnToSenderData);
+            path = WorldNetworkPath.createPath(traveller, new WorldNetworkNode(network, startPos), sortedEndpointData.get(0));
+            int indexToChange = path.getPath().size() - 1;
+            WorldNetworkPath.PathNode pathNode = path.getPath().get(indexToChange);
+            pathNode.realNode = returnToSenderData.node;
+            path.getPath().set(indexToChange, pathNode);
+        } else {
+            path = WorldNetworkPath.createPath(traveller, new WorldNetworkNode(network, startPos), sortedEndpointData.get(0));
         }
 
-        BlockPos startPos = traveller.nextNode.position;
-        WorldNetworkPath path = WorldNetworkPath.createPath(traveller, new WorldNetworkNode(network, startPos), sortedEndpointData.get(0));
         traveller.triedEndpoints.add(sortedEndpointData.get(0));
         traveller.previousNode = path.next();
         traveller.currentNode = path.next();
         traveller.nextNode = path.next();
         traveller.activePath = path;
-        traveller.travelledDistance = -0.25F;
+        traveller.travelledDistance = -0.1F;
     }
 
     public boolean isValidEndpoint(WorldNetworkTraveller traveller, BlockPos from, BlockPos endPoint) {

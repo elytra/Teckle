@@ -59,7 +59,7 @@ public class TravellerDataMessage extends Message {
                 traveller.currentNode = path.next();
                 traveller.nextNode = path.next();
                 // make it look like it came out of the inv.
-                traveller.travelledDistance = -0.25F;
+                traveller.travelledDistance = -0.10F;
             } else {
                 traveller.previousNode = new WorldNetworkNode(null, prev);
                 traveller.currentNode = new WorldNetworkNode(null, current);

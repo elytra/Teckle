@@ -109,7 +109,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
         BlockPos sourcePos = pos.offset(facing);
 
         // Try and put it back where we found it.
-        if (side.getOpposite().equals(getFacing())) {
+        if (side.equals(getFacing())) {
             if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
                 TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
                 if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {

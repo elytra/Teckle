@@ -54,6 +54,10 @@ public class WorldNetworkPath implements Marshallable {
         return path;
     }
 
+    public List<PathNode> getPath() {
+        return path;
+    }
+
     /**
      * Get all positions in the path, used for data sync.
      *
@@ -167,8 +171,8 @@ public class WorldNetworkPath implements Marshallable {
     public void writeToNetwork(ByteBuf buf) {
         ByteBufUtils.writeVarInt(buf, path.size(), 3);
 
-        for (int i = 0; i < path.size(); i++) {
-            buf.writeLong(path.get(i).realNode.position.toLong());
+        for (PathNode pathNode : path) {
+            buf.writeLong(pathNode.realNode.position.toLong());
         }
     }
 
@@ -190,10 +194,10 @@ public class WorldNetworkPath implements Marshallable {
     /**
      * Used to store tagCompound about the usefulness of a node for making a path.
      */
-    private class PathNode {
-        PathNode from;
-        WorldNetworkNode realNode;
-        int costFromStart, costToDestination, totalCost;
+    public class PathNode {
+        public PathNode from;
+        public WorldNetworkNode realNode;
+        public int costFromStart, costToDestination, totalCost;
 
         public PathNode(PathNode from, WorldNetworkNode realNode, int costFromStart, boolean doCostCalc) {
             this.from = from;
