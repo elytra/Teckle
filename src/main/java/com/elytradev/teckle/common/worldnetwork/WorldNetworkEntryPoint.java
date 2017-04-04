@@ -27,7 +27,7 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             return true;
         }
     };
-    
+
     private EnumFacing facing = EnumFacing.DOWN;
 
     public WorldNetworkEntryPoint(WorldNetwork network, BlockPos position, EnumFacing facing) {
@@ -100,10 +100,9 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         WorldNetworkPath path = WorldNetworkPath.createPath(traveller, network.getNodeFromPosition(startPos), sortedEndpointData.get(0));
         traveller.triedEndpoints.add(sortedEndpointData.get(0));
         traveller.activePath = path;
-        traveller.previousNode = this;
-        traveller.currentNode = path.next();
+        traveller.previousNode = WorldNetworkNode.NONE;
+        traveller.currentNode = this;
         traveller.nextNode = path.next();
-        traveller.travelledDistance = -0.25F;
 
         traveller.currentNode.registerTraveller(traveller);
     }

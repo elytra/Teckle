@@ -22,6 +22,20 @@ public class WorldNetworkDatabase {
     public World world;
     public HashMap<UUID, WorldNetwork> networks = new HashMap<>();
 
+    public WorldNetworkDatabase(World world) {
+        this.world = world;
+    }
+
+    @SubscribeEvent
+    public static void onWorldLoad(WorldEvent.Load e) {
+        if (e.getWorld().isRemote)
+            return;
+
+        if (!NETWORKDBS.containsKey(e.getWorld().provider.getDimension())) {
+            NETWORKDBS.put(e.getWorld().provider.getDimension(), new WorldNetworkDatabase(e.getWorld()));
+        }
+    }
+
     @SubscribeEvent
     public static void onWorldUnload(WorldEvent.Unload e) {
         if (e.getWorld().isRemote)
@@ -38,10 +52,6 @@ public class WorldNetworkDatabase {
             return;
 
         NETWORKDBS.get(e.world.provider.getDimension()).onTick(e);
-    }
-
-    public WorldNetworkDatabase(World world) {
-        this.world = world;
     }
 
     public static void registerWorldNetwork(WorldNetwork network) {
