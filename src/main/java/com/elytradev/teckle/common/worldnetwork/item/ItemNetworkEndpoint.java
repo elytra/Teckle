@@ -42,7 +42,7 @@ public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
             }
         }
 
-        return super.inject(traveller, from);
+        return false;
     }
 
     private boolean canInject(WorldNetworkTraveller traveller, EnumFacing from) {

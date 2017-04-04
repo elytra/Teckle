@@ -2,7 +2,7 @@ package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
-import com.elytradev.teckle.common.tile.base.TileItemNetworkMember;
+import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkEntryPoint;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -124,7 +124,7 @@ public class BlockFilter extends BlockContainer {
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
         TileEntity tileAtPos = worldIn.getTileEntity(pos);
         if (tileAtPos != null) {
-            TileItemNetworkMember networkMember = (TileItemNetworkMember) tileAtPos;
+            TileNetworkMember networkMember = (TileNetworkMember) tileAtPos;
             if (networkMember.getNode() == null)
                 return;
             networkMember.getNode().network.unregisterNodeAtPosition(pos);

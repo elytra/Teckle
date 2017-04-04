@@ -4,7 +4,7 @@ import com.elytradev.concrete.Message;
 import com.elytradev.concrete.NetworkContext;
 import com.elytradev.concrete.annotation.type.ReceivedOn;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
-import com.elytradev.teckle.client.worldnetwork.DumbNetworkTraveller;
+import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkPath;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
@@ -52,7 +52,7 @@ public class TravellerDataMessage extends Message {
     @Override
     protected void handle(EntityPlayer sender) {
         if (action.equals(Action.REGISTER)) {
-            DumbNetworkTraveller traveller = new DumbNetworkTraveller(data, path);
+            DummyNetworkTraveller traveller = new DummyNetworkTraveller(data, path);
             traveller.activePath = path;
             if (!prev.equals(IMPOSSIBLEPOS)) {
                 traveller.previousNode = path.next();

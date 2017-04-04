@@ -1,6 +1,6 @@
 package com.elytradev.teckle.client.render.tile;
 
-import com.elytradev.teckle.client.worldnetwork.DumbNetworkTraveller;
+import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
 import net.minecraft.client.Minecraft;
@@ -23,7 +23,7 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
         GlStateManager.pushMatrix();
         GlStateManager.translate(x, y, z);
         GlStateManager.translate(.5, .5, .5);
-        for (DumbNetworkTraveller traveller : te.travellers.values()) {
+        for (DummyNetworkTraveller traveller : te.travellers.values()) {
             ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
             if (!stack.isEmpty()) {
                 RenderItem itemRenderer = Minecraft.getMinecraft().getRenderItem();
@@ -53,7 +53,7 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
         GlStateManager.popMatrix();
     }
 
-    public void translateForMovement(DumbNetworkTraveller traveller, float partialTicks) {
+    public void translateForMovement(DummyNetworkTraveller traveller, float partialTicks) {
         EnumFacing facing = traveller.travelledDistance < 0.5F ? WorldNetworkTraveller.getFacingFromVector(traveller.currentNode.position.subtract(traveller.previousNode.position))
                 : WorldNetworkTraveller.getFacingFromVector(traveller.currentNode.position.subtract(traveller.nextNode.position)).getOpposite();
 

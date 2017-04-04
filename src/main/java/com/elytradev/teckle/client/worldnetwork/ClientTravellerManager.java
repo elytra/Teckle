@@ -1,6 +1,6 @@
 package com.elytradev.teckle.client.worldnetwork;
 
-import com.elytradev.teckle.common.tile.base.TileItemNetworkMember;
+import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class ClientTravellerManager {
 
-    public static HashMap<NBTTagCompound, DumbNetworkTraveller> travellers = new HashMap<>();
+    public static HashMap<NBTTagCompound, DummyNetworkTraveller> travellers = new HashMap<>();
 
     @SubscribeEvent
     public static void onTickEvent(TickEvent.ClientTickEvent e) {
@@ -28,14 +28,14 @@ public class ClientTravellerManager {
 
 
         List<NBTTagCompound> travellersToRemove = new ArrayList<>();
-        for (DumbNetworkTraveller traveller : travellers.values()) {
+        for (DummyNetworkTraveller traveller : travellers.values()) {
             if (traveller.travelledDistance >= 1) {
                 if (traveller.nextNode.isEndpoint() || traveller.nextNode == WorldNetworkNode.NONE) {
                     World clientWorld = Minecraft.getMinecraft().world;
                     TileEntity tileAtCur = clientWorld.getTileEntity(traveller.currentNode.position);
 
-                    if (tileAtCur != null && tileAtCur instanceof TileItemNetworkMember)
-                        ((TileItemNetworkMember) tileAtCur).removeTraveller(traveller.data);
+                    if (tileAtCur != null && tileAtCur instanceof TileNetworkMember)
+                        ((TileNetworkMember) tileAtCur).removeTraveller(traveller.data);
                     travellersToRemove.add(traveller.data);
                 } else {
                     traveller.travelledDistance = 0;
@@ -47,10 +47,10 @@ public class ClientTravellerManager {
                     TileEntity tileAtPrev = clientWorld.getTileEntity(traveller.previousNode.position);
                     TileEntity tileAtCur = clientWorld.getTileEntity(traveller.currentNode.position);
 
-                    if (tileAtPrev != null && tileAtPrev instanceof TileItemNetworkMember)
-                        ((TileItemNetworkMember) tileAtPrev).removeTraveller(traveller.data);
-                    if (tileAtCur != null && tileAtCur instanceof TileItemNetworkMember)
-                        ((TileItemNetworkMember) tileAtCur).addTraveller(traveller);
+                    if (tileAtPrev != null && tileAtPrev instanceof TileNetworkMember)
+                        ((TileNetworkMember) tileAtPrev).removeTraveller(traveller.data);
+                    if (tileAtCur != null && tileAtCur instanceof TileNetworkMember)
+                        ((TileNetworkMember) tileAtCur).addTraveller(traveller);
                 }
             }
 
@@ -67,12 +67,12 @@ public class ClientTravellerManager {
         }
     }
 
-    public static DumbNetworkTraveller put(NBTTagCompound key, DumbNetworkTraveller value) {
+    public static DummyNetworkTraveller put(NBTTagCompound key, DummyNetworkTraveller value) {
         World clientWorld = Minecraft.getMinecraft().world;
         TileEntity tileAtCur = clientWorld.getTileEntity(value.currentNode.position);
 
-        if (tileAtCur != null && tileAtCur instanceof TileItemNetworkMember)
-            ((TileItemNetworkMember) tileAtCur).addTraveller(value);
+        if (tileAtCur != null && tileAtCur instanceof TileNetworkMember)
+            ((TileNetworkMember) tileAtCur).addTraveller(value);
 
         return travellers.put(key, value);
     }

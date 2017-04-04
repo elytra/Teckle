@@ -6,7 +6,7 @@ import net.minecraft.util.math.BlockPos;
 /**
  * Created by darkevilmac on 3/26/2017.
  */
-public class WorldNetworkEndpoint extends WorldNetworkNode {
+public abstract class WorldNetworkEndpoint extends WorldNetworkNode {
 
     public WorldNetworkEndpoint(WorldNetwork network, BlockPos position) {
         super(network, position);
@@ -19,8 +19,6 @@ public class WorldNetworkEndpoint extends WorldNetworkNode {
      * @param from
      * @return if injection was successful, and no product is remaining.
      */
-    public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {
-        return false;
-    }
+    public abstract boolean inject(WorldNetworkTraveller traveller, EnumFacing from);
 
 }

@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork;
 
+import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Tuple;
@@ -17,9 +18,17 @@ import static com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller.get
  */
 public class WorldNetworkEntryPoint extends WorldNetworkNode {
 
+    public WorldNetworkEndpoint endpoint = new WorldNetworkEndpoint(network, position) {
+        @Override
+        public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {
+            if (network.world.getTileEntity(position) != null && network.world.getTileEntity(position) instanceof TileNetworkEntrypoint) {
+                ((TileNetworkEntrypoint) network.world.getTileEntity(position)).acceptReturn(traveller, from);
+            }
+            return true;
+        }
+    };
+    
     private EnumFacing facing = EnumFacing.DOWN;
-    //TODO: round robin for endpoints of same cost.
-    private int roundRobinTicker = 0;
 
     public WorldNetworkEntryPoint(WorldNetwork network, BlockPos position, EnumFacing facing) {
         this.network = network;
@@ -83,13 +92,18 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         }
         sortedEndpointData.sort(Comparator.comparingInt(o -> o.cost));
 
-        System.out.println("Found " + sortedEndpointData.size() + " endpoints. Using: " + sortedEndpointData.get(0));
+        if (sortedEndpointData.isEmpty()) {
+            EndpointData returnToSenderData = new EndpointData(endpoint, position, facing, 0);
+            sortedEndpointData.add(returnToSenderData);
+        }
+
         WorldNetworkPath path = WorldNetworkPath.createPath(traveller, network.getNodeFromPosition(startPos), sortedEndpointData.get(0));
         traveller.triedEndpoints.add(sortedEndpointData.get(0));
         traveller.activePath = path;
-        traveller.previousNode = WorldNetworkNode.NONE;
-        traveller.currentNode = this;
+        traveller.previousNode = this;
+        traveller.currentNode = path.next();
         traveller.nextNode = path.next();
+        traveller.travelledDistance = -0.25F;
 
         traveller.currentNode.registerTraveller(traveller);
     }
@@ -143,9 +157,13 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             sortedEndpointData.addAll(entry.getValue().values());
         }
         sortedEndpointData.sort(Comparator.comparingInt(o -> o.cost));
+        if (sortedEndpointData.isEmpty()) {
+            EndpointData returnToSenderData = new EndpointData(endpoint, position, facing, 0);
+            sortedEndpointData.add(returnToSenderData);
+        }
+
         BlockPos startPos = traveller.nextNode.position;
         WorldNetworkPath path = WorldNetworkPath.createPath(traveller, new WorldNetworkNode(network, startPos), sortedEndpointData.get(0));
-
         traveller.triedEndpoints.add(sortedEndpointData.get(0));
         traveller.previousNode = path.next();
         traveller.currentNode = path.next();

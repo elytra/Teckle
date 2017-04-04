@@ -7,9 +7,9 @@ import net.minecraft.nbt.NBTTagCompound;
 /**
  * Created by darkevilmac on 4/2/2017.
  */
-public class DumbNetworkTraveller extends WorldNetworkTraveller {
+public class DummyNetworkTraveller extends WorldNetworkTraveller {
 
-    public DumbNetworkTraveller(NBTTagCompound data, WorldNetworkPath path) {
+    public DummyNetworkTraveller(NBTTagCompound data, WorldNetworkPath path) {
         super(data);
         this.activePath = path;
     }

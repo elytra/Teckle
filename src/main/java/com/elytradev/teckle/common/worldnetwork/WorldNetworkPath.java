@@ -180,7 +180,7 @@ public class WorldNetworkPath implements Marshallable {
             BlockPos pos = BlockPos.fromLong(buf.readLong());
             WorldNetworkNode networkNode = new WorldNetworkNode(null, pos);
             if (i == size - 1) {
-                networkNode = new WorldNetworkEndpoint(null, pos);
+                networkNode = new DummyWorldNetworkEndpoint(null, pos);
             }
 
             path.add(new PathNode(i == 0 ? null : path.get(i - 1), networkNode, 0, false));
