@@ -19,6 +19,8 @@ import net.minecraftforge.fml.relauncher.Side;
 @ReceivedOn(Side.CLIENT)
 public class TravellerDataMessage extends Message {
 
+    private static final BlockPos IMPOSSIBLEPOS = new BlockPos(0,-1,0);
+
     public NBTTagCompound data;
     public BlockPos prev, current;
     public WorldNetworkPath path;
@@ -35,7 +37,7 @@ public class TravellerDataMessage extends Message {
         this.current = traveller.currentNode.position;
         this.path = traveller.activePath;
 
-        this.prev = BlockPos.ORIGIN;
+        this.prev = IMPOSSIBLEPOS;
     }
 
     public TravellerDataMessage(Action action, WorldNetworkTraveller traveller, BlockPos current, BlockPos previous) {
@@ -52,7 +54,7 @@ public class TravellerDataMessage extends Message {
         if (action.equals(Action.REGISTER)) {
             DumbNetworkTraveller traveller = new DumbNetworkTraveller(data, path);
             traveller.activePath = path;
-            if (!prev.equals(BlockPos.ORIGIN)) {
+            if (!prev.equals(IMPOSSIBLEPOS)) {
                 traveller.previousNode = path.next();
                 traveller.currentNode = path.next();
                 traveller.nextNode = path.next();

@@ -51,8 +51,7 @@ public class BlockItemTube extends BlockContainer {
         this.setLightOpacity(0);
         this.setCreativeTab(CreativeTabs.TOOLS);
 
-        this.setDefaultState(blockState.getBaseState()
-        );
+        this.setDefaultState(blockState.getBaseState());
     }
 
     @Override

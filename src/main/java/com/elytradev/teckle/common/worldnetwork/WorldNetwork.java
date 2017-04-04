@@ -1,12 +1,11 @@
 package com.elytradev.teckle.common.worldnetwork;
 
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.network.TravellerDataMessage;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.*;
 
@@ -15,50 +14,28 @@ import java.util.*;
  */
 public class WorldNetwork implements ITickable {
 
-    protected static List<WorldNetwork> NETWORKS = new ArrayList<>();
+    public UUID id;
+    public World world;
+
     protected HashMap<BlockPos, WorldNetworkNode> networkNodes = new HashMap<>();
     protected List<WorldNetworkTraveller> travellers = new ArrayList<>();
-    protected World world;
     private List<WorldNetworkTraveller> travellersToUnregister = new ArrayList<>();
 
     public WorldNetwork(World world) {
         this.world = world;
+        this.id = UUID.randomUUID();
 
-        NETWORKS.add(this);
-    }
-
-    @SubscribeEvent
-    public static void onTickEvent(TickEvent.WorldTickEvent e) {
-        if (NETWORKS.isEmpty() || e.phase.equals(TickEvent.Phase.START) || e.side.isClient())
-            return;
-
-        List<WorldNetwork> emptyNetworks = new ArrayList<>();
-        for (WorldNetwork network : NETWORKS) {
-            if (network.networkNodes.isEmpty()) {
-                if (!emptyNetworks.contains(network))
-                    emptyNetworks.add(network);
-
-                System.out.println("Found empty network " + network);
-                continue;
-            }
-            if (e.world.equals(network.world))
-                network.update();
-        }
-
-        for (WorldNetwork emptyNetwork : emptyNetworks) {
-            System.out.println("Removing empty network " + emptyNetwork);
-            NETWORKS.remove(emptyNetwork);
-        }
+        WorldNetworkDatabase.registerWorldNetwork(this);
     }
 
     public void registerNode(WorldNetworkNode node) {
-        System.out.println(this + "/Registering a node, " + node);
+        TeckleMod.LOG.debug(this + "/Registering a node, " + node);
         if (!networkNodes.containsKey(node.position))
             networkNodes.put(node.position, node);
         else
             networkNodes.replace(node.position, node);
         node.network = this;
-        System.out.println(this + "/Registered node, " + node);
+        TeckleMod.LOG.debug(this + "/Registered node, " + node);
     }
 
     public void unregisterNode(WorldNetworkNode node) {
@@ -66,10 +43,10 @@ public class WorldNetwork implements ITickable {
     }
 
     public void unregisterNodeAtPosition(BlockPos nodePosition) {
-        System.out.println(this + "/Unregistering a node at, " + nodePosition);
+        TeckleMod.LOG.debug(this + "/Unregistering a node at, " + nodePosition);
         if (networkNodes.containsKey(nodePosition))
             networkNodes.remove(nodePosition);
-        System.out.println(this + "/Unregistered node at, " + nodePosition);
+        TeckleMod.LOG.debug(this + "/Unregistered node at, " + nodePosition);
     }
 
     public WorldNetworkNode getNodeFromPosition(BlockPos pos) {
@@ -108,12 +85,12 @@ public class WorldNetwork implements ITickable {
 
     public WorldNetwork merge(WorldNetwork otherNetwork) {
         int expectedSize = networkNodes.size() + otherNetwork.networkNodes.size();
-        System.out.println("Performing a merge of " + this + " and " + otherNetwork
+        TeckleMod.LOG.debug("Performing a merge of " + this + " and " + otherNetwork
                 + "\n Expecting a node count of " + expectedSize);
         WorldNetwork mergedNetwork = new WorldNetwork(this.world);
         transferNetworkData(mergedNetwork);
         otherNetwork.transferNetworkData(mergedNetwork);
-        System.out.println("Completed merge, resulted in " + mergedNetwork);
+        TeckleMod.LOG.debug("Completed merge, resulted in " + mergedNetwork);
         return mergedNetwork;
     }
 
@@ -140,7 +117,7 @@ public class WorldNetwork implements ITickable {
     public void validateNetwork() {
         // Perform flood fill to validate all nodes are connected. Choose an arbitrary node to current from.
 
-        System.out.println("Performing a network validation.");
+        TeckleMod.LOG.debug("Performing a network validation.");
         List<List<WorldNetworkNode>> networks = new ArrayList<>();
         HashMap<BlockPos, WorldNetworkNode> uncheckedNodes = new HashMap<>();
         uncheckedNodes.putAll(this.networkNodes);
@@ -155,7 +132,7 @@ public class WorldNetwork implements ITickable {
 
         // Only process a split if there's a new network that needs to be formed. RIP old network </3
         if (networks.size() > 1) {
-            System.out.println("Splitting a network...");
+            TeckleMod.LOG.debug("Splitting a network...");
             //Start from 1, leave 0 as this network.
             for (int networkNum = 1; networkNum < networks.size(); networkNum++) {
                 List<WorldNetworkNode> newNetworkData = networks.get(networkNum);
@@ -176,9 +153,9 @@ public class WorldNetwork implements ITickable {
             }
         }
 
-        System.out.println("Finished validation, resulted in " + networks.size() + " networks.\n Network sizes follow.");
+        TeckleMod.LOG.debug("Finished validation, resulted in " + networks.size() + " networks.\n Network sizes follow.");
         for (List<WorldNetworkNode> n : networks) {
-            System.out.println(n.size());
+            TeckleMod.LOG.debug(n.size());
         }
     }
 
@@ -192,7 +169,7 @@ public class WorldNetwork implements ITickable {
         while (!posStack.isEmpty()) {
             BlockPos pos = posStack.remove(0);
             if (knownNodes.containsKey(pos)) {
-                System.out.println("Added " + pos + " to out.");
+                TeckleMod.LOG.debug("Added " + pos + " to out.");
                 out.add(knownNodes.get(pos));
             }
 
@@ -242,5 +219,6 @@ public class WorldNetwork implements ITickable {
     public int hashCode() {
         return Objects.hash(networkNodes, travellers, world);
     }
+
 }
 

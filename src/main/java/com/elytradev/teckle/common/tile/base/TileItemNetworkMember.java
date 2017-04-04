@@ -15,7 +15,7 @@ import java.util.HashMap;
 /**
  * Created by darkevilmac on 3/28/2017.
  */
-public class TileItemNetworkMember extends TileEntity implements ITickable {
+public class TileItemNetworkMember extends TileEntity {
 
     @SideOnly(Side.CLIENT)
     public HashMap<NBTTagCompound, DumbNetworkTraveller> travellers = new HashMap<>();
@@ -27,10 +27,6 @@ public class TileItemNetworkMember extends TileEntity implements ITickable {
 
     public void removeTraveller(NBTTagCompound data) {
         travellers.remove(data);
-    }
-
-    @Override
-    public void update() {
     }
 
     /**
@@ -56,5 +52,18 @@ public class TileItemNetworkMember extends TileEntity implements ITickable {
         this.node = new WorldNetworkNode(network, pos);
 
         return node;
+    }
+
+
+    //TODO: Read and write traveller and network data to NBT.
+
+    @Override
+    public void readFromNBT(NBTTagCompound compound) {
+        super.readFromNBT(compound);
+    }
+
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        return super.writeToNBT(compound);
     }
 }
