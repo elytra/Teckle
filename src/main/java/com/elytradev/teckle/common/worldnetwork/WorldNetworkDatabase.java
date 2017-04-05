@@ -1,7 +1,9 @@
 package com.elytradev.teckle.common.worldnetwork;
 
 import com.elytradev.teckle.common.TeckleMod;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -11,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Created by darkevilmac on 4/3/2017.
@@ -18,9 +21,9 @@ import java.util.UUID;
 public class WorldNetworkDatabase {
 
     public static HashMap<Integer, WorldNetworkDatabase> NETWORKDBS = new HashMap<>();
-
     public World world;
-    public HashMap<UUID, WorldNetwork> networks = new HashMap<>();
+    public WorldNetworkDBData data;
+    protected HashMap<UUID, WorldNetwork> networks = new HashMap<>();
 
     public WorldNetworkDatabase(World world) {
         this.world = world;
@@ -33,6 +36,7 @@ public class WorldNetworkDatabase {
 
         if (!NETWORKDBS.containsKey(e.getWorld().provider.getDimension())) {
             NETWORKDBS.put(e.getWorld().provider.getDimension(), new WorldNetworkDatabase(e.getWorld()));
+            NETWORKDBS.get(e.getWorld().provider.getDimension()).data = WorldNetworkDBData.getDBData(e.getWorld());
         }
     }
 
@@ -55,14 +59,49 @@ public class WorldNetworkDatabase {
     }
 
     public static void registerWorldNetwork(WorldNetwork network) {
-        if (!NETWORKDBS.containsKey(network.world.provider.getDimension()))
+        if (!NETWORKDBS.containsKey(network.world.provider.getDimension())) {
             NETWORKDBS.put(network.world.provider.getDimension(), new WorldNetworkDatabase(network.world));
-
+            NETWORKDBS.get(network.world.provider.getDimension()).data = WorldNetworkDBData.getDBData(network.world);
+        }
         NETWORKDBS.get(network.world.provider.getDimension()).networks.put(network.id, network);
     }
 
     public static WorldNetworkDatabase getNetworkDB(@Nonnull World world) {
-        return NETWORKDBS.get(world.provider.getDimension());
+        return getNetworkDB(world.provider.getDimension());
+    }
+
+    public static WorldNetworkDatabase getNetworkDB(Integer dim) {
+        if (!NETWORKDBS.containsKey(dim)) {
+            NETWORKDBS.put(dim, new WorldNetworkDatabase(DimensionManager.getWorld(dim)));
+            NETWORKDBS.get(dim).data = WorldNetworkDBData.getDBData(DimensionManager.getWorld(dim));
+        }
+        return NETWORKDBS.get(dim);
+    }
+
+    public NBTTagCompound saveDatabase(NBTTagCompound compound) {
+        NBTTagCompound databaseCompound = new NBTTagCompound();
+
+        databaseCompound.setInteger("nCount", networks.size());
+        List<WorldNetwork> worldNetworks = networks.values().stream().collect(Collectors.toList());
+        for (int i = 0; i < worldNetworks.size(); i++) {
+            databaseCompound.setTag("n" + i, worldNetworks.get(i).serialize());
+        }
+
+        return databaseCompound;
+    }
+
+    public void loadDatabase(NBTTagCompound compound) {
+        for (int i = 0; i < compound.getInteger("nCount"); i++) {
+            WorldNetwork network = new WorldNetwork(world, null);
+            network.deserialize(compound.getCompoundTag("n" + i));
+        }
+    }
+
+    public WorldNetwork get(UUID id) {
+        if (!networks.containsKey(id))
+            networks.put(id, new WorldNetwork(world, id));
+
+        return networks.get(id);
     }
 
     public void onTick(TickEvent.WorldTickEvent e) {
@@ -86,5 +125,9 @@ public class WorldNetworkDatabase {
             TeckleMod.LOG.debug("Removing empty network " + emptyNetwork);
             networks.remove(emptyNetwork.id);
         }
+
+        if (!data.isDirty())
+            data.markDirty();
     }
+
 }

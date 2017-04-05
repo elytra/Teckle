@@ -2,6 +2,7 @@ package com.elytradev.teckle.common.tile.base;
 
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
+import com.elytradev.teckle.common.worldnetwork.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -14,11 +15,11 @@ import java.util.HashMap;
 /**
  * Created by darkevilmac on 3/28/2017.
  */
-public class TileNetworkMember extends TileEntity {
+public abstract class TileNetworkMember extends TileEntity {
 
     @SideOnly(Side.CLIENT)
     public HashMap<NBTTagCompound, DummyNetworkTraveller> travellers = new HashMap<>();
-    private WorldNetworkNode node;
+    public WorldNetworkNode node;
 
     public void addTraveller(DummyNetworkTraveller traveller) {
         travellers.put(traveller.data, traveller);
@@ -47,20 +48,6 @@ public class TileNetworkMember extends TileEntity {
         this.node = node;
     }
 
-    public WorldNetworkNode getNode(WorldNetwork network) {
-        this.node = new WorldNetworkNode(network, pos);
+    public abstract WorldNetworkNode getNode(WorldNetwork network);
 
-        return node;
-    }
-
-    //TODO: Read and write traveller and network data to NBT.
-    @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
-    }
-
-    @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        return super.writeToNBT(compound);
-    }
 }

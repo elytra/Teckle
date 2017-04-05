@@ -2,12 +2,15 @@ package com.elytradev.teckle.common.worldnetwork;
 
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.network.TravellerDataMessage;
+import com.elytradev.teckle.common.tile.base.TileNetworkMember;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by darkevilmac on 3/25/2017.
@@ -21,10 +24,13 @@ public class WorldNetwork implements ITickable {
     protected List<WorldNetworkTraveller> travellers = new ArrayList<>();
     private List<WorldNetworkTraveller> travellersToUnregister = new ArrayList<>();
 
-    public WorldNetwork(World world) {
+    public WorldNetwork(World world, UUID id) {
         this.world = world;
-        this.id = UUID.randomUUID();
-
+        if (id == null) {
+            this.id = UUID.randomUUID();
+        } else {
+            this.id = id;
+        }
         WorldNetworkDatabase.registerWorldNetwork(this);
     }
 
@@ -58,7 +64,7 @@ public class WorldNetwork implements ITickable {
     }
 
     public List<WorldNetworkNode> getNodes() {
-        return Arrays.asList((WorldNetworkNode[]) networkNodes.values().toArray());
+        return networkNodes.values().stream().collect(Collectors.toList());
     }
 
     public List<BlockPos> getNodePositions() {
@@ -87,7 +93,7 @@ public class WorldNetwork implements ITickable {
         int expectedSize = networkNodes.size() + otherNetwork.networkNodes.size();
         TeckleMod.LOG.debug("Performing a merge of " + this + " and " + otherNetwork
                 + "\n Expecting a node count of " + expectedSize);
-        WorldNetwork mergedNetwork = new WorldNetwork(this.world);
+        WorldNetwork mergedNetwork = new WorldNetwork(this.world, null);
         transferNetworkData(mergedNetwork);
         otherNetwork.transferNetworkData(mergedNetwork);
         TeckleMod.LOG.debug("Completed merge, resulted in " + mergedNetwork);
@@ -136,7 +142,7 @@ public class WorldNetwork implements ITickable {
             //Start from 1, leave 0 as this network.
             for (int networkNum = 1; networkNum < networks.size(); networkNum++) {
                 List<WorldNetworkNode> newNetworkData = networks.get(networkNum);
-                WorldNetwork newNetwork = new WorldNetwork(this.world);
+                WorldNetwork newNetwork = new WorldNetwork(this.world, null);
                 for (WorldNetworkNode node : newNetworkData) {
                     this.unregisterNode(node);
                     newNetwork.registerNode(node);
@@ -220,5 +226,45 @@ public class WorldNetwork implements ITickable {
         return Objects.hash(networkNodes, travellers, world);
     }
 
+    public NBTTagCompound serialize() {
+        NBTTagCompound tagCompound = new NBTTagCompound();
+
+        tagCompound.setUniqueId("id", id);
+
+        // Serialize nodes first.
+        tagCompound.setInteger("nCount", networkNodes.size());
+        List<WorldNetworkNode> nodes = getNodes();
+        for (int i = 0; i < nodes.size(); i++) {
+            tagCompound.setLong("n" + i, nodes.get(i).position.toLong());
+        }
+
+        // Serialize travellers.
+        tagCompound.setInteger("tCount", travellers.size());
+        for (int i = 0; i < travellers.size(); i++) {
+            tagCompound.setTag("t" + i, travellers.get(i).serialize());
+        }
+
+        return tagCompound;
+    }
+
+    public void deserialize(NBTTagCompound compound) {
+        this.id = compound.getUniqueId("id");
+
+        for (int i = 0; i < compound.getInteger("nCount"); i++) {
+            BlockPos pos = BlockPos.fromLong(compound.getLong("n" + i));
+
+            if (world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileNetworkMember) {
+                TileNetworkMember networkMember = (TileNetworkMember) world.getTileEntity(pos);
+                WorldNetworkNode node = networkMember.getNode(this);
+                networkMember.setNode(node);
+                registerNode(node);
+            }
+        }
+
+        for (int i = 0; i < compound.getInteger("tCount"); i++) {
+            WorldNetworkTraveller traveller = new WorldNetworkTraveller(new NBTTagCompound()).deserialize(this, compound.getCompoundTag("t" + i));
+            this.registerTraveller(traveller);
+        }
+    }
 }
 

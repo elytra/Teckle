@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("deprecation")
 public class BlockItemTube extends BlockContainer {
 
     public static UnlistedBool NORTH = new UnlistedBool("north");
@@ -164,7 +165,7 @@ public class BlockItemTube extends BlockContainer {
             }
         } else {
             // No neighbours, make a new network.
-            WorldNetwork network = new WorldNetwork(worldIn);
+            WorldNetwork network = new WorldNetwork(worldIn, null);
             WorldNetworkNode node = new WorldNetworkNode(network, pos);
             network.registerNode(node);
             if (worldIn.getTileEntity(pos) != null) {
@@ -173,7 +174,7 @@ public class BlockItemTube extends BlockContainer {
         }
 
         //Check for possible neighbour nodes...
-        List<TileEntity> neighbourNodes = getPotentialNeighbourNodes(worldIn, pos, tube.getNode().network);
+        List<TileEntity> neighbourNodes = getPotentialNeighbourNodes(worldIn, pos, tube.getNode().network, false);
         for (TileEntity neighbourNode : neighbourNodes) {
             if (neighbourNode instanceof TileNetworkMember) {
                 if (!tube.getNode().network.isNodePresent(neighbourNode.getPos())) {
@@ -237,9 +238,11 @@ public class BlockItemTube extends BlockContainer {
         TileEntity tileAtPos = worldIn.getTileEntity(pos);
         if (tileAtPos != null) {
             TileItemTube tube = (TileItemTube) tileAtPos;
-            tube.getNode().network.unregisterNodeAtPosition(pos);
-            tube.getNode().network.validateNetwork();
-            tube.setNode(null);
+            if (tube.getNode() != null) {
+                tube.getNode().network.unregisterNodeAtPosition(pos);
+                tube.getNode().network.validateNetwork();
+                tube.setNode(null);
+            }
         }
 
         // Call super after we're done so we still have access to the tile.
@@ -274,11 +277,13 @@ public class BlockItemTube extends BlockContainer {
         return neighbourNetworks;
     }
 
-    private List<TileEntity> getPotentialNeighbourNodes(IBlockAccess world, BlockPos pos, WorldNetwork network) {
+    public List<TileEntity> getPotentialNeighbourNodes(IBlockAccess world, BlockPos pos, WorldNetwork network, boolean loadChunks) {
         List<TileEntity> neighbourNodes = new ArrayList<>();
 
         for (EnumFacing facing : EnumFacing.VALUES) {
             BlockPos neighbourPos = pos.add(facing.getDirectionVec());
+            if (!loadChunks && !((World) world).isBlockLoaded(neighbourPos))
+                continue;
             TileEntity neighbourTile = world.getTileEntity(neighbourPos);
 
             if (neighbourTile != null) {

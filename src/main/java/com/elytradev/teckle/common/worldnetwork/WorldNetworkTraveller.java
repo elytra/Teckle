@@ -4,6 +4,7 @@ import com.elytradev.teckle.common.network.TravellerDataMessage;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 
 import java.util.ArrayList;
@@ -15,17 +16,16 @@ import java.util.UUID;
  */
 public class WorldNetworkTraveller implements ITickable {
 
-    private final WorldNetworkEntryPoint entryPoint;
     public WorldNetwork network;
     public WorldNetworkNode previousNode, currentNode, nextNode;
     public WorldNetworkPath activePath;
-    // The current distance travelled between our previous node, and the increment node.
-
     public float travelledDistance = 0F;
+    // The current distance travelled between our previous node, and the increment node.
     public NBTTagCompound data;
     public List<EndpointData> triedEndpoints = new ArrayList<>();
+    private WorldNetworkEntryPoint entryPoint;
 
-    protected WorldNetworkTraveller(NBTTagCompound data) {
+    public WorldNetworkTraveller(NBTTagCompound data) {
         this.entryPoint = null;
 
         this.data = data;
@@ -79,4 +79,22 @@ public class WorldNetworkTraveller implements ITickable {
     }
 
 
+    public NBTTagCompound serialize() {
+        NBTTagCompound tagCompound = new NBTTagCompound();
+        tagCompound.setFloat("travelled", travelledDistance);
+        tagCompound.setTag("data", data);
+        tagCompound.setLong("entrypoint", entryPoint.position.toLong());
+
+        return tagCompound;
+    }
+
+    public WorldNetworkTraveller deserialize(WorldNetwork network, NBTTagCompound nbt) {
+        travelledDistance = nbt.getFloat("travelled");
+        data = nbt.getCompoundTag("data");
+        entryPoint = (WorldNetworkEntryPoint) network.getNodeFromPosition(BlockPos.fromLong(nbt.getLong("entrypoint")));
+
+        entryPoint.findNodeForTraveller(this);
+
+        return this;
+    }
 }

@@ -27,7 +27,7 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             return true;
         }
     };
-
+    public List<WorldNetworkTraveller> managedTravellers = new ArrayList<>();
     private EnumFacing facing = EnumFacing.DOWN;
 
     public WorldNetworkEntryPoint(WorldNetwork network, BlockPos position, EnumFacing facing) {
@@ -42,6 +42,7 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
     public void addTraveller(NBTTagCompound data) {
         WorldNetworkTraveller traveller = new WorldNetworkTraveller(this, data);
         createInitialPathForTraveller(traveller);
+        managedTravellers.add(traveller);
         network.registerTraveller(traveller);
     }
 
