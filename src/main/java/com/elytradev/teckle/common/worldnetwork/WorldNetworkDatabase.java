@@ -102,6 +102,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
     public NBTTagCompound saveDatabase(NBTTagCompound compound) {
         NBTTagCompound databaseCompound = new NBTTagCompound();
 
+        databaseCompound.setInteger("world", world.provider.getDimension());
         databaseCompound.setInteger("nCount", networks.size());
         List<WorldNetwork> worldNetworks = networks.values().stream().collect(Collectors.toList());
         for (int i = 0; i < worldNetworks.size(); i++) {
@@ -112,9 +113,14 @@ public class WorldNetworkDatabase extends WorldSavedData {
     }
 
     public void loadDatabase(NBTTagCompound compound) {
+        if(world == null){
+            world = DimensionManager.getWorld(compound.getInteger("world"));
+        }
+
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
-            WorldNetwork network = new WorldNetwork(world, null);
+            WorldNetwork network = new WorldNetwork(world, null, true);
             network.deserialize(compound.getCompoundTag("n" + i));
+            registerWorldNetwork(network);
         }
     }
 

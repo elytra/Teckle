@@ -4,6 +4,7 @@ import com.elytradev.teckle.common.block.property.UnlistedBool;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
+import com.elytradev.teckle.common.worldnetwork.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
@@ -166,6 +167,7 @@ public class BlockItemTube extends BlockContainer {
         } else {
             // No neighbours, make a new network.
             WorldNetwork network = new WorldNetwork(worldIn, null);
+            WorldNetworkDatabase.registerWorldNetwork(network);
             WorldNetworkNode node = new WorldNetworkNode(network, pos);
             network.registerNode(node);
             if (worldIn.getTileEntity(pos) != null) {

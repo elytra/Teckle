@@ -24,14 +24,19 @@ public class WorldNetwork implements ITickable {
     protected List<WorldNetworkTraveller> travellers = new ArrayList<>();
     private List<WorldNetworkTraveller> travellersToUnregister = new ArrayList<>();
 
-    public WorldNetwork(World world, UUID id) {
+    public WorldNetwork(World world, UUID id, boolean skipRegistration) {
         this.world = world;
         if (id == null) {
             this.id = UUID.randomUUID();
         } else {
             this.id = id;
         }
-        WorldNetworkDatabase.registerWorldNetwork(this);
+        if (!skipRegistration)
+            WorldNetworkDatabase.registerWorldNetwork(this);
+    }
+
+    public WorldNetwork(World world, UUID id) {
+        this(world, id, false);
     }
 
     public void registerNode(WorldNetworkNode node) {
