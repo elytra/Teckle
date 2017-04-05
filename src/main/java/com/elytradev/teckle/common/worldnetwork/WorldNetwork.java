@@ -270,6 +270,7 @@ public class WorldNetwork implements ITickable {
             WorldNetworkTraveller traveller = new WorldNetworkTraveller(new NBTTagCompound()).deserialize(this, compound.getCompoundTag("t" + i));
             this.registerTraveller(traveller);
         }
+        WorldNetworkDatabase.registerWorldNetwork(this);
     }
 }
 

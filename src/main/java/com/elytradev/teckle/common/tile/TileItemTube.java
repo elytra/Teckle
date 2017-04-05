@@ -7,6 +7,7 @@ import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
+import net.minecraft.world.World;
 
 import java.util.List;
 
@@ -22,11 +23,8 @@ public class TileItemTube extends TileNetworkMember implements ITickable {
     }
 
     @Override
-    public void onLoad(){
-        if (world == null || world.isRemote || getNode() == null || getNode().network == null)
-            return;
-
-        List<TileEntity> neighbourNodes = TeckleObjects.blockItemTube.getPotentialNeighbourNodes(world, pos, getNode().network, false);
+    public void networkReloaded(WorldNetwork network) {
+        List<TileEntity> neighbourNodes = TeckleObjects.blockItemTube.getPotentialNeighbourNodes(network.world, pos, network, true);
         for (TileEntity neighbourNode : neighbourNodes) {
             if (neighbourNode instanceof TileNetworkMember) {
                 if (!getNode().network.isNodePresent(neighbourNode.getPos())) {
@@ -39,6 +37,7 @@ public class TileItemTube extends TileNetworkMember implements ITickable {
                 }
             }
         }
+
     }
 
     @Override

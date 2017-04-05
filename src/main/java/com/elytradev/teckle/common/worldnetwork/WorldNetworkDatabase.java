@@ -1,6 +1,7 @@
 package com.elytradev.teckle.common.worldnetwork;
 
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSavedData;
@@ -113,14 +114,21 @@ public class WorldNetworkDatabase extends WorldSavedData {
     }
 
     public void loadDatabase(NBTTagCompound compound) {
-        if(world == null){
+        if (world == null) {
             world = DimensionManager.getWorld(compound.getInteger("world"));
         }
 
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             WorldNetwork network = new WorldNetwork(world, null, true);
             network.deserialize(compound.getCompoundTag("n" + i));
-            registerWorldNetwork(network);
+        }
+
+        for (WorldNetwork network : networks.values()) {
+            for (WorldNetworkNode networkNode : network.networkNodes.values()) {
+                if (world.getTileEntity(networkNode.position) != null && world.getTileEntity(networkNode.position) instanceof TileNetworkMember) {
+                    ((TileNetworkMember) world.getTileEntity(networkNode.position)).networkReloaded(network);
+                }
+            }
         }
     }
 
