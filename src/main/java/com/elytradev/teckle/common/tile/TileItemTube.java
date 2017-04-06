@@ -5,13 +5,16 @@ import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
+import net.minecraft.item.EnumDyeColor;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
-import net.minecraft.world.World;
 
 import java.util.List;
 
 public class TileItemTube extends TileNetworkMember implements ITickable {
+
+    public EnumDyeColor colour = null;
 
     @Override
     public void updateContainingBlockInfo() {
@@ -43,5 +46,17 @@ public class TileItemTube extends TileNetworkMember implements ITickable {
     @Override
     public WorldNetworkNode getNode(WorldNetwork network) {
         return new WorldNetworkNode(network, pos);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound compound) {
+        colour = compound.getInteger("colour") > 15 ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
+        super.readFromNBT(compound);
+    }
+
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        compound.setInteger("colour", colour != null ? colour.getMetadata() : 16);
+        return super.writeToNBT(compound);
     }
 }

@@ -55,7 +55,6 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
     public boolean pushToNetwork() {
         boolean result = false;
 
-        IBlockState state = world.getBlockState(pos);
         if (getNode() != null && getNode().network != null && !world.isRemote && cooldown == 0) {
             WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) getNode().network.getNodeFromPosition(pos);
             EnumFacing facing = getFacing();
@@ -69,7 +68,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
                         extractionData = itemHandler.extractItem(slot, 8, false);
                     }
 
-                    if (extractionData != ItemStack.EMPTY) {
+                    if (!extractionData.isEmpty()) {
                         NBTTagCompound tagCompound = new NBTTagCompound();
                         tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
                         thisNode.addTraveller(tagCompound);

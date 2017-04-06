@@ -1,6 +1,7 @@
 package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.common.block.property.UnlistedBool;
+import com.elytradev.teckle.common.block.property.UnlistedEnum;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
@@ -15,6 +16,7 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
@@ -46,6 +48,8 @@ public class BlockItemTube extends BlockContainer {
     public static UnlistedBool DOWN = new UnlistedBool("down");
     public static UnlistedBool NODE = new UnlistedBool("node");
 
+    public static UnlistedEnum<EnumDyeColor> COLOUR = new UnlistedEnum("colour", EnumDyeColor.class);
+
     public BlockItemTube(Material materialIn) {
         super(materialIn);
 
@@ -65,6 +69,7 @@ public class BlockItemTube extends BlockContainer {
     public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
         IExtendedBlockState extendedBlockState = (IExtendedBlockState) state;
         List<EnumFacing> connections = getConnections(world, pos);
+        EnumDyeColor colour = null;
         boolean node = connections.isEmpty() || connections.size() > 2 || connections.size() == 1;
 
         for (EnumFacing facing : connections) {
@@ -82,13 +87,18 @@ public class BlockItemTube extends BlockContainer {
             }
         }
 
+        if (world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileItemTube) {
+            colour = ((TileItemTube) world.getTileEntity(pos)).colour;
+        }
+
         return extendedBlockState.withProperty(NORTH, connections.contains(EnumFacing.NORTH))
                 .withProperty(EAST, connections.contains(EnumFacing.EAST))
                 .withProperty(SOUTH, connections.contains(EnumFacing.SOUTH))
                 .withProperty(WEST, connections.contains(EnumFacing.WEST))
                 .withProperty(DOWN, connections.contains(EnumFacing.DOWN))
                 .withProperty(UP, connections.contains(EnumFacing.UP))
-                .withProperty(NODE, node);
+                .withProperty(NODE, node)
+                .withProperty(COLOUR, colour);
     }
 
     @Override
@@ -123,7 +133,7 @@ public class BlockItemTube extends BlockContainer {
 
     @Override
     public BlockStateContainer createBlockState() {
-        return new ExtendedBlockState(this, new IProperty[]{}, new IUnlistedProperty[]{NORTH, EAST, SOUTH, WEST, UP, DOWN, NODE});
+        return new ExtendedBlockState(this, new IProperty[]{}, new IUnlistedProperty[]{NORTH, EAST, SOUTH, WEST, UP, DOWN, NODE, COLOUR});
     }
 
     @Override

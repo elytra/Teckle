@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.model.IRetexturableModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.property.IExtendedBlockState;
@@ -42,11 +42,11 @@ public class ModelItemTube implements IBakedModel {
             rotations.put(EnumFacing.WEST, ModelRotation.X90_Y270);
             rotations.put(EnumFacing.EAST, ModelRotation.X90_Y90);
 
-            IModel unbakedNodeModel = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_node"));
-            IModel unbakedLegModel = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_leg"));
-            IModel unbakedLegModelInside = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_leg_inside"));
-            IModel unbakedLegNodeModel = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_leg_node"));
-            IModel unbakedLegNodeModelInside = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_leg_node_inside"));
+            IRetexturableModel unbakedNodeModel = (IRetexturableModel) ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_node"));
+            IRetexturableModel unbakedLegModel = (IRetexturableModel) ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_leg"));
+            IRetexturableModel unbakedLegModelInside = (IRetexturableModel) ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_leg_inside"));
+            IRetexturableModel unbakedLegNodeModel = (IRetexturableModel) ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_leg_node"));
+            IRetexturableModel unbakedLegNodeModelInside = (IRetexturableModel) ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_leg_node_inside"));
 
             nodeModel = unbakedNodeModel.bake(new TRSRTransformation(ModelRotation.X0_Y0), DefaultVertexFormats.BLOCK, textureGetter);
 
@@ -137,7 +137,7 @@ public class ModelItemTube implements IBakedModel {
 
     @Override
     public boolean isGui3d() {
-        return false;
+        return true;
     }
 
     @Override

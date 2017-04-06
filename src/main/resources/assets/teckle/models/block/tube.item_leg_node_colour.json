@@ -1,0 +1,27 @@
+{
+    "ambientocclusion": false,
+    "textures": {
+        "0": "teckle:blocks/itemtube.full.color",
+        "1": "teckle:blocks/itemtube.node.color"
+    },
+    "elements": [
+        {
+            "from": [5,12,5],
+            "to": [11,16,11],
+            "faces": {
+                "west": {
+                    "texture": "#0", "tintindex": 0
+                },
+                "east": {
+                    "texture": "#0", "tintindex": 0
+                },
+                "north": {
+                    "texture": "#0", "tintindex": 0
+                },
+                "south": {
+                    "texture": "#0", "tintindex": 0
+                }
+            }
+        }
+    ]
+}

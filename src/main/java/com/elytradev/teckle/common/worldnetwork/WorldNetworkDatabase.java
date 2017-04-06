@@ -100,9 +100,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
         return data;
     }
 
-    public NBTTagCompound saveDatabase(NBTTagCompound compound) {
-        NBTTagCompound databaseCompound = new NBTTagCompound();
-
+    public NBTTagCompound saveDatabase(NBTTagCompound databaseCompound) {
         databaseCompound.setInteger("world", world.provider.getDimension());
         databaseCompound.setInteger("nCount", networks.size());
         List<WorldNetwork> worldNetworks = networks.values().stream().collect(Collectors.toList());
@@ -121,15 +119,24 @@ public class WorldNetworkDatabase extends WorldSavedData {
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             WorldNetwork network = new WorldNetwork(world, null, true);
             network.deserialize(compound.getCompoundTag("n" + i));
+
+            networks.put(network.id, network);
         }
 
+        List<TileNetworkMember> networkMembers = new ArrayList<>();
         for (WorldNetwork network : networks.values()) {
             for (WorldNetworkNode networkNode : network.networkNodes.values()) {
                 if (world.getTileEntity(networkNode.position) != null && world.getTileEntity(networkNode.position) instanceof TileNetworkMember) {
-                    ((TileNetworkMember) world.getTileEntity(networkNode.position)).networkReloaded(network);
+                    networkMembers.add((TileNetworkMember) world.getTileEntity(networkNode.position));
                 }
             }
         }
+
+        for (TileNetworkMember networkMember : networkMembers) {
+            networkMember.networkReloaded(networkMember.getNode().network);
+        }
+
+        WorldNetworkDatabase.NETWORKDBS.put(world.provider.getDimension(), this);
     }
 
     public WorldNetwork get(UUID id) {
