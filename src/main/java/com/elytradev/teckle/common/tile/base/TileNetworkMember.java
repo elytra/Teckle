@@ -6,7 +6,6 @@ import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -29,12 +28,30 @@ public abstract class TileNetworkMember extends TileEntity {
         travellers.remove(data);
     }
 
+    @Override
+    public void onChunkUnload() {
+        super.onChunkUnload();
+
+        if (node != null) {
+            node.loaded = false;
+        }
+    }
+
+    @Override
+    public void onLoad() {
+        if (node != null) {
+            node.loaded = true;
+        }
+    }
+
     /**
      * Called after a network has been loaded from WorldSavedData, allows adding of missing nodes for endpoints and such.
+     *
      * @param network
      */
     public void networkReloaded(WorldNetwork network) {
     }
+
     /**
      * Check if this tile can be added to a given network with a neighbour on a specified side.
      *

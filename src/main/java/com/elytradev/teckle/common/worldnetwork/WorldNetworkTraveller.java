@@ -31,7 +31,8 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         this.entryPoint = null;
 
         this.data = data;
-        this.data.setUniqueId("id", UUID.randomUUID());
+        if (!this.data.hasKey("idLeast"))
+            this.data.setUniqueId("id", UUID.randomUUID());
     }
 
     protected WorldNetworkTraveller(WorldNetworkEntryPoint entryPoint, NBTTagCompound data) {
@@ -39,7 +40,8 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         this.entryPoint = entryPoint;
 
         this.data = data;
-        this.data.setUniqueId("id", UUID.randomUUID());
+        if (!this.data.hasKey("idLeast"))
+            this.data.setUniqueId("id", UUID.randomUUID());
     }
 
     public static EnumFacing getFacingFromVector(Vec3i vec) {
@@ -50,31 +52,42 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         return EnumFacing.DOWN;
     }
 
+    public EnumFacing getFacingVector() {
+        return getFacingFromVector(nextNode.position.subtract(currentNode.position)).getOpposite();
+    }
+
     @Override
     public void update() {
-        if (travelledDistance >= 1) {
-            if (nextNode.isEndpoint()) {
-                if (travelledDistance >= 1.25F) {
-                    travelledDistance = 0F;
-                    EnumFacing injectionFace = getFacingFromVector(nextNode.position.subtract(currentNode.position)).getOpposite();
-                    boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this, injectionFace);
+        if (travelledDistance >= 0.5F) {
+            if (!network.isNodePresent(nextNode.position) || (!nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector()))) {
+                entryPoint.findNodeForTraveller(this);
+                new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, currentNode.position);
+                new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position)
+                        .sendToAllWatching(this.network.world, this.currentNode.position);
+            } else if (travelledDistance >= 1F) {
+                if (nextNode.isEndpoint()) {
+                    if (travelledDistance >= 1.25F) {
+                        travelledDistance = 0F;
+                        EnumFacing injectionFace = getFacingFromVector(nextNode.position.subtract(currentNode.position)).getOpposite();
+                        boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this, injectionFace);
 
-                    if (!didInject) {
-                        triedEndpoints.add(new Tuple<>((WorldNetworkEndpoint) nextNode, injectionFace));
-                        entryPoint.findNodeForTraveller(this);
-                        new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position).sendToAllWatching(this.network.world, this.currentNode.position);
-                    } else {
-                        network.unregisterTraveller(this);
+                        if (!didInject) {
+                            triedEndpoints.add(new Tuple<>((WorldNetworkEndpoint) nextNode, injectionFace));
+                            entryPoint.findNodeForTraveller(this);
+                            new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position).sendToAllWatching(this.network.world, this.currentNode.position);
+                        } else {
+                            network.unregisterTraveller(this);
+                        }
                     }
-                }
-            } else {
-                travelledDistance = 0;
-                previousNode = currentNode;
-                currentNode = nextNode;
-                nextNode = activePath.next();
+                } else {
+                    travelledDistance = 0;
+                    previousNode = currentNode;
+                    currentNode = nextNode;
+                    nextNode = activePath.next();
 
-                previousNode.unregisterTraveller(this);
-                currentNode.registerTraveller(this);
+                    previousNode.unregisterTraveller(this);
+                    currentNode.registerTraveller(this);
+                }
             }
         }
 

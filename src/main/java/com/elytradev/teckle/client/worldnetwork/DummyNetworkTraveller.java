@@ -11,6 +11,7 @@ public class DummyNetworkTraveller extends WorldNetworkTraveller {
 
     public DummyNetworkTraveller(NBTTagCompound data, WorldNetworkPath path) {
         super(data);
+        this.data = data;
         this.activePath = path;
     }
 

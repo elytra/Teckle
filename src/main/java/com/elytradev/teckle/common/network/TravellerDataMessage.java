@@ -19,7 +19,7 @@ import net.minecraftforge.fml.relauncher.Side;
 @ReceivedOn(Side.CLIENT)
 public class TravellerDataMessage extends Message {
 
-    private static final BlockPos IMPOSSIBLEPOS = new BlockPos(0,-1,0);
+    private static final BlockPos IMPOSSIBLEPOS = new BlockPos(0, -1, 0);
 
     public NBTTagCompound data;
     public BlockPos prev, current;
@@ -74,6 +74,7 @@ public class TravellerDataMessage extends Message {
 
     public enum Action {
         REGISTER,
-        UNREGISTER
+        UNREGISTER,
+        REREGISTER
     }
 }

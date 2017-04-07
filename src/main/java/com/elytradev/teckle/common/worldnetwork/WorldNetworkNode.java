@@ -1,6 +1,5 @@
 package com.elytradev.teckle.common.worldnetwork;
 
-import com.elytradev.teckle.common.network.TravellerDataMessage;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
@@ -15,6 +14,7 @@ public class WorldNetworkNode {
     // Empty node, used instead of null because fuck NPEs.
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
 
+    public boolean loaded = true;
     public BlockPos position;
     public WorldNetwork network;
     private List<WorldNetworkTraveller> travellers = new ArrayList<>();
@@ -28,7 +28,7 @@ public class WorldNetworkNode {
     }
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        return true;
+        return loaded;
     }
 
     public void registerTraveller(WorldNetworkTraveller traveller) {
