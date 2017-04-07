@@ -2,6 +2,7 @@ package com.elytradev.teckle.common.network;
 
 import com.elytradev.concrete.Message;
 import com.elytradev.concrete.NetworkContext;
+import com.elytradev.concrete.annotation.field.MarshalledAs;
 import com.elytradev.concrete.annotation.type.ReceivedOn;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
@@ -21,6 +22,8 @@ public class TravellerDataMessage extends Message {
 
     private static final BlockPos IMPOSSIBLEPOS = new BlockPos(0, -1, 0);
 
+    @MarshalledAs("float")
+    public float travelledDistance = 0F;
     public NBTTagCompound data;
     public BlockPos prev, current;
     public WorldNetworkPath path;
@@ -58,13 +61,12 @@ public class TravellerDataMessage extends Message {
                 traveller.previousNode = path.next();
                 traveller.currentNode = path.next();
                 traveller.nextNode = path.next();
-                // make it look like it came out of the inv.
-                traveller.travelledDistance = -0.10F;
             } else {
                 traveller.previousNode = new WorldNetworkNode(null, prev);
                 traveller.currentNode = new WorldNetworkNode(null, current);
                 traveller.nextNode = path.next();
             }
+            traveller.travelledDistance = this.travelledDistance;
 
             ClientTravellerManager.put(data, traveller);
         } else if (action.equals(Action.UNREGISTER)) {

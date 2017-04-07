@@ -62,8 +62,9 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             if (!network.isNodePresent(nextNode.position) || (!nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector()))) {
                 entryPoint.findNodeForTraveller(this);
                 new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, currentNode.position);
-                new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position)
-                        .sendToAllWatching(this.network.world, this.currentNode.position);
+                TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
+                message.travelledDistance = 0.5F;
+                message.sendToAllWatching(this.network.world, this.currentNode.position);
             } else if (travelledDistance >= 1F) {
                 if (nextNode.isEndpoint()) {
                     if (travelledDistance >= 1.25F) {
@@ -74,7 +75,9 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         if (!didInject) {
                             triedEndpoints.add(new Tuple<>((WorldNetworkEndpoint) nextNode, injectionFace));
                             entryPoint.findNodeForTraveller(this);
-                            new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position).sendToAllWatching(this.network.world, this.currentNode.position);
+                            TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
+                            message.travelledDistance = -0.10F;
+                            message.sendToAllWatching(this.network.world, this.currentNode.position);
                         } else {
                             network.unregisterTraveller(this);
                         }
