@@ -102,12 +102,10 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         }
 
         WorldNetworkPath path = WorldNetworkPath.createPath(traveller, network.getNodeFromPosition(startPos), sortedEndpointData.get(0));
-        traveller.triedEndpoints.add(sortedEndpointData.get(0));
         traveller.activePath = path;
         traveller.previousNode = WorldNetworkNode.NONE;
         traveller.currentNode = this;
         traveller.nextNode = path.next();
-
         traveller.currentNode.registerTraveller(traveller);
     }
 
@@ -174,7 +172,6 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             path = WorldNetworkPath.createPath(traveller, new WorldNetworkNode(network, startPos), sortedEndpointData.get(0));
         }
 
-        traveller.triedEndpoints.add(sortedEndpointData.get(0));
         traveller.previousNode = path.next();
         traveller.currentNode = path.next();
         traveller.nextNode = path.next();
@@ -183,7 +180,8 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
     }
 
     public boolean isValidEndpoint(WorldNetworkTraveller traveller, BlockPos from, BlockPos endPoint) {
-        return network.isNodePresent(endPoint)
+        return !traveller.triedEndpoints.contains(new Tuple<>(network.getNodeFromPosition(endPoint), getFacingFromVector(endPoint.subtract(from))))
+                && network.isNodePresent(endPoint)
                 && network.getNodeFromPosition(endPoint).isEndpoint()
                 && network.getNodeFromPosition(position).canAcceptTraveller(traveller, getFacingFromVector(from.subtract(endPoint)));
     }

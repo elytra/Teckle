@@ -23,7 +23,7 @@ public class ClientTravellerManager {
 
     @SubscribeEvent
     public static void onTickEvent(TickEvent.ClientTickEvent e) {
-        if (e.phase.equals(TickEvent.Phase.END) || Minecraft.getMinecraft().world == null)
+        if (e.phase.equals(TickEvent.Phase.END) || Minecraft.getMinecraft().world == null || Minecraft.getMinecraft().isGamePaused())
             return;
 
 

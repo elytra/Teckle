@@ -33,10 +33,6 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
     @Override
     public WorldNetworkNode getNode() {
-        if (super.getNode() == null) {
-            System.out.println("Getnode is null on filter.");
-        }
-
         return super.getNode();
     }
 

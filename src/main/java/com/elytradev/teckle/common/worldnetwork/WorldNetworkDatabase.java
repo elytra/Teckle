@@ -105,7 +105,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
         databaseCompound.setInteger("nCount", networks.size());
         List<WorldNetwork> worldNetworks = networks.values().stream().collect(Collectors.toList());
         for (int i = 0; i < worldNetworks.size(); i++) {
-            databaseCompound.setTag("n" + i, worldNetworks.get(i).serialize());
+            databaseCompound.setTag("n" + i, worldNetworks.get(i).serializeNBT());
         }
 
         return databaseCompound;
@@ -116,19 +116,24 @@ public class WorldNetworkDatabase extends WorldSavedData {
             world = DimensionManager.getWorld(compound.getInteger("world"));
         }
 
+        WorldNetworkDatabase.NETWORKDBS.put(world.provider.getDimension(), this);
+
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             WorldNetwork network = new WorldNetwork(world, null, true);
-            network.deserialize(compound.getCompoundTag("n" + i));
-
-            networks.put(network.id, network);
+            network.deserializeNBT(compound.getCompoundTag("n" + i));
         }
 
         List<TileNetworkMember> networkMembers = new ArrayList<>();
+        List<WorldNetworkTraveller> networkTravellers = new ArrayList<>();
         for (WorldNetwork network : networks.values()) {
             for (WorldNetworkNode networkNode : network.networkNodes.values()) {
                 if (world.getTileEntity(networkNode.position) != null && world.getTileEntity(networkNode.position) instanceof TileNetworkMember) {
                     networkMembers.add((TileNetworkMember) world.getTileEntity(networkNode.position));
                 }
+            }
+
+            for (WorldNetworkTraveller traveller : network.travellers) {
+                networkTravellers.add(traveller);
             }
         }
 
@@ -136,7 +141,9 @@ public class WorldNetworkDatabase extends WorldSavedData {
             networkMember.networkReloaded(networkMember.getNode().network);
         }
 
-        WorldNetworkDatabase.NETWORKDBS.put(world.provider.getDimension(), this);
+        for (WorldNetworkTraveller networkTraveller : networkTravellers) {
+            networkTraveller.entryPoint.findNodeForTraveller(networkTraveller);
+        }
     }
 
     public WorldNetwork get(UUID id) {

@@ -8,6 +8,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 /**
  * Created by darkevilmac on 3/25/2017.
  */
-public class WorldNetwork implements ITickable {
+public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound> {
 
     public UUID id;
     public World world;
@@ -231,29 +232,32 @@ public class WorldNetwork implements ITickable {
         return Objects.hash(networkNodes, travellers, world);
     }
 
-    public NBTTagCompound serialize() {
-        NBTTagCompound tagCompound = new NBTTagCompound();
+    @Override
+    public NBTTagCompound serializeNBT() {
+        NBTTagCompound compound = new NBTTagCompound();
 
-        tagCompound.setUniqueId("id", id);
+        compound.setUniqueId("id", id);
 
         // Serialize nodes first.
-        tagCompound.setInteger("nCount", networkNodes.size());
+        compound.setInteger("nCount", networkNodes.size());
         List<WorldNetworkNode> nodes = getNodes();
         for (int i = 0; i < nodes.size(); i++) {
-            tagCompound.setLong("n" + i, nodes.get(i).position.toLong());
+            compound.setLong("n" + i, nodes.get(i).position.toLong());
         }
 
         // Serialize travellers.
-        tagCompound.setInteger("tCount", travellers.size());
+        compound.setInteger("tCount", travellers.size());
         for (int i = 0; i < travellers.size(); i++) {
-            tagCompound.setTag("t" + i, travellers.get(i).serialize());
+            compound.setTag("t" + i, travellers.get(i).serializeNBT());
         }
 
-        return tagCompound;
+        return compound;
     }
 
-    public void deserialize(NBTTagCompound compound) {
+    @Override
+    public void deserializeNBT(NBTTagCompound compound) {
         this.id = compound.getUniqueId("id");
+        WorldNetworkDatabase.registerWorldNetwork(this);
 
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             BlockPos pos = BlockPos.fromLong(compound.getLong("n" + i));
@@ -267,7 +271,9 @@ public class WorldNetwork implements ITickable {
         }
 
         for (int i = 0; i < compound.getInteger("tCount"); i++) {
-            WorldNetworkTraveller traveller = new WorldNetworkTraveller(new NBTTagCompound()).deserialize(this, compound.getCompoundTag("t" + i));
+            WorldNetworkTraveller traveller = new WorldNetworkTraveller(new NBTTagCompound());
+            traveller.network = this;
+            traveller.deserializeNBT(compound.getCompoundTag("t" + i));
             this.registerTraveller(traveller);
         }
     }
