@@ -284,7 +284,7 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
         }
 
         for (WorldNetworkTraveller traveller : deserializedTravellers) {
-            traveller.entryPoint.findNodeForTraveller(traveller);
+            traveller.genPath();
             this.registerTraveller(traveller);
         }
     }

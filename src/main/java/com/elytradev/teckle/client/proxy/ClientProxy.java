@@ -50,13 +50,11 @@ public class ClientProxy extends CommonProxy {
     }
 
     public void registerItemRenderers() {
-        if (true)
-            return;
         Item itemToRegister = null;
         ModelResourceLocation modelResourceLocation = null;
 
-        ItemModelMesher modelMesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
         // Do some general render registrations for OBJECTS, not considering meta.
+        ItemModelMesher modelMesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
         for (int i = 0; i < TeckleObjects.registeredBlocks.size(); i++) {
             modelResourceLocation = new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + TeckleObjects.registeredBlocks.keySet().toArray()[i], "inventory");
             itemToRegister = Item.getItemFromBlock((Block) TeckleObjects.registeredBlocks.values().toArray()[i]);
@@ -75,7 +73,6 @@ public class ClientProxy extends CommonProxy {
     public void onModelBakeEvent(ModelBakeEvent e) {
         ModelItemTube tubeModel = new ModelItemTube();
         e.getModelRegistry().putObject(new ModelResourceLocation("teckle:tube.item", "normal"), tubeModel);
-        e.getModelRegistry().putObject(new ModelResourceLocation("teckle:tube.item", "inventory"), tubeModel);
     }
 
     @Override

@@ -20,6 +20,8 @@ public class WorldNetworkNode {
     private List<WorldNetworkTraveller> travellers = new ArrayList<>();
 
     protected WorldNetworkNode() {
+        this.position = new BlockPos(0, -1, 0);
+        this.network = null;
     }
 
     public WorldNetworkNode(WorldNetwork network, BlockPos position) {

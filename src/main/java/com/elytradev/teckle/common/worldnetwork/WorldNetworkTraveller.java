@@ -9,9 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.common.util.INBTSerializable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * A piece of tagCompound travelling to a node in the network.
@@ -56,14 +54,151 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         return getFacingFromVector(nextNode.position.subtract(currentNode.position)).getOpposite();
     }
 
+    public void genPath() {
+        List<Tuple<BlockPos, Integer>> nodeStack = new ArrayList<>();
+        List<BlockPos> iteratedPositions = new ArrayList<>();
+        HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();
+
+        nodeStack.add(new Tuple<>(this.currentNode.position, 0));
+        while (!nodeStack.isEmpty()) {
+            Tuple<BlockPos, Integer> tuple = nodeStack.remove(nodeStack.size() - 1);
+            BlockPos pos = tuple.getFirst();
+            Integer cost = tuple.getSecond();
+            for (EnumFacing direction : EnumFacing.VALUES) {
+                BlockPos neighbourPos = pos.add(direction.getDirectionVec());
+                if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(entryPoint.position)) {
+                    continue;
+                }
+
+                if (iteratedPositions.contains(neighbourPos)) {
+                    continue;
+                }
+
+                if (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())) {
+                    continue;
+                }
+
+                WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
+                if (neighbourNode.canAcceptTraveller(this, direction.getOpposite())) {
+                    if (isValidEndpoint(this, pos, neighbourPos)) {
+                        if (!endpoints.containsKey(neighbourPos)) {
+                            endpoints.put(neighbourPos, new HashMap<>());
+                        }
+                        endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData((WorldNetworkEndpoint) neighbourNode, neighbourPos, direction.getOpposite(), cost + 1));
+                    } else {
+                        nodeStack.add(new Tuple<>(neighbourPos, cost + 1));
+                        iteratedPositions.add(neighbourPos);
+                    }
+                }
+            }
+        }
+
+        List<EndpointData> sortedEndpointData = new ArrayList<>();
+        for (HashMap.Entry<BlockPos, HashMap<EnumFacing, EndpointData>> entry : endpoints.entrySet()) {
+            sortedEndpointData.addAll(entry.getValue().values());
+        }
+        sortedEndpointData.sort(Comparator.comparingInt(o -> o.cost));
+        BlockPos startPos = this.nextNode.position;
+        WorldNetworkPath path = null;
+        if (sortedEndpointData.isEmpty()) {
+            if (this.network.equals(entryPoint.network)) {
+                EndpointData returnToSenderData = new EndpointData(entryPoint.endpoint, entryPoint.position, entryPoint.getFacing(), 0);
+                sortedEndpointData.add(returnToSenderData);
+                path = WorldNetworkPath.createPath(this, new WorldNetworkNode(network, startPos), sortedEndpointData.get(0));
+                int indexToChange = path.getPath().size() - 1;
+                WorldNetworkPath.PathNode pathNode = path.getPath().get(indexToChange);
+                pathNode.realNode = returnToSenderData.node;
+                path.getPath().set(indexToChange, pathNode);
+            }
+        } else {
+            path = WorldNetworkPath.createPath(this, new WorldNetworkNode(network, startPos), sortedEndpointData.get(0));
+        }
+
+        this.previousNode = path.next();
+        this.currentNode = path.next();
+        this.nextNode = path.next();
+        this.activePath = path;
+        this.travelledDistance = -0.10F;
+    }
+
+    public void genInitialPath() {
+        BlockPos startPos = this.entryPoint.position.add(entryPoint.getFacing().getDirectionVec());
+        if (!network.isNodePresent(startPos))
+            return;
+
+        HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();
+        List<Tuple<BlockPos, Integer>> nodeStack = new ArrayList<>();
+        List<BlockPos> iteratedPositions = new ArrayList<>();
+
+        nodeStack.add(new Tuple<>(startPos, 0));
+        while (!nodeStack.isEmpty()) {
+            Tuple<BlockPos, Integer> tuple = nodeStack.remove(nodeStack.size() - 1);
+            BlockPos pos = tuple.getFirst();
+            Integer cost = tuple.getSecond();
+            for (EnumFacing direction : EnumFacing.VALUES) {
+                BlockPos neighbourPos = pos.add(direction.getDirectionVec());
+                if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(entryPoint.position)) {
+                    continue;
+                }
+
+                if (iteratedPositions.contains(neighbourPos)) {
+                    continue;
+                }
+
+                if (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())) {
+                    continue;
+                }
+
+                WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
+                if (neighbourNode.canAcceptTraveller(this, direction.getOpposite())) {
+                    if (isValidEndpoint(this, pos, neighbourPos)) {
+                        if (!endpoints.containsKey(neighbourPos)) {
+                            endpoints.put(neighbourPos, new HashMap<>());
+                        }
+                        endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData((WorldNetworkEndpoint) neighbourNode, neighbourPos, direction.getOpposite(), cost + 1));
+                    } else {
+                        nodeStack.add(new Tuple<>(neighbourPos, cost + 1));
+                        iteratedPositions.add(neighbourPos);
+                    }
+                }
+            }
+        }
+
+        List<EndpointData> sortedEndpointData = new ArrayList<>();
+        for (HashMap.Entry<BlockPos, HashMap<EnumFacing, EndpointData>> entry : endpoints.entrySet()) {
+            sortedEndpointData.addAll(entry.getValue().values());
+        }
+        sortedEndpointData.sort(Comparator.comparingInt(o -> o.cost));
+
+        if (sortedEndpointData.isEmpty()) {
+            EndpointData returnToSenderData = new EndpointData(entryPoint.endpoint, entryPoint.position, entryPoint.getFacing(), 0);
+            sortedEndpointData.add(returnToSenderData);
+        }
+
+        WorldNetworkPath path = WorldNetworkPath.createPath(this, network.getNodeFromPosition(startPos), sortedEndpointData.get(0));
+        this.activePath = path;
+        this.previousNode = WorldNetworkNode.NONE;
+        this.currentNode = entryPoint;
+        this.nextNode = path.next();
+        this.currentNode.registerTraveller(this);
+    }
+
+    public boolean isValidEndpoint(WorldNetworkTraveller traveller, BlockPos from, BlockPos endPoint) {
+        return !traveller.triedEndpoints.contains(new Tuple<>(network.getNodeFromPosition(endPoint), getFacingFromVector(endPoint.subtract(from))))
+                && network.isNodePresent(endPoint)
+                && network.getNodeFromPosition(endPoint).isEndpoint()
+                && network.getNodeFromPosition(endPoint).canAcceptTraveller(traveller, getFacingFromVector(from.subtract(endPoint)));
+    }
+
     @Override
     public void update() {
         if (travelledDistance >= 0.5F) {
             if (!network.isNodePresent(nextNode.position) || (!nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector()))) {
-                entryPoint.findNodeForTraveller(this);
+                genPath();
                 new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, currentNode.position);
+                travelledDistance = 0.5F;
                 TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
-                message.travelledDistance = 0.5F;
+                message.travelledDistance = travelledDistance;
                 message.sendToAllWatching(this.network.world, this.currentNode.position);
             } else if (travelledDistance >= 1F) {
                 if (nextNode.isEndpoint()) {
@@ -74,9 +209,9 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
                         if (!didInject) {
                             triedEndpoints.add(new Tuple<>((WorldNetworkEndpoint) nextNode, injectionFace));
-                            entryPoint.findNodeForTraveller(this);
+                            genPath();
                             TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
-                            message.travelledDistance = -0.10F;
+                            message.travelledDistance = travelledDistance;
                             message.sendToAllWatching(this.network.world, this.currentNode.position);
                         } else {
                             network.unregisterTraveller(this);
