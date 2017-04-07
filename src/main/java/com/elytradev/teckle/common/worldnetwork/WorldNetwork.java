@@ -3,6 +3,7 @@ package com.elytradev.teckle.common.worldnetwork;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.network.TravellerDataMessage;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
+import com.google.common.collect.Lists;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -270,10 +271,20 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
             }
         }
 
+        List<WorldNetworkTraveller> deserializedTravellers = new ArrayList<>();
         for (int i = 0; i < compound.getInteger("tCount"); i++) {
             WorldNetworkTraveller traveller = new WorldNetworkTraveller(new NBTTagCompound());
             traveller.network = this;
             traveller.deserializeNBT(compound.getCompoundTag("t" + i));
+            deserializedTravellers.add(traveller);
+        }
+
+        for (WorldNetworkNode networkNode : Lists.newArrayList(networkNodes.values())) {
+            ((TileNetworkMember) world.getTileEntity(networkNode.position)).networkReloaded(this);
+        }
+
+        for (WorldNetworkTraveller traveller : deserializedTravellers) {
+            traveller.entryPoint.findNodeForTraveller(traveller);
             this.registerTraveller(traveller);
         }
     }

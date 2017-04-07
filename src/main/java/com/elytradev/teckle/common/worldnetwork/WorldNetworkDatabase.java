@@ -122,28 +122,6 @@ public class WorldNetworkDatabase extends WorldSavedData {
             WorldNetwork network = new WorldNetwork(world, null, true);
             network.deserializeNBT(compound.getCompoundTag("n" + i));
         }
-
-        List<TileNetworkMember> networkMembers = new ArrayList<>();
-        List<WorldNetworkTraveller> networkTravellers = new ArrayList<>();
-        for (WorldNetwork network : networks.values()) {
-            for (WorldNetworkNode networkNode : network.networkNodes.values()) {
-                if (world.getTileEntity(networkNode.position) != null && world.getTileEntity(networkNode.position) instanceof TileNetworkMember) {
-                    networkMembers.add((TileNetworkMember) world.getTileEntity(networkNode.position));
-                }
-            }
-
-            for (WorldNetworkTraveller traveller : network.travellers) {
-                networkTravellers.add(traveller);
-            }
-        }
-
-        for (TileNetworkMember networkMember : networkMembers) {
-            networkMember.networkReloaded(networkMember.getNode().network);
-        }
-
-        for (WorldNetworkTraveller networkTraveller : networkTravellers) {
-            networkTraveller.entryPoint.findNodeForTraveller(networkTraveller);
-        }
     }
 
     public WorldNetwork get(UUID id) {

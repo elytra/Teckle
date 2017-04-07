@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class UnlistedEnum<T extends Enum<T> & IStringSerializable> implements IUnlistedProperty<T> {
     private final ImmutableSet<T> allowedValues;
-    private final Map<String, T> nameToValue = Maps.<String, T>newHashMap();
+    private final Map<String, T> nameToValue = Maps.newHashMap();
     String name;
     private Class<T> valueClass;
 
