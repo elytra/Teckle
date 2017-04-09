@@ -3,6 +3,7 @@ package com.elytradev.teckle.common.worldnetwork;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.network.TravellerDataMessage;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -23,7 +24,7 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
     public World world;
 
     protected HashMap<BlockPos, WorldNetworkNode> networkNodes = new HashMap<>();
-    protected List<WorldNetworkTraveller> travellers = new ArrayList<>();
+    protected HashBiMap<NBTTagCompound, WorldNetworkTraveller> travellers = HashBiMap.create();
     private List<WorldNetworkTraveller> travellersToUnregister = new ArrayList<>();
 
     public WorldNetwork(World world, UUID id, boolean skipRegistration) {
@@ -79,17 +80,23 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
     }
 
     public void registerTraveller(WorldNetworkTraveller traveller) {
-        travellers.add(traveller);
         traveller.network = this;
+        travellers.put(traveller.data, traveller);
 
         new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
     }
 
-    public void unregisterTraveller(WorldNetworkTraveller traveller) {
-        travellersToUnregister.add(traveller);
+    public void unregisterTraveller(WorldNetworkTraveller traveller, boolean immediate) {
+        if (!immediate) {
+            travellersToUnregister.add(traveller);
+        } else {
+            travellers.remove(traveller.data);
 
-        if (!traveller.currentNode.isEndpoint())
-            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
+            if (traveller.currentNode != null && getNodeFromPosition(traveller.currentNode.position) != null)
+                getNodeFromPosition(traveller.currentNode.position).unregisterTraveller(traveller);
+        }
+
+        new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
     }
 
     public World getWorld() {
@@ -109,18 +116,18 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
 
     public void transferNetworkData(WorldNetwork to) {
         List<WorldNetworkTraveller> travellersToMove = new ArrayList<>();
-        travellersToMove.addAll(this.travellers);
+        travellersToMove.addAll(this.travellers.values());
+        this.travellers.clear();
         List<WorldNetworkNode> nodesToMove = new ArrayList<>();
         nodesToMove.addAll(this.networkNodes.values());
-
-        for (WorldNetworkTraveller traveller : travellersToMove) {
-            this.unregisterTraveller(traveller);
-            to.registerTraveller(traveller);
-        }
 
         for (WorldNetworkNode node : nodesToMove) {
             this.unregisterNode(node);
             to.registerNode(node);
+        }
+
+        for (WorldNetworkTraveller traveller : travellersToMove) {
+            traveller.moveTo(to);
         }
     }
 
@@ -145,28 +152,32 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
 
         // Only process a split if there's a new network that needs to be formed. RIP old network </3
         if (networks.size() > 1) {
+            // Confirm all travellers that need to go are gone.
+            for (WorldNetworkTraveller traveller : travellersToUnregister) {
+                travellers.remove(traveller);
+                getNodeFromPosition(traveller.currentNode.position).unregisterTraveller(traveller);
+            }
+            travellersToUnregister.clear();
+
             TeckleMod.LOG.debug("Splitting a network...");
             //Start from 1, leave 0 as this network.
             for (int networkNum = 1; networkNum < networks.size(); networkNum++) {
                 List<WorldNetworkNode> newNetworkData = networks.get(networkNum);
                 WorldNetwork newNetwork = new WorldNetwork(this.world, null);
+
                 for (WorldNetworkNode node : newNetworkData) {
                     this.unregisterNode(node);
                     newNetwork.registerNode(node);
+                }
 
-                    // Move travellers if needed.
-                    // TODO: Find travellers a new entry point.
-                    if (!node.getTravellers().isEmpty()) {
-                        for (WorldNetworkTraveller traveller : node.getTravellers()) {
-                            traveller.network.unregisterTraveller(traveller);
-                            newNetwork.registerTraveller(traveller);
-                        }
-                    }
+                List<WorldNetworkTraveller> matchingTravellers = travellers.values().stream().filter(traveller -> newNetwork.isNodePresent(traveller.currentNode.position)).collect(Collectors.toList());
+                for (WorldNetworkTraveller matchingTraveller : matchingTravellers) {
+                    matchingTraveller.moveTo(newNetwork);
                 }
             }
         }
 
-        TeckleMod.LOG.debug("Finished validation, resulted in " + networks.size() + " networks.\n Network sizes follow.");
+        TeckleMod.LOG.info("Finished validation, resulted in " + networks.size() + " networks.\n Network sizes follow.");
         for (List<WorldNetworkNode> n : networks) {
             TeckleMod.LOG.debug(n.size());
         }
@@ -199,13 +210,18 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
 
     @Override
     public void update() {
-        for (WorldNetworkTraveller traveller : travellers) {
+        for (WorldNetworkTraveller traveller : travellers.values()) {
             traveller.update();
         }
-
         for (WorldNetworkTraveller traveller : travellersToUnregister) {
-            travellers.remove(traveller);
+            if (traveller == null)
+                continue;
+
+            if (traveller.currentNode != null)
+                getNodeFromPosition(traveller.currentNode.position).unregisterTraveller(traveller);
+            travellers.inverse().remove(traveller);
         }
+
         travellersToUnregister.clear();
     }
 

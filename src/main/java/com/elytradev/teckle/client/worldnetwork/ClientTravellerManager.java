@@ -20,22 +20,16 @@ import java.util.List;
 public class ClientTravellerManager {
 
     public static HashMap<NBTTagCompound, DummyNetworkTraveller> travellers = new HashMap<>();
+    public static List<NBTTagCompound> travellersToRemove = new ArrayList<>();
 
     @SubscribeEvent
     public static void onTickEvent(TickEvent.ClientTickEvent e) {
         if (e.phase.equals(TickEvent.Phase.END) || Minecraft.getMinecraft().world == null || Minecraft.getMinecraft().isGamePaused())
             return;
 
-
-        List<NBTTagCompound> travellersToRemove = new ArrayList<>();
         for (DummyNetworkTraveller traveller : travellers.values()) {
             if (traveller.travelledDistance >= 1) {
                 if (traveller.nextNode.isEndpoint() || traveller.nextNode == WorldNetworkNode.NONE) {
-                    World clientWorld = Minecraft.getMinecraft().world;
-                    TileEntity tileAtCur = clientWorld.getTileEntity(traveller.currentNode.position);
-
-                    if (tileAtCur != null && tileAtCur instanceof TileNetworkMember)
-                        ((TileNetworkMember) tileAtCur).removeTraveller(traveller.data);
                     travellersToRemove.add(traveller.data);
                 } else {
                     traveller.travelledDistance = 0;
@@ -57,7 +51,19 @@ public class ClientTravellerManager {
             traveller.travelledDistance += (1F / 20F);
         }
 
+        for (NBTTagCompound tagCompound : travellersToRemove) {
+            DummyNetworkTraveller traveller = travellers.get(tagCompound);
+            World clientWorld = Minecraft.getMinecraft().world;
+            TileEntity tileAtPrev = clientWorld.getTileEntity(traveller.previousNode.position);
+            TileEntity tileAtCur = clientWorld.getTileEntity(traveller.currentNode.position);
+
+            if (tileAtPrev != null && tileAtPrev instanceof TileNetworkMember)
+                ((TileNetworkMember) tileAtPrev).removeTraveller(traveller.data);
+            if (tileAtCur != null && tileAtCur instanceof TileNetworkMember)
+                ((TileNetworkMember) tileAtCur).removeTraveller(traveller.data);
+        }
         travellersToRemove.forEach(tagCompound -> travellers.remove(tagCompound));
+        travellersToRemove.clear();
     }
 
     @SubscribeEvent

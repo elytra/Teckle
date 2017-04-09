@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork;
 
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.network.TravellerDataMessage;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -119,6 +120,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         this.nextNode = path.next();
         this.activePath = path;
         this.travelledDistance = -0.10F;
+        this.network = currentNode.network;
     }
 
     public void genInitialPath() {
@@ -200,6 +202,8 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                 TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
                 message.travelledDistance = travelledDistance;
                 message.sendToAllWatching(this.network.world, this.currentNode.position);
+
+                TeckleMod.LOG.info("Generating new path for traveller " + data.getUniqueId("id"));
             } else if (travelledDistance >= 1F) {
                 if (nextNode.isEndpoint()) {
                     if (travelledDistance >= 1.25F) {
@@ -214,7 +218,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                             message.travelledDistance = travelledDistance;
                             message.sendToAllWatching(this.network.world, this.currentNode.position);
                         } else {
-                            network.unregisterTraveller(this);
+                            network.unregisterTraveller(this, false);
                         }
                     }
                 } else {
@@ -265,5 +269,45 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                     BlockPos.fromLong(nbt.getLong("tried" + i))),
                     EnumFacing.values()[data.getInteger("triedf")]));
         }
+    }
+
+    @Override
+    public WorldNetworkTraveller clone() {
+        WorldNetworkTraveller traveller = new WorldNetworkTraveller(this.data);
+        traveller.data.setUniqueId("id", UUID.randomUUID());
+        traveller.network = network;
+        traveller.currentNode = currentNode;
+        traveller.activePath = activePath;
+        traveller.entryPoint = entryPoint;
+        traveller.nextNode = nextNode;
+        traveller.previousNode = previousNode;
+        traveller.travelledDistance = travelledDistance;
+        traveller.triedEndpoints.addAll(triedEndpoints);
+
+        return traveller;
+    }
+
+    public void moveTo(WorldNetwork newNetwork) {
+        this.network.unregisterTraveller(this, false);
+        this.network = newNetwork;
+        if (!network.isNodePresent(entryPoint.position)) {
+            //TODO: Handle purgatory.
+        }
+
+        if (!network.isNodePresent(currentNode.position)) {
+            System.out.println("Drop to world, i promise it happened.");
+            // TODO: Drop to world.
+        } else {
+
+        }
+        if (!network.isNodePresent(nextNode.position)) {
+            genPath();
+            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, currentNode.position);
+            TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
+            message.travelledDistance = travelledDistance;
+            message.sendToAllWatching(this.network.world, this.currentNode.position);
+        }
+
+        this.network.registerTraveller(this);
     }
 }

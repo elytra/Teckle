@@ -34,8 +34,7 @@ public class TeckleMod {
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent e) {
-PROXY.registerHandlers();
-
+        PROXY.registerHandlers();
         LOG = e.getModLog();
         OBJECTS.preInit(e);
         TeckleNetworking.setupNetwork();

@@ -1,17 +1,10 @@
 package com.elytradev.teckle.common.worldnetwork;
 
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-
-import static com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller.getFacingFromVector;
 
 /**
  * A node used to add travellers to a network, handles initial endpoint finding, as well as finding new endpoints when one fails.
@@ -42,6 +35,8 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         WorldNetworkTraveller traveller = new WorldNetworkTraveller(this, data);
         traveller.genInitialPath();
         network.registerTraveller(traveller);
+
+        TeckleMod.LOG.info("Sent traveller into the world to explore, its id is " + traveller.data.getUniqueId("id"));
     }
 
     public EnumFacing getFacing() {
