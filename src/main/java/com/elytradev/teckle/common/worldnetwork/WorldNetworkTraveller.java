@@ -18,7 +18,7 @@ import java.util.*;
 public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTagCompound> {
 
     public WorldNetwork network;
-    public WorldNetworkNode previousNode, currentNode, nextNode;
+    public WorldNetworkNode previousNode = WorldNetworkNode.NONE, currentNode = WorldNetworkNode.NONE, nextNode = WorldNetworkNode.NONE;
     public WorldNetworkPath activePath;
     public float travelledDistance = 0F;
     // The current distance travelled between our previous node, and the increment node.

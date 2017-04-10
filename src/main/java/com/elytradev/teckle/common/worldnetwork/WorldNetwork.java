@@ -217,7 +217,7 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
             if (traveller == null)
                 continue;
 
-            if (traveller.currentNode != null)
+            if (traveller.currentNode != WorldNetworkNode.NONE && isNodePresent(traveller.currentNode.position))
                 getNodeFromPosition(traveller.currentNode.position).unregisterTraveller(traveller);
             travellers.inverse().remove(traveller);
         }
@@ -263,10 +263,14 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
         }
 
         // Serialize travellers.
-        compound.setInteger("tCount", travellers.size());
+        int tCount = 0;
         for (int i = 0; i < travellers.size(); i++) {
-            compound.setTag("t" + i, travellers.get(i).serializeNBT());
+            if (travellers.get(i) != null) {
+                compound.setTag("t" + tCount, travellers.get(i).serializeNBT());
+                tCount++;
+            }
         }
+        compound.setInteger("tCount", tCount);
 
         return compound;
     }

@@ -70,7 +70,7 @@ public class TravellerDataMessage extends Message {
 
             ClientTravellerManager.put(data, traveller);
         } else if (action.equals(Action.UNREGISTER)) {
-            ClientTravellerManager.travellers.remove(data);
+            ClientTravellerManager.travellersToRemove.add(data);
         }
     }
 

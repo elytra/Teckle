@@ -53,13 +53,15 @@ public class ClientTravellerManager {
 
         for (NBTTagCompound tagCompound : travellersToRemove) {
             DummyNetworkTraveller traveller = travellers.get(tagCompound);
+            if (traveller == null)
+                continue;
             World clientWorld = Minecraft.getMinecraft().world;
-            TileEntity tileAtPrev = clientWorld.getTileEntity(traveller.previousNode.position);
-            TileEntity tileAtCur = clientWorld.getTileEntity(traveller.currentNode.position);
+            TileEntity tileAtPrev = traveller.previousNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.previousNode.position) : null;
+            TileEntity tileAtCur = traveller.currentNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.currentNode.position) : null;
 
-            if (tileAtPrev != null && tileAtPrev instanceof TileNetworkMember)
+            if (tileAtPrev instanceof TileNetworkMember)
                 ((TileNetworkMember) tileAtPrev).removeTraveller(traveller.data);
-            if (tileAtCur != null && tileAtCur instanceof TileNetworkMember)
+            if (tileAtCur instanceof TileNetworkMember)
                 ((TileNetworkMember) tileAtCur).removeTraveller(traveller.data);
         }
         travellersToRemove.forEach(tagCompound -> travellers.remove(tagCompound));
