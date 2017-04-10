@@ -64,6 +64,7 @@ processResources {
 }
 
 dependencies {
+    deobfCompile 'com.elytradev:probedataproviderapi:MC1.11.2_ver1.1.1'
 }
 
 jar {
