@@ -1,9 +1,10 @@
 package com.elytradev.teckle.common;
 
+import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
-import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -26,6 +27,8 @@ public class TeckleMod {
     public static final String RESOURCE_DOMAIN = "teckle:";
     public static final TeckleObjects OBJECTS = new TeckleObjects();
 
+    @CapabilityInject(IProbeDataProvider.class)
+    public static Capability<?> PROBE_CAPABILITY;
 
     public static Logger LOG;
 

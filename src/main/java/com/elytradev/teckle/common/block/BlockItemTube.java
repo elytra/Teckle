@@ -87,7 +87,7 @@ public class BlockItemTube extends BlockContainer {
             }
         }
 
-        if(world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileItemTube){
+        if (world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileItemTube) {
             colour = ((TileItemTube) world.getTileEntity(pos)).colour;
         }
 

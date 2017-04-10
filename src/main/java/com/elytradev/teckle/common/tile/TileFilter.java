@@ -38,8 +38,6 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
     @Override
     public void setNode(WorldNetworkNode node) {
-        System.out.println("SetNode called on filter.");
-
         super.setNode(node);
     }
 

@@ -6,7 +6,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class BlockPosListMarshaller implements Marshaller<ArrayList<BlockPos>> {
 

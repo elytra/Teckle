@@ -59,4 +59,5 @@ public class TileItemTube extends TileNetworkMember implements ITickable {
         compound.setInteger("colour", colour != null ? colour.getMetadata() : 16);
         return super.writeToNBT(compound);
     }
+
 }

@@ -1,7 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork;
 
 import com.elytradev.teckle.common.TeckleMod;
-import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSavedData;
