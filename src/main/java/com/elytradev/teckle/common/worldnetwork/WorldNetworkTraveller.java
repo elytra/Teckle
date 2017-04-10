@@ -2,6 +2,7 @@ package com.elytradev.teckle.common.worldnetwork;
 
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.network.TravellerDataMessage;
+import com.elytradev.teckle.common.network.TravellerMoveMessage;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -218,7 +219,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                             message.travelledDistance = travelledDistance;
                             message.sendToAllWatching(this.network.world, this.currentNode.position);
                         } else {
-                            network.unregisterTraveller(this, false);
+                            network.unregisterTraveller(this, false, true);
                         }
                     }
                 } else {
@@ -288,8 +289,11 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     }
 
     public void moveTo(WorldNetwork newNetwork) {
-        this.network.unregisterTraveller(this, false);
+        this.network.unregisterTraveller(this, true, true);
+
         this.network = newNetwork;
+        this.network.travellers.put(data, this);
+
         if (!network.isNodePresent(entryPoint.position)) {
             //TODO: Handle purgatory.
         }
@@ -298,16 +302,13 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             System.out.println("Drop to world, i promise it happened.");
             // TODO: Drop to world.
         } else {
-
         }
         if (!network.isNodePresent(nextNode.position)) {
             genPath();
-            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, currentNode.position);
-            TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
-            message.travelledDistance = travelledDistance;
-            message.sendToAllWatching(this.network.world, this.currentNode.position);
+            return;
         }
 
-        this.network.registerTraveller(this);
+        TravellerMoveMessage message = new TravellerMoveMessage(this);
+        message.sendToAllWatching(network.world, currentNode.position);
     }
 }

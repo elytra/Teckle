@@ -103,4 +103,8 @@ public class ClientTravellerManager {
 
         return travellers.put(key, value);
     }
+
+    public static DummyNetworkTraveller get(Object key) {
+        return travellers.get(key);
+    }
 }

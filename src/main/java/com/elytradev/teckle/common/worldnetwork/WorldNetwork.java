@@ -79,14 +79,15 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
         return Arrays.asList((BlockPos[]) networkNodes.keySet().toArray());
     }
 
-    public void registerTraveller(WorldNetworkTraveller traveller) {
+    public void registerTraveller(WorldNetworkTraveller traveller, boolean send) {
         traveller.network = this;
         travellers.put(traveller.data, traveller);
 
-        new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
+        if (send)
+            new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
     }
 
-    public void unregisterTraveller(WorldNetworkTraveller traveller, boolean immediate) {
+    public void unregisterTraveller(WorldNetworkTraveller traveller, boolean immediate, boolean send) {
         if (!immediate) {
             travellersToUnregister.add(traveller);
         } else {
@@ -96,7 +97,8 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
                 getNodeFromPosition(traveller.currentNode.position).unregisterTraveller(traveller);
         }
 
-        new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
+        if (send)
+            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
     }
 
     public World getWorld() {
@@ -108,7 +110,7 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
         TeckleMod.LOG.debug("Performing a merge of " + this + " and " + otherNetwork
                 + "\n Expecting a node count of " + expectedSize);
         WorldNetwork mergedNetwork = new WorldNetwork(this.world, null);
-        transferNetworkData(mergedNetwork);
+        this.transferNetworkData(mergedNetwork);
         otherNetwork.transferNetworkData(mergedNetwork);
         TeckleMod.LOG.debug("Completed merge, resulted in " + mergedNetwork);
         return mergedNetwork;
@@ -305,7 +307,7 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
 
         for (WorldNetworkTraveller traveller : deserializedTravellers) {
             traveller.genPath();
-            this.registerTraveller(traveller);
+            this.registerTraveller(traveller, true);
         }
     }
 }

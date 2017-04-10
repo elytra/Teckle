@@ -66,6 +66,7 @@ public class TravellerDataMessage extends Message {
                 traveller.currentNode = new WorldNetworkNode(null, current);
                 traveller.nextNode = path.next();
             }
+
             traveller.travelledDistance = this.travelledDistance;
 
             ClientTravellerManager.put(data, traveller);

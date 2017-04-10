@@ -34,7 +34,7 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
     public void addTraveller(NBTTagCompound data) {
         WorldNetworkTraveller traveller = new WorldNetworkTraveller(this, data);
         traveller.genInitialPath();
-        network.registerTraveller(traveller);
+        network.registerTraveller(traveller, true);
 
         TeckleMod.LOG.info("Sent traveller into the world to explore, its id is " + traveller.data.getUniqueId("id"));
     }
