@@ -209,7 +209,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                 TeckleMod.LOG.info("Generating new path for traveller " + data.getUniqueId("id"));
             } else if (travelledDistance >= 1F) {
                 if (nextNode.isEndpoint()) {
-                    if (travelledDistance >= 1.25F) {
+                    if (travelledDistance >= 1.1F) {
                         travelledDistance = 0F;
                         EnumFacing injectionFace = getFacingFromVector(nextNode.position.subtract(currentNode.position)).getOpposite();
                         boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this, injectionFace);
