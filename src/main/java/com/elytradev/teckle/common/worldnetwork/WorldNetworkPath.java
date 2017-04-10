@@ -24,14 +24,6 @@ public class WorldNetworkPath implements Marshallable {
     private WorldNetworkNode startNode;
     private EndpointData endNode;
 
-    public int getIndex() {
-        return index;
-    }
-
-    public void setIndex(int index) {
-        this.index = index;
-    }
-
     // Default constructor to calm concrete down.
     public WorldNetworkPath() {
         path = new ArrayList<PathNode>();
@@ -60,6 +52,14 @@ public class WorldNetworkPath implements Marshallable {
         WorldNetworkPath path = new WorldNetworkPath(traveller, startNode, endNode);
         path.generateNodes();
         return path;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     public List<PathNode> getPath() {
@@ -197,6 +197,10 @@ public class WorldNetworkPath implements Marshallable {
 
             path.add(new PathNode(i == 0 ? null : path.get(i - 1), networkNode, 0, false));
         }
+    }
+
+    public PathNode getEnd() {
+        return path.get(path.size() - 1);
     }
 
     /**

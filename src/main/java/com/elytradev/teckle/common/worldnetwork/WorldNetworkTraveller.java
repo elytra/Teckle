@@ -197,6 +197,8 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     public void update() {
         if (travelledDistance >= 0.5F) {
             if (!network.isNodePresent(nextNode.position) || (!nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector()))) {
+                EnumFacing injectionFace = getFacingFromVector(activePath.getEnd().realNode.position.subtract(activePath.getEnd().from.realNode.position)).getOpposite();
+                triedEndpoints.add(new Tuple<>((WorldNetworkEndpoint) activePath.getEnd().realNode, injectionFace));
                 genPath();
                 new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, currentNode.position);
                 travelledDistance = 0.5F;
