@@ -15,12 +15,12 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Created by darkevilmac on 4/2/2017.
+ * Manages all travellers on this client, mostly for visuals.
  */
 public class ClientTravellerManager {
 
-    public static HashMap<NBTTagCompound, DummyNetworkTraveller> travellers = new HashMap<>();
-    public static List<NBTTagCompound> travellersToRemove = new ArrayList<>();
+    private static List<NBTTagCompound> travellersToRemove = new ArrayList<>();
+    private static HashMap<NBTTagCompound, DummyNetworkTraveller> travellers = new HashMap<>();
 
     @SubscribeEvent
     public static void onTickEvent(TickEvent.ClientTickEvent e) {
@@ -72,6 +72,25 @@ public class ClientTravellerManager {
     public static void onWorldUnload(WorldEvent.Unload e) {
         if (e.getWorld().isRemote) {
             travellers.clear();
+            travellersToRemove.clear();
+        }
+    }
+
+    public static void removeTraveller(NBTTagCompound data, boolean immediate) {
+        if (!immediate) {
+            travellersToRemove.add(data);
+        } else {
+            DummyNetworkTraveller traveller = travellers.get(data);
+            if (traveller == null)
+                return;
+            World clientWorld = Minecraft.getMinecraft().world;
+            TileEntity tileAtPrev = traveller.previousNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.previousNode.position) : null;
+            TileEntity tileAtCur = traveller.currentNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.currentNode.position) : null;
+
+            if (tileAtPrev instanceof TileNetworkMember)
+                ((TileNetworkMember) tileAtPrev).removeTraveller(traveller.data);
+            if (tileAtCur instanceof TileNetworkMember)
+                ((TileNetworkMember) tileAtCur).removeTraveller(traveller.data);
         }
     }
 
