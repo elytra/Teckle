@@ -3,10 +3,7 @@ package com.elytradev.teckle.common.tile;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
-import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkEntryPoint;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
@@ -65,7 +62,8 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
                     if (!extractionData.isEmpty()) {
                         NBTTagCompound tagCompound = new NBTTagCompound();
                         tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
-                        thisNode.addTraveller(tagCompound);
+                        WorldNetworkTraveller traveller = thisNode.addTraveller(tagCompound);
+                        traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
                         result = true;
                     }
                 }

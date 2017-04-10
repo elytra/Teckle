@@ -31,12 +31,11 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         this.endpoint.network = this.network;
     }
 
-    public void addTraveller(NBTTagCompound data) {
+    public WorldNetworkTraveller addTraveller(NBTTagCompound data) {
         WorldNetworkTraveller traveller = new WorldNetworkTraveller(this, data);
         traveller.genInitialPath();
         network.registerTraveller(traveller, true);
-
-        TeckleMod.LOG.info("Sent traveller into the world to explore, its id is " + traveller.data.getUniqueId("id"));
+        return traveller;
     }
 
     public EnumFacing getFacing() {

@@ -25,6 +25,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     // The current distance travelled between our previous node, and the increment node.
     public NBTTagCompound data;
     public List<Tuple<WorldNetworkEndpoint, EnumFacing>> triedEndpoints = new ArrayList<>();
+    public HashMap<String, IDropAction> dropActions = new HashMap<>();
     protected WorldNetworkEntryPoint entryPoint;
 
     public WorldNetworkTraveller(NBTTagCompound data) {
@@ -255,6 +256,11 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             tagCompound.setInteger("triedf" + i, triedEndpoints.get(i).getSecond().getIndex());
         }
 
+        tagCompound.setInteger("actions", dropActions.size());
+        for (int i = 0; i < dropActions.size(); i++) {
+            tagCompound.setString("action" + i, (String) dropActions.keySet().toArray()[i]);
+        }
+
         return tagCompound;
     }
 
@@ -271,6 +277,13 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             triedEndpoints.add(new Tuple<>((WorldNetworkEndpoint) network.getNodeFromPosition(
                     BlockPos.fromLong(nbt.getLong("tried" + i))),
                     EnumFacing.values()[data.getInteger("triedf")]));
+        }
+
+        for (int i = 0; i < nbt.getInteger("actions"); i++) {
+            String key = nbt.getString("action" + i);
+            if (!dropActions.containsKey(key)) {
+                dropActions.put(key, DropActions.ACTIONS.get(key));
+            }
         }
     }
 
@@ -301,8 +314,9 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         }
 
         if (!network.isNodePresent(currentNode.position)) {
-            System.out.println("Drop to world, i promise it happened.");
-            // TODO: Drop to world.
+            dropActions.values().forEach(action -> action.dropToWorld(WorldNetworkTraveller.this));
+            this.network.travellers.remove(data);
+            return;
         } else {
         }
         if (!network.isNodePresent(nextNode.position)) {
