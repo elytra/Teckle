@@ -2,8 +2,8 @@
   "forge_marker": 1,
   "defaults": {
     "textures": {
-      "side": "teckle:blocks/filterSideOff",
-      "particle": "teckle:blocks/filterSideOff"
+      "side": "teckle:blocks/filtersideoff",
+      "particle": "teckle:blocks/filtersideoff"
     },
     "uvlock": false,
     "transform": "forge:default-block",
@@ -13,7 +13,7 @@
     "triggered": {
       "true": {
         "textures": {
-          "side": "teckle:blocks/filterSideOn"
+          "side": "teckle:blocks/filtersideon"
         }
       },
       "false": {}
