@@ -80,7 +80,7 @@ public class ClientTravellerManager {
         if (!immediate) {
             travellersToRemove.add(data);
         } else {
-            DummyNetworkTraveller traveller = travellers.get(data);
+            DummyNetworkTraveller traveller = travellers.remove(data);
             if (traveller == null)
                 return;
             World clientWorld = Minecraft.getMinecraft().world;

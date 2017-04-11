@@ -80,7 +80,6 @@ public class BlockFilter extends BlockContainer {
             TileItemTube tube = (TileItemTube) neighbour;
             tileEntityFilter.setNode(new WorldNetworkEntryPoint(tube.getNode().network, pos, facing));
             tube.getNode().network.registerNode(tileEntityFilter.getNode());
-            System.out.println(tileEntityFilter + " Setting network to " + tube.getNode().network);
         }
     }
 

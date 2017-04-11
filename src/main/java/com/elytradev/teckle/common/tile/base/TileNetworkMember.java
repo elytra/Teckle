@@ -111,6 +111,9 @@ public abstract class TileNetworkMember extends TileEntity {
             if (node == null)
                 return;
 
+            if (TeckleMod.INDEV)
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.node.network", node.network.id.toString().toUpperCase().replaceAll("-", ""))));
+
             for (WorldNetworkTraveller traveller : TileNetworkMember.this.node.getTravellers()) {
                 float distance = (Float.valueOf(traveller.activePath.getIndex()) / Float.valueOf(traveller.activePath.pathPositions().size())) * 10F;
                 distance += traveller.travelledDistance;

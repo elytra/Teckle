@@ -196,6 +196,13 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
     @Override
     public void update() {
+        if (!network.isNodePresent(currentNode.position)) {
+            // Unregister before dropping because drop actions will empty our nbt.
+            this.network.unregisterTraveller(this, false, true);
+            dropActions.values().forEach(action -> action.dropToWorld(WorldNetworkTraveller.this));
+            return;
+        }
+
         if (travelledDistance >= 0.5F) {
             if (!network.isNodePresent(nextNode.position) || (!nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector()))) {
                 EnumFacing injectionFace = getFacingFromVector(activePath.getEnd().realNode.position.subtract(activePath.getEnd().from.realNode.position)).getOpposite();
@@ -316,6 +323,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         if (!network.isNodePresent(currentNode.position)) {
             dropActions.values().forEach(action -> action.dropToWorld(WorldNetworkTraveller.this));
             this.network.travellers.remove(data);
+            System.out.println("Dropping.");
             return;
         } else {
         }

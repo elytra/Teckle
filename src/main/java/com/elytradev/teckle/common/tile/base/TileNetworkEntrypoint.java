@@ -12,8 +12,7 @@ public abstract class TileNetworkEntrypoint extends TileNetworkMember {
 
     @Override
     public boolean isValidNetworkMember(WorldNetwork network, EnumFacing side) {
-        return side.equals(getFacing()) && getNode() == null;
-
+        return side.equals(getFacing());
     }
 
     /**

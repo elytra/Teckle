@@ -41,6 +41,10 @@ public class TravellerDataMessage extends Message {
         this.path = traveller.activePath;
 
         this.prev = IMPOSSIBLEPOS;
+
+        // Prevents an NPE with concrete because it hates null :^)
+        if(path == null)
+            path = WorldNetworkPath.NOT_POSSIBLE;
     }
 
     public TravellerDataMessage(Action action, WorldNetworkTraveller traveller, BlockPos current, BlockPos previous) {
@@ -50,6 +54,10 @@ public class TravellerDataMessage extends Message {
         this.current = current;
         this.prev = previous;
         this.path = traveller.activePath;
+
+        // Prevents an NPE with concrete because it hates null :^)
+        if(path == null)
+            path = WorldNetworkPath.NOT_POSSIBLE;
     }
 
     @Override

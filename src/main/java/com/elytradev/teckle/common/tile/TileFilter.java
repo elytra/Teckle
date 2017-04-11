@@ -3,6 +3,7 @@ package com.elytradev.teckle.common.tile;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
+import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
@@ -46,7 +47,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
     public boolean pushToNetwork() {
         boolean result = false;
 
-        if (getNode() != null && getNode().network != null && !world.isRemote && cooldown == 0) {
+        if (getNode() != null && getNode().network != null && !world.isRemote && cooldown == 0 && world.getTileEntity(pos.offset(getFacing())) instanceof TileNetworkMember) {
             WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) getNode().network.getNodeFromPosition(pos);
             EnumFacing facing = getFacing();
 
