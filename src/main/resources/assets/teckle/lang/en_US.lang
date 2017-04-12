@@ -2,4 +2,4 @@ tile.tube.item.name=Item Tube
 tile.filter.name=Item Filter
 
 tooltip.node.network=Network %s
-tooltip.traveller.data=Traveller
+tooltip.traveller.data=Travellers

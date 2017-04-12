@@ -1,73 +1,43 @@
 {
-    "__createdwith": "opl's Model Creator",
+    "parent": "block/block",
     "ambientocclusion": false,
     "textures": {
         "0": "teckle:blocks/itemtube.full",
-        "1": "teckle:blocks/itemtube.node"
+        "particle": "teckle:blocks/itemtube.full"
     },
     "elements": [
         {
-            "from": [5,12,11],
-            "to": [11,16,11],
+            "from": [4,13,12],
+            "to": [12,16,12],
             "faces": {
-                "down": {
-                    "texture": "#0"
-                },
-                "west": {
-                    "texture": "#0"
-                },
-                "east": {
-                    "texture": "#0"
-                },
                 "north": {
                     "texture": "#0"
                 }
             }
         },
         {
-            "from": [5,12,5],
-            "to": [11,16,5],
+            "from": [4,13,4],
+            "to": [12,16,4],
             "faces": {
-                "down": {
-                    "texture": "#0"
-                },
-                "west": {
-                    "texture": "#0"
-                },
-                "east": {
-                    "texture": "#0"
-                },
                 "south": {
                     "texture": "#0"
                 }
             }
         },
         {
-            "from": [5,12,5],
-            "to": [5,16,11],
+            "from": [4,13,4],
+            "to": [4,16,12],
             "faces": {
-                "down": {
-                    "texture": "#0"
-                },
                 "east": {
-                    "texture": "#0"
-                },
-                "south": {
                     "texture": "#0"
                 }
             }
         },
         {
-            "from": [11,12,5],
-            "to": [11,16,11],
+            "from": [12,13,4],
+            "to": [12,16,12],
             "faces": {
-                "down": {
-                    "texture": "#0"
-                },
                 "west": {
-                    "texture": "#0"
-                },
-                "south": {
                     "texture": "#0"
                 }
             }

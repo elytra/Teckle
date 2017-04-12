@@ -15,6 +15,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
@@ -114,14 +115,19 @@ public abstract class TileNetworkMember extends TileEntity {
             if (TeckleMod.INDEV)
                 data.add(new ProbeData(new TextComponentTranslation("tooltip.node.network", node.network.id.toString().toUpperCase().replaceAll("-", ""))));
 
+            if(!TileNetworkMember.this.getNode().getTravellers().isEmpty()){
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.traveller.data")));
+            }
+
             for (WorldNetworkTraveller traveller : TileNetworkMember.this.node.getTravellers()) {
                 float distance = (Float.valueOf(traveller.activePath.getIndex()) / Float.valueOf(traveller.activePath.pathPositions().size())) * 10F;
                 distance += traveller.travelledDistance;
                 distance -= 0.1F;
                 distance = MathHelper.clamp(distance, 0F, 10F);
                 if (distance > 0) {
-                    data.add(new ProbeData(new TextComponentTranslation("tooltip.traveller.data"))
-                            .withInventory(ImmutableList.of(new ItemStack(traveller.data.getCompoundTag("stack"))))
+                    ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
+                    data.add(new ProbeData(new TextComponentString(stack.getDisplayName()))
+                            .withInventory(ImmutableList.of(stack))
                             .withBar(0, distance * 10, 100, UnitDictionary.PERCENT));
                 }
             }

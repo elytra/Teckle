@@ -1,64 +1,76 @@
 {
-    "__createdwith": "opl's Model Creator",
-    "ambientocclusion": false,
-    "textures": {
-        "0": "teckle:blocks/itemtube.full",
-        "1": "teckle:blocks/itemtube.node"
-    },
-    "elements": [
-        {
-            "from": [5,5,11],
-            "to": [11,16,11],
-            "faces": {
-                "west": {
-                    "texture": "#0"
-                },
-                "east": {
-                    "texture": "#0"
-                },
-                "north": {
-                    "texture": "#0"
-                }
-            }
-        },
-        {
-            "from": [5,5,5],
-            "to": [11,16,5],
-            "faces": {
-                "west": {
-                    "texture": "#0"
-                },
-                "east": {
-                    "texture": "#0"
-                },
-                "south": {
-                    "texture": "#0"
-                }
-            }
-        },
-        {
-            "from": [11,5,5],
-            "to": [11,16,11],
-            "faces": {
-                "west": {
-                    "texture": "#0"
-                },
-                "south": {
-                    "texture": "#0"
-                }
-            }
-        },
-        {
-            "from": [5,5,5],
-            "to": [5,16,11],
-            "faces": {
-                "east": {
-                    "texture": "#0"
-                },
-                "south": {
-                    "texture": "#0"
-                }
-            }
+  "ambientocclusion": false,
+  "textures": {
+    "0": "teckle:blocks/itemtube.full"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        8,
+        12
+      ],
+      "to": [
+        12,
+        16,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#0"
         }
-    ]
+      }
+    },
+    {
+      "from": [
+        4,
+        8,
+        4
+      ],
+      "to": [
+        12,
+        16,
+        4
+      ],
+      "faces": {
+        "south": {
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        8,
+        4
+      ],
+      "to": [
+        4,
+        16,
+        12
+      ],
+      "faces": {
+        "east": {
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        8,
+        4
+      ],
+      "to": [
+        12,
+        16,
+        12
+      ],
+      "faces": {
+        "west": {
+          "texture": "#0"
+        }
+      }
+    }
+  ]
 }
