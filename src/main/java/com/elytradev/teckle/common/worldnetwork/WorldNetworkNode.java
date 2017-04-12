@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork;
 
+import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
@@ -27,14 +28,23 @@ public class WorldNetworkNode {
         this.network = network;
     }
 
-    public boolean isLoaded(){
-        if(network == null || network.world == null)
+    public boolean isLoaded() {
+        if (network == null || network.world == null)
             return false;
         return network.world.isBlockLoaded(position);
     }
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
+        if (getTile() != null) {
+            return isLoaded() && getTile().canAcceptTraveller(traveller, from);
+        }
         return isLoaded();
+    }
+
+    public TileNetworkMember getTile() {
+        if (network.world.getTileEntity(position) instanceof TileNetworkMember)
+            return (TileNetworkMember) network.world.getTileEntity(position);
+        else return null;
     }
 
     public void registerTraveller(WorldNetworkTraveller traveller) {

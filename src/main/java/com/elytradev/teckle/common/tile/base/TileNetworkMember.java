@@ -96,6 +96,8 @@ public abstract class TileNetworkMember extends TileEntity {
         return super.hasCapability(capability, facing);
     }
 
+    public abstract boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from);
+
     private final class ProbeCapability implements IProbeDataProvider {
         @Override
         public void provideProbeData(List<IProbeData> data) {

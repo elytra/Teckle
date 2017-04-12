@@ -7,6 +7,7 @@ import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -27,6 +28,11 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
     @Override
     public WorldNetworkNode getNode(WorldNetwork network) {
         return new WorldNetworkEntryPoint(network, pos, getFacing());
+    }
+
+    @Override
+    public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
+        return true;
     }
 
     @Override
@@ -138,5 +144,9 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
         if (cooldown > 0) {
             cooldown--;
         }
+    }
+
+    public boolean isUsableByPlayer(EntityPlayer player) {
+        return this.world.getTileEntity(this.pos) == this && player.getDistanceSq((double) this.pos.getX() + 0.5D, (double) this.pos.getY() + 0.5D, (double) this.pos.getZ() + 0.5D) <= 64.0D;
     }
 }

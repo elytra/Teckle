@@ -4,10 +4,12 @@ import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
+import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 
 import java.util.List;
@@ -46,6 +48,15 @@ public class TileItemTube extends TileNetworkMember implements ITickable {
     @Override
     public WorldNetworkNode getNode(WorldNetwork network) {
         return new WorldNetworkNode(network, pos);
+    }
+
+    @Override
+    public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
+        if (this.colour != null && traveller.data.hasKey("colour")) {
+            return this.colour.equals(EnumDyeColor.byMetadata(traveller.data.getInteger("colour")));
+        }
+
+        return true;
     }
 
     @Override
