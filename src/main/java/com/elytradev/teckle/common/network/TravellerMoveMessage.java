@@ -12,6 +12,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.relauncher.Side;
 
+import java.util.UUID;
+
 /**
  * Created by darkevilmac on 4/9/2017.
  */
@@ -37,7 +39,11 @@ public class TravellerMoveMessage extends Message {
 
     @Override
     protected void handle(EntityPlayer sender) {
-        float travelledDistance = ClientTravellerManager.get(data).travelledDistance;
+        UUID id = data.getUniqueId("id");
+        if(ClientTravellerManager.get(id) == null)
+            return;
+
+        float travelledDistance = ClientTravellerManager.get(id).travelledDistance;
         path.setIndex(pathIndex);
         DummyNetworkTraveller traveller = new DummyNetworkTraveller(data, path);
         traveller.travelledDistance = travelledDistance;

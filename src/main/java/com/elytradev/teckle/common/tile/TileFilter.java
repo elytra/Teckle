@@ -47,7 +47,10 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
     public boolean pushToNetwork() {
         boolean result = false;
 
-        if (getNode() != null && getNode().network != null && !world.isRemote && cooldown == 0 && world.getTileEntity(pos.offset(getFacing())) instanceof TileNetworkMember) {
+        if (cooldown > 0)
+            return result;
+
+        if (getNode() != null && getNode().network != null && !world.isRemote && world.getTileEntity(pos.offset(getFacing())) instanceof TileNetworkMember) {
             WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) getNode().network.getNodeFromPosition(pos);
             EnumFacing facing = getFacing();
 
@@ -75,7 +78,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
             this.world.playEvent(1000, pos, 0);
         }
 
-        cooldown = 5;
+        cooldown = 10;
         return result;
     }
 

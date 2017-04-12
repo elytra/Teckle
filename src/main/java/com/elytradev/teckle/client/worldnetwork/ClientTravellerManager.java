@@ -13,14 +13,15 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Manages all travellers on this client, mostly for visuals.
  */
 public class ClientTravellerManager {
 
-    private static List<NBTTagCompound> travellersToRemove = new ArrayList<>();
-    private static HashMap<NBTTagCompound, DummyNetworkTraveller> travellers = new HashMap<>();
+    private static List<UUID> travellersToRemove = new ArrayList<>();
+    private static HashMap<UUID, DummyNetworkTraveller> travellers = new HashMap<>();
 
     @SubscribeEvent
     public static void onTickEvent(TickEvent.ClientTickEvent e) {
@@ -31,7 +32,7 @@ public class ClientTravellerManager {
             if (traveller.travelledDistance >= 1) {
                 if (traveller.nextNode.isEndpoint() || traveller.nextNode == WorldNetworkNode.NONE) {
                     if(traveller.travelledDistance >= 1.25F)
-                    travellersToRemove.add(traveller.data);
+                    travellersToRemove.add(traveller.data.getUniqueId("id"));
                 } else {
                     traveller.travelledDistance = 0;
                     traveller.previousNode = traveller.currentNode;
@@ -52,8 +53,8 @@ public class ClientTravellerManager {
             traveller.travelledDistance += (1F / 20F);
         }
 
-        for (NBTTagCompound tagCompound : travellersToRemove) {
-            DummyNetworkTraveller traveller = travellers.get(tagCompound);
+        for (UUID id : travellersToRemove) {
+            DummyNetworkTraveller traveller = travellers.get(id);
             if (traveller == null)
                 continue;
             World clientWorld = Minecraft.getMinecraft().world;
@@ -79,9 +80,9 @@ public class ClientTravellerManager {
 
     public static void removeTraveller(NBTTagCompound data, boolean immediate) {
         if (!immediate) {
-            travellersToRemove.add(data);
+            travellersToRemove.add(data.getUniqueId("id"));
         } else {
-            DummyNetworkTraveller traveller = travellers.remove(data);
+            DummyNetworkTraveller traveller = travellers.remove(data.getUniqueId("id"));
             if (traveller == null)
                 return;
             World clientWorld = Minecraft.getMinecraft().world;
@@ -102,10 +103,10 @@ public class ClientTravellerManager {
         if (tileAtCur != null && tileAtCur instanceof TileNetworkMember)
             ((TileNetworkMember) tileAtCur).addTraveller(value);
 
-        return travellers.put(key, value);
+        return travellers.put(key.getUniqueId("id"), value);
     }
 
-    public static DummyNetworkTraveller get(Object key) {
+    public static DummyNetworkTraveller get(UUID key) {
         return travellers.get(key);
     }
 }

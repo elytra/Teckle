@@ -318,8 +318,9 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     }
 
     public void moveTo(WorldNetwork newNetwork) {
-        this.network.unregisterTraveller(this, true, true);
+        WorldNetwork prevNetwork = this.network;
 
+        prevNetwork.unregisterTraveller(this, true, false);
         this.network = newNetwork;
         this.network.travellers.put(data, this);
 
@@ -329,8 +330,8 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
         if (!network.isNodePresent(currentNode.position)) {
             dropActions.values().forEach(action -> action.dropToWorld(WorldNetworkTraveller.this));
+            prevNetwork.unregisterTraveller(this, true, false);
             this.network.travellers.remove(data);
-            System.out.println("Dropping.");
             return;
         } else {
         }

@@ -97,8 +97,9 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
                 getNodeFromPosition(traveller.currentNode.position).unregisterTraveller(traveller);
         }
 
-        if (send)
+        if (send) {
             new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
+        }
     }
 
     public World getWorld() {
