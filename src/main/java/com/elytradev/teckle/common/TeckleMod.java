@@ -3,6 +3,7 @@ package com.elytradev.teckle.common;
 import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
+import com.elytradev.teckle.common.worldnetwork.DropActions;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -42,6 +43,7 @@ public class TeckleMod {
         LOG = e.getModLog();
         OBJECTS.preInit(e);
         TeckleNetworking.setupNetwork();
+        DropActions.init();
 
         PROXY.registerRenderers(e.getModState());
     }
