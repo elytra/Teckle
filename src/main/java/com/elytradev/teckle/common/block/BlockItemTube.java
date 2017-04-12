@@ -106,8 +106,13 @@ public class BlockItemTube extends BlockContainer {
         IExtendedBlockState extendedState = (IExtendedBlockState) getExtendedState(state, world, pos);
 
         float pixel = 1f / 16f;
-        float min = pixel * 5;
+        float min = pixel * 4;
         float max = 1 - min;
+
+        if (extendedState.getValue(NODE)) {
+            min -= pixel;
+            max += pixel;
+        }
 
         float x1 = min;
         float y1 = min;
