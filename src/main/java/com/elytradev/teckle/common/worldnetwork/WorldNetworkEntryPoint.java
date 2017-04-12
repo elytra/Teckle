@@ -1,6 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork;
 
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.network.TravellerDataMessage;
 import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -34,7 +34,9 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
     public WorldNetworkTraveller addTraveller(NBTTagCompound data) {
         WorldNetworkTraveller traveller = new WorldNetworkTraveller(this, data);
         traveller.genInitialPath();
-        network.registerTraveller(traveller, true);
+        network.registerTraveller(traveller, false);
+        new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller, traveller.currentNode.position,
+                traveller.previousNode.position).sendToAllWatching(network.world, position);
         return traveller;
     }
 

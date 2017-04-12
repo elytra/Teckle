@@ -1,6 +1,5 @@
 package com.elytradev.teckle.common.worldnetwork;
 
-import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.network.TravellerDataMessage;
 import com.elytradev.teckle.common.network.TravellerMoveMessage;
 import net.minecraft.nbt.NBTTagCompound;
@@ -174,16 +173,26 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         }
         sortedEndpointData.sort(Comparator.comparingInt(o -> o.cost));
 
+        WorldNetworkPath path = null;
         if (sortedEndpointData.isEmpty()) {
-            EndpointData returnToSenderData = new EndpointData(entryPoint.endpoint, entryPoint.position, entryPoint.getFacing(), 0);
-            sortedEndpointData.add(returnToSenderData);
+            if (this.network.equals(entryPoint.network)) {
+                EndpointData returnToSenderData = new EndpointData(entryPoint.endpoint, entryPoint.position, entryPoint.getFacing(), 0);
+                sortedEndpointData.add(returnToSenderData);
+                path = WorldNetworkPath.createPath(this, entryPoint, sortedEndpointData.get(0));
+                int indexToChange = path.getPath().size() - 1;
+                WorldNetworkPath.PathNode pathNode = path.getPath().get(indexToChange);
+                pathNode.realNode = returnToSenderData.node;
+                path.getPath().set(indexToChange, pathNode);
+            }
+        } else {
+            path = WorldNetworkPath.createPath(this, entryPoint, sortedEndpointData.get(0));
         }
 
-        WorldNetworkPath path = WorldNetworkPath.createPath(this, network.getNodeFromPosition(startPos), sortedEndpointData.get(0));
         this.activePath = path;
-        this.previousNode = WorldNetworkNode.NONE;
-        this.currentNode = entryPoint;
+        this.previousNode = path.next();
+        this.currentNode = path.next();
         this.nextNode = path.next();
+        this.travelledDistance = -0.25F;
         this.currentNode.registerTraveller(this);
     }
 
@@ -213,11 +222,9 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                 TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
                 message.travelledDistance = travelledDistance;
                 message.sendToAllWatching(this.network.world, this.currentNode.position);
-
-                TeckleMod.LOG.info("Generating new path for traveller " + data.getUniqueId("id"));
             } else if (travelledDistance >= 1F) {
                 if (nextNode.isEndpoint()) {
-                    if (travelledDistance >= 1.1F) {
+                    if (travelledDistance >= 1.25F) {
                         travelledDistance = 0F;
                         EnumFacing injectionFace = getFacingFromVector(nextNode.position.subtract(currentNode.position)).getOpposite();
                         boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this, injectionFace);

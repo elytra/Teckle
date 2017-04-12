@@ -39,6 +39,7 @@ public class TravellerDataMessage extends Message {
         this.data = traveller.data;
         this.current = traveller.currentNode.position;
         this.path = traveller.activePath;
+        this.travelledDistance = traveller.travelledDistance;
 
         this.prev = IMPOSSIBLEPOS;
 
@@ -54,6 +55,7 @@ public class TravellerDataMessage extends Message {
         this.current = current;
         this.prev = previous;
         this.path = traveller.activePath;
+        this.travelledDistance = traveller.travelledDistance;
 
         // Prevents an NPE with concrete because it hates null :^)
         if(path == null)

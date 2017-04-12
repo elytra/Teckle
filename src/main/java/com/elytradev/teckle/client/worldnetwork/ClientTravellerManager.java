@@ -30,6 +30,7 @@ public class ClientTravellerManager {
         for (DummyNetworkTraveller traveller : travellers.values()) {
             if (traveller.travelledDistance >= 1) {
                 if (traveller.nextNode.isEndpoint() || traveller.nextNode == WorldNetworkNode.NONE) {
+                    if(traveller.travelledDistance >= 1.25F)
                     travellersToRemove.add(traveller.data);
                 } else {
                     traveller.travelledDistance = 0;
