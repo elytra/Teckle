@@ -18,6 +18,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -30,9 +31,14 @@ import java.util.List;
 public abstract class TileNetworkMember extends TileEntity {
 
     @SideOnly(Side.CLIENT)
-    public HashMap<NBTTagCompound, DummyNetworkTraveller> travellers = new HashMap<>();
+    public HashMap<NBTTagCompound, DummyNetworkTraveller> travellers;
     public WorldNetworkNode node;
     private Object probeCapability;
+
+    public TileNetworkMember() {
+        if (FMLLaunchHandler.side().isClient())
+            travellers = new HashMap<>();
+    }
 
     public void addTraveller(DummyNetworkTraveller traveller) {
         travellers.put(traveller.data, traveller);
@@ -40,22 +46,6 @@ public abstract class TileNetworkMember extends TileEntity {
 
     public void removeTraveller(NBTTagCompound data) {
         travellers.remove(data);
-    }
-
-    @Override
-    public void onChunkUnload() {
-        super.onChunkUnload();
-
-        if (node != null) {
-            node.loaded = false;
-        }
-    }
-
-    @Override
-    public void onLoad() {
-        if (node != null) {
-            node.loaded = true;
-        }
     }
 
     /**
@@ -115,7 +105,7 @@ public abstract class TileNetworkMember extends TileEntity {
             if (TeckleMod.INDEV)
                 data.add(new ProbeData(new TextComponentTranslation("tooltip.node.network", node.network.id.toString().toUpperCase().replaceAll("-", ""))));
 
-            if(!TileNetworkMember.this.getNode().getTravellers().isEmpty()){
+            if (!TileNetworkMember.this.getNode().getTravellers().isEmpty()) {
                 data.add(new ProbeData(new TextComponentTranslation("tooltip.traveller.data")));
             }
 

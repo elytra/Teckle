@@ -50,7 +50,7 @@ public class ClientTravellerManager {
                 }
             }
 
-            traveller.travelledDistance += (1F / 20F);
+            traveller.travelledDistance += (1F / 10F);
         }
 
         for (UUID id : travellersToRemove) {

@@ -126,6 +126,7 @@ public class WorldNetworkPath implements Marshallable {
             }
         }
 
+        positions.add(node.realNode.position);
         return null;
     }
 

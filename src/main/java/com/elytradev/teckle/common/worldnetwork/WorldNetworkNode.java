@@ -13,8 +13,6 @@ public class WorldNetworkNode {
 
     // Empty node, used instead of null because fuck NPEs.
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
-
-    public boolean loaded = true;
     public BlockPos position;
     public WorldNetwork network;
     private List<WorldNetworkTraveller> travellers = new ArrayList<>();
@@ -29,8 +27,14 @@ public class WorldNetworkNode {
         this.network = network;
     }
 
+    public boolean isLoaded(){
+        if(network == null || network.world == null)
+            return false;
+        return network.world.isBlockLoaded(position);
+    }
+
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        return loaded;
+        return isLoaded();
     }
 
     public void registerTraveller(WorldNetworkTraveller traveller) {

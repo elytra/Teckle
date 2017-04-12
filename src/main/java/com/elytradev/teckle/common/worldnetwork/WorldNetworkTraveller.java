@@ -212,6 +212,9 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             return;
         }
 
+        if (!currentNode.isLoaded())
+            return;
+
         if (travelledDistance >= 0.5F) {
             if (!network.isNodePresent(nextNode.position) || (!nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector()))) {
                 EnumFacing injectionFace = getFacingFromVector(activePath.getEnd().realNode.position.subtract(activePath.getEnd().from.realNode.position)).getOpposite();
@@ -251,7 +254,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             }
         }
 
-        travelledDistance += (1F / 20F);
+        travelledDistance += (1F / 10F);
     }
 
     @Override

@@ -60,7 +60,7 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
         Vec3d offset = new Vec3d(facing.getDirectionVec());
         // Smooth the variables out.
         float dataTravelledOffset = traveller.travelledDistance - 0.5F;
-        float lastTravelled = dataTravelledOffset - (1F / 20F);
+        float lastTravelled = dataTravelledOffset - (1F / 10F);
         double newX = (lastTravelled * offset.xCoord) + ((dataTravelledOffset * offset.xCoord) - (lastTravelled * offset.xCoord)) * partialTicks;
         double newY = (lastTravelled * offset.yCoord) + ((dataTravelledOffset * offset.yCoord) - (lastTravelled * offset.yCoord)) * partialTicks;
         double newZ = (lastTravelled * offset.zCoord) + ((dataTravelledOffset * offset.zCoord) - (lastTravelled * offset.zCoord)) * partialTicks;
