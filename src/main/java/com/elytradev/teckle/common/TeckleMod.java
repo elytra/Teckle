@@ -29,6 +29,8 @@ public class TeckleMod {
     public static final String RESOURCE_DOMAIN = "teckle:";
     public static final TeckleObjects OBJECTS = new TeckleObjects();
     public static final boolean INDEV = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
+    @Mod.Instance()
+    public static TeckleMod INSTANCE;
 
     @CapabilityInject(IProbeDataProvider.class)
     public static Capability<?> PROBE_CAPABILITY;

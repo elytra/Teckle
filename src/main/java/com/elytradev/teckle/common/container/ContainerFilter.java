@@ -38,12 +38,10 @@ public class ContainerFilter extends Container {
     }
 
     public static class SlotBuffer extends Slot {
-
         public SlotBuffer(IInventory inventoryIn, int index, int xPosition, int yPosition) {
             super(inventoryIn, index, xPosition, yPosition);
         }
     }
-
 
     public static class SlotFilterData extends Slot {
         public SlotFilterData(IInventory inventoryIn, int index, int xPosition, int yPosition) {

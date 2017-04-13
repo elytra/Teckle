@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.block;
 
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
@@ -137,15 +138,13 @@ public class BlockFilter extends BlockContainer {
 
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if (worldIn.isRemote)
-            return true;
-
-        //TODO: Gui.
-
-        //TileEntity tile = worldIn.getTileEntity(pos);
-        //if (tile != null && tile instanceof TileFilter) {
-        //    return ((TileFilter) tile).pushToNetwork();
-        //}
+        if (!playerIn.isSneaking()) {
+            TileEntity tileentity = worldIn.getTileEntity(pos);
+            if (tileentity != null) {
+                playerIn.openGui(TeckleMod.INSTANCE, 1, worldIn, pos.getX(), pos.getY(), pos.getZ());
+                return true;
+            }
+        }
 
         return false;
     }

@@ -8,8 +8,11 @@ import com.elytradev.teckle.common.worldnetwork.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -18,12 +21,40 @@ import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
+import javax.annotation.Nullable;
+
 /**
  * Created by darkevilmac on 3/30/2017.
  */
 public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
+    public EnumDyeColor colour = null;
     private int cooldown = 0;
+
+    @Nullable
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(this.pos, 0, getUpdateTag());
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        NBTTagCompound tagCompound = super.getUpdateTag();
+        if (colour != null) {
+            tagCompound.setInteger("colour", colour.getMetadata());
+        } else {
+            tagCompound.removeTag("colour");
+        }
+
+        return tagCompound;
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        super.onDataPacket(net, pkt);
+
+        this.colour = !pkt.getNbtCompound().hasKey("colour") ? null : EnumDyeColor.byMetadata(pkt.getNbtCompound().getInteger("colour"));
+    }
 
     @Override
     public WorldNetworkNode getNode(WorldNetwork network) {
@@ -144,6 +175,24 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
         if (cooldown > 0) {
             cooldown--;
         }
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound compound) {
+        super.readFromNBT(compound);
+
+        this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
+    }
+
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        if (colour != null) {
+            compound.setInteger("colour", colour.getMetadata());
+        } else {
+            compound.removeTag("colour");
+        }
+
+        return super.writeToNBT(compound);
     }
 
     public boolean isUsableByPlayer(EntityPlayer player) {
