@@ -8,6 +8,8 @@ import com.elytradev.teckle.common.worldnetwork.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -16,7 +18,9 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -29,6 +33,111 @@ import javax.annotation.Nullable;
 public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
     public EnumDyeColor colour = null;
+    public NonNullList<ItemStack> stacks = NonNullList.withSize(9, ItemStack.EMPTY);
+
+    public IInventory inventory = new IInventory() {
+        @Override
+        public int getSizeInventory() {
+            return 9;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            boolean empty = true;
+
+            for (ItemStack stack : stacks) {
+                if (stack.isEmpty()) {
+                    empty = false;
+                    break;
+                }
+            }
+
+            return empty;
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int index) {
+            return stacks.get(index);
+        }
+
+        @Override
+        public ItemStack decrStackSize(int index, int count) {
+            return ItemStackHelper.getAndSplit(stacks, index, count);
+        }
+
+        @Override
+        public ItemStack removeStackFromSlot(int index) {
+            return ItemStackHelper.getAndRemove(stacks, index);
+        }
+
+        @Override
+        public void setInventorySlotContents(int index, ItemStack stack) {
+            stacks.set(index, stack);
+        }
+
+        @Override
+        public int getInventoryStackLimit() {
+            return 8;
+        }
+
+        @Override
+        public void markDirty() {
+            TileFilter.this.markDirty();
+        }
+
+        @Override
+        public boolean isUsableByPlayer(EntityPlayer player) {
+            return TileFilter.this.isUsableByPlayer(player);
+        }
+
+        @Override
+        public void openInventory(EntityPlayer player) {
+        }
+
+        @Override
+        public void closeInventory(EntityPlayer player) {
+        }
+
+        @Override
+        public boolean isItemValidForSlot(int index, ItemStack stack) {
+            return true;
+        }
+
+        @Override
+        public int getField(int id) {
+            return 0;
+        }
+
+        @Override
+        public void setField(int id, int value) {
+        }
+
+        @Override
+        public int getFieldCount() {
+            return 0;
+        }
+
+        @Override
+        public void clear() {
+            stacks = NonNullList.withSize(9, ItemStack.EMPTY);
+        }
+
+        @Override
+        public String getName() {
+            return null;
+        }
+
+        @Override
+        public boolean hasCustomName() {
+            return false;
+        }
+
+        @Override
+        public ITextComponent getDisplayName() {
+            return null;
+        }
+    };
+
     private int cooldown = 0;
 
     @Nullable
@@ -182,6 +291,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
         super.readFromNBT(compound);
 
         this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
+        ItemStackHelper.loadAllItems(compound, stacks);
     }
 
     @Override
@@ -191,6 +301,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
         } else {
             compound.removeTag("colour");
         }
+        ItemStackHelper.saveAllItems(compound, (NonNullList<ItemStack>) this.stacks);
 
         return super.writeToNBT(compound);
     }

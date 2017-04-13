@@ -6,6 +6,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 
 /**
  * Created by darkevilmac on 4/12/2017.
@@ -17,6 +18,12 @@ public class ContainerFilter extends Container {
     public ContainerFilter(TileFilter tile, EntityPlayer player) {
         this.filter = tile;
         this.player = player;
+
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                this.addSlotToContainer(new Slot(tile.inventory, j + i * 3, 62 + j * 18, 17 + i * 18));
+            }
+        }
         bindPlayerInventory(player.inventory);
     }
 
@@ -35,6 +42,38 @@ public class ContainerFilter extends Container {
     @Override
     public boolean canInteractWith(EntityPlayer player) {
         return filter.isUsableByPlayer(player);
+    }
+
+    public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
+        ItemStack itemstack = ItemStack.EMPTY;
+        Slot slot = this.inventorySlots.get(index);
+
+        if (slot != null && slot.getHasStack()) {
+            ItemStack itemstack1 = slot.getStack();
+            itemstack = itemstack1.copy();
+
+            if (index < 9) {
+                if (!this.mergeItemStack(itemstack1, 9, 45, true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (!this.mergeItemStack(itemstack1, 0, 9, false)) {
+                return ItemStack.EMPTY;
+            }
+
+            if (itemstack1.isEmpty()) {
+                slot.putStack(ItemStack.EMPTY);
+            } else {
+                slot.onSlotChanged();
+            }
+
+            if (itemstack1.getCount() == itemstack.getCount()) {
+                return ItemStack.EMPTY;
+            }
+
+            slot.onTake(playerIn, itemstack1);
+        }
+
+        return itemstack;
     }
 
     public static class SlotBuffer extends Slot {
