@@ -32,7 +32,7 @@ public class GuiFilter extends GuiContainer {
         super.initGui();
 
         buttonList.clear();
-        colourPicker = new GuiColourPicker(1, guiLeft + 4, guiTop + 20);
+        colourPicker = new GuiColourPicker(1, guiLeft + 115, guiTop + 61);
         buttonList.add(colourPicker);
     }
 
