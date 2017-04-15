@@ -49,9 +49,8 @@ public class ClientProxy extends CommonProxy {
                                 return ((TileItemTube) worldIn.getTileEntity(pos)).colour.getMapColor().colorValue;
                             }
                         }
-                        return 11696387;
                     }
-                    return -1;
+                    return 11696387;
                 }
             }, TeckleObjects.blockItemTube);
         }
