@@ -2,6 +2,7 @@ package com.elytradev.teckle.common.item;
 
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.TileItemTube;
+import net.minecraft.block.material.MapColor;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
@@ -12,6 +13,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
 import java.util.Objects;
@@ -21,6 +23,11 @@ public class ItemPaintbrush extends Item {
     public ItemPaintbrush() {
         setCreativeTab(TeckleObjects.creativeTab);
         setMaxStackSize(1);
+    }
+
+    @Override
+    public String getUnlocalizedName(ItemStack stack) {
+        return "teckle.item.paintbrush." + EnumDyeColor.byDyeDamage(stack.getMetadata()).getUnlocalizedName() + ".name";
     }
 
     @Override

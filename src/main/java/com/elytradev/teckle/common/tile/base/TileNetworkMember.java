@@ -105,10 +105,10 @@ public abstract class TileNetworkMember extends TileEntity {
                 return;
 
             if (TeckleMod.INDEV)
-                data.add(new ProbeData(new TextComponentTranslation("tooltip.node.network", node.network.id.toString().toUpperCase().replaceAll("-", ""))));
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", node.network.id.toString().toUpperCase().replaceAll("-", ""))));
 
             if (!TileNetworkMember.this.getNode().getTravellers().isEmpty()) {
-                data.add(new ProbeData(new TextComponentTranslation("tooltip.traveller.data")));
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.traveller.data")));
             }
 
             for (WorldNetworkTraveller traveller : TileNetworkMember.this.node.getTravellers()) {
