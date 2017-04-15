@@ -1,10 +1,15 @@
 package com.elytradev.teckle.common.tile;
 
+import com.elytradev.probe.api.IProbeData;
+import com.elytradev.probe.api.IProbeDataProvider;
+import com.elytradev.probe.api.impl.ProbeData;
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.*;
+import com.google.common.collect.ImmutableList;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,12 +26,16 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -356,5 +365,41 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
     public boolean isUsableByPlayer(EntityPlayer player) {
         return this.world.getTileEntity(this.pos) == this && player.getDistanceSq((double) this.pos.getX() + 0.5D, (double) this.pos.getY() + 0.5D, (double) this.pos.getZ() + 0.5D) <= 64.0D;
+    }
+
+    @Override
+    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+        if (capability == null) return null;
+        if (capability == TeckleMod.PROBE_CAPABILITY) {
+            if (probeCapability == null) probeCapability = new TileFilter.ProbeCapability();
+            return (T) probeCapability;
+        }
+        return super.getCapability(capability, facing);
+    }
+
+    @Override
+    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+        if (capability == null) return false;
+        if (capability == TeckleMod.PROBE_CAPABILITY) {
+            return true;
+        }
+        return super.hasCapability(capability, facing);
+    }
+
+    private final class ProbeCapability implements IProbeDataProvider {
+        @Override
+        public void provideProbeData(List<IProbeData> data) {
+            if (node == null)
+                return;
+
+            if (TeckleMod.INDEV)
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", node.network.id.toString().toUpperCase().replaceAll("-", ""))));
+
+            List<ItemStack> stacks = new ArrayList<>();
+            for (int i = 0; i < buffer.getSlots(); i++) {
+                stacks.add(i, buffer.getStackInSlot(i));
+            }
+            data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.filter.buffer")).withInventory(ImmutableList.copyOf(stacks)));
+        }
     }
 }

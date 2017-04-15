@@ -19,3 +19,4 @@ teckle.item.paintbrush.black.name=Black Paintbrush
 
 tooltip.teckle.node.network=Network %s
 tooltip.teckle.traveller.data=Travellers
+tooltip.teckle.filter.buffer=Buffer

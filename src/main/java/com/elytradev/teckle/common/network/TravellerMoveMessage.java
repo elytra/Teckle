@@ -40,7 +40,7 @@ public class TravellerMoveMessage extends Message {
     @Override
     protected void handle(EntityPlayer sender) {
         UUID id = data.getUniqueId("id");
-        if(ClientTravellerManager.get(id) == null)
+        if (ClientTravellerManager.get(id) == null)
             return;
 
         float travelledDistance = ClientTravellerManager.get(id).travelledDistance;

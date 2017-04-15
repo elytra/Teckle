@@ -91,7 +91,7 @@ public class TeckleObjects {
                 };
         for (int i = 0; i < dyes.length; i++) {
             CraftingManager.getInstance().addRecipe(new ItemStack(itemPaintBrush, 1, i),
-                    new Object[]{"D  ", " W ", "  S", 'D', "dye" + dyes[i], 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL)});
+                    "D  ", " W ", "  S", 'D', "dye" + dyes[i], 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
         }
     }
 

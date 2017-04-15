@@ -33,7 +33,7 @@ public abstract class TileNetworkMember extends TileEntity {
     @SideOnly(Side.CLIENT)
     public HashMap<NBTTagCompound, DummyNetworkTraveller> travellers;
     public WorldNetworkNode node;
-    private Object probeCapability;
+    protected Object probeCapability;
 
     public TileNetworkMember() {
         if (FMLLaunchHandler.side().isClient())
@@ -77,6 +77,8 @@ public abstract class TileNetworkMember extends TileEntity {
 
     public abstract WorldNetworkNode getNode(WorldNetwork network);
 
+    public abstract boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from);
+
     @Override
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         if (capability == null) return null;
@@ -96,7 +98,6 @@ public abstract class TileNetworkMember extends TileEntity {
         return super.hasCapability(capability, facing);
     }
 
-    public abstract boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from);
 
     private final class ProbeCapability implements IProbeDataProvider {
         @Override
