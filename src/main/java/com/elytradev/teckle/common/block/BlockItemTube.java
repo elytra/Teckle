@@ -87,7 +87,7 @@ public class BlockItemTube extends BlockContainer {
         }
 
         if (world.getTileEntity(pos) instanceof TileItemTube) {
-            colour = ((TileItemTube) world.getTileEntity(pos)).colour;
+            colour = ((TileItemTube) world.getTileEntity(pos)).getColour();
         }
 
         return extendedBlockState.withProperty(NORTH, connections.contains(EnumFacing.NORTH))

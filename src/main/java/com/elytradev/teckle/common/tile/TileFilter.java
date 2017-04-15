@@ -301,7 +301,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
         } else {
             compound.removeTag("colour");
         }
-        ItemStackHelper.saveAllItems(compound, (NonNullList<ItemStack>) this.stacks);
+        ItemStackHelper.saveAllItems(compound, this.stacks);
 
         return super.writeToNBT(compound);
     }

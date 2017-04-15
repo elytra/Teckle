@@ -45,8 +45,8 @@ public class ClientProxy extends CommonProxy {
                 public int colorMultiplier(IBlockState state, @Nullable IBlockAccess worldIn, @Nullable BlockPos pos, int tintIndex) {
                     if (tintIndex == 1) {
                         if (worldIn.getTileEntity(pos) instanceof TileItemTube) {
-                            if (((TileItemTube) worldIn.getTileEntity(pos)).colour != null) {
-                                return ((TileItemTube) worldIn.getTileEntity(pos)).colour.getMapColor().colorValue;
+                            if (((TileItemTube) worldIn.getTileEntity(pos)).getColour() != null) {
+                                return ((TileItemTube) worldIn.getTileEntity(pos)).getColour().getMapColor().colorValue;
                             }
                         }
                     }
