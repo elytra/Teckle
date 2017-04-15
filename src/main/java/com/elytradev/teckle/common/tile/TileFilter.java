@@ -26,6 +26,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * Created by darkevilmac on 3/30/2017.
@@ -205,13 +206,33 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
                 if (pullFrom.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
                     IItemHandler itemHandler = pullFrom.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
                     ItemStack extractionData = ItemStack.EMPTY;
-                    for (int slot = 0; slot < itemHandler.getSlots() && extractionData == ItemStack.EMPTY; slot++) {
-                        extractionData = itemHandler.extractItem(slot, 8, false);
+
+                    if (stacks.stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
+                        for (ItemStack stack : stacks) {
+                            if (stack.isEmpty())
+                                continue;
+
+                            for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
+                                ItemStack extractTest = itemHandler.extractItem(slot, stack.getCount(), true);
+                                if (Objects.equals(extractTest.getItem(), stack.getItem()) && extractTest.getMetadata() == stack.getMetadata()) {
+                                    extractionData = itemHandler.extractItem(slot, stack.getCount(), false);
+                                }
+                            }
+
+                            if (!extractionData.isEmpty())
+                                break;
+                        }
+                    } else {
+                        for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
+                            extractionData = itemHandler.extractItem(slot, 8, false);
+                        }
                     }
 
                     if (!extractionData.isEmpty()) {
                         NBTTagCompound tagCompound = new NBTTagCompound();
                         tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
+                        if (this.colour != null)
+                            tagCompound.setInteger("colour", this.colour.getMetadata());
                         WorldNetworkTraveller traveller = thisNode.addTraveller(tagCompound);
                         traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
                         result = true;
