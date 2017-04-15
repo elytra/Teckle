@@ -1,36 +1,67 @@
 {
-  "parent": "block/block",
-  "ambientocclusion": false,
-  "textures": {
-    "0": "teckle:blocks/itemtube.full",
-    "particle": "teckle:blocks/itemtube.full"
-  },
-  "elements": [
-    {
-      "from": [
-        4,
-        13,
-        4
-      ],
-      "to": [
-        12,
-        16,
-        12
-      ],
-      "faces": {
-        "west": {
-          "texture": "#0"
+    "parent": "block/block",
+    "ambientocclusion": false,
+    "textures": {
+        "0": "teckle:blocks/itemtube.full",
+        "1": "teckle:blocks/itemtube.full.colour",
+        "particle": "teckle:blocks/itemtube.full"
+    },
+    "elements": [
+        {
+            "from": [
+                4,
+                13,
+                4
+            ],
+            "to": [
+                12,
+                16,
+                12
+            ],
+            "faces": {
+                "west": {
+                    "texture": "#0"
+                },
+                "east": {
+                    "texture": "#0"
+                },
+                "north": {
+                    "texture": "#0"
+                },
+                "south": {
+                    "texture": "#0"
+                }
+            }
         },
-        "east": {
-          "texture": "#0"
-        },
-        "north": {
-          "texture": "#0"
-        },
-        "south": {
-          "texture": "#0"
+        {
+            "from": [
+                4,
+                13,
+                4
+            ],
+            "to": [
+                12,
+                16,
+                12
+            ],
+            "faces": {
+                "west": {
+                    "texture": "#1",
+                    "tintindex": 1
+                },
+                "east": {
+                    "texture": "#1",
+                    "tintindex": 1
+                },
+                "north": {
+                    "texture": "#1",
+                    "tintindex": 1
+                },
+                "south": {
+                    "texture": "#1",
+                    "tintindex": 1
+                }
+            }
         }
-      }
-    }
-  ]
+    ]
 }

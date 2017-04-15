@@ -1,6 +1,7 @@
 package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
@@ -13,7 +14,6 @@ import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -43,7 +43,7 @@ public class BlockFilter extends BlockContainer {
 
         this.setHarvestLevel("pickaxe", 0);
         this.setDefaultState(blockState.getBaseState());
-        this.setCreativeTab(CreativeTabs.TOOLS);
+        this.setCreativeTab(TeckleObjects.creativeTab);
     }
 
     @Override

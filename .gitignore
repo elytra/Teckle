@@ -6,3 +6,4 @@ build/
 .idea/
 out/
 run/
+src/main/resources/assets/teckle/textures/blocks/clrref/

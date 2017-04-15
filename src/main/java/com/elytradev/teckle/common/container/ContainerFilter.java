@@ -8,9 +8,6 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
-/**
- * Created by darkevilmac on 4/12/2017.
- */
 public class ContainerFilter extends Container {
     public final TileFilter filter;
     public final EntityPlayer player;

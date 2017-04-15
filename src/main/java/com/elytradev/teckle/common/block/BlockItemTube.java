@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.block;
 
+import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.property.UnlistedBool;
 import com.elytradev.teckle.common.block.property.UnlistedEnum;
 import com.elytradev.teckle.common.tile.TileItemTube;
@@ -14,7 +15,6 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
@@ -55,8 +55,7 @@ public class BlockItemTube extends BlockContainer {
 
         this.setHarvestLevel("pickaxe", 0);
         this.setLightOpacity(0);
-        this.setCreativeTab(CreativeTabs.TOOLS);
-
+        this.setCreativeTab(TeckleObjects.creativeTab);
         this.setDefaultState(blockState.getBaseState());
     }
 
