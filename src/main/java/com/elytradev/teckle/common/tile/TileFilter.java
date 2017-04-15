@@ -24,6 +24,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -35,6 +36,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
     public EnumDyeColor colour = null;
     public NonNullList<ItemStack> stacks = NonNullList.withSize(9, ItemStack.EMPTY);
+    public ItemStackHandler buffer = new ItemStackHandler(4);
 
     public IInventory inventory = new IInventory() {
         @Override
@@ -138,7 +140,6 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
             return null;
         }
     };
-
     private int cooldown = 0;
 
     @Nullable
@@ -207,24 +208,35 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
                     IItemHandler itemHandler = pullFrom.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
                     ItemStack extractionData = ItemStack.EMPTY;
 
-                    if (stacks.stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
-                        for (ItemStack stack : stacks) {
-                            if (stack.isEmpty())
-                                continue;
+                    // Check if the buffer is empty first...
+                    int bufferSlot = -1;
+                    for (int i = 0; i < buffer.getSlots(); i++) {
+                        if (!buffer.getStackInSlot(i).isEmpty()) {
+                            bufferSlot = i;
+                            break;
+                        }
+                    }
 
-                            for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
-                                ItemStack extractTest = itemHandler.extractItem(slot, stack.getCount(), true);
-                                if (Objects.equals(extractTest.getItem(), stack.getItem()) && extractTest.getMetadata() == stack.getMetadata()) {
-                                    extractionData = itemHandler.extractItem(slot, stack.getCount(), false);
+                    if (bufferSlot != -1) {
+                        extractionData = buffer.extractItem(bufferSlot, 8, false);
+                    } else {
+                        if (stacks.stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
+                            for (ItemStack stack : stacks) {
+                                if (!extractionData.isEmpty())
+                                    break;
+                                if (stack.isEmpty())
+                                    continue;
+                                for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
+                                    ItemStack extractTest = itemHandler.extractItem(slot, stack.getCount(), true);
+                                    if (Objects.equals(extractTest.getItem(), stack.getItem()) && extractTest.getMetadata() == stack.getMetadata()) {
+                                        extractionData = itemHandler.extractItem(slot, stack.getCount(), false);
+                                    }
                                 }
                             }
-
-                            if (!extractionData.isEmpty())
-                                break;
-                        }
-                    } else {
-                        for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
-                            extractionData = itemHandler.extractItem(slot, 8, false);
+                        } else {
+                            for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
+                                extractionData = itemHandler.extractItem(slot, 8, false);
+                            }
                         }
                     }
 
@@ -234,8 +246,21 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
                         if (this.colour != null)
                             tagCompound.setInteger("colour", this.colour.getMetadata());
                         WorldNetworkTraveller traveller = thisNode.addTraveller(tagCompound);
-                        traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
-                        result = true;
+                        if (!Objects.equals(traveller, WorldNetworkTraveller.NONE)) {
+                            traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
+                            result = true;
+                        } else {
+                            ItemStack remaining = extractionData;
+                            for (int i = 0; i < buffer.getSlots(); i++) {
+                                remaining = buffer.insertItem(i, remaining, false);
+                            }
+
+                            if (!remaining.isEmpty()) {
+                                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
+                            }
+                        }
                     }
                 }
             }
@@ -313,6 +338,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
         this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
         ItemStackHelper.loadAllItems(compound, stacks);
+        buffer.deserializeNBT(compound.getCompoundTag("buffer"));
     }
 
     @Override
@@ -323,6 +349,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
             compound.removeTag("colour");
         }
         ItemStackHelper.saveAllItems(compound, this.stacks);
+        compound.setTag("buffer", buffer.serializeNBT());
 
         return super.writeToNBT(compound);
     }

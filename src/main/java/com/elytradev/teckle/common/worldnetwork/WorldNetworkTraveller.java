@@ -17,6 +17,8 @@ import java.util.*;
  */
 public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTagCompound> {
 
+    public static final WorldNetworkTraveller NONE = new WorldNetworkTraveller(new NBTTagCompound());
+
     public WorldNetwork network;
     public WorldNetworkNode previousNode = WorldNetworkNode.NONE, currentNode = WorldNetworkNode.NONE, nextNode = WorldNetworkNode.NONE;
     public WorldNetworkPath activePath;
@@ -124,10 +126,15 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         this.network = currentNode.network;
     }
 
-    public void genInitialPath() {
+    /**
+     * Attempt to generate an initial path for this item, return false if not possible.
+     *
+     * @return
+     */
+    public boolean genInitialPath() {
         BlockPos startPos = this.entryPoint.position.add(entryPoint.getFacing().getDirectionVec());
         if (!network.isNodePresent(startPos))
-            return;
+            return false;
 
         HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();
         List<Tuple<BlockPos, Integer>> nodeStack = new ArrayList<>();
@@ -176,13 +183,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         WorldNetworkPath path = null;
         if (sortedEndpointData.isEmpty()) {
             if (this.network.equals(entryPoint.network)) {
-                EndpointData returnToSenderData = new EndpointData(entryPoint.endpoint, entryPoint.position, entryPoint.getFacing(), 0);
-                sortedEndpointData.add(returnToSenderData);
-                path = WorldNetworkPath.createPath(this, entryPoint, sortedEndpointData.get(0));
-                int indexToChange = path.getPath().size() - 1;
-                WorldNetworkPath.PathNode pathNode = path.getPath().get(indexToChange);
-                pathNode.realNode = returnToSenderData.node;
-                path.getPath().set(indexToChange, pathNode);
+                return false;
             }
         } else {
             path = WorldNetworkPath.createPath(this, entryPoint, sortedEndpointData.get(0));
@@ -194,6 +195,8 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         this.nextNode = path.next();
         this.travelledDistance = -0.25F;
         this.currentNode.registerTraveller(this);
+
+        return true;
     }
 
     public boolean isValidEndpoint(WorldNetworkTraveller traveller, BlockPos from, BlockPos endPoint) {

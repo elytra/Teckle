@@ -33,11 +33,14 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
 
     public WorldNetworkTraveller addTraveller(NBTTagCompound data) {
         WorldNetworkTraveller traveller = new WorldNetworkTraveller(this, data);
-        traveller.genInitialPath();
-        network.registerTraveller(traveller, false);
-        new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller, traveller.currentNode.position,
-                traveller.previousNode.position).sendToAllWatching(network.world, position);
-        return traveller;
+        if (traveller.genInitialPath()) {
+            network.registerTraveller(traveller, false);
+            new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller, traveller.currentNode.position,
+                    traveller.previousNode.position).sendToAllWatching(network.world, position);
+            return traveller;
+        }
+
+        return WorldNetworkTraveller.NONE;
     }
 
     public EnumFacing getFacing() {
