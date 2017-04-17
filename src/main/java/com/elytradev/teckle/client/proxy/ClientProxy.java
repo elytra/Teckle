@@ -5,27 +5,23 @@ import com.elytradev.teckle.client.render.tile.TileTubeRenderer;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
+import com.elytradev.teckle.common.block.BlockItemTube;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.LoaderState;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-
-import javax.annotation.Nullable;
 
 
 public class ClientProxy extends CommonProxy {
@@ -40,24 +36,26 @@ public class ClientProxy extends CommonProxy {
             registerTileEntitySpecialRenderers();
             registerItemRenderers();
 
-            Minecraft.getMinecraft().getBlockColors().registerBlockColorHandler(new IBlockColor() {
-                @Override
-                public int colorMultiplier(IBlockState state, @Nullable IBlockAccess worldIn, @Nullable BlockPos pos, int tintIndex) {
-                    if (tintIndex == 1) {
-                        if (worldIn.getTileEntity(pos) instanceof TileItemTube) {
-                            if (((TileItemTube) worldIn.getTileEntity(pos)).getColour() != null) {
-                                return ((TileItemTube) worldIn.getTileEntity(pos)).getColour().getMapColor().colorValue;
-                            }
-                        }
+            Minecraft.getMinecraft().getBlockColors().registerBlockColorHandler((blockState, worldIn, pos, tintIndex) -> {
+                if (tintIndex == 1) {
+                    IExtendedBlockState extendedBlockState = (IExtendedBlockState) blockState;
+                    if (extendedBlockState.getValue(BlockItemTube.COLOUR) != null) {
+                        return extendedBlockState.getValue(BlockItemTube.COLOUR).getMapColor().colorValue;
                     }
+
                     return 11696387;
                 }
+
+                return -1;
             }, TeckleObjects.blockItemTube);
         }
 
         if (state == LoaderState.ModState.POSTINITIALIZED) {
             if (Minecraft.getMinecraft().getResourceManager() instanceof IReloadableResourceManager) {
                 ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(ModelItemTube.reloadListener);
+            }
+            if (Minecraft.getMinecraft().getResourceManager() instanceof IReloadableResourceManager) {
+                ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(resourceManager -> TileTubeRenderer.itemColourModel = null);
             }
         }
     }

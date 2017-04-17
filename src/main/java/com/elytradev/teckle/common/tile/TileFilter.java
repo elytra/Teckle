@@ -11,7 +11,6 @@ import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.*;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
@@ -45,7 +44,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
     public EnumDyeColor colour = null;
     public NonNullList<ItemStack> stacks = NonNullList.withSize(9, ItemStack.EMPTY);
-    public ItemStackHandler buffer = new ItemStackHandler(4);
+    public ItemStackHandler buffer = new ItemStackHandler(9);
 
     public IInventory inventory = new IInventory() {
         @Override
@@ -260,7 +259,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
                             result = true;
                         } else {
                             ItemStack remaining = extractionData;
-                            for (int i = 0; i < buffer.getSlots(); i++) {
+                            for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
                                 remaining = buffer.insertItem(i, remaining, false);
                             }
 
@@ -318,7 +317,16 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
         }
         if (!stack.isEmpty()) {
             // Spawn into the world I guess.
-            world.spawnEntity(new EntityItem(world, sourcePos.getX(), sourcePos.getY(), sourcePos.getZ(), stack));
+            ItemStack remaining = stack.copy();
+            for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
+                remaining = buffer.insertItem(i, remaining, false);
+            }
+
+            if (!remaining.isEmpty()) {
+                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
+            }
         }
     }
 
@@ -397,9 +405,11 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
             List<ItemStack> stacks = new ArrayList<>();
             for (int i = 0; i < buffer.getSlots(); i++) {
-                stacks.add(i, buffer.getStackInSlot(i));
+                stacks.add(buffer.getStackInSlot(i));
             }
-            data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.filter.buffer")).withInventory(ImmutableList.copyOf(stacks)));
+
+            ProbeData probeData = new ProbeData(new TextComponentTranslation("tooltip.teckle.filter.buffer")).withInventory(ImmutableList.copyOf(stacks));
+            data.add(probeData);
         }
     }
 }
