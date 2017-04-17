@@ -11,14 +11,15 @@ import java.util.Objects;
 public class EndpointData {
     public EnumFacing side;
     public BlockPos pos;
+    public PathNode node;
     public int cost;
-    public WorldNetworkEndpoint node;
 
-    public EndpointData(WorldNetworkEndpoint endpoint, BlockPos pos, EnumFacing side, int cost) {
-        this.pos = pos;
+    public EndpointData(PathNode node, EnumFacing side) {
         this.side = side;
-        this.cost = cost;
-        this.node = endpoint;
+        this.node = node;
+
+        this.cost = node.cost;
+        this.pos = node.realNode.position;
     }
 
     @Override

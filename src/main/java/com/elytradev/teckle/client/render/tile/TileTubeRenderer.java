@@ -2,15 +2,13 @@ package com.elytradev.teckle.client.render.tile;
 
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.TeckleMod;
-import com.elytradev.teckle.common.block.BlockItemTube;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
-import com.google.common.base.Function;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ModelRotation;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -19,10 +17,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.model.IRetexturableModel;
+import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.TRSRTransformation;
-import net.minecraftforge.common.property.IExtendedBlockState;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -93,24 +91,12 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
     }
 
     public void drawOutlines(HashMap<DummyNetworkTraveller, Vec3d> travellers, TileItemTube te, double x, double y, double z) {
-
-
-        for (Map.Entry<DummyNetworkTraveller, Vec3d> dummyNetworkTravellerVec3dEntry : travellers.entrySet()) {
-            renderOutline(te, dummyNetworkTravellerVec3dEntry, x, y, z);
-        }
-
-    }
-
-    private void renderOutline(TileItemTube te, Map.Entry<DummyNetworkTraveller, Vec3d> entry,  double x, double y, double z) {
-        loadModelIfApplicable();
-
-        Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer vertexBuffer = tessellator.getBuffer();
-        this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-        RenderHelper.disableStandardItemLighting();
+        GlStateManager.pushMatrix();
+        Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         GlStateManager.enableBlend();
         GlStateManager.disableCull();
+        GlStateManager.enableRescaleNormal();
 
         if (Minecraft.isAmbientOcclusionEnabled()) {
             GlStateManager.shadeModel(7425);
@@ -118,37 +104,43 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
             GlStateManager.shadeModel(7424);
         }
 
-        vertexBuffer.begin(7, DefaultVertexFormats.BLOCK);
+        GlStateManager.translate(x, y, z);
+        for (Map.Entry<DummyNetworkTraveller, Vec3d> dummyNetworkTravellerVec3dEntry : travellers.entrySet()) {
+            renderOutline(te, dummyNetworkTravellerVec3dEntry);
+        }
 
-
-        DummyNetworkTraveller traveller = entry.getKey();
-        Vec3d translate = entry.getValue();
-        IExtendedBlockState state = (IExtendedBlockState) te.getWorld().getBlockState(te.getPos());
-
-        EnumDyeColor dyeColour = EnumDyeColor.byMetadata(traveller.data.getInteger("colour"));
-        Color javaColour = new Color(dyeColour.getMapColor().colorValue);
-        vertexBuffer.setTranslation(x - (double) te.getPos().getX() + translate.xCoord, y - (double) te.getPos().getY() + translate.yCoord, z - (double) te.getPos().getZ() + translate.zCoord);
-
-        this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-        Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer()
-                .renderModel(getWorld(), itemColourModel, state.withProperty(BlockItemTube.COLOUR, dyeColour), te.getPos(), vertexBuffer, false);
-
-        vertexBuffer.setTranslation(0.0D, 0.0D, 0.0D);
-        tessellator.draw();
-        RenderHelper.enableStandardItemLighting();
+        GlStateManager.disableBlend();
+        GlStateManager.enableCull();
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.popMatrix();
     }
 
-    public void loadModelIfApplicable() {
+    private void renderOutline(TileItemTube te, Map.Entry<DummyNetworkTraveller, Vec3d> entry) {
+        IBakedModel model = getItemColourModel();
+
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(entry.getValue().xCoord, entry.getValue().yCoord, entry.getValue().zCoord);
+        if (model != null) {
+            EnumDyeColor dyeColour = EnumDyeColor.byMetadata(entry.getKey().data.getInteger("colour"));
+            Color jColor = new Color(dyeColour.getMapColor().colorValue);
+            float[] rgb = jColor.getRGBColorComponents(new float[5]);
+            Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModelBrightnessColor(model, 1, rgb[0], rgb[1], rgb[2]);
+        }
+        GlStateManager.popMatrix();
+    }
+
+    public IBakedModel getItemColourModel() {
         if (itemColourModel != null)
-            return;
+            return itemColourModel;
 
         try {
-            Function<ResourceLocation, TextureAtlasSprite> textureGetter = location -> Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString());
-            IRetexturableModel unbakedModel = (IRetexturableModel) ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_colour"));
-            itemColourModel = unbakedModel.bake(new TRSRTransformation(ModelRotation.X0_Y0), DefaultVertexFormats.BLOCK, textureGetter);
+            IModel unbakedModel = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_colour"));
+            itemColourModel = unbakedModel.bake(TRSRTransformation.identity(), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter());
         } catch (Exception e) {
-            TeckleMod.LOG.error("Failed to load item outline model!");
+            TeckleMod.LOG.error("Failed to load item outline model! {}", e);
         }
+
+        return itemColourModel;
     }
 
     protected int getModelCount(ItemStack stack) {
