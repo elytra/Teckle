@@ -68,7 +68,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
             for (EnumFacing direction : EnumFacing.VALUES) {
                 BlockPos neighbourPos = pathNode.realNode.position.add(direction.getDirectionVec());
-                if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(entryPoint.position) ||
+                if (!network.isNodePresent(neighbourPos) ||
                         iteratedPositions.contains(neighbourPos) ||
                         (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite()))) {
                     continue;
@@ -76,12 +76,12 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
                 WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
                 if (neighbourNode.canAcceptTraveller(this, direction.getOpposite())) {
+                    if (!endpoints.containsKey(neighbourPos)) {
+                        endpoints.put(neighbourPos, new HashMap<>());
+                    }
                     if (isValidEndpoint(this, pathNode.realNode.position, neighbourPos)) {
-                        if (!endpoints.containsKey(neighbourPos)) {
-                            endpoints.put(neighbourPos, new HashMap<>());
-                        }
                         endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos)), direction.getOpposite()));
-                    } else if (entryPoint.network.equals(this.network) && entryPoint.equals(network.getNodeFromPosition(neighbourPos)) && entryPoint.getFacing().equals(direction.getOpposite())) {
+                    } else if (entryPoint.position.equals(neighbourPos) && entryPoint.network.equals(network)) {
                         PathNode nextNode = new PathNode(pathNode, entryPoint.endpoint);
                         nextNode.cost = Integer.MAX_VALUE;
                         endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(nextNode, direction.getOpposite()));
