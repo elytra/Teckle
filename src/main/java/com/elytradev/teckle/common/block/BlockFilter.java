@@ -5,7 +5,10 @@ import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
+import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
+import com.elytradev.teckle.common.worldnetwork.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkEntryPoint;
+import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockPistonBase;
@@ -65,7 +68,6 @@ public class BlockFilter extends BlockContainer {
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
-
         return new TileFilter();
     }
 
@@ -81,6 +83,14 @@ public class BlockFilter extends BlockContainer {
             TileItemTube tube = (TileItemTube) neighbour;
             tileEntityFilter.setNode(new WorldNetworkEntryPoint(tube.getNode().network, pos, facing));
             tube.getNode().network.registerNode(tileEntityFilter.getNode());
+        } else {
+            WorldNetwork network = new WorldNetwork(worldIn, null);
+            WorldNetworkDatabase.registerWorldNetwork(network);
+            WorldNetworkNode node = tileEntityFilter.getNode(network);
+            network.registerNode(node);
+            if (worldIn.getTileEntity(pos) != null) {
+                tileEntityFilter.setNode(node);
+            }
         }
     }
 
@@ -108,7 +118,7 @@ public class BlockFilter extends BlockContainer {
             if (powered) {
                 worldIn.setBlockState(pos, state.withProperty(TRIGGERED, true));
                 if (!hadPower)
-                    ((TileFilter) tileentity).pushToNetwork();
+                    ((TileFilter) tileentity).pushToNeighbour();
             } else {
                 worldIn.setBlockState(pos, state.withProperty(TRIGGERED, false));
             }

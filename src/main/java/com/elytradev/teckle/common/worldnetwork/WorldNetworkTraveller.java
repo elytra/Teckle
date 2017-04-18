@@ -25,7 +25,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     public float travelledDistance = 0F;
     // The current distance travelled between our previous node, and the increment node.
     public NBTTagCompound data;
-    public List<Tuple<WorldNetworkEndpoint, EnumFacing>> triedEndpoints = new ArrayList<>();
+    public List<Tuple<WorldNetworkNode, EnumFacing>> triedEndpoints = new ArrayList<>();
     public HashMap<String, IDropAction> dropActions = new HashMap<>();
     protected WorldNetworkEntryPoint entryPoint;
 
@@ -58,7 +58,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         return getFacingFromVector(nextNode.position.subtract(currentNode.position)).getOpposite();
     }
 
-    public void genPath() {
+    public void genPath(boolean attemptReroute) {
         List<PathNode> nodeStack = new ArrayList<>();
         List<BlockPos> iteratedPositions = new ArrayList<>();
         HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();
@@ -99,18 +99,57 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         }
         sortedEndpointData.sort(Comparator.comparingInt(o -> o.cost));
 
-        if (sortedEndpointData.isEmpty()) {
+        if (sortedEndpointData.isEmpty() && attemptReroute) {
             WorldNetworkPath lastPath = this.activePath;
             triedEndpoints.clear();
-            genPath();
+            genPath(false);
             if (this.activePath.equals(lastPath)) {
-                // TODO: TRAVEL THE NOTHINGNESS FOREVER SOMEHOW
+                nodeStack = new ArrayList<>();
+                iteratedPositions = new ArrayList<>();
+                endpoints = new HashMap<>();
+
+                nodeStack.add(new PathNode(null, currentNode));
+                while (!nodeStack.isEmpty()) {
+                    PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
+                    for (EnumFacing direction : EnumFacing.VALUES) {
+                        BlockPos neighbourPos = pathNode.realNode.position.add(direction.getDirectionVec());
+                        if ((!network.isNodePresent(neighbourPos) ||
+                                iteratedPositions.contains(neighbourPos) ||
+                                (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())))) {
+                            continue;
+                        }
+
+                        WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
+                        PathNode neighbourPathNode = new PathNode(pathNode, neighbourNode);
+                        if (neighbourNode.canAcceptTraveller(this, direction.getOpposite())) {
+                            if (!endpoints.containsKey(neighbourPos)) {
+                                endpoints.put(neighbourPos, new HashMap<>());
+                            }
+
+                            if (!isValidEndpoint(this, pathNode.realNode.position, neighbourPos)) {
+                                nodeStack.add(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos)));
+                                endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(neighbourPathNode, direction.getOpposite()));
+                            }
+
+                            iteratedPositions.add(neighbourPos);
+                        }
+                    }
+                }
+
+                sortedEndpointData.clear();
+                for (HashMap.Entry<BlockPos, HashMap<EnumFacing, EndpointData>> entry : endpoints.entrySet()) {
+                    sortedEndpointData.addAll(entry.getValue().values());
+                }
+                sortedEndpointData.sort((o1, o2) -> o2.cost - o1.cost);
             } else {
                 return;
             }
         }
-        WorldNetworkPath path = WorldNetworkPath.createPath(this, sortedEndpointData.get(0));
 
+        if(sortedEndpointData.isEmpty())
+            return;
+
+        WorldNetworkPath path = WorldNetworkPath.createPath(this, sortedEndpointData.get(0));
         this.previousNode = path.next();
         this.currentNode = path.next();
         this.nextNode = path.next();
@@ -124,6 +163,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
      *
      * @return
      */
+
     public boolean genInitialPath() {
         BlockPos startPos = this.entryPoint.position.add(entryPoint.getFacing().getDirectionVec());
         if (!network.isNodePresent(startPos))
@@ -172,13 +212,11 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             }
         } else {
             PathNode node = sortedEndpointData.get(0).node;
-
             while (node.from != null) {
                 node = node.from;
             }
 
             node.from = new PathNode(null, entryPoint);
-
             path = WorldNetworkPath.createPath(this, sortedEndpointData.get(0));
         }
 
@@ -214,8 +252,8 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         if (travelledDistance >= 0.5F) {
             if (!network.isNodePresent(nextNode.position) || (!nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector()))) {
                 EnumFacing injectionFace = getFacingFromVector(activePath.getEnd().realNode.position.subtract(activePath.getEnd().from.realNode.position)).getOpposite();
-                triedEndpoints.add(new Tuple<>((WorldNetworkEndpoint) activePath.getEnd().realNode, injectionFace));
-                genPath();
+                triedEndpoints.add(new Tuple<>( activePath.getEnd().realNode, injectionFace));
+                genPath(true);
                 new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, currentNode.position);
                 travelledDistance = 0.5F;
                 TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
@@ -230,7 +268,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
                         if (!didInject) {
                             triedEndpoints.add(new Tuple<>((WorldNetworkEndpoint) nextNode, injectionFace));
-                            genPath();
+                            genPath(true);
                             TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
                             message.travelledDistance = travelledDistance;
                             message.sendToAllWatching(this.network.world, this.currentNode.position);
@@ -335,7 +373,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         } else {
         }
         if (!network.isNodePresent(nextNode.position)) {
-            genPath();
+            genPath(true);
             return;
         }
 

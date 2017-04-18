@@ -200,13 +200,16 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
      *
      * @return true if a push occurred, false otherwise.
      */
-    public boolean pushToNetwork() {
+    public boolean pushToNeighbour() {
         boolean result = false;
 
         if (cooldown > 0)
             return result;
 
-        if (getNode() != null && getNode().network != null && !world.isRemote && world.getTileEntity(pos.offset(getFacing())) instanceof TileNetworkMember) {
+        TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(getFacing()));
+
+        if (!world.isRemote && potentialInsertionTile != null && ((getNode() != null && getNode().network != null)
+                || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing().getOpposite())))) {
             WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) getNode().network.getNodeFromPosition(pos);
             EnumFacing facing = getFacing();
 
@@ -249,24 +252,46 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
                     }
 
                     if (!extractionData.isEmpty()) {
-                        NBTTagCompound tagCompound = new NBTTagCompound();
-                        tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
-                        if (this.colour != null)
-                            tagCompound.setInteger("colour", this.colour.getMetadata());
-                        WorldNetworkTraveller traveller = thisNode.addTraveller(tagCompound);
-                        if (!Objects.equals(traveller, WorldNetworkTraveller.NONE)) {
-                            traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
-                            result = true;
+                        if (getNode() != null && getNode().network != null && potentialInsertionTile instanceof TileNetworkMember) {
+                            NBTTagCompound tagCompound = new NBTTagCompound();
+                            tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
+                            if (this.colour != null)
+                                tagCompound.setInteger("colour", this.colour.getMetadata());
+                            WorldNetworkTraveller traveller = thisNode.addTraveller(tagCompound);
+                            if (!Objects.equals(traveller, WorldNetworkTraveller.NONE)) {
+                                traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
+                                result = true;
+                            } else {
+                                ItemStack remaining = extractionData;
+                                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
+                                    remaining = buffer.insertItem(i, remaining, false);
+                                }
+
+                                if (!remaining.isEmpty()) {
+                                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
+                                }
+                            }
                         } else {
+                            IItemHandler insertHandler = world.getTileEntity(pos.offset(getFacing())).getCapability
+                                    (CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing().getOpposite());
+
                             ItemStack remaining = extractionData;
-                            for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                                remaining = buffer.insertItem(i, remaining, false);
+                            for (int i = 0; i < insertHandler.getSlots() && !remaining.isEmpty(); i++) {
+                                remaining = insertHandler.insertItem(i, remaining, false);
                             }
 
                             if (!remaining.isEmpty()) {
-                                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
+                                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
+                                    remaining = buffer.insertItem(i, remaining, false);
+                                }
+
+                                if (!remaining.isEmpty()) {
+                                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
+                                }
                             }
                         }
                     }
