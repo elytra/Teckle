@@ -1,13 +1,11 @@
 package com.elytradev.teckle.common.worldnetwork;
 
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
+import com.google.common.collect.Lists;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * A node in a worldnetwork, contains the position and the current travellers.
@@ -65,7 +63,7 @@ public class WorldNetworkNode {
         return this instanceof WorldNetworkEntryPoint;
     }
 
-    public List<WorldNetworkTraveller> getTravellers() {
-        return (List<WorldNetworkTraveller>) travellers.values();
+    public Collection<WorldNetworkTraveller> getTravellers() {
+        return ( travellers.values());
     }
 }

@@ -278,8 +278,11 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                     }
                 } else if (nextNode.position.equals(activePath.getEnd().realNode.position)) {
                     if (travelledDistance >= 1.25F) {
-                        travelledDistance = 0F;
+                        previousNode.unregisterTraveller(this);
+                        currentNode.unregisterTraveller(this);
                         genPath(true);
+                        new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, currentNode.position);
+                        travelledDistance = -1.1F;
                         TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
                         message.travelledDistance = travelledDistance;
                         message.sendToAllWatching(this.network.world, this.currentNode.position);
