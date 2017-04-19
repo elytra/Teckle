@@ -22,6 +22,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Block registration is here, to keep the mod class nice and small.
@@ -37,7 +38,7 @@ public class TeckleObjects {
     public static CreativeTabs creativeTab = new CreativeTabs(TeckleMod.MOD_ID) {
         @Override
         public ItemStack getTabIconItem() {
-            return new ItemStack(itemPaintBrush);
+            return new ItemStack(itemPaintBrush, 1, new Random().nextInt(15));
         }
     };
 
@@ -64,7 +65,7 @@ public class TeckleObjects {
         skipItemMesh.add(itemPaintBrush);
 
         itemSiliconBoule = new Item();
-        registerItem("siliconBoule", itemSiliconBoule);
+        registerItem("siliconboule", itemSiliconBoule);
     }
 
     public void init(FMLInitializationEvent e) {
@@ -133,7 +134,7 @@ public class TeckleObjects {
     }
 
     private void registerItem(String id, Item item) {
-        item.setUnlocalizedName(id);
+        item.setUnlocalizedName("teckle." + id);
         item.setRegistryName(REGISTRY_PREFIX, id);
         item.setCreativeTab(creativeTab);
         GameRegistry.register(item);

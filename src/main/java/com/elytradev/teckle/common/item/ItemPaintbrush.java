@@ -24,7 +24,7 @@ public class ItemPaintbrush extends Item {
 
     @Override
     public String getUnlocalizedName(ItemStack stack) {
-        return "teckle.item.paintbrush." + EnumDyeColor.byDyeDamage(stack.getMetadata()).getUnlocalizedName() + ".name";
+        return super.getUnlocalizedName() + "." + EnumDyeColor.byDyeDamage(stack.getMetadata()).getUnlocalizedName();
     }
 
     @Override

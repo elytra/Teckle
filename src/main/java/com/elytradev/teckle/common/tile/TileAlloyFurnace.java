@@ -32,18 +32,8 @@ public class TileAlloyFurnace extends TileEntity implements ITickable {
 
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            switch (facing) {
-                case UP: {
-
-                }
-                case DOWN: {
-
-                }
-                default: {
-
-                }
-            }
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && facing != null) {
+            return true;
         }
         return super.hasCapability(capability, facing);
     }

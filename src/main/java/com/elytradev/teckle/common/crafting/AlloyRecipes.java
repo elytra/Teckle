@@ -1,6 +1,7 @@
 package com.elytradev.teckle.common.crafting;
 
 import com.elytradev.teckle.common.TeckleObjects;
+import com.google.common.collect.Lists;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Tuple;
@@ -14,7 +15,7 @@ import java.util.List;
 public class AlloyRecipes {
 
     private static final AlloyRecipes INSTANCE = new AlloyRecipes();
-    public List<AlloyRecipe> recipes;
+    public List<AlloyRecipe> recipes = Lists.newArrayList();
 
     public AlloyRecipes() {
     }
