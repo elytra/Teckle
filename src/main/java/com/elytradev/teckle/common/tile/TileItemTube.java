@@ -96,6 +96,11 @@ public class TileItemTube extends TileNetworkMember implements ITickable {
     }
 
     @Override
+    public boolean canConnectTo(EnumFacing side) {
+        return true;
+    }
+
+    @Override
     public void readFromNBT(NBTTagCompound compound) {
         this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
         super.readFromNBT(compound);

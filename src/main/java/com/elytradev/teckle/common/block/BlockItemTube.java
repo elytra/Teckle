@@ -337,7 +337,7 @@ public class BlockItemTube extends BlockContainer {
         if (tileAtPos != null) {
             if (tileAtPos.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)) {
                 canConnect = true;
-            } else if (tileAtPos instanceof TileNetworkMember) {
+            } else if (tileAtPos instanceof TileNetworkMember && ((TileNetworkMember) tileAtPos).canConnectTo(side)) {
                 canConnect = true;
             }
         }

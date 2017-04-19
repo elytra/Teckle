@@ -79,6 +79,8 @@ public abstract class TileNetworkMember extends TileEntity {
 
     public abstract boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from);
 
+    public abstract boolean canConnectTo(EnumFacing side);
+
     @Override
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         if (capability == null) return null;
@@ -97,7 +99,6 @@ public abstract class TileNetworkMember extends TileEntity {
         }
         return super.hasCapability(capability, facing);
     }
-
 
     private final class ProbeCapability implements IProbeDataProvider {
         @Override

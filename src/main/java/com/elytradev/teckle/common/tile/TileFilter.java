@@ -186,6 +186,11 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
     }
 
     @Override
+    public boolean canConnectTo(EnumFacing side) {
+        return side.equals(getFacing().getOpposite());
+    }
+
+    @Override
     public WorldNetworkNode getNode() {
         return super.getNode();
     }
