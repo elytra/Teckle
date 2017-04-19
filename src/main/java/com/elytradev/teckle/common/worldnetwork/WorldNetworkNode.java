@@ -5,7 +5,9 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * A node in a worldnetwork, contains the position and the current travellers.
@@ -16,7 +18,7 @@ public class WorldNetworkNode {
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
     public BlockPos position;
     public WorldNetwork network;
-    private List<WorldNetworkTraveller> travellers = new ArrayList<>();
+    private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
 
     protected WorldNetworkNode() {
         this.position = new BlockPos(0, -1, 0);
@@ -48,11 +50,11 @@ public class WorldNetworkNode {
     }
 
     public void registerTraveller(WorldNetworkTraveller traveller) {
-        travellers.add(traveller);
+        travellers.put(traveller.data.getUniqueId("id"), traveller);
     }
 
     public void unregisterTraveller(WorldNetworkTraveller traveller) {
-        travellers.remove(traveller);
+        travellers.remove(traveller.data.getUniqueId("id"));
     }
 
     public boolean isEndpoint() {
@@ -64,6 +66,6 @@ public class WorldNetworkNode {
     }
 
     public List<WorldNetworkTraveller> getTravellers() {
-        return travellers;
+        return (List<WorldNetworkTraveller>) travellers.values();
     }
 }

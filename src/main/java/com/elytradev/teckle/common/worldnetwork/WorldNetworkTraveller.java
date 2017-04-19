@@ -146,7 +146,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             }
         }
 
-        if(sortedEndpointData.isEmpty())
+        if (sortedEndpointData.isEmpty())
             return;
 
         WorldNetworkPath path = WorldNetworkPath.createPath(this, sortedEndpointData.get(0));
@@ -252,7 +252,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         if (travelledDistance >= 0.5F) {
             if (!network.isNodePresent(nextNode.position) || (!nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector()))) {
                 EnumFacing injectionFace = getFacingFromVector(activePath.getEnd().realNode.position.subtract(activePath.getEnd().from.realNode.position)).getOpposite();
-                triedEndpoints.add(new Tuple<>( activePath.getEnd().realNode, injectionFace));
+                triedEndpoints.add(new Tuple<>(activePath.getEnd().realNode, injectionFace));
                 genPath(true);
                 new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, currentNode.position);
                 travelledDistance = 0.5F;
@@ -275,6 +275,14 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         } else {
                             network.unregisterTraveller(this, false, true);
                         }
+                    }
+                } else if (nextNode.position.equals(activePath.getEnd().realNode.position)) {
+                    if (travelledDistance >= 1.25F) {
+                        travelledDistance = 0F;
+                        genPath(true);
+                        TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
+                        message.travelledDistance = travelledDistance;
+                        message.sendToAllWatching(this.network.world, this.currentNode.position);
                     }
                 } else {
                     travelledDistance = 0;
