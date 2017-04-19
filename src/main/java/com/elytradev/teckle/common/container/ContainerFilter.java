@@ -7,6 +7,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerFilter extends Container {
     public final TileFilter filter;
@@ -18,7 +19,7 @@ public class ContainerFilter extends Container {
 
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                this.addSlotToContainer(new Slot(tile.inventory, j + i * 3, 62 + j * 18, 17 + i * 18));
+                this.addSlotToContainer(new SlotItemHandler(tile.inv, j + i * 3, 62 + j * 18, 17 + i * 18));
             }
         }
         bindPlayerInventory(player.inventory);

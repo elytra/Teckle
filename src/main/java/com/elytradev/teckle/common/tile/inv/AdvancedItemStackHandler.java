@@ -1,14 +1,16 @@
 package com.elytradev.teckle.common.tile.inv;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import java.util.function.BiPredicate;
+import java.util.stream.Stream;
 
 public class AdvancedItemStackHandler extends ItemStackHandler {
 
-    public BiPredicate<Integer, ItemStack> slotCheck = (integer, stack) -> true;
+    public BiPredicate<Integer, ItemStack> insertCheck = (integer, stack) -> true;
     public IContentChangeListener changeListener = slot -> {/*NOOP*/};
     public ISlotLimit slotLimit = slot -> 64;
 
@@ -21,8 +23,8 @@ public class AdvancedItemStackHandler extends ItemStackHandler {
         return this;
     }
 
-    public AdvancedItemStackHandler withSlotCheck(BiPredicate<Integer, ItemStack> canPutInSlot) {
-        this.slotCheck = canPutInSlot;
+    public AdvancedItemStackHandler withInsertCheck(BiPredicate<Integer, ItemStack> canPutInSlot) {
+        this.insertCheck = canPutInSlot;
         return this;
     }
 
@@ -34,7 +36,7 @@ public class AdvancedItemStackHandler extends ItemStackHandler {
     @Nonnull
     @Override
     public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-        if (slotCheck.test(slot, stack))
+        if (insertCheck.test(slot, stack))
             return super.insertItem(slot, stack, simulate);
         else
             return stack;
@@ -49,6 +51,14 @@ public class AdvancedItemStackHandler extends ItemStackHandler {
     @Override
     public int getSlotLimit(int slot) {
         return slotLimit.slotLimit(slot);
+    }
+
+    public Stream<ItemStack> stream() {
+        return this.stacks.stream();
+    }
+
+    public NonNullList<ItemStack> getStacks() {
+        return stacks;
     }
 
     public interface IContentChangeListener {

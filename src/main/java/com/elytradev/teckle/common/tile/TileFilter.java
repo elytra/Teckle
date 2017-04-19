@@ -8,6 +8,7 @@ import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
+import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.worldnetwork.*;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.state.IBlockState;
@@ -43,111 +44,9 @@ import java.util.Objects;
 public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
     public EnumDyeColor colour = null;
-    public NonNullList<ItemStack> stacks = NonNullList.withSize(9, ItemStack.EMPTY);
+    public AdvancedItemStackHandler inv = new AdvancedItemStackHandler(9).withSlotLimit(slot -> 16);
     public ItemStackHandler buffer = new ItemStackHandler(9);
 
-    public IInventory inventory = new IInventory() {
-        @Override
-        public int getSizeInventory() {
-            return 9;
-        }
-
-        @Override
-        public boolean isEmpty() {
-            boolean empty = true;
-
-            for (ItemStack stack : stacks) {
-                if (stack.isEmpty()) {
-                    empty = false;
-                    break;
-                }
-            }
-
-            return empty;
-        }
-
-        @Override
-        public ItemStack getStackInSlot(int index) {
-            return stacks.get(index);
-        }
-
-        @Override
-        public ItemStack decrStackSize(int index, int count) {
-            return ItemStackHelper.getAndSplit(stacks, index, count);
-        }
-
-        @Override
-        public ItemStack removeStackFromSlot(int index) {
-            return ItemStackHelper.getAndRemove(stacks, index);
-        }
-
-        @Override
-        public void setInventorySlotContents(int index, ItemStack stack) {
-            stacks.set(index, stack);
-        }
-
-        @Override
-        public int getInventoryStackLimit() {
-            return 8;
-        }
-
-        @Override
-        public void markDirty() {
-            TileFilter.this.markDirty();
-        }
-
-        @Override
-        public boolean isUsableByPlayer(EntityPlayer player) {
-            return TileFilter.this.isUsableByPlayer(player);
-        }
-
-        @Override
-        public void openInventory(EntityPlayer player) {
-        }
-
-        @Override
-        public void closeInventory(EntityPlayer player) {
-        }
-
-        @Override
-        public boolean isItemValidForSlot(int index, ItemStack stack) {
-            return true;
-        }
-
-        @Override
-        public int getField(int id) {
-            return 0;
-        }
-
-        @Override
-        public void setField(int id, int value) {
-        }
-
-        @Override
-        public int getFieldCount() {
-            return 0;
-        }
-
-        @Override
-        public void clear() {
-            stacks = NonNullList.withSize(9, ItemStack.EMPTY);
-        }
-
-        @Override
-        public String getName() {
-            return null;
-        }
-
-        @Override
-        public boolean hasCustomName() {
-            return false;
-        }
-
-        @Override
-        public ITextComponent getDisplayName() {
-            return null;
-        }
-    };
     private int cooldown = 0;
 
     @Nullable
@@ -236,8 +135,8 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
                     if (bufferSlot != -1) {
                         extractionData = buffer.extractItem(bufferSlot, 8, false);
                     } else {
-                        if (stacks.stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
-                            for (ItemStack stack : stacks) {
+                        if (inv.stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
+                            for (ItemStack stack : inv.getStacks()) {
                                 if (!extractionData.isEmpty())
                                     break;
                                 if (stack.isEmpty())
@@ -384,7 +283,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
         super.readFromNBT(compound);
 
         this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
-        ItemStackHelper.loadAllItems(compound, stacks);
+        inv.deserializeNBT(compound.getCompoundTag("inv"));
         buffer.deserializeNBT(compound.getCompoundTag("buffer"));
     }
 
@@ -395,7 +294,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
         } else {
             compound.removeTag("colour");
         }
-        ItemStackHelper.saveAllItems(compound, this.stacks);
+        compound.setTag("inv", inv.serializeNBT());
         compound.setTag("buffer", buffer.serializeNBT());
 
         return super.writeToNBT(compound);
