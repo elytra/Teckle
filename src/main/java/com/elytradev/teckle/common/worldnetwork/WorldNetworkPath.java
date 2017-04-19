@@ -3,17 +3,12 @@ package com.elytradev.teckle.common.worldnetwork;
 import com.elytradev.concrete.Marshallable;
 import com.elytradev.teckle.common.TeckleMod;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
 
 /**
  * More or less a wrapper for a list that makes code easier to understand.

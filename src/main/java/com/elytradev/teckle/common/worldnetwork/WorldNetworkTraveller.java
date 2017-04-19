@@ -267,7 +267,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this, injectionFace);
 
                         if (!didInject) {
-                            triedEndpoints.add(new Tuple<>((WorldNetworkEndpoint) nextNode, injectionFace));
+                            triedEndpoints.add(new Tuple<>(nextNode, injectionFace));
                             genPath(true);
                             TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
                             message.travelledDistance = travelledDistance;
@@ -336,7 +336,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         nextNode = network.getNodeFromPosition(BlockPos.fromLong(nbt.getLong("nextnode")));
 
         for (int i = 0; i < nbt.getInteger("tried"); i++) {
-            triedEndpoints.add(new Tuple<>((WorldNetworkEndpoint) network.getNodeFromPosition(
+            triedEndpoints.add(new Tuple<>(network.getNodeFromPosition(
                     BlockPos.fromLong(nbt.getLong("tried" + i))),
                     EnumFacing.values()[data.getInteger("triedf")]));
         }
