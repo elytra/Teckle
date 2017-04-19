@@ -1,6 +1,7 @@
 package com.elytradev.teckle.common;
 
 import com.elytradev.probe.api.IProbeDataProvider;
+import com.elytradev.teckle.common.crafting.AlloyRecipes;
 import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.worldnetwork.DropActions;
@@ -59,6 +60,7 @@ public class TeckleMod {
     @Mod.EventHandler
     public void onPostInit(FMLPostInitializationEvent e) {
         OBJECTS.postInit(e);
+        AlloyRecipes.getInstance().init();
         PROXY.registerRenderers(e.getModState());
     }
 }

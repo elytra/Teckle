@@ -46,7 +46,6 @@ public class BlockFilter extends BlockContainer {
 
         this.setHarvestLevel("pickaxe", 0);
         this.setDefaultState(blockState.getBaseState());
-        this.setCreativeTab(TeckleObjects.creativeTab);
     }
 
     @Override

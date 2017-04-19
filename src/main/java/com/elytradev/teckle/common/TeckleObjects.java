@@ -32,6 +32,7 @@ public class TeckleObjects {
     public static BlockItemTube blockItemTube;
     public static BlockFilter blockFilter;
     public static ItemPaintbrush itemPaintBrush;
+    public static Item itemSiliconBoule;
 
     public static CreativeTabs creativeTab = new CreativeTabs(TeckleMod.MOD_ID) {
         @Override
@@ -61,6 +62,9 @@ public class TeckleObjects {
         itemPaintBrush = new ItemPaintbrush();
         registerItem("paintbrush", itemPaintBrush);
         skipItemMesh.add(itemPaintBrush);
+
+        itemSiliconBoule = new Item();
+        registerItem("siliconBoule", itemSiliconBoule);
     }
 
     public void init(FMLInitializationEvent e) {
@@ -105,6 +109,7 @@ public class TeckleObjects {
     private void registerBlock(String id, Block block, boolean withItemBlock) {
         block.setUnlocalizedName("teckle." + id);
         block.setRegistryName(REGISTRY_PREFIX, id);
+        block.setCreativeTab(creativeTab);
         GameRegistry.register(block);
         if (withItemBlock)
             GameRegistry.register(new ItemBlock(block).setRegistryName(block.getRegistryName()));
@@ -119,6 +124,7 @@ public class TeckleObjects {
 
             ItemBlock itemBlock = itemBlockClass.getDeclaredConstructor(Block.class).newInstance(block);
             itemBlock.setRegistryName(REGISTRY_PREFIX, id);
+            itemBlock.setCreativeTab(creativeTab);
             GameRegistry.register(itemBlock);
             TeckleObjects.registeredBlocks.put(id, block);
         } catch (Exception e) {
@@ -129,6 +135,7 @@ public class TeckleObjects {
     private void registerItem(String id, Item item) {
         item.setUnlocalizedName(id);
         item.setRegistryName(REGISTRY_PREFIX, id);
+        item.setCreativeTab(creativeTab);
         GameRegistry.register(item);
         TeckleObjects.registeredItems.put(id, item);
     }

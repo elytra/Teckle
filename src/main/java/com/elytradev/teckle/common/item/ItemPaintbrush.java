@@ -19,7 +19,6 @@ import java.util.Objects;
 public class ItemPaintbrush extends Item {
 
     public ItemPaintbrush() {
-        setCreativeTab(TeckleObjects.creativeTab);
         setMaxStackSize(1);
     }
 

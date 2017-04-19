@@ -55,7 +55,6 @@ public class BlockItemTube extends BlockContainer {
 
         this.setHarvestLevel("pickaxe", 0);
         this.setLightOpacity(0);
-        this.setCreativeTab(TeckleObjects.creativeTab);
         this.setDefaultState(blockState.getBaseState());
     }
 
