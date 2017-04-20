@@ -1,6 +1,5 @@
 package com.elytradev.teckle.common.block;
 
-import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.property.UnlistedBool;
 import com.elytradev.teckle.common.block.property.UnlistedEnum;
 import com.elytradev.teckle.common.tile.TileItemTube;

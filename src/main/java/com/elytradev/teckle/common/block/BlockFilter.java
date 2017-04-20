@@ -1,7 +1,6 @@
 package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.common.TeckleMod;
-import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;

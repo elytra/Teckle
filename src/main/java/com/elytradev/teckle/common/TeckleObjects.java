@@ -64,7 +64,7 @@ public class TeckleObjects {
         registerBlock("filter", blockFilter, true);
 
         blockAlloyFurnace = new BlockAlloyFurnace(Material.ROCK);
-        registerBlock("alloyfurnace",blockAlloyFurnace);
+        registerBlock("alloyfurnace", blockAlloyFurnace);
 
         itemPaintBrush = new ItemPaintbrush();
         registerItem("paintbrush", itemPaintBrush);
