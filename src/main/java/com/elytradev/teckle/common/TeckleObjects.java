@@ -5,6 +5,7 @@ import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.block.BlockItemTube;
 import com.elytradev.teckle.common.handlers.PaintbrushRecipe;
 import com.elytradev.teckle.common.item.ItemPaintbrush;
+import com.elytradev.teckle.common.tile.TileAlloyFurnace;
 import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import net.minecraft.block.Block;
@@ -76,6 +77,7 @@ public class TeckleObjects {
     public void init(FMLInitializationEvent e) {
         GameRegistry.registerTileEntity(TileItemTube.class, "teckleItemTube");
         GameRegistry.registerTileEntity(TileFilter.class, "teckleFilter");
+        GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
 
         CraftingManager.getInstance().addRecipe(new PaintbrushRecipe());
 

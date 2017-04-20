@@ -6,7 +6,11 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityFurnace;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
+
+import javax.annotation.Nonnull;
 
 /**
  * Created by darkevilmac on 4/20/2017.
@@ -25,6 +29,9 @@ public class ContainerAlloyFurnace extends Container {
                 this.addSlotToContainer(new SlotItemHandler(tile.itemStackHandler, j + i * 3, 44 + j * 18, 15 + i * 18));
             }
         }
+        this.addSlotToContainer(new SlotFuel(tile.itemStackHandler, 9, 18, 51));
+        this.addSlotToContainer(new SlotItemHandler(tile.itemStackHandler, 10, 146, 33));
+
         bindPlayerInventory(player.inventory);
     }
 
@@ -75,5 +82,17 @@ public class ContainerAlloyFurnace extends Container {
         }
 
         return itemstack;
+    }
+
+    public class SlotFuel extends SlotItemHandler {
+
+        public SlotFuel(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
+            super(itemHandler, index, xPosition, yPosition);
+        }
+
+        @Override
+        public boolean isItemValid(@Nonnull ItemStack stack) {
+            return super.isItemValid(stack) && TileEntityFurnace.isItemFuel(stack);
+        }
     }
 }

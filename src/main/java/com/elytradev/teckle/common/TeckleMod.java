@@ -60,7 +60,8 @@ public class TeckleMod {
     @Mod.EventHandler
     public void onPostInit(FMLPostInitializationEvent e) {
         OBJECTS.postInit(e);
-        AlloyRecipes.getInstance().init();
         PROXY.registerRenderers(e.getModState());
+
+        AlloyRecipes.getInstance().init();
     }
 }
