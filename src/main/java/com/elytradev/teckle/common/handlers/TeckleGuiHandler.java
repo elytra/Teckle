@@ -1,7 +1,10 @@
 package com.elytradev.teckle.common.handlers;
 
+import com.elytradev.teckle.client.gui.GuiAlloyFurnace;
 import com.elytradev.teckle.client.gui.GuiFilter;
+import com.elytradev.teckle.common.container.ContainerAlloyFurnace;
 import com.elytradev.teckle.common.container.ContainerFilter;
+import com.elytradev.teckle.common.tile.TileAlloyFurnace;
 import com.elytradev.teckle.common.tile.TileFilter;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -23,6 +26,11 @@ public class TeckleGuiHandler implements IGuiHandler {
                 if (te instanceof TileFilter) {
                     return new ContainerFilter((TileFilter) te, player);
                 }
+            case 2:
+                te = world.getTileEntity(pos);
+                if (te instanceof TileAlloyFurnace) {
+                    return new ContainerAlloyFurnace((TileAlloyFurnace) te, player);
+                }
             default:
                 return null;
         }
@@ -37,6 +45,11 @@ public class TeckleGuiHandler implements IGuiHandler {
                 te = world.getTileEntity(pos);
                 if (te instanceof TileFilter) {
                     return new GuiFilter((TileFilter) te, player);
+                }
+            case 2:
+                te = world.getTileEntity(pos);
+                if (te instanceof TileAlloyFurnace) {
+                    return new GuiAlloyFurnace((TileAlloyFurnace) te, player);
                 }
             default:
                 return null;

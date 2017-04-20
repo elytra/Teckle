@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common;
 
+import com.elytradev.teckle.common.block.BlockAlloyFurnace;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.block.BlockItemTube;
 import com.elytradev.teckle.common.handlers.PaintbrushRecipe;
@@ -32,6 +33,7 @@ public class TeckleObjects {
 
     public static BlockItemTube blockItemTube;
     public static BlockFilter blockFilter;
+    public static BlockAlloyFurnace blockAlloyFurnace;
     public static ItemPaintbrush itemPaintBrush;
     public static Item itemSiliconBoule;
 
@@ -59,6 +61,9 @@ public class TeckleObjects {
 
         blockFilter = new BlockFilter(Material.CIRCUITS);
         registerBlock("filter", blockFilter, true);
+
+        blockAlloyFurnace = new BlockAlloyFurnace(Material.ROCK);
+        registerBlock("alloyfurnace",blockAlloyFurnace);
 
         itemPaintBrush = new ItemPaintbrush();
         registerItem("paintbrush", itemPaintBrush);

@@ -2,6 +2,7 @@ package com.elytradev.teckle.common.tile.inv;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
@@ -51,6 +52,47 @@ public class AdvancedItemStackHandler extends ItemStackHandler {
     @Override
     public int getSlotLimit(int slot) {
         return slotLimit.slotLimit(slot);
+    }
+
+    public IItemHandler subHandler(int startSlot, int size) {
+        return new IItemHandler() {
+            @Override
+            public int getSlots() {
+                return size;
+            }
+
+            @Nonnull
+            @Override
+            public ItemStack getStackInSlot(int slot) {
+                checkSlot(slot);
+                return AdvancedItemStackHandler.this.getStackInSlot(slot + startSlot);
+            }
+
+            @Nonnull
+            @Override
+            public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+                checkSlot(slot);
+                return AdvancedItemStackHandler.this.insertItem(slot + startSlot, stack, simulate);
+            }
+
+            @Nonnull
+            @Override
+            public ItemStack extractItem(int slot, int amount, boolean simulate) {
+                checkSlot(slot);
+                return AdvancedItemStackHandler.this.extractItem(slot + startSlot, amount, simulate);
+            }
+
+            @Override
+            public int getSlotLimit(int slot) {
+                checkSlot(slot);
+                return AdvancedItemStackHandler.this.getSlotLimit(slot + startSlot);
+            }
+
+            private void checkSlot(int slot) {
+                if (slot < 0 || slot >= size)
+                    throw new RuntimeException("Slot " + slot + " not in valid range - [0," + size + ")");
+            }
+        };
     }
 
     public Stream<ItemStack> stream() {

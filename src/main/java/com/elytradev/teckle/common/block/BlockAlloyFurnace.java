@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.block;
 
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.tile.TileAlloyFurnace;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
@@ -28,8 +29,8 @@ public class BlockAlloyFurnace extends BlockContainer {
     public static final PropertyDirection FACING = BlockHorizontal.FACING;
     public static final PropertyBool LIT = PropertyBool.create("lit");
 
-    protected BlockAlloyFurnace() {
-        super(Material.ROCK);
+    public BlockAlloyFurnace(Material material) {
+        super(material);
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(LIT, false));
     }
 
@@ -93,17 +94,15 @@ public class BlockAlloyFurnace extends BlockContainer {
     }
 
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if (worldIn.isRemote) {
-            return true;
-        } else {
+        if (!playerIn.isSneaking()) {
             TileEntity tileentity = worldIn.getTileEntity(pos);
-
-            if (tileentity instanceof TileAlloyFurnace) {
-                // todo: open gui
+            if (tileentity != null) {
+                playerIn.openGui(TeckleMod.INSTANCE, 2, worldIn, pos.getX(), pos.getY(), pos.getZ());
+                return true;
             }
-
-            return true;
         }
+
+        return false;
     }
 
     public TileEntity createNewTileEntity(World worldIn, int meta) {

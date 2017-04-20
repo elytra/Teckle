@@ -1,25 +1,28 @@
 package com.elytradev.teckle.common.container;
 
-import com.elytradev.teckle.common.tile.TileFilter;
+import com.elytradev.teckle.common.tile.TileAlloyFurnace;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 
-public class ContainerFilter extends Container {
-    public final TileFilter filter;
+/**
+ * Created by darkevilmac on 4/20/2017.
+ */
+public class ContainerAlloyFurnace extends Container {
+    public final TileAlloyFurnace alloyFurnace;
     public final EntityPlayer player;
 
-    public ContainerFilter(TileFilter tile, EntityPlayer player) {
-        this.filter = tile;
+    public ContainerAlloyFurnace(TileAlloyFurnace tile, EntityPlayer player) {
+        this.alloyFurnace = tile;
         this.player = player;
 
+        // slots for recipe area.
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                this.addSlotToContainer(new SlotItemHandler(tile.inv, j + i * 3, 62 + j * 18, 17 + i * 18));
+                this.addSlotToContainer(new SlotItemHandler(tile.itemStackHandler, j + i * 3, 44 + j * 18, 15 + i * 18));
             }
         }
         bindPlayerInventory(player.inventory);
@@ -39,7 +42,7 @@ public class ContainerFilter extends Container {
 
     @Override
     public boolean canInteractWith(EntityPlayer player) {
-        return filter.isUsableByPlayer(player);
+        return alloyFurnace.isUsableByPlayer(player);
     }
 
     public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
@@ -73,5 +76,4 @@ public class ContainerFilter extends Container {
 
         return itemstack;
     }
-
 }

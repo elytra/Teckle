@@ -107,4 +107,7 @@ public class AlloyRecipe {
         return consumed;
     }
 
+    public int getCookTime(){
+        return 100;
+    }
 }
