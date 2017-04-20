@@ -1,7 +1,6 @@
 package com.elytradev.teckle.common.crafting;
 
 import net.minecraft.block.Block;
-import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
@@ -77,13 +76,21 @@ public class AlloyRecipe {
 
                     if (next instanceof ItemStack) {
                         match = OreDictionary.itemMatches((ItemStack) next, stackInSlot, false) && stackInSlot.getCount() >= ((ItemStack) next).getCount();
-                        consumed.add((ItemStack) next);
+                        if (match) {
+                            ItemStack consumedStack = stackInSlot.copy();
+                            consumedStack.setCount(((ItemStack) next).getCount());
+                            consumed.add(consumedStack);
+                        }
                     } else if (next instanceof List) {
                         Iterator<ItemStack> itr = ((List<ItemStack>) next).iterator();
                         while (itr.hasNext() && !match) {
                             ItemStack nextStack = itr.next();
                             match = OreDictionary.itemMatches(nextStack, stackInSlot, false) && stackInSlot.getCount() >= nextStack.getCount();
-                            consumed.add(nextStack);
+                            if (match) {
+                                ItemStack consumedStack = stackInSlot.copy();
+                                consumedStack.setCount(nextStack.getCount());
+                                consumed.add(consumedStack);
+                            }
                         }
                     }
 
@@ -100,14 +107,14 @@ public class AlloyRecipe {
             }
         }
 
-        if(!required.isEmpty()){
+        if (!required.isEmpty()) {
             consumed.clear();
         }
 
         return consumed;
     }
 
-    public int getCookTime(){
+    public int getCookTime() {
         return 100;
     }
 }

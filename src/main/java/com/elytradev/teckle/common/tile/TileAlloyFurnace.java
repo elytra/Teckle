@@ -17,6 +17,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -139,8 +140,7 @@ public class TileAlloyFurnace extends TileEntity implements ITickable {
                 Optional<AlloyRecipe> recipe = AlloyRecipes.getInstance().recipes.stream().filter(alloyRecipe -> !alloyRecipe.matches(topInputHandler).isEmpty())
                         .findFirst();
 
-                if (recipe.isPresent() && (bottomHandler.getStackInSlot(0).isEmpty()
-                        || ItemStack.areItemsEqual(recipe.get().getCraftingResult(), bottomHandler.getStackInSlot(0)))) {
+                if (recipe.isPresent() && (bottomHandler.getStackInSlot(0).isEmpty() || ItemHandlerHelper.canItemStacksStack(recipe.get().getCraftingResult(), bottomHandler.getStackInSlot(0)))) {
                     List<ItemStack> matching = recipe.get().matches(topInputHandler);
                     for (int i = 0; i < matching.size(); i++) {
                         ItemStack stack = matching.get(i).copy();
@@ -148,13 +148,11 @@ public class TileAlloyFurnace extends TileEntity implements ITickable {
                             ItemStack stackInSlot = topInputHandler.getStackInSlot(j);
                             if (stackInSlot.isEmpty())
                                 continue;
-                            System.out.println(stackInSlot.toString() + stackInSlot.getItemDamage() + " " + stack.toString() + stack.getItemDamage());
 
-                            if (stackInSlot.isItemEqual(stack)) {
+                            if (stack.isItemEqual(stackInSlot)) {
                                 ItemStack extractResult = topInputHandler.extractItem(j, stack.getCount(), false);
 
-                                System.out.println("ExtractResult for " + stack + " " + extractResult.toString());
-                                stack.setCount(stack.getCount() - extractResult.getCount());
+                                stack = ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - extractResult.getCount());
                             }
                         }
                     }
