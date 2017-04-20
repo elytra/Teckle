@@ -13,6 +13,7 @@ public class TeckleNetworking {
     public static void setupNetwork() {
         NETWORK.register(TravellerDataMessage.class);
         NETWORK.register(TravellerMoveMessage.class);
+        NETWORK.register(AlloyFurnaceMessage.class);
 
         NETWORK.register(FilterColourChangeMessage.class);
     }

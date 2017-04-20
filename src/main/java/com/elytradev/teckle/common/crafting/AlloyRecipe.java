@@ -115,6 +115,6 @@ public class AlloyRecipe {
     }
 
     public int getCookTime() {
-        return 100;
+        return 200;
     }
 }

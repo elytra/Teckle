@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.container;
 
+import com.elytradev.teckle.common.network.AlloyFurnaceMessage;
 import com.elytradev.teckle.common.tile.TileAlloyFurnace;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -18,6 +19,8 @@ import javax.annotation.Nonnull;
 public class ContainerAlloyFurnace extends Container {
     public final TileAlloyFurnace alloyFurnace;
     public final EntityPlayer player;
+
+    public int fuelBurnTime, cookTime,currentFuelWorth;
 
     public ContainerAlloyFurnace(TileAlloyFurnace tile, EntityPlayer player) {
         this.alloyFurnace = tile;
@@ -46,6 +49,19 @@ public class ContainerAlloyFurnace extends Container {
             addSlotToContainer(new Slot(inventoryplayer, i, 8 + i * 18, 142));
         }
     }
+
+    public void detectAndSendChanges() {
+        super.detectAndSendChanges();
+
+        if (this.cookTime != this.alloyFurnace.cookTime || this.fuelBurnTime != this.alloyFurnace.fuelBurnTime || this.alloyFurnace.currentFuelWorth != this.alloyFurnace.currentFuelWorth) {
+            this.cookTime = this.alloyFurnace.cookTime;
+            this.fuelBurnTime = this.alloyFurnace.fuelBurnTime;
+            this.currentFuelWorth = this.alloyFurnace.currentFuelWorth;
+
+            new AlloyFurnaceMessage(alloyFurnace).sendToAllWatching(alloyFurnace);
+        }
+    }
+
 
     @Override
     public boolean canInteractWith(EntityPlayer player) {
@@ -83,6 +99,7 @@ public class ContainerAlloyFurnace extends Container {
 
         return itemstack;
     }
+
 
     public class SlotFuel extends SlotItemHandler {
 

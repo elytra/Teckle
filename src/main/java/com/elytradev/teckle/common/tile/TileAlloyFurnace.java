@@ -27,7 +27,7 @@ import java.util.function.BiPredicate;
 public class TileAlloyFurnace extends TileEntity implements ITickable {
 
     public AlloyRecipe activeRecipe;
-    public int fuelBurnTime, cookTime;
+    public int fuelBurnTime, currentFuelWorth, cookTime;
 
     public BiPredicate<Integer, ItemStack> insertCheck = (slot, stack) -> {
         if (slot == 9) {
@@ -76,14 +76,29 @@ public class TileAlloyFurnace extends TileEntity implements ITickable {
         super.readFromNBT(compound);
         itemStackHandler.deserializeNBT(compound.getCompoundTag("inv"));
         fuelBurnTime = compound.getInteger("fuelBurnTime");
+        currentFuelWorth = compound.getInteger("currentFuelWorth");
         cookTime = compound.getInteger("cookTime");
+
+        if (compound.hasKey("alloyRecipeKey")) {
+            this.activeRecipe = AlloyRecipes.getInstance().getRecipeByResult(new ItemStack(compound.getCompoundTag("alloyRecipeKey")));
+        } else {
+            this.activeRecipe = null;
+        }
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound.setTag("inv", itemStackHandler.serializeNBT());
         compound.setInteger("fuelBurnTime", fuelBurnTime);
+        compound.setInteger("currentFuelWorth", currentFuelWorth);
         compound.setInteger("cookTime", cookTime);
+
+        if (activeRecipe != null) {
+            compound.setTag("alloyRecipeKey", activeRecipe.getCraftingResult().serializeNBT());
+        } else {
+            compound.removeTag("alloyRecipeKey");
+        }
+
         return super.writeToNBT(compound);
     }
 
@@ -108,12 +123,13 @@ public class TileAlloyFurnace extends TileEntity implements ITickable {
     private void checkFuel() {
         if (fuelBurnTime <= 0) {
             if (!sideHandler.getStackInSlot(0).isEmpty()) {
-                Optional<AlloyRecipe> recipe = AlloyRecipes.getInstance().recipes.stream().filter(alloyRecipe -> !alloyRecipe.matches(topInputHandler).isEmpty())
+                Optional<AlloyRecipe> recipe = AlloyRecipes.getInstance().getRecipes().stream().filter(alloyRecipe -> !alloyRecipe.matches(topInputHandler).isEmpty())
                         .findFirst();
 
                 int fuelValue = TileEntityFurnace.getItemBurnTime(sideHandler.getStackInSlot(0));
                 if (fuelValue > 0 && recipe.isPresent()) {
                     fuelBurnTime = fuelValue;
+                    currentFuelWorth = fuelValue;
                     sideHandler.extractItem(0, 1, false);
                     world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockAlloyFurnace.LIT, true));
                 } else {
@@ -123,7 +139,9 @@ public class TileAlloyFurnace extends TileEntity implements ITickable {
                 cookTime = 0;
                 world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockAlloyFurnace.LIT, false));
             }
-        } else {
+        }
+
+        if (fuelBurnTime != 0) {
             fuelBurnTime--;
         }
     }
@@ -137,7 +155,7 @@ public class TileAlloyFurnace extends TileEntity implements ITickable {
                     System.out.println(stack);
                 }
             } else {
-                Optional<AlloyRecipe> recipe = AlloyRecipes.getInstance().recipes.stream().filter(alloyRecipe -> !alloyRecipe.matches(topInputHandler).isEmpty())
+                Optional<AlloyRecipe> recipe = AlloyRecipes.getInstance().getRecipes().stream().filter(alloyRecipe -> !alloyRecipe.matches(topInputHandler).isEmpty())
                         .findFirst();
 
                 if (recipe.isPresent() && (bottomHandler.getStackInSlot(0).isEmpty() || ItemHandlerHelper.canItemStacksStack(recipe.get().getCraftingResult(), bottomHandler.getStackInSlot(0)))) {
@@ -168,4 +186,5 @@ public class TileAlloyFurnace extends TileEntity implements ITickable {
     public boolean isUsableByPlayer(EntityPlayer player) {
         return this.world.getTileEntity(this.pos) == this && player.getDistanceSq((double) this.pos.getX() + 0.5D, (double) this.pos.getY() + 0.5D, (double) this.pos.getZ() + 0.5D) <= 64.0D;
     }
+
 }
