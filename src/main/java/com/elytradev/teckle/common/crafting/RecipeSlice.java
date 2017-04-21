@@ -15,6 +15,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import javax.annotation.Nonnull;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by darkevilmac on 4/20/2017.
@@ -89,14 +90,16 @@ public class RecipeSlice implements IRecipe {
             ItemStack slot = inv.getStackInSlot(x);
 
             if (!slot.isEmpty()) {
+                boolean inRecipe = false;
+
                 if (slot.getItem().equals(TeckleObjects.itemBlade)) {
                     if (hasSlicer) {
                         return NonNullList.create();
                     }
                     hasSlicer = true;
+                    inRecipe = true;
                 }
 
-                boolean inRecipe = false;
                 Iterator<Object> req = required.iterator();
 
                 while (req.hasNext()) {
@@ -132,7 +135,7 @@ public class RecipeSlice implements IRecipe {
             }
         }
 
-        if (!required.isEmpty())
+        if (!required.isEmpty() || !hasSlicer)
             consumed = NonNullList.create();
 
         return consumed;
@@ -163,6 +166,15 @@ public class RecipeSlice implements IRecipe {
                         remaining.set(i, remainingStack.splitStack(cStack.getCount()));
                     }
                 }
+            }
+        }
+
+        for (int i = 0; i < remaining.size(); i++) {
+            if (remaining.get(i).getItem().equals(TeckleObjects.itemBlade)) {
+                ItemStack remainingBlade = remaining.get(i);
+                remainingBlade.attemptDamageItem(1, new Random());
+                remaining.set(i, remainingBlade);
+                break;
             }
         }
 

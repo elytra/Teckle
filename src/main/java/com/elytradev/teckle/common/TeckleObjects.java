@@ -4,9 +4,11 @@ import com.elytradev.teckle.common.block.BlockAlloyFurnace;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.block.BlockItemTube;
 import com.elytradev.teckle.common.block.BlockNikoliteOre;
+import com.elytradev.teckle.common.crafting.RecipeSlice;
 import com.elytradev.teckle.common.handlers.PaintbrushRecipe;
 import com.elytradev.teckle.common.item.ItemBlade;
 import com.elytradev.teckle.common.item.ItemPaintbrush;
+import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.tile.TileAlloyFurnace;
 import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
@@ -43,6 +45,7 @@ public class TeckleObjects {
     public static ItemBlade itemBlade;
     public static Item itemNikolite;
     public static Item itemSiliconBoule;
+    public static ItemSiliconWafer itemSiliconWafer;
 
     public static CreativeTabs creativeTab = new CreativeTabs(TeckleMod.MOD_ID) {
         @Override
@@ -87,6 +90,9 @@ public class TeckleObjects {
 
         itemSiliconBoule = new Item();
         registerItem("siliconboule", itemSiliconBoule);
+
+        itemSiliconWafer = new ItemSiliconWafer();
+        registerItem("siliconwafer", itemSiliconWafer);
     }
 
     public void init(FMLInitializationEvent e) {
@@ -95,6 +101,7 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
 
         CraftingManager.getInstance().addRecipe(new PaintbrushRecipe());
+        CraftingManager.getInstance().addRecipe(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), itemSiliconBoule));
 
         // Forge doesn't use EnumDyeColor  for dye registration and also doesn't store this list anywhere public, so here we are copying forge colour arrays from OreDict.
         String[] dyes =
