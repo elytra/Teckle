@@ -4,6 +4,7 @@ import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.teckle.common.crafting.AlloyRecipes;
 import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
+import com.elytradev.teckle.common.worldgen.NikoliteOreGenerator;
 import com.elytradev.teckle.common.worldnetwork.DropActions;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.common.capabilities.Capability;
@@ -13,6 +14,7 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
 
 import static com.elytradev.teckle.common.TeckleMod.MOD_ID;
@@ -47,6 +49,7 @@ public class TeckleMod {
         OBJECTS.preInit(e);
         TeckleNetworking.setupNetwork();
         DropActions.init();
+        GameRegistry.registerWorldGenerator(new NikoliteOreGenerator(), 2);
 
         PROXY.registerRenderers(e.getModState());
     }
