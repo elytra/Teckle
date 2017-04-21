@@ -3,7 +3,9 @@ package com.elytradev.teckle.common;
 import com.elytradev.teckle.common.block.BlockAlloyFurnace;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.block.BlockItemTube;
+import com.elytradev.teckle.common.block.BlockNikoliteOre;
 import com.elytradev.teckle.common.handlers.PaintbrushRecipe;
+import com.elytradev.teckle.common.item.ItemBlade;
 import com.elytradev.teckle.common.item.ItemPaintbrush;
 import com.elytradev.teckle.common.tile.TileAlloyFurnace;
 import com.elytradev.teckle.common.tile.TileFilter;
@@ -35,7 +37,11 @@ public class TeckleObjects {
     public static BlockItemTube blockItemTube;
     public static BlockFilter blockFilter;
     public static BlockAlloyFurnace blockAlloyFurnace;
+    public static BlockNikoliteOre blockNikoliteOre;
+
     public static ItemPaintbrush itemPaintBrush;
+    public static ItemBlade itemBlade;
+    public static Item itemNikolite;
     public static Item itemSiliconBoule;
 
     public static CreativeTabs creativeTab = new CreativeTabs(TeckleMod.MOD_ID) {
@@ -66,9 +72,18 @@ public class TeckleObjects {
         blockAlloyFurnace = new BlockAlloyFurnace(Material.ROCK);
         registerBlock("alloyfurnace", blockAlloyFurnace);
 
+        blockNikoliteOre = new BlockNikoliteOre();
+        registerBlock("nikolite_ore", blockNikoliteOre);
+
         itemPaintBrush = new ItemPaintbrush();
         registerItem("paintbrush", itemPaintBrush);
         skipItemMesh.add(itemPaintBrush);
+
+        itemBlade = new ItemBlade();
+        registerItem("blade", itemBlade);
+
+        itemNikolite = new Item();
+        registerItem("nikolite", itemNikolite);
 
         itemSiliconBoule = new Item();
         registerItem("siliconboule", itemSiliconBoule);

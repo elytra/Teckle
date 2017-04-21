@@ -1,5 +1,7 @@
 tile.teckle.tube.item.name=Item Tube
 tile.teckle.filter.name=Item Filter
+tile.teckle.nikolite_ore.name=Nikolite Ore
+
 item.teckle.paintbrush.white.name=White Paintbrush
 item.teckle.paintbrush.orange.name=Orange Paintbrush
 item.teckle.paintbrush.magenta.name=Magenta Paintbrush
@@ -17,6 +19,8 @@ item.teckle.paintbrush.green.name=Green Paintbrush
 item.teckle.paintbrush.red.name=Red Paintbrush
 item.teckle.paintbrush.black.name=Black Paintbrush
 item.teckle.siliconboule.name=Silicon Boule
+item.teckle.blade.name=Preciso™ Blade
+item.teckle.nikolite.name=Nikolite
 
 tooltip.teckle.node.network=Network %s
 tooltip.teckle.traveller.data=Travellers
