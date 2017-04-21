@@ -21,6 +21,15 @@ version = modVersion
 group = modGroup
 archivesBaseName = modBaseName
 
+def suffix = (System.getenv("BUILD_NUMBER"))
+if (suffix != null) {
+    suffix = "-" + suffix
+} else {
+    suffix = ""
+}
+
+version = version + suffix
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
