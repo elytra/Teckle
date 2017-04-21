@@ -101,7 +101,7 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
 
         CraftingManager.getInstance().addRecipe(new PaintbrushRecipe());
-        CraftingManager.getInstance().addRecipe(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), itemSiliconBoule));
+        CraftingManager.getInstance().addRecipe(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule));
 
         // Forge doesn't use EnumDyeColor  for dye registration and also doesn't store this list anywhere public, so here we are copying forge colour arrays from OreDict.
         String[] dyes =

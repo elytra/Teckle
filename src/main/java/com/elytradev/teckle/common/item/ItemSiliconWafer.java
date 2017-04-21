@@ -1,6 +1,5 @@
 package com.elytradev.teckle.common.item;
 
-import net.minecraft.block.BlockPlanks;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -40,6 +39,13 @@ public class ItemSiliconWafer extends Item {
         BLUE(2, "blue");
 
         private static final ItemSiliconWafer.WaferType[] META_LOOKUP = new ItemSiliconWafer.WaferType[values().length];
+
+        static {
+            for (WaferType waferType : values()) {
+                META_LOOKUP[waferType.getMetadata()] = waferType;
+            }
+        }
+
         private final int meta;
         private final String name;
 
@@ -66,14 +72,6 @@ public class ItemSiliconWafer extends Item {
 
         public String getName() {
             return this.name;
-        }
-
-        static
-        {
-            for (WaferType waferType : values())
-            {
-                META_LOOKUP[waferType.getMetadata()] = waferType;
-            }
         }
     }
 }

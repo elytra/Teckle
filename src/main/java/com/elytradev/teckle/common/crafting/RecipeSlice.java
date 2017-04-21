@@ -22,12 +22,14 @@ import java.util.Random;
  */
 public class RecipeSlice implements IRecipe {
 
+    public int damageToTool = 1;
     @Nonnull
     protected ItemStack output = ItemStack.EMPTY;
     protected NonNullList<Object> input = NonNullList.create();
 
-    public RecipeSlice(@Nonnull ItemStack result, Object... recipe) {
+    public RecipeSlice(@Nonnull ItemStack result, int damageToTool, Object... recipe) {
         output = result.copy();
+        this.damageToTool = damageToTool;
         for (Object in : recipe) {
             if (in instanceof ItemStack) {
                 input.add(((ItemStack) in).copy());
@@ -163,7 +165,8 @@ public class RecipeSlice implements IRecipe {
                     consumed.set(j, cStack);
 
                     if (!cStack.isEmpty()) {
-                        remaining.set(i, remainingStack.splitStack(cStack.getCount()));
+                        remainingStack.setCount(remainingStack.getCount() - cStack.getCount());
+                        remaining.set(i, remainingStack);
                     }
                 }
             }
@@ -171,8 +174,8 @@ public class RecipeSlice implements IRecipe {
 
         for (int i = 0; i < remaining.size(); i++) {
             if (remaining.get(i).getItem().equals(TeckleObjects.itemBlade)) {
-                ItemStack remainingBlade = remaining.get(i);
-                remainingBlade.attemptDamageItem(1, new Random());
+                ItemStack remainingBlade = remaining.get(i).copy();
+                remainingBlade.attemptDamageItem(damageToTool, new Random());
                 remaining.set(i, remainingBlade);
                 break;
             }

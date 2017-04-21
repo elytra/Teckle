@@ -20,7 +20,7 @@ public class ContainerAlloyFurnace extends Container {
     public final TileAlloyFurnace alloyFurnace;
     public final EntityPlayer player;
 
-    public int fuelBurnTime, cookTime,currentFuelWorth;
+    public int fuelBurnTime, cookTime, currentFuelWorth;
 
     public ContainerAlloyFurnace(TileAlloyFurnace tile, EntityPlayer player) {
         this.alloyFurnace = tile;
