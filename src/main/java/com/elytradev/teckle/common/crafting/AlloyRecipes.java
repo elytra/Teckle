@@ -1,11 +1,10 @@
 package com.elytradev.teckle.common.crafting;
 
 import com.elytradev.teckle.common.TeckleObjects;
+import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.google.common.collect.Lists;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Tuple;
-import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,10 +33,23 @@ public class AlloyRecipes {
     }
 
     public void init() {
-        OreDictionary.registerOre("coal", Items.COAL); // Nothing to see here, move along.
-
-        AlloyRecipe siliconBouleRecipe = new AlloyRecipe(new ItemStack(TeckleObjects.itemSiliconBoule), new Tuple<>("sand", 8), new Tuple<>("coal", 8));
+        AlloyRecipe siliconBouleRecipe = new AlloyRecipe(
+                new ItemStack(TeckleObjects.itemSiliconBoule),
+                new Tuple<>("sand", 8),
+                new Tuple<>("coal", 8));
         recipes.put(siliconBouleRecipe.getCraftingResult(), siliconBouleRecipe);
+
+        AlloyRecipe redDopedWaferRecipe = new AlloyRecipe(
+                new ItemStack(TeckleObjects.itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()),
+                new Tuple<>("dustRedstone", 4),
+                new Tuple<>(new ItemStack(TeckleObjects.itemSiliconWafer, 1, 0), null));
+        recipes.put(redDopedWaferRecipe.getCraftingResult(), redDopedWaferRecipe);
+
+        AlloyRecipe blueDopedWaferRecipe = new AlloyRecipe(
+                new ItemStack(TeckleObjects.itemSiliconWafer, 1, ItemSiliconWafer.WaferType.BLUE.getMetadata()),
+                new Tuple<>("dustNikolite", 4),
+                new Tuple<>(new ItemStack(TeckleObjects.itemSiliconWafer, 1, 0), null));
+        recipes.put(blueDopedWaferRecipe.getCraftingResult(), blueDopedWaferRecipe);
     }
 
 

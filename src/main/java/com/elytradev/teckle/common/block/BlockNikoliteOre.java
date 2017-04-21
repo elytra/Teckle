@@ -2,6 +2,7 @@ package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.common.TeckleObjects;
 import net.minecraft.block.BlockOre;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -15,6 +16,9 @@ import java.util.Random;
 public class BlockNikoliteOre extends BlockOre {
     public BlockNikoliteOre() {
         super();
+        this.setHardness(3.0F);
+        this.setResistance(5.0F);
+        this.setSoundType(SoundType.STONE);
     }
 
     @Override

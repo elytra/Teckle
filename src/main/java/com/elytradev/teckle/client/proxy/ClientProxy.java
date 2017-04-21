@@ -6,6 +6,7 @@ import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockItemTube;
+import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import net.minecraft.block.Block;
@@ -89,6 +90,8 @@ public class ClientProxy extends CommonProxy {
         for (int i = 0; i < TeckleObjects.registeredItems.size(); i++) {
             modelResourceLocation = new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + TeckleObjects.registeredItems.keySet().toArray()[i], "inventory");
             itemToRegister = (Item) TeckleObjects.registeredItems.values().toArray()[i];
+            if (TeckleObjects.skipItemMesh.contains(itemToRegister))
+                continue;
             modelMesher.register(itemToRegister, 0, modelResourceLocation);
         }
     }
@@ -98,6 +101,14 @@ public class ClientProxy extends CommonProxy {
             EnumDyeColor color = EnumDyeColor.byDyeDamage(i);
             ModelLoader.setCustomModelResourceLocation(TeckleObjects.itemPaintBrush, i, new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "paintbrush_" + color.getName()));
             TeckleMod.LOG.info("Registering paintbrush model variant: " + i + " " + new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "paintbrush_" + color.getName()));
+        }
+
+        for (int i = 0; i < ItemSiliconWafer.WaferType.values().length; i++) {
+            ItemSiliconWafer.WaferType waferType = ItemSiliconWafer.WaferType.byMetadata(i);
+
+            ModelResourceLocation resourceLocation = new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "siliconwafer" + waferType.getSuffix());
+            ModelLoader.setCustomModelResourceLocation(TeckleObjects.itemSiliconWafer, i, resourceLocation);
+            TeckleMod.LOG.info("Registering wafer model variant: " + i + " " + resourceLocation);
         }
     }
 

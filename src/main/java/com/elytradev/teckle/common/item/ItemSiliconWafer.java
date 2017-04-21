@@ -34,9 +34,9 @@ public class ItemSiliconWafer extends Item {
     }
 
     public enum WaferType implements IStringSerializable {
-        PLAIN(0, "plain"),
-        RED(1, "red"),
-        BLUE(2, "blue");
+        PLAIN(0, "plain", ""),
+        RED(1, "red", "_red"),
+        BLUE(2, "blue", "_blue");
 
         private static final ItemSiliconWafer.WaferType[] META_LOOKUP = new ItemSiliconWafer.WaferType[values().length];
 
@@ -48,10 +48,12 @@ public class ItemSiliconWafer extends Item {
 
         private final int meta;
         private final String name;
+        private String suffix;
 
-        WaferType(int metaIn, String nameIn) {
+        WaferType(int metaIn, String nameIn, String suffix) {
             this.meta = metaIn;
             this.name = nameIn;
+            this.suffix = suffix;
         }
 
         public static ItemSiliconWafer.WaferType byMetadata(int meta) {
@@ -72,6 +74,10 @@ public class ItemSiliconWafer extends Item {
 
         public String getName() {
             return this.name;
+        }
+
+        public String getSuffix(){
+            return this.suffix;
         }
     }
 }

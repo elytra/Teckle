@@ -16,6 +16,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -24,6 +25,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,6 +79,7 @@ public class TeckleObjects {
 
         blockNikoliteOre = new BlockNikoliteOre();
         registerBlock("nikolite_ore", blockNikoliteOre);
+        OreDictionary.registerOre("oreNikolite", blockNikoliteOre);
 
         itemPaintBrush = new ItemPaintbrush();
         registerItem("paintbrush", itemPaintBrush);
@@ -87,15 +90,19 @@ public class TeckleObjects {
 
         itemNikolite = new Item();
         registerItem("nikolite", itemNikolite);
+        OreDictionary.registerOre("dustNikolite", itemNikolite);
 
         itemSiliconBoule = new Item();
         registerItem("siliconboule", itemSiliconBoule);
 
         itemSiliconWafer = new ItemSiliconWafer();
         registerItem("siliconwafer", itemSiliconWafer);
+        skipItemMesh.add(itemSiliconWafer);
     }
 
     public void init(FMLInitializationEvent e) {
+        OreDictionary.registerOre("coal", Items.COAL); // Nothing to see here, move along.
+
         GameRegistry.registerTileEntity(TileItemTube.class, "teckleItemTube");
         GameRegistry.registerTileEntity(TileFilter.class, "teckleFilter");
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
