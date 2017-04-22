@@ -12,6 +12,7 @@ import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.worldnetwork.*;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
@@ -21,6 +22,7 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
@@ -107,94 +109,117 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
             return result;
 
         TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(getFacing()));
+        boolean destinationIsAir = world.isAirBlock(pos.offset(getFacing()));
+        boolean hasInsertionDestination = potentialInsertionTile != null && ((getNode() != null && getNode().network != null)
+                || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing().getOpposite())));
 
-        if (!world.isRemote && potentialInsertionTile != null && ((getNode() != null && getNode().network != null)
-                || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing().getOpposite())))) {
+        if (!world.isRemote && (hasInsertionDestination || destinationIsAir)) {
             WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) getNode().network.getNodeFromPosition(pos);
             EnumFacing facing = getFacing();
 
-            if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
-                TileEntity pullFrom = world.getTileEntity(pos.offset(facing.getOpposite()));
-                if (pullFrom.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
-                    IItemHandler itemHandler = pullFrom.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
-                    ItemStack extractionData = ItemStack.EMPTY;
+            ItemStack extractionData = ItemStack.EMPTY;
 
-                    // Check if the buffer is empty first...
-                    int bufferSlot = -1;
-                    for (int i = 0; i < buffer.getSlots(); i++) {
-                        if (!buffer.getStackInSlot(i).isEmpty()) {
-                            bufferSlot = i;
+            // Check if the buffer is empty first...
+            int bufferSlot = -1;
+            for (int i = 0; i < buffer.getSlots(); i++) {
+                if (!buffer.getStackInSlot(i).isEmpty()) {
+                    bufferSlot = i;
+                    break;
+                }
+            }
+
+            if (bufferSlot != -1) {
+                extractionData = buffer.extractItem(bufferSlot, 8, false);
+            } else if (world.getTileEntity(pos.offset(facing.getOpposite())) != null && world.getTileEntity(pos.offset(facing.getOpposite()))
+                    .hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
+                IItemHandler itemHandler = world.getTileEntity(pos.offset(facing.getOpposite()))
+                        .getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
+
+                if (inv.stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
+                    for (ItemStack stack : inv.getStacks()) {
+                        if (!extractionData.isEmpty())
                             break;
-                        }
-                    }
-
-                    if (bufferSlot != -1) {
-                        extractionData = buffer.extractItem(bufferSlot, 8, false);
-                    } else {
-                        if (inv.stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
-                            for (ItemStack stack : inv.getStacks()) {
-                                if (!extractionData.isEmpty())
-                                    break;
-                                if (stack.isEmpty())
-                                    continue;
-                                for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
-                                    ItemStack extractTest = itemHandler.extractItem(slot, stack.getCount(), true);
-                                    if (Objects.equals(extractTest.getItem(), stack.getItem()) && extractTest.getMetadata() == stack.getMetadata()) {
-                                        extractionData = itemHandler.extractItem(slot, stack.getCount(), false);
-                                    }
-                                }
-                            }
-                        } else {
-                            for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
-                                extractionData = itemHandler.extractItem(slot, 8, false);
+                        if (stack.isEmpty())
+                            continue;
+                        for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
+                            ItemStack extractTest = itemHandler.extractItem(slot, stack.getCount(), true);
+                            if (Objects.equals(extractTest.getItem(), stack.getItem()) && extractTest.getMetadata() == stack.getMetadata()) {
+                                extractionData = itemHandler.extractItem(slot, stack.getCount(), false);
                             }
                         }
                     }
+                } else {
+                    for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
+                        extractionData = itemHandler.extractItem(slot, 8, false);
+                    }
+                }
+            }
 
-                    if (!extractionData.isEmpty()) {
-                        if (getNode() != null && getNode().network != null && potentialInsertionTile instanceof TileNetworkMember) {
-                            NBTTagCompound tagCompound = new NBTTagCompound();
-                            tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
-                            if (this.colour != null)
-                                tagCompound.setInteger("colour", this.colour.getMetadata());
-                            WorldNetworkTraveller traveller = thisNode.addTraveller(tagCompound);
-                            if (!Objects.equals(traveller, WorldNetworkTraveller.NONE)) {
-                                traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
-                                result = true;
-                            } else {
-                                ItemStack remaining = extractionData;
-                                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                                    remaining = buffer.insertItem(i, remaining, false);
-                                }
-
-                                if (!remaining.isEmpty()) {
-                                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
-                                }
-                            }
+            if (!extractionData.isEmpty()) {
+                if (hasInsertionDestination) {
+                    if (getNode() != null && getNode().network != null && potentialInsertionTile instanceof TileNetworkMember) {
+                        NBTTagCompound tagCompound = new NBTTagCompound();
+                        tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
+                        if (this.colour != null)
+                            tagCompound.setInteger("colour", this.colour.getMetadata());
+                        WorldNetworkTraveller traveller = thisNode.addTraveller(tagCompound);
+                        if (!Objects.equals(traveller, WorldNetworkTraveller.NONE)) {
+                            traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
+                            result = true;
                         } else {
-                            IItemHandler insertHandler = world.getTileEntity(pos.offset(getFacing())).getCapability
-                                    (CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing().getOpposite());
-
                             ItemStack remaining = extractionData;
-                            for (int i = 0; i < insertHandler.getSlots() && !remaining.isEmpty(); i++) {
-                                remaining = insertHandler.insertItem(i, remaining, false);
+                            for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
+                                remaining = buffer.insertItem(i, remaining, false);
                             }
 
                             if (!remaining.isEmpty()) {
-                                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                                    remaining = buffer.insertItem(i, remaining, false);
-                                }
+                                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
+                            }
+                        }
+                    } else {
+                        IItemHandler insertHandler = world.getTileEntity(pos.offset(getFacing())).getCapability
+                                (CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing().getOpposite());
 
-                                if (!remaining.isEmpty()) {
-                                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
-                                }
+                        ItemStack remaining = extractionData;
+                        for (int i = 0; i < insertHandler.getSlots() && !remaining.isEmpty(); i++) {
+                            remaining = insertHandler.insertItem(i, remaining, false);
+                        }
+
+                        if (!remaining.isEmpty()) {
+                            for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
+                                remaining = buffer.insertItem(i, remaining, false);
+                            }
+
+                            if (!remaining.isEmpty()) {
+                                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
                             }
                         }
                     }
+                } else {
+                    EnumFacing enumfacing = getFacing();
+                    double x = pos.getX() + 0.7D * (double) enumfacing.getFrontOffsetX();
+                    double y = pos.getY() + 0.7D * (double) enumfacing.getFrontOffsetY();
+                    double z = pos.getZ() + 0.7D * (double) enumfacing.getFrontOffsetZ();
+
+                    if (facing.getAxis() == EnumFacing.Axis.Y) {
+                        y = y - 0.125D;
+                    } else {
+                        y = y - 0.15625D;
+                    }
+
+                    EntityItem entityitem = new EntityItem(world, x, y, z, extractionData);
+                    double d3 = world.rand.nextDouble() * 0.1D + 0.2D;
+                    entityitem.motionX = (double) facing.getFrontOffsetX() * d3;
+                    entityitem.motionY = 0.20000000298023224D;
+                    entityitem.motionZ = (double) facing.getFrontOffsetZ() * d3;
+                    entityitem.motionX += world.rand.nextGaussian() * 0.007499999832361937D * (double) 2.5D;
+                    entityitem.motionY += world.rand.nextGaussian() * 0.007499999832361937D * (double) 2.5D;
+                    entityitem.motionZ += world.rand.nextGaussian() * 0.007499999832361937D * (double) 2.5D;
+                    world.spawnEntity(entityitem);
                 }
             }
         }
@@ -272,6 +297,36 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
         if (cooldown > 0) {
             cooldown--;
         }
+
+        boolean canFitItems = world.isAirBlock(pos.add(getFacing().getOpposite().getDirectionVec())) && canFitItemsInBuffer();
+        if (canFitItems) {
+            for (EntityItem entityItem : getItemsInBlockPos(pos.add(getFacing().getOpposite().getDirectionVec()))) {
+                ItemStack entityStack = entityItem.getEntityItem().copy();
+
+                for (int i = 0; i < buffer.getSlots() && !entityStack.isEmpty(); i++) {
+                    entityStack = buffer.insertItem(i, entityStack, false);
+                }
+
+                entityItem.setEntityItemStack(entityStack);
+                if (entityStack.isEmpty()) {
+                    world.removeEntity(entityItem);
+                }
+
+                canFitItems = canFitItemsInBuffer();
+                if (!canFitItems)
+                    break;
+            }
+        }
+    }
+
+    public boolean canFitItemsInBuffer() {
+        for (int i = 0; i < buffer.getSlots(); i++) {
+            if (buffer.getStackInSlot(i).isEmpty() || buffer.getStackInSlot(i).getCount() < buffer.getSlotLimit(i)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -294,6 +349,10 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
         compound.setTag("buffer", buffer.serializeNBT());
 
         return super.writeToNBT(compound);
+    }
+
+    public List<EntityItem> getItemsInBlockPos(BlockPos pos) {
+        return world.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(pos.getX() - 0.5, pos.getY() - 0.5, pos.getZ() - 0.5, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5));
     }
 
     public boolean isUsableByPlayer(EntityPlayer player) {
