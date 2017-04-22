@@ -1,8 +1,9 @@
 package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.common.TeckleMod;
-import com.elytradev.teckle.common.tile.TileFilter;
+import com.elytradev.teckle.common.tile.TileTransposer;
 import com.elytradev.teckle.common.tile.TileItemTube;
+import com.elytradev.teckle.common.tile.TileTransposer;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.WorldNetworkDatabase;
@@ -35,12 +36,12 @@ import javax.annotation.Nullable;
 /**
  * Created by darkevilmac on 3/30/2017.
  */
-public class BlockFilter extends BlockContainer {
+public class BlockTransposer extends BlockContainer {
 
     public static PropertyDirection FACING = PropertyDirection.create("facing");
     public static PropertyBool TRIGGERED = PropertyBool.create("triggered");
 
-    public BlockFilter(Material materialIn) {
+    public BlockTransposer(Material materialIn) {
         super(materialIn);
 
         this.setHarvestLevel("pickaxe", 0);
@@ -66,7 +67,7 @@ public class BlockFilter extends BlockContainer {
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
-        return new TileFilter();
+        return new TileTransposer();
     }
 
     @Override
@@ -75,19 +76,19 @@ public class BlockFilter extends BlockContainer {
         if (worldIn.isRemote)
             return;
         EnumFacing facing = state.getValue(FACING);
-        TileFilter tileEntityFilter = (TileFilter) worldIn.getTileEntity(pos);
+        TileTransposer tileEntityTransposer = (TileTransposer) worldIn.getTileEntity(pos);
         TileEntity neighbour = worldIn.getTileEntity(pos.offset(facing));
         if (neighbour != null && neighbour instanceof TileItemTube) {
             TileItemTube tube = (TileItemTube) neighbour;
-            tileEntityFilter.setNode(new WorldNetworkEntryPoint(tube.getNode().network, pos, facing));
-            tube.getNode().network.registerNode(tileEntityFilter.getNode());
+            tileEntityTransposer.setNode(new WorldNetworkEntryPoint(tube.getNode().network, pos, facing));
+            tube.getNode().network.registerNode(tileEntityTransposer.getNode());
         } else {
             WorldNetwork network = new WorldNetwork(worldIn, null);
             WorldNetworkDatabase.registerWorldNetwork(network);
-            WorldNetworkNode node = tileEntityFilter.getNode(network);
+            WorldNetworkNode node = tileEntityTransposer.getNode(network);
             network.registerNode(node);
             if (worldIn.getTileEntity(pos) != null) {
-                tileEntityFilter.setNode(node);
+                tileEntityTransposer.setNode(node);
             }
         }
     }
@@ -112,11 +113,11 @@ public class BlockFilter extends BlockContainer {
         boolean powered = worldIn.isBlockPowered(pos);
         boolean hadPower = state.getValue(TRIGGERED);
         TileEntity tileentity = worldIn.getTileEntity(pos);
-        if (tileentity instanceof TileFilter) {
+        if (tileentity instanceof TileTransposer) {
             if (powered) {
                 worldIn.setBlockState(pos, state.withProperty(TRIGGERED, true));
                 if (!hadPower)
-                    ((TileFilter) tileentity).tryPush();
+                    ((TileTransposer) tileentity).pushToNeighbour();
             } else {
                 worldIn.setBlockState(pos, state.withProperty(TRIGGERED, false));
             }
@@ -142,19 +143,6 @@ public class BlockFilter extends BlockContainer {
 
         // Call super after we're done so we still have access to the tile.
         super.breakBlock(worldIn, pos, state);
-    }
-
-    @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if (!playerIn.isSneaking()) {
-            TileEntity tileentity = worldIn.getTileEntity(pos);
-            if (tileentity != null) {
-                playerIn.openGui(TeckleMod.INSTANCE, 1, worldIn, pos.getX(), pos.getY(), pos.getZ());
-                return true;
-            }
-        }
-
-        return false;
     }
 
     @Override

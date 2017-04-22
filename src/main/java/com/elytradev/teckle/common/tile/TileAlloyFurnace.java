@@ -74,7 +74,7 @@ public class TileAlloyFurnace extends TileEntity implements ITickable {
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
-        itemStackHandler.deserializeNBT(compound.getCompoundTag("inv"));
+        itemStackHandler.deserializeNBT(compound.getCompoundTag("filterData"));
         fuelBurnTime = compound.getInteger("fuelBurnTime");
         currentFuelWorth = compound.getInteger("currentFuelWorth");
         cookTime = compound.getInteger("cookTime");
@@ -88,7 +88,7 @@ public class TileAlloyFurnace extends TileEntity implements ITickable {
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound.setTag("inv", itemStackHandler.serializeNBT());
+        compound.setTag("filterData", itemStackHandler.serializeNBT());
         compound.setInteger("fuelBurnTime", fuelBurnTime);
         compound.setInteger("currentFuelWorth", currentFuelWorth);
         compound.setInteger("cookTime", cookTime);
