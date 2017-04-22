@@ -13,11 +13,8 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -30,7 +27,6 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -39,8 +35,8 @@ import java.util.Objects;
  * Created by darkevilmac on 4/21/2017.
  */
 public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
-    public ItemStackHandler buffer = new ItemStackHandler(9);
 
+    public ItemStackHandler buffer = new ItemStackHandler(9);
     private int cooldown = 0;
 
     @Override
@@ -73,7 +69,7 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
      *
      * @return true if a push occurred, false otherwise.
      */
-    public boolean pushToNeighbour() {
+    public boolean tryPush() {
         boolean result = false;
 
         if (cooldown > 0)
@@ -88,109 +84,13 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
             WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) getNode().network.getNodeFromPosition(pos);
             EnumFacing facing = getFacing();
 
-            ItemStack extractionData = ItemStack.EMPTY;
-
-            // Check if the buffer is empty first...
-            int bufferSlot = -1;
-            for (int i = 0; i < buffer.getSlots(); i++) {
-                if (!buffer.getStackInSlot(i).isEmpty()) {
-                    bufferSlot = i;
-                    break;
-                }
-            }
-
-            if (bufferSlot != -1) {
-                extractionData = buffer.extractItem(bufferSlot, 8, false);
-            } else if (world.getTileEntity(pos.offset(facing.getOpposite())) != null && world.getTileEntity(pos.offset(facing.getOpposite()))
-                    .hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
-                IItemHandler itemHandler = world.getTileEntity(pos.offset(facing.getOpposite()))
-                        .getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
-
-                if (inv.stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
-                    for (ItemStack stack : inv.getStacks()) {
-                        if (!extractionData.isEmpty())
-                            break;
-                        if (stack.isEmpty())
-                            continue;
-                        for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
-                            ItemStack extractTest = itemHandler.extractItem(slot, stack.getCount(), true);
-                            if (Objects.equals(extractTest.getItem(), stack.getItem()) && extractTest.getMetadata() == stack.getMetadata()) {
-                                extractionData = itemHandler.extractItem(slot, stack.getCount(), false);
-                            }
-                        }
-                    }
-                } else {
-                    for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
-                        extractionData = itemHandler.extractItem(slot, 8, false);
-                    }
-                }
-            }
+            ItemStack extractionData = getExtractionData(facing);
 
             if (!extractionData.isEmpty()) {
                 if (hasInsertionDestination) {
-                    if (getNode() != null && getNode().network != null && potentialInsertionTile instanceof TileNetworkMember) {
-                        NBTTagCompound tagCompound = new NBTTagCompound();
-                        tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
-                        if (this.colour != null)
-                            tagCompound.setInteger("colour", this.colour.getMetadata());
-                        WorldNetworkTraveller traveller = thisNode.addTraveller(tagCompound);
-                        if (!Objects.equals(traveller, WorldNetworkTraveller.NONE)) {
-                            traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
-                            result = true;
-                        } else {
-                            ItemStack remaining = extractionData;
-                            for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                                remaining = buffer.insertItem(i, remaining, false);
-                            }
-
-                            if (!remaining.isEmpty()) {
-                                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
-                            }
-                        }
-                    } else {
-                        IItemHandler insertHandler = world.getTileEntity(pos.offset(getFacing())).getCapability
-                                (CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing().getOpposite());
-
-                        ItemStack remaining = extractionData;
-                        for (int i = 0; i < insertHandler.getSlots() && !remaining.isEmpty(); i++) {
-                            remaining = insertHandler.insertItem(i, remaining, false);
-                        }
-
-                        if (!remaining.isEmpty()) {
-                            for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                                remaining = buffer.insertItem(i, remaining, false);
-                            }
-
-                            if (!remaining.isEmpty()) {
-                                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
-                            }
-                        }
-                    }
+                    result = attemptInsertion(potentialInsertionTile, thisNode, extractionData);
                 } else {
-                    EnumFacing enumfacing = getFacing();
-                    double x = pos.getX() + 0.7D * (double) enumfacing.getFrontOffsetX();
-                    double y = pos.getY() + 0.7D * (double) enumfacing.getFrontOffsetY();
-                    double z = pos.getZ() + 0.7D * (double) enumfacing.getFrontOffsetZ();
-
-                    if (facing.getAxis() == EnumFacing.Axis.Y) {
-                        y = y - 0.125D;
-                    } else {
-                        y = y - 0.15625D;
-                    }
-
-                    EntityItem entityitem = new EntityItem(world, x, y, z, extractionData);
-                    double d3 = world.rand.nextDouble() * 0.1D + 0.2D;
-                    entityitem.motionX = (double) facing.getFrontOffsetX() * d3;
-                    entityitem.motionY = 0.20000000298023224D;
-                    entityitem.motionZ = (double) facing.getFrontOffsetZ() * d3;
-                    entityitem.motionX += world.rand.nextGaussian() * 0.007499999832361937D * (double) 2.5D;
-                    entityitem.motionY += world.rand.nextGaussian() * 0.007499999832361937D * (double) 2.5D;
-                    entityitem.motionZ += world.rand.nextGaussian() * 0.007499999832361937D * (double) 2.5D;
-                    world.spawnEntity(entityitem);
+                    result = ejectExtractionData(facing, extractionData);
                 }
             }
         }
@@ -201,6 +101,105 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
 
         cooldown = 10;
         return result;
+    }
+
+    private boolean ejectExtractionData(EnumFacing facing, ItemStack extractionData) {
+        EnumFacing enumfacing = getFacing();
+        double x = pos.getX() + 0.7D * (double) enumfacing.getFrontOffsetX();
+        double y = pos.getY() + 0.7D * (double) enumfacing.getFrontOffsetY();
+        double z = pos.getZ() + 0.7D * (double) enumfacing.getFrontOffsetZ();
+
+        if (facing.getAxis() == EnumFacing.Axis.Y) {
+            y = y - 0.125D;
+        } else {
+            y = y - 0.15625D;
+        }
+
+        EntityItem entityitem = new EntityItem(world, x, y, z, extractionData);
+        double d3 = world.rand.nextDouble() * 0.1D + 0.2D;
+        entityitem.motionX = (double) facing.getFrontOffsetX() * d3;
+        entityitem.motionY = 0.20000000298023224D;
+        entityitem.motionZ = (double) facing.getFrontOffsetZ() * d3;
+        entityitem.motionX += world.rand.nextGaussian() * 0.007499999832361937D * (double) 2.5D;
+        entityitem.motionY += world.rand.nextGaussian() * 0.007499999832361937D * (double) 2.5D;
+        entityitem.motionZ += world.rand.nextGaussian() * 0.007499999832361937D * (double) 2.5D;
+        world.spawnEntity(entityitem);
+        return true;
+    }
+
+    private boolean attemptInsertion(TileEntity potentialInsertionTile, WorldNetworkEntryPoint thisNode, ItemStack extractionData) {
+        boolean result = false;
+        if (getNode() != null && getNode().network != null && potentialInsertionTile instanceof TileNetworkMember) {
+            NBTTagCompound tagCompound = new NBTTagCompound();
+            tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
+            WorldNetworkTraveller traveller = thisNode.addTraveller(tagCompound);
+            if (!Objects.equals(traveller, WorldNetworkTraveller.NONE)) {
+                traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
+                result = true;
+            } else {
+                ItemStack remaining = extractionData;
+                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
+                    remaining = buffer.insertItem(i, remaining, false);
+                }
+
+                if (!remaining.isEmpty()) {
+                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
+                }
+            }
+        } else {
+            IItemHandler insertHandler = world.getTileEntity(pos.offset(getFacing())).getCapability
+                    (CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing().getOpposite());
+
+            ItemStack remaining = extractionData;
+            for (int i = 0; i < insertHandler.getSlots() && !remaining.isEmpty(); i++) {
+                remaining = insertHandler.insertItem(i, remaining, false);
+            }
+
+            if (!remaining.isEmpty()) {
+                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
+                    remaining = buffer.insertItem(i, remaining, false);
+                }
+
+                if (!remaining.isEmpty()) {
+                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
+                }
+            }
+        }
+        return result;
+    }
+
+    private ItemStack getExtractionData(EnumFacing facing) {
+        ItemStack extractionData = ItemStack.EMPTY;
+
+        // Check if the buffer is empty first...
+        int bufferSlot = -1;
+        for (int i = 0; i < buffer.getSlots(); i++) {
+            if (!buffer.getStackInSlot(i).isEmpty()) {
+                bufferSlot = i;
+                break;
+            }
+        }
+
+        if (bufferSlot != -1) {
+            extractionData = buffer.extractItem(bufferSlot, 8, false);
+        } else {
+            if (world.getTileEntity(pos.offset(facing.getOpposite())) != null && world.getTileEntity(pos.offset(facing.getOpposite()))
+                    .hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
+                IItemHandler itemHandler = world.getTileEntity(pos.offset(facing.getOpposite()))
+                        .getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
+                for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
+                    ItemStack extractTest = itemHandler.extractItem(slot, 8, true);
+                    if (!extractTest.isEmpty())
+                        extractionData = itemHandler.extractItem(slot, 8, false);
+                }
+            }
+        }
+
+        return extractionData;
     }
 
     @Override
@@ -303,6 +302,7 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
+
         buffer.deserializeNBT(compound.getCompoundTag("buffer"));
     }
 
@@ -325,7 +325,7 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         if (capability == null) return null;
         if (capability == TeckleMod.PROBE_CAPABILITY) {
-            if (probeCapability == null) probeCapability = new TileTransposer().ProbeCapability();
+            if (probeCapability == null) probeCapability = new TileTransposer.ProbeCapability();
             return (T) probeCapability;
         }
         return super.getCapability(capability, facing);

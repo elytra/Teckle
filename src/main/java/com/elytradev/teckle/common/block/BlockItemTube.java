@@ -281,10 +281,10 @@ public class BlockItemTube extends BlockContainer {
         for (EnumFacing facing : EnumFacing.VALUES) {
             BlockPos neighbourPos = pos.add(facing.getDirectionVec());
 
-            if (world.getBlockState(neighbourPos).getBlock() instanceof BlockItemTube) {
-                TileItemTube neighbourTube = (TileItemTube) world.getTileEntity(neighbourPos);
-                if (!neighbourNetworks.contains(neighbourTube.getNode().network))
-                    neighbourNetworks.add(neighbourTube.getNode().network);
+            if (world.getTileEntity(neighbourPos) instanceof TileNetworkMember) {
+                TileNetworkMember neighbourNetworkMember = (TileNetworkMember) world.getTileEntity(neighbourPos);
+                if (!neighbourNetworks.contains(neighbourNetworkMember.getNode().network))
+                    neighbourNetworks.add(neighbourNetworkMember.getNode().network);
             }
         }
 

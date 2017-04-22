@@ -1,13 +1,12 @@
 package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
-import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkDatabase;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkEntryPoint;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
+import com.elytradev.teckle.common.worldnetwork.*;
+import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockPistonBase;
@@ -29,8 +28,10 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Created by darkevilmac on 3/30/2017.
@@ -75,19 +76,35 @@ public class BlockFilter extends BlockContainer {
         if (worldIn.isRemote)
             return;
         EnumFacing facing = state.getValue(FACING);
-        TileFilter tileEntityFilter = (TileFilter) worldIn.getTileEntity(pos);
+        TileFilter filter = (TileFilter) worldIn.getTileEntity(pos);
         TileEntity neighbour = worldIn.getTileEntity(pos.offset(facing));
         if (neighbour != null && neighbour instanceof TileItemTube) {
             TileItemTube tube = (TileItemTube) neighbour;
-            tileEntityFilter.setNode(new WorldNetworkEntryPoint(tube.getNode().network, pos, facing));
-            tube.getNode().network.registerNode(tileEntityFilter.getNode());
+            filter.setNode(new WorldNetworkEntryPoint(tube.getNode().network, pos, facing));
+            tube.getNode().network.registerNode(filter.getNode());
         } else {
             WorldNetwork network = new WorldNetwork(worldIn, null);
             WorldNetworkDatabase.registerWorldNetwork(network);
-            WorldNetworkNode node = tileEntityFilter.getNode(network);
+            WorldNetworkNode node = filter.getNode(network);
             network.registerNode(node);
             if (worldIn.getTileEntity(pos) != null) {
-                tileEntityFilter.setNode(node);
+                filter.setNode(node);
+            }
+        }
+
+
+        //Check for possible neighbour nodes...
+        List<TileEntity> neighbourNodes = TeckleObjects.blockItemTube.getPotentialNeighbourNodes(worldIn, pos, filter.getNode().network, false);
+        for (TileEntity neighbourNode : neighbourNodes) {
+            if (neighbourNode instanceof TileNetworkMember) {
+                if (!filter.getNode().network.isNodePresent(neighbourNode.getPos())) {
+                    filter.getNode().network.registerNode(((TileNetworkMember) neighbourNode).getNode(filter.getNode().network));
+                    ((TileNetworkMember) neighbourNode).setNode(filter.getNode().network.getNodeFromPosition(neighbourNode.getPos()));
+                }
+            } else {
+                if (!filter.getNode().network.isNodePresent(neighbourNode.getPos())) {
+                    filter.getNode().network.registerNode(new ItemNetworkEndpoint(filter.getNode().network, neighbourNode.getPos()));
+                }
             }
         }
     }
@@ -102,6 +119,45 @@ public class BlockFilter extends BlockContainer {
     @Override
     public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
         super.onNeighborChange(world, pos, neighbor);
+        // Handles cleanup of endpoint nodes, or nodes that should have been removed but weren't.
+        TileFilter filter = (TileFilter) world.getTileEntity(pos);
+        if (filter.getWorld().isRemote)
+            return;
+
+        if (!filter.getNode().network.isNodePresent(neighbor)) {
+            // Node not already present, check if we can add to network.
+            if (world.getTileEntity(neighbor) != null) {
+                TileEntity neighbourTile = world.getTileEntity(neighbor);
+                if (neighbourTile != null) {
+                    if (neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
+                            WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
+                        // Create endpoint and put it in the network.
+                        ItemNetworkEndpoint nodeEndpoint = new ItemNetworkEndpoint(filter.getNode().network, neighbor);
+                        filter.getNode().network.registerNode(nodeEndpoint);
+                    } else if (neighbourTile instanceof TileNetworkMember) {
+                        if (((TileNetworkMember) neighbourTile).isValidNetworkMember(filter.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
+                            filter.getNode().network.registerNode(((TileNetworkMember) neighbourTile).getNode(filter.getNode().network));
+                        }
+                    }
+                }
+            }
+        } else {
+            if (world.getTileEntity(neighbor) == null) {
+                filter.getNode().network.unregisterNodeAtPosition(neighbor);
+            } else {
+                TileEntity neighbourTile = world.getTileEntity(neighbor);
+                if (!neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
+                        WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
+                    if (neighbourTile instanceof TileNetworkMember) {
+                        if (((TileNetworkMember) neighbourTile).isValidNetworkMember(filter.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
+                            return;
+                        }
+                    }
+
+                    filter.getNode().network.unregisterNodeAtPosition(neighbor);
+                }
+            }
+        }
     }
 
     @Override

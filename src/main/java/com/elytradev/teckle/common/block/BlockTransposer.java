@@ -117,7 +117,7 @@ public class BlockTransposer extends BlockContainer {
             if (powered) {
                 worldIn.setBlockState(pos, state.withProperty(TRIGGERED, true));
                 if (!hadPower)
-                    ((TileTransposer) tileentity).pushToNeighbour();
+                    ((TileTransposer) tileentity).tryPush();
             } else {
                 worldIn.setBlockState(pos, state.withProperty(TRIGGERED, false));
             }

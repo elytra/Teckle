@@ -95,12 +95,11 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
             if (!colourMatches)
                 return false;
 
-            for (int i = 0; i < buffer.getSlots(); i++) {
-                if (!buffer.getStackInSlot(i).isEmpty()) {
+            for (int i = 0; i < filterData.getSlots(); i++) {
+                if (!filterData.getStackInSlot(i).isEmpty()) {
                     foundNonEmptySlot = true;
 
-                    if (Objects.equals(travellerStack.getItem(), buffer.getStackInSlot(i).getItem())
-                            && travellerStack.getMetadata() == buffer.getStackInSlot(i).getMetadata()) {
+                    if (filterData.getStackInSlot(i).isItemEqualIgnoreDurability(travellerStack)) {
                         return true;
                     }
                 }
@@ -113,7 +112,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
     @Override
     public boolean canConnectTo(EnumFacing side) {
-        return side.equals(getFacing());
+        return side.equals(getFacing()) || side.getOpposite().equals(getFacing());
     }
 
     @Override
