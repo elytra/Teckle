@@ -268,8 +268,8 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
         // Serialize travellers.
         int tCount = 0;
         for (int i = 0; i < travellers.size(); i++) {
-            if (travellers.get(i) != null) {
-                compound.setTag("t" + tCount, travellers.get(i).serializeNBT());
+            if (travellers.get(travellers.keySet().toArray()[i]) != null) {
+                compound.setTag("t" + tCount, travellers.get(travellers.keySet().toArray()[i]).serializeNBT());
                 tCount++;
             }
         }

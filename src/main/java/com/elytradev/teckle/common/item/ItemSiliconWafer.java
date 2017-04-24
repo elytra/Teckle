@@ -76,7 +76,7 @@ public class ItemSiliconWafer extends Item {
             return this.name;
         }
 
-        public String getSuffix(){
+        public String getSuffix() {
             return this.suffix;
         }
     }
