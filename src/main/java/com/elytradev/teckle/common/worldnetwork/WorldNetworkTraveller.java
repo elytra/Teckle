@@ -267,6 +267,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this, injectionFace);
 
                         if (!didInject) {
+                            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, this.currentNode.position);
                             triedEndpoints.add(new Tuple<>(nextNode, injectionFace));
                             previousNode.unregisterTraveller(this);
                             currentNode.unregisterTraveller(this);
