@@ -276,7 +276,7 @@ public class BlockItemTube extends BlockContainer {
      * @param pos   the position of the tube to check around
      * @return a list of neighbouring networks.
      */
-    private List<WorldNetwork> getNeighbourNetworks(IBlockAccess world, BlockPos pos) {
+    protected List<WorldNetwork> getNeighbourNetworks(IBlockAccess world, BlockPos pos) {
         List<WorldNetwork> neighbourNetworks = new ArrayList<>();
         for (EnumFacing facing : EnumFacing.VALUES) {
             BlockPos neighbourPos = pos.add(facing.getDirectionVec());

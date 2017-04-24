@@ -3,9 +3,11 @@ package com.elytradev.teckle.common.block;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.TileFilter;
-import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
-import com.elytradev.teckle.common.worldnetwork.*;
+import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
+import com.elytradev.teckle.common.worldnetwork.WorldNetworkDatabase;
+import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
+import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -76,23 +78,28 @@ public class BlockFilter extends BlockContainer {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
         if (worldIn.isRemote)
             return;
-        EnumFacing facing = state.getValue(FACING);
-        TileFilter filter = (TileFilter) worldIn.getTileEntity(pos);
-        TileEntity neighbour = worldIn.getTileEntity(pos.offset(facing));
-        if (neighbour != null && neighbour instanceof TileItemTube) {
-            TileItemTube tube = (TileItemTube) neighbour;
-            filter.setNode(new WorldNetworkEntryPoint(tube.getNode().network, pos, facing));
-            tube.getNode().network.registerNode(filter.getNode());
+
+        List<WorldNetwork> neighbourNetworks = TeckleObjects.blockItemTube.getNeighbourNetworks(worldIn, pos);
+        TileFilter filter = ((TileFilter) worldIn.getTileEntity(pos));
+        if (!neighbourNetworks.isEmpty()) {
+            // Found neighbour networks, join the network or merge.
+            WorldNetwork network = neighbourNetworks.remove(0);
+            filter.setNode(new WorldNetworkNode(network, pos));
+            network.registerNode(filter.getNode());
+
+            while (!neighbourNetworks.isEmpty()) {
+                network = network.merge(neighbourNetworks.remove(0));
+            }
         } else {
+            // No neighbours, make a new network.
             WorldNetwork network = new WorldNetwork(worldIn, null);
             WorldNetworkDatabase.registerWorldNetwork(network);
-            WorldNetworkNode node = filter.getNode(network);
+            WorldNetworkNode node = new WorldNetworkNode(network, pos);
             network.registerNode(node);
             if (worldIn.getTileEntity(pos) != null) {
                 filter.setNode(node);
             }
         }
-
 
         //Check for possible neighbour nodes...
         List<TileEntity> neighbourNodes = TeckleObjects.blockItemTube.getPotentialNeighbourNodes(worldIn, pos, filter.getNode().network, false);
