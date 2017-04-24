@@ -12,6 +12,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
@@ -118,6 +119,12 @@ public class BlockAlloyFurnace extends BlockContainer {
     }
 
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+        if (worldIn.getTileEntity(pos) instanceof TileAlloyFurnace) {
+            TileAlloyFurnace alloyFurnace = (TileAlloyFurnace) worldIn.getTileEntity(pos);
+
+            alloyFurnace.itemStackHandler.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+        }
+
         super.breakBlock(worldIn, pos, state);
     }
 

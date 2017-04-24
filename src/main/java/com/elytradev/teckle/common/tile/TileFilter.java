@@ -6,6 +6,7 @@ import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockFilter;
+import com.elytradev.teckle.common.block.BlockTransposer;
 import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
@@ -43,7 +44,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
     public EnumDyeColor colour = null;
     public AdvancedItemStackHandler filterData = new AdvancedItemStackHandler(9).withSlotLimit(slot -> 16);
-    public ItemStackHandler buffer = new ItemStackHandler(9);
+    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
 
     private int cooldown = 0;
 
@@ -346,7 +347,13 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
         boolean canFitItems = world.isAirBlock(pos.add(getFacing().getOpposite().getDirectionVec())) && canFitItemsInBuffer();
         if (canFitItems) {
-            for (EntityItem entityItem : getItemsInBlockPos(pos.add(getFacing().getOpposite().getDirectionVec()))) {
+            List<EntityItem> itemsToPickup = getItemsInBlockPos(pos.add(getFacing().getOpposite().getDirectionVec()));
+            if (world.getBlockState(pos).getValue(BlockFilter.TRIGGERED) && world.isAirBlock(pos.add(getFacing().getOpposite().getDirectionVec())
+                    .add(getFacing().getOpposite().getDirectionVec())))
+                itemsToPickup.addAll(getItemsInBlockPos(pos.add(getFacing().getOpposite().getDirectionVec())
+                        .add(getFacing().getOpposite().getDirectionVec())));
+
+            for (EntityItem entityItem : itemsToPickup) {
                 ItemStack entityStack = entityItem.getEntityItem().copy();
 
                 for (int i = 0; i < buffer.getSlots() && !entityStack.isEmpty(); i++) {

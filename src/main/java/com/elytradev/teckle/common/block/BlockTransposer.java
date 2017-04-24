@@ -1,7 +1,5 @@
 package com.elytradev.teckle.common.block;
 
-import com.elytradev.teckle.common.TeckleMod;
-import com.elytradev.teckle.common.tile.TileTransposer;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.TileTransposer;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
@@ -18,7 +16,7 @@ import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
@@ -139,6 +137,13 @@ public class BlockTransposer extends BlockContainer {
             networkMember.getNode().network.unregisterNodeAtPosition(pos);
             networkMember.getNode().network.validateNetwork();
             networkMember.setNode(null);
+
+            if (tileAtPos instanceof TileTransposer) {
+                TileTransposer transposer = (TileTransposer) worldIn.getTileEntity(pos);
+
+                // Vomit the buffer.
+                transposer.buffer.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+            }
         }
 
         // Call super after we're done so we still have access to the tile.

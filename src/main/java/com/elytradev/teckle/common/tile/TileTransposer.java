@@ -6,13 +6,14 @@ import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockFilter;
+import com.elytradev.teckle.common.block.BlockTransposer;
 import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
+import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.worldnetwork.*;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -36,7 +37,7 @@ import java.util.Objects;
  */
 public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
 
-    public ItemStackHandler buffer = new ItemStackHandler(9);
+    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
     private int cooldown = 0;
 
     @Override
@@ -270,7 +271,13 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
 
         boolean canFitItems = world.isAirBlock(pos.add(getFacing().getOpposite().getDirectionVec())) && canFitItemsInBuffer();
         if (canFitItems) {
-            for (EntityItem entityItem : getItemsInBlockPos(pos.add(getFacing().getOpposite().getDirectionVec()))) {
+            List<EntityItem> itemsToPickup = getItemsInBlockPos(pos.add(getFacing().getOpposite().getDirectionVec()));
+            if (world.getBlockState(pos).getValue(BlockTransposer.TRIGGERED) && world.isAirBlock(pos.add(getFacing().getOpposite().getDirectionVec())
+                    .add(getFacing().getOpposite().getDirectionVec())))
+                itemsToPickup.addAll(getItemsInBlockPos(pos.add(getFacing().getOpposite().getDirectionVec())
+                        .add(getFacing().getOpposite().getDirectionVec())));
+
+            for (EntityItem entityItem : itemsToPickup) {
                 ItemStack entityStack = entityItem.getEntityItem().copy();
 
                 for (int i = 0; i < buffer.getSlots() && !entityStack.isEmpty(); i++) {
@@ -315,10 +322,6 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
 
     public List<EntityItem> getItemsInBlockPos(BlockPos pos) {
         return world.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(pos.getX() - 0.5, pos.getY() - 0.5, pos.getZ() - 0.5, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5));
-    }
-
-    public boolean isUsableByPlayer(EntityPlayer player) {
-        return this.world.getTileEntity(this.pos) == this && player.getDistanceSq((double) this.pos.getX() + 0.5D, (double) this.pos.getY() + 0.5D, (double) this.pos.getZ() + 0.5D) <= 64.0D;
     }
 
     @Override
