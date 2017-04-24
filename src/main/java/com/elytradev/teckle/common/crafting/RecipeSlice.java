@@ -99,7 +99,7 @@ public class RecipeSlice implements IRecipe {
                         return NonNullList.create();
                     }
                     hasSlicer = true;
-                    if (slot.getItemDamage() + damageToTool < slot.getMaxDamage())
+                    if (slot.getItemDamage() + damageToTool <= slot.getMaxDamage())
                         inRecipe = true;
                 }
 
