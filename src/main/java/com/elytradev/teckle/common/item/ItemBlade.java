@@ -9,7 +9,7 @@ public class ItemBlade extends Item {
 
     public ItemBlade() {
         setMaxStackSize(1);
-        setMaxDamage(100);
+        setMaxDamage(64);
     }
 
     @Override

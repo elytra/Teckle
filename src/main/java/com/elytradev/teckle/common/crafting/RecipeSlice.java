@@ -99,7 +99,8 @@ public class RecipeSlice implements IRecipe {
                         return NonNullList.create();
                     }
                     hasSlicer = true;
-                    inRecipe = true;
+                    if (slot.getItemDamage() + damageToTool < slot.getMaxDamage())
+                        inRecipe = true;
                 }
 
                 Iterator<Object> req = required.iterator();
@@ -176,7 +177,10 @@ public class RecipeSlice implements IRecipe {
             if (remaining.get(i).getItem().equals(TeckleObjects.itemBlade)) {
                 ItemStack remainingBlade = remaining.get(i).copy();
                 remainingBlade.attemptDamageItem(damageToTool, new Random());
-                remaining.set(i, remainingBlade);
+                if (remainingBlade.getItemDamage() >= remainingBlade.getMaxDamage())
+                    remaining.set(i, ItemStack.EMPTY);
+                else
+                    remaining.set(i, remainingBlade);
                 break;
             }
         }
