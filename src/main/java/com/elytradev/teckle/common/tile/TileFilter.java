@@ -78,6 +78,9 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
 
     @Override
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
+        if (traveller.getEntryPoint().position.equals(this.pos))
+            return true;
+
         if (from.equals(getFacing().getOpposite())) {
             // Allows use of filters for filtering items already in tubes. Not really a good reason to do this but it was possible in RP2 so it's possible in Teckle.
             ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));

@@ -27,6 +27,11 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     public NBTTagCompound data;
     public List<Tuple<WorldNetworkNode, EnumFacing>> triedEndpoints = new ArrayList<>();
     public HashMap<String, IDropAction> dropActions = new HashMap<>();
+
+    public WorldNetworkEntryPoint getEntryPoint() {
+        return entryPoint;
+    }
+
     protected WorldNetworkEntryPoint entryPoint;
 
     public WorldNetworkTraveller(NBTTagCompound data) {

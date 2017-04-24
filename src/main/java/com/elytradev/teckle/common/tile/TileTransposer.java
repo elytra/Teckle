@@ -45,7 +45,10 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
 
     @Override
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        return true;
+        if (traveller.getEntryPoint().position.equals(this.pos))
+            return true;
+
+        return from.equals(getFacing().getOpposite());
     }
 
     @Override

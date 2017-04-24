@@ -46,6 +46,7 @@ public class TeckleObjects {
     public static ItemBlade itemBlade;
     public static Item itemNikolite;
     public static Item itemSiliconBoule;
+    public static Item itemBrassIngot;
     public static ItemSiliconWafer itemSiliconWafer;
 
     public static CreativeTabs creativeTab = new CreativeTabs(TeckleMod.MOD_ID) {
@@ -99,6 +100,11 @@ public class TeckleObjects {
 
         itemSiliconWafer = new ItemSiliconWafer();
         registerItem("siliconwafer", itemSiliconWafer);
+
+        itemBrassIngot = new Item();
+        registerItem("ingotBrass", itemBrassIngot);
+        OreDictionary.registerOre("ingotBrass", itemBrassIngot);
+
         skipItemMesh.add(itemSiliconWafer);
     }
 
@@ -137,6 +143,7 @@ public class TeckleObjects {
             CraftingManager.getInstance().addRecipe(new ItemStack(itemPaintBrush, 1, i),
                     "D  ", " W ", "  S", 'D', "dye" + dyes[i], 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
         }
+
     }
 
     public void postInit(FMLPostInitializationEvent e) {

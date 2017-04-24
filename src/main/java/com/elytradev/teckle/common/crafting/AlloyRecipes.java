@@ -50,6 +50,13 @@ public class AlloyRecipes {
                 new Tuple<>("dustNikolite", 4),
                 new Tuple<>(new ItemStack(TeckleObjects.itemSiliconWafer, 1, 0), null));
         recipes.put(blueDopedWaferRecipe.getCraftingResult(), blueDopedWaferRecipe);
+
+        AlloyRecipe brassIngotRecipe = new AlloyRecipe(
+                new ItemStack(TeckleObjects.itemBrassIngot),
+                new Tuple<>("ingotTin", 1),
+                new Tuple<>("ingotCopper", 3)
+        );
+        recipes.put(new ItemStack(TeckleObjects.itemBrassIngot), brassIngotRecipe);
     }
 
 
