@@ -3,10 +3,7 @@ package com.elytradev.teckle.common.block;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.TileTransposer;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
-import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkDatabase;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.*;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -82,7 +79,7 @@ public class BlockTransposer extends BlockContainer {
         if (!neighbourNetworks.isEmpty()) {
             // Found neighbour networks, join the network or merge.
             WorldNetwork network = neighbourNetworks.remove(0);
-            transposer.setNode(new WorldNetworkNode(network, pos));
+            transposer.setNode(transposer.getNode(network));
             network.registerNode(transposer.getNode());
 
             while (!neighbourNetworks.isEmpty()) {
@@ -92,7 +89,7 @@ public class BlockTransposer extends BlockContainer {
             // No neighbours, make a new network.
             WorldNetwork network = new WorldNetwork(worldIn, null);
             WorldNetworkDatabase.registerWorldNetwork(network);
-            WorldNetworkNode node = new WorldNetworkNode(network, pos);
+            WorldNetworkNode node = transposer.getNode(network);
             network.registerNode(node);
             if (worldIn.getTileEntity(pos) != null) {
                 transposer.setNode(node);

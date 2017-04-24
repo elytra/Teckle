@@ -84,7 +84,7 @@ public class BlockFilter extends BlockContainer {
         if (!neighbourNetworks.isEmpty()) {
             // Found neighbour networks, join the network or merge.
             WorldNetwork network = neighbourNetworks.remove(0);
-            filter.setNode(new WorldNetworkNode(network, pos));
+            filter.setNode(filter.getNode(network));
             network.registerNode(filter.getNode());
 
             while (!neighbourNetworks.isEmpty()) {
@@ -94,7 +94,7 @@ public class BlockFilter extends BlockContainer {
             // No neighbours, make a new network.
             WorldNetwork network = new WorldNetwork(worldIn, null);
             WorldNetworkDatabase.registerWorldNetwork(network);
-            WorldNetworkNode node = new WorldNetworkNode(network, pos);
+            WorldNetworkNode node = filter.getNode(network);
             network.registerNode(node);
             if (worldIn.getTileEntity(pos) != null) {
                 filter.setNode(node);

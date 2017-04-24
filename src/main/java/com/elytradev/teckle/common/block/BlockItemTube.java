@@ -170,7 +170,7 @@ public class BlockItemTube extends BlockContainer {
         if (!neighbourNetworks.isEmpty()) {
             // Found neighbour networks, join the network or merge.
             WorldNetwork network = neighbourNetworks.remove(0);
-            tube.setNode(new WorldNetworkNode(network, pos));
+            tube.setNode(tube.getNode(network));
             network.registerNode(tube.getNode());
 
             while (!neighbourNetworks.isEmpty()) {
@@ -180,7 +180,7 @@ public class BlockItemTube extends BlockContainer {
             // No neighbours, make a new network.
             WorldNetwork network = new WorldNetwork(worldIn, null);
             WorldNetworkDatabase.registerWorldNetwork(network);
-            WorldNetworkNode node = new WorldNetworkNode(network, pos);
+            WorldNetworkNode node = tube.getNode(network);
             network.registerNode(node);
             if (worldIn.getTileEntity(pos) != null) {
                 tube.setNode(node);
