@@ -36,8 +36,8 @@ public class WorldNetworkNode {
     }
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        if (getTile() != null) {
-            return isLoaded() && getTile().canAcceptTraveller(traveller, from);
+        if (isLoaded()) {
+            return getTile().canAcceptTraveller(traveller, from);
         }
         return isLoaded();
     }
