@@ -1,5 +1,7 @@
 {
     "variants": {
-        "normal": { "model": "teckle:nikolite_ore" }
+        "normal": {
+            "model": "teckle:nikolite_ore"
+        }
     }
 }

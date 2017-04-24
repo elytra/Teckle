@@ -45,6 +45,8 @@ public class GuiAlloyFurnace extends GuiContainer {
         }
 
         int l = this.getCookProgressScaled(24);
+        if (alloyFurnace.cookTime == 0)
+            l = 23;
         this.drawTexturedModalRect(i + 108, j + 33, 177, 14, 23 - l, 17);
 
         GlStateManager.enableLighting();
