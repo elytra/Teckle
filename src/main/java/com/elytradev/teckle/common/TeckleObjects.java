@@ -1,9 +1,6 @@
 package com.elytradev.teckle.common;
 
-import com.elytradev.teckle.common.block.BlockAlloyFurnace;
-import com.elytradev.teckle.common.block.BlockFilter;
-import com.elytradev.teckle.common.block.BlockItemTube;
-import com.elytradev.teckle.common.block.BlockNikoliteOre;
+import com.elytradev.teckle.common.block.*;
 import com.elytradev.teckle.common.crafting.RecipeSlice;
 import com.elytradev.teckle.common.handlers.PaintbrushRecipe;
 import com.elytradev.teckle.common.item.ItemBlade;
@@ -12,6 +9,7 @@ import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.tile.TileAlloyFurnace;
 import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
+import com.elytradev.teckle.common.tile.TileTransposer;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
@@ -40,6 +38,7 @@ public class TeckleObjects {
 
     public static BlockItemTube blockItemTube;
     public static BlockFilter blockFilter;
+    public static BlockTransposer blockTransposer;
     public static BlockAlloyFurnace blockAlloyFurnace;
     public static BlockNikoliteOre blockNikoliteOre;
 
@@ -69,10 +68,13 @@ public class TeckleObjects {
         skipItemMesh = new ArrayList<>();
 
         blockItemTube = new BlockItemTube(Material.CIRCUITS);
-        registerBlock("tube.item", blockItemTube, true);
+        registerBlock("tube.item", blockItemTube);
 
         blockFilter = new BlockFilter(Material.CIRCUITS);
-        registerBlock("filter", blockFilter, true);
+        registerBlock("filter", blockFilter);
+
+        blockTransposer = new BlockTransposer(Material.CIRCUITS);
+        registerBlock("transposer", blockTransposer);
 
         blockAlloyFurnace = new BlockAlloyFurnace(Material.ROCK);
         registerBlock("alloyfurnace", blockAlloyFurnace);
@@ -105,6 +107,7 @@ public class TeckleObjects {
 
         GameRegistry.registerTileEntity(TileItemTube.class, "teckleItemTube");
         GameRegistry.registerTileEntity(TileFilter.class, "teckleFilter");
+        GameRegistry.registerTileEntity(TileTransposer.class, "teckleTransposer");
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
 
         CraftingManager.getInstance().addRecipe(new PaintbrushRecipe());

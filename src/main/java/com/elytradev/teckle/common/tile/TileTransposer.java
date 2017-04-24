@@ -5,7 +5,6 @@ import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
-import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.block.BlockTransposer;
 import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
@@ -26,7 +25,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +50,7 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
 
     @Override
     public boolean canConnectTo(EnumFacing side) {
-        return side.equals(getFacing());
+        return side.equals(getFacing()) || side.getOpposite().equals(getFacing());
     }
 
     @Override
@@ -186,16 +184,16 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
         }
 
         if (bufferSlot != -1) {
-            extractionData = buffer.extractItem(bufferSlot, 8, false);
+            extractionData = buffer.extractItem(bufferSlot, 1, false);
         } else {
             if (world.getTileEntity(pos.offset(facing.getOpposite())) != null && world.getTileEntity(pos.offset(facing.getOpposite()))
                     .hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
                 IItemHandler itemHandler = world.getTileEntity(pos.offset(facing.getOpposite()))
                         .getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
                 for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
-                    ItemStack extractTest = itemHandler.extractItem(slot, 8, true);
+                    ItemStack extractTest = itemHandler.extractItem(slot, 1, true);
                     if (!extractTest.isEmpty())
-                        extractionData = itemHandler.extractItem(slot, 8, false);
+                        extractionData = itemHandler.extractItem(slot, 1, false);
                 }
             }
         }
@@ -207,8 +205,8 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
     public EnumFacing getFacing() {
         if (world != null) {
             IBlockState thisState = world.getBlockState(pos);
-            if (thisState.getBlock().equals(TeckleObjects.blockFilter)) {
-                return thisState.getValue(BlockFilter.FACING);
+            if (thisState.getBlock().equals(TeckleObjects.blockTransposer)) {
+                return thisState.getValue(BlockTransposer.FACING);
             }
         }
 
