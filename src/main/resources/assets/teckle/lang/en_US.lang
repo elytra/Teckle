@@ -2,6 +2,7 @@ itemGroup.teckle=Teckle
 
 tile.teckle.tube.item.name=Item Tube
 tile.teckle.filter.name=Item Filter
+tile.teckle.transposer.name=Transposer
 tile.teckle.alloyfurnace.name=Alloy Furnace
 tile.teckle.nikolite_ore.name=Nikolite Ore
 
@@ -24,6 +25,7 @@ item.teckle.paintbrush.black.name=Black Paintbrush
 item.teckle.siliconboule.name=Silicon Boule
 item.teckle.blade.name=Preciso™ Blade
 item.teckle.nikolite.name=Nikolite
+item.teckle.brassingot.name=Brass Ingot
 item.teckle.siliconwafer.plain.name=Silicon Wafer
 item.teckle.siliconwafer.red.name=Red Doped Wafer
 item.teckle.siliconwafer.blue.name=Blue Doped Wafer

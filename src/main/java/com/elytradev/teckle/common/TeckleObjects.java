@@ -102,7 +102,7 @@ public class TeckleObjects {
         registerItem("siliconwafer", itemSiliconWafer);
 
         itemBrassIngot = new Item();
-        registerItem("ingotBrass", itemBrassIngot);
+        registerItem("brassingot", itemBrassIngot);
         OreDictionary.registerOre("ingotBrass", itemBrassIngot);
 
         skipItemMesh.add(itemSiliconWafer);
@@ -118,6 +118,10 @@ public class TeckleObjects {
 
         CraftingManager.getInstance().addRecipe(new PaintbrushRecipe());
         CraftingManager.getInstance().addRecipe(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule));
+        CraftingManager.getInstance().addRecipe(new ItemStack(blockAlloyFurnace), "BBB", "B B", "BBB", 'B', Blocks.BRICK_BLOCK);
+        CraftingManager.getInstance().addRecipe(new ItemStack(blockItemTube, 8), "BGB", 'B', "ingotBrass", 'G', "blockGlass");
+        CraftingManager.getInstance().addRecipe(new ItemStack(blockTransposer), "CCC", "WPW", "CRC", 'C', "cobblestone", 'W', "plankWood", 'P', Blocks.PISTON, 'R', Items.REDSTONE);
+        CraftingManager.getInstance().addRecipe(new ItemStack(blockFilter), "CCC", "GPG", "CWC", 'C', "cobblestone", 'G', "ingotGold", 'P', Blocks.PISTON, 'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()));
 
         // Forge doesn't use EnumDyeColor  for dye registration and also doesn't store this list anywhere public, so here we are copying forge colour arrays from OreDict.
         String[] dyes =
