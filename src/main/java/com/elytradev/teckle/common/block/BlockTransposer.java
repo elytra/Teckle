@@ -123,17 +123,41 @@ public class BlockTransposer extends BlockContainer {
     }
 
     @Override
-    public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
-        super.onNeighborChange(world, pos, neighbor);
+    public void onNeighborChange(IBlockAccess blockAccess, BlockPos pos, BlockPos neighbor) {
+        super.onNeighborChange(blockAccess, pos, neighbor);
         // Handles cleanup of endpoint nodes, or nodes that should have been removed but weren't.
-        TileTransposer transposer = (TileTransposer) world.getTileEntity(pos);
+        TileTransposer transposer = (TileTransposer) blockAccess.getTileEntity(pos);
         if (transposer.getWorld().isRemote)
             return;
 
+        if (transposer.getNode() == null || transposer.getNode().network == null) {
+            World world = transposer.getWorld();
+            List<WorldNetwork> neighbourNetworks = TeckleObjects.blockItemTube.getNeighbourNetworks(world, pos);
+            if (!neighbourNetworks.isEmpty()) {
+                // Found neighbour networks, join the network or merge.
+                WorldNetwork network = neighbourNetworks.remove(0);
+                transposer.setNode(transposer.getNode(network));
+                network.registerNode(transposer.getNode());
+
+                while (!neighbourNetworks.isEmpty()) {
+                    network = network.merge(neighbourNetworks.remove(0));
+                }
+            } else {
+                // No neighbours, make a new network.
+                WorldNetwork network = new WorldNetwork(world, null);
+                WorldNetworkDatabase.registerWorldNetwork(network);
+                WorldNetworkNode node = transposer.getNode(network);
+                network.registerNode(node);
+                if (world.getTileEntity(pos) != null) {
+                    transposer.setNode(node);
+                }
+            }
+        }
+
         if (!transposer.getNode().network.isNodePresent(neighbor)) {
             // Node not already present, check if we can add to network.
-            if (world.getTileEntity(neighbor) != null) {
-                TileEntity neighbourTile = world.getTileEntity(neighbor);
+            if (blockAccess.getTileEntity(neighbor) != null) {
+                TileEntity neighbourTile = blockAccess.getTileEntity(neighbor);
                 if (neighbourTile != null) {
                     if (neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
                             WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
@@ -148,10 +172,10 @@ public class BlockTransposer extends BlockContainer {
                 }
             }
         } else {
-            if (world.getTileEntity(neighbor) == null) {
+            if (blockAccess.getTileEntity(neighbor) == null) {
                 transposer.getNode().network.unregisterNodeAtPosition(neighbor);
             } else {
-                TileEntity neighbourTile = world.getTileEntity(neighbor);
+                TileEntity neighbourTile = blockAccess.getTileEntity(neighbor);
                 if (!neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
                         WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
                     if (neighbourTile instanceof TileNetworkMember) {
