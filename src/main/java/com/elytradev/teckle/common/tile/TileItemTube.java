@@ -17,7 +17,7 @@ import net.minecraft.util.ITickable;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class TileItemTube extends TileNetworkMember implements ITickable {
+public class TileItemTube extends TileNetworkMember {
 
     private EnumDyeColor colour = null;
 
@@ -57,10 +57,6 @@ public class TileItemTube extends TileNetworkMember implements ITickable {
     @Override
     public void updateContainingBlockInfo() {
         super.updateContainingBlockInfo();
-    }
-
-    @Override
-    public void update() {
     }
 
     @Override
