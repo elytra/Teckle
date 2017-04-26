@@ -122,6 +122,7 @@ public class TeckleObjects {
         CraftingManager.getInstance().addRecipe(new ItemStack(blockItemTube, 8), "BGB", 'B', "ingotBrass", 'G', "blockGlass");
         CraftingManager.getInstance().addRecipe(new ItemStack(blockTransposer), "CCC", "WPW", "CRC", 'C', "cobblestone", 'W', "plankWood", 'P', Blocks.PISTON, 'R', Items.REDSTONE);
         CraftingManager.getInstance().addRecipe(new ItemStack(blockFilter), "CCC", "GPG", "CWC", 'C', "cobblestone", 'G', "ingotGold", 'P', Blocks.PISTON, 'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()));
+        CraftingManager.getInstance().addRecipe(new ItemStack(itemBlade), "I  ", " S ", 'I', Items.IRON_INGOT, 'S', Items.STICK);
 
         // Forge doesn't use EnumDyeColor  for dye registration and also doesn't store this list anywhere public, so here we are copying forge colour arrays from OreDict.
         String[] dyes =
