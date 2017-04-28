@@ -33,6 +33,7 @@ import java.util.Set;
 public class SimpleResourcePack extends AbstractResourcePack implements IResourceManagerReloadListener {
 
     private static final Logger LOG = LogManager.getLogger("Concrete");
+
     private static Accessor<Map<String, IResourcePack>> resourcePackMap = Accessors.findField(FMLClientHandler.class, "resourcePackMap");
     private static Accessor<List<IResourcePack>> resourcePackList = Accessors.findField(FMLClientHandler.class, "resourcePackList");
     private static Accessor<File> resourcePackFile = Accessors.findField(AbstractResourcePack.class, "field_110597_b", "resourcePackFile");
@@ -52,7 +53,7 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
             SIMPLE_ITEM_MODEL = IOUtils.toString(SimpleResourcePack.class.getResourceAsStream("simpleitem.json"));
             SIMPLE_BLOCK_STATE = IOUtils.toString(SimpleResourcePack.class.getResourceAsStream("simplestate.json"));
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Caught IOException loading simple models, things will not definitely not work.", e);
         }
     }
 
@@ -71,6 +72,7 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         this.modID = modID;
         this.cache = Maps.newHashMap();
 
+        // Replace the current FML pack with this.
         IResourcePack fallback = resourcePackMap.get(FMLClientHandler.instance()).replace(modID, this);
         if (fallback instanceof LegacyV2Adapter) {
             this.fallbackResourcePack = (AbstractResourcePack) legacyPack.get(fallback);
@@ -78,6 +80,11 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
             this.fallbackResourcePack = (AbstractResourcePack) fallback;
         }
 
+        if (fallback == null || this.fallbackResourcePack == null) {
+            throw new MissingFallbackException(modID);
+        }
+
+        // Overwrite the current pack list entry in forge.
         resourcePackList.get(FMLClientHandler.instance()).remove(fallbackResourcePack);
         resourcePackList.get(FMLClientHandler.instance()).add(this);
 
@@ -85,6 +92,7 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
             SimpleReloadableResourceManager resourceManager = (SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager();
             resourceManager.registerReloadListener(this);
 
+            // Forces this resource pack to be loaded early on. FML already did it's initial registration so we need to bypass that.
             FallbackResourceManager domainManager = domainResourceManagers.get(resourceManager).get(modID);
             resourcePacks.get(domainManager).clear();
             resourcePacks.get(domainManager).add(this);
@@ -103,11 +111,13 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
 
     @Override
     protected InputStream getInputStreamByName(String name) throws IOException {
+        // Default to fallback if possible.
         if (!((boolean) hasResourceName.invoke(fallbackResourcePack, name))) {
             if (cache.containsKey(name)) {
                 LOG.debug("SimpleResourcePack was asked to obtain: " + name + " using cache.");
                 return IOUtils.toInputStream(cache.get(name));
             }
+
             LOG.debug("SimpleResourcePack was asked to obtain: " + name);
             if (isLocation(name, "/blockstates/")) {
                 return IOUtils.toInputStream(getBlockState(name));
@@ -168,6 +178,7 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
             textureLocation = ((ITexturedObject) itemFromLocation).getTextureLocation().toString();
         }
 
+        // Return a block model file it this is an ItemBlock.
         if (Block.getBlockFromItem(itemFromLocation) != Blocks.AIR) {
             cache.put(name, getBlockModel(name.replace("/item/", "/block/")));
             return cache.get(name);
@@ -202,12 +213,19 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         return fallbackResourcePack.getResourceDomains();
     }
 
+    /**
+     * Check if the place provided matches the location validation.
+     *
+     * @param place      The place to check.
+     * @param validation The validation to use.
+     * @return true if matches, false otherwise.
+     */
     private boolean isLocation(String place, String validation) {
         return place.startsWith(("assets/" + modID + validation)) && place.endsWith(".json");
     }
 
     /**
-     * Auto clear the cache on a resource manager reload, makes sure we don't screw anything up.
+     * Auto clears the cache on a resource manager reload.
      *
      * @param iResourceManager
      */
