@@ -180,7 +180,11 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
 
         // Return a block model file it this is an ItemBlock.
         if (Block.getBlockFromItem(itemFromLocation) != Blocks.AIR) {
-            cache.put(name, getBlockModel(name.replace("/item/", "/block/")));
+            try {
+                cache.put(name, IOUtils.toString(getInputStreamByName(name.replace("/item/", "/block/"))));
+            } catch (IOException e) {
+                LOG.error("Failed to get item model for " + name);
+            }
             return cache.get(name);
         }
 
