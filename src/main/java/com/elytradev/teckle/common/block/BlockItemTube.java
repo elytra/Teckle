@@ -1,5 +1,7 @@
 package com.elytradev.teckle.common.block;
 
+import com.elytradev.concrete.resgen.ITexturedObject;
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.block.property.UnlistedBool;
 import com.elytradev.teckle.common.block.property.UnlistedEnum;
 import com.elytradev.teckle.common.tile.TileItemTube;
@@ -21,6 +23,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -37,7 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("deprecation")
-public class BlockItemTube extends BlockContainer {
+public class BlockItemTube extends BlockContainer implements ITexturedObject {
 
     public static UnlistedBool NORTH = new UnlistedBool("north");
     public static UnlistedBool EAST = new UnlistedBool("east");
@@ -354,4 +357,9 @@ public class BlockItemTube extends BlockContainer {
         return BlockRenderLayer.CUTOUT;
     }
 
+    @Override
+    @SideOnly(Side.CLIENT)
+    public ResourceLocation getTextureLocation() {
+        return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/blocks/itemtube.full.png");
+    }
 }
