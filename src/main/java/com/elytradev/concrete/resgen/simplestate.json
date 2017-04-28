@@ -1,7 +1,7 @@
 {
     "variants": {
         "normal": {
-            "model": "teckle:nikolite_ore"
+            "model": "#MDL"
         }
     }
 }
