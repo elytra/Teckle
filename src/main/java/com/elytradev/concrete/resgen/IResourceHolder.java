@@ -4,10 +4,9 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-
-public interface ITexturedObject {
+public interface IResourceHolder {
 
     @SideOnly(Side.CLIENT)
-    ResourceLocation getTextureLocation();
+    ResourceLocation getResource(EnumResourceType resourceType, int meta);
 
 }

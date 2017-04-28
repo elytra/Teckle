@@ -1,8 +1,8 @@
 package com.elytradev.teckle.client.proxy;
 
+import com.elytradev.concrete.resgen.SimpleResourcePack;
 import com.elytradev.teckle.client.render.model.ModelItemTube;
 import com.elytradev.teckle.client.render.tile.TileTubeRenderer;
-import com.elytradev.concrete.resgen.SimpleResourcePack;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
@@ -102,14 +102,14 @@ public class ClientProxy extends CommonProxy {
     public void registerSpecialItemRenderers() {
         for (int i = 0; i < EnumDyeColor.values().length; i++) {
             EnumDyeColor color = EnumDyeColor.byDyeDamage(i);
-            ModelLoader.setCustomModelResourceLocation(TeckleObjects.itemPaintBrush, i, new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "paintbrush_" + color.getName()));
-            TeckleMod.LOG.info("Registering paintbrush model variant: " + i + " " + new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "paintbrush_" + color.getName()));
+            ModelLoader.setCustomModelResourceLocation(TeckleObjects.itemPaintBrush, i, new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "paintbrush_" + color.getName(), "inventory"));
+            TeckleMod.LOG.info("Registering paintbrush model variant: " + i + " " + new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "paintbrush_" + color.getName()), "inventory");
         }
 
         for (int i = 0; i < ItemSiliconWafer.WaferType.values().length; i++) {
             ItemSiliconWafer.WaferType waferType = ItemSiliconWafer.WaferType.byMetadata(i);
 
-            ModelResourceLocation resourceLocation = new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "siliconwafer" + waferType.getSuffix());
+            ModelResourceLocation resourceLocation = new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "siliconwafer" + waferType.getSuffix(), "inventory");
             ModelLoader.setCustomModelResourceLocation(TeckleObjects.itemSiliconWafer, i, resourceLocation);
             TeckleMod.LOG.info("Registering wafer model variant: " + i + " " + resourceLocation);
         }

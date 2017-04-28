@@ -4,20 +4,28 @@ import com.elytradev.concrete.reflect.accessor.Accessor;
 import com.elytradev.concrete.reflect.accessor.Accessors;
 import com.elytradev.concrete.reflect.invoker.Invoker;
 import com.elytradev.concrete.reflect.invoker.Invokers;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.*;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.registry.RegistryDelegate;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +36,7 @@ import java.util.Set;
  * allows for auto genning common models like cubes and sprite based items.
  *
  * @author darkevilmac (Benjamin K)
- * @see ITexturedObject for custom texture locations for items and blocks.
+ * @see IResourceHolder for custom texture locations for items and blocks.
  */
 public class SimpleResourcePack extends AbstractResourcePack implements IResourceManagerReloadListener {
 
@@ -40,6 +48,7 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
     private static Accessor<IResourcePack> legacyPack = Accessors.findField(LegacyV2Adapter.class, "field_191383_a", "pack");
     private static Accessor<Map<String, FallbackResourceManager>> domainResourceManagers = Accessors.findField(SimpleReloadableResourceManager.class, "field_110548_a", "domainResourceManagers");
     private static Accessor<List<IResourcePack>> resourcePacks = Accessors.findField(FallbackResourceManager.class, "field_110540_a", "resourcePacks");
+
     private static Invoker hasResourceName = Invokers.findMethod(AbstractResourcePack.class, null, new String[]{"func_110593_b", "hasResourceName"}, String.class);
     private static Invoker getInputStreamByName = Invokers.findMethod(AbstractResourcePack.class, null, new String[]{"func_110591_a", "getInputStreamByName"}, String.class);
 
@@ -109,6 +118,28 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         return null;
     }
 
+    public static ResourceLocation nameToLocation(String name) {
+        name = name.substring(name.indexOf("/") + 1);
+        String domain = name.substring(0, name.indexOf("/"));
+        String path = name.substring(name.indexOf("/") + 1);
+
+        System.out.println("Converted " + name + " to " + new ResourceLocation(domain, path));
+        return new ResourceLocation(domain, path);
+    }
+
+    private static Map<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> getCustomModels() {
+        try {
+            Field field = ModelLoader.class.getDeclaredField("customModels");
+            return (Map<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation>) FieldUtils.readStaticField(field, true);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
+        return Maps.newHashMap();
+    }
+
     @Override
     protected InputStream getInputStreamByName(String name) throws IOException {
         // Default to fallback if possible.
@@ -138,8 +169,8 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         String blockID = name.substring(name.lastIndexOf("/") + 1, name.lastIndexOf("."));
         Block blockFromLocation = Block.getBlockFromName(modID + ":" + blockID);
         String modelLocation = modID + ":" + blockID;
-        if (blockFromLocation instanceof ITexturedObject) {
-            modelLocation = ((ITexturedObject) blockFromLocation).getTextureLocation().toString();
+        if (blockFromLocation instanceof IResourceHolder) {
+            modelLocation = ((IResourceHolder) blockFromLocation).getResource(EnumResourceType.MODEL, 0).toString();
             modelLocation = modelLocation.substring(modelLocation.lastIndexOf("/" + 1));
             modelLocation = modID + ":" + modelLocation;
         }
@@ -157,8 +188,24 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         String blockID = name.substring(name.lastIndexOf("/") + 1, name.lastIndexOf("."));
         Block blockFromLocation = Block.getBlockFromName(modID + ":" + blockID);
         String textureLocation = modID + ":blocks/" + blockID;
-        if (blockFromLocation instanceof ITexturedObject) {
-            textureLocation = ((ITexturedObject) blockFromLocation).getTextureLocation().toString();
+
+        ResourceLocation location = nameToLocation(name);
+        Integer meta = 0;
+        try {
+            HashBiMap<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> customModelsMap = HashBiMap.create(getCustomModels());
+            String resourcePath = location.getResourcePath();
+            resourcePath = resourcePath.substring(resourcePath.lastIndexOf("/") + 1);
+            resourcePath = resourcePath.substring(0, resourcePath.lastIndexOf("."));
+            String domain = location.getResourceDomain();
+            location = new ModelResourceLocation(domain + ":" + resourcePath, "normal");
+            if (customModelsMap.inverse().containsKey(location))
+                meta = customModelsMap.inverse().get(location).getRight();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (blockFromLocation instanceof IResourceHolder) {
+            textureLocation = ((IResourceHolder) blockFromLocation).getResource(EnumResourceType.TEXTURE, meta).toString();
         }
 
         String simpleBlockJSON = SIMPLE_BLOCK_MODEL;
@@ -174,8 +221,24 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         String itemID = name.substring(name.lastIndexOf("/") + 1, name.lastIndexOf("."));
         Item itemFromLocation = Item.getByNameOrId(modID + ":" + itemID);
         String textureLocation = modID + ":items/" + itemID;
-        if (itemFromLocation instanceof ITexturedObject) {
-            textureLocation = ((ITexturedObject) itemFromLocation).getTextureLocation().toString();
+
+        ResourceLocation location = nameToLocation(name);
+        Integer meta = 0;
+        try {
+            HashBiMap<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> customModelsMap = HashBiMap.create(getCustomModels());
+            String resourcePath = location.getResourcePath();
+            resourcePath = resourcePath.substring(resourcePath.lastIndexOf("/") + 1);
+            resourcePath = resourcePath.substring(0, resourcePath.lastIndexOf("."));
+            String domain = location.getResourceDomain();
+            location = new ModelResourceLocation(domain + ":" + resourcePath, "inventory");
+            if (customModelsMap.inverse().containsKey(location))
+                meta = customModelsMap.inverse().get(location).getRight();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (itemFromLocation instanceof IResourceHolder) {
+            textureLocation = ((IResourceHolder) itemFromLocation).getResource(EnumResourceType.TEXTURE, meta).toString();
         }
 
         // Return a block model file it this is an ItemBlock.

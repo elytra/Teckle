@@ -1,12 +1,16 @@
 package com.elytradev.teckle.common.item;
 
+import com.elytradev.concrete.resgen.EnumResourceType;
+import com.elytradev.concrete.resgen.IResourceHolder;
+import com.elytradev.teckle.common.TeckleMod;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 
-public class ItemSiliconWafer extends Item {
+public class ItemSiliconWafer extends Item implements IResourceHolder {
 
     public ItemSiliconWafer() {
     }
@@ -31,6 +35,19 @@ public class ItemSiliconWafer extends Item {
     @Override
     public boolean isDamageable() {
         return false;
+    }
+
+    @Override
+    public ResourceLocation getResource(EnumResourceType resourceType, int meta) {
+        WaferType type = WaferType.byMetadata(meta);
+
+        switch (type){
+            case PLAIN:  return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer.png");
+            case RED:  return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer_red.png");
+            case BLUE:  return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer_blue.png");
+        }
+
+        return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer_missingno.png");
     }
 
     public enum WaferType implements IStringSerializable {

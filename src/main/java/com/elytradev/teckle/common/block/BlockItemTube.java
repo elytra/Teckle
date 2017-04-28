@@ -1,6 +1,7 @@
 package com.elytradev.teckle.common.block;
 
-import com.elytradev.concrete.resgen.ITexturedObject;
+import com.elytradev.concrete.resgen.EnumResourceType;
+import com.elytradev.concrete.resgen.IResourceHolder;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.block.property.UnlistedBool;
 import com.elytradev.teckle.common.block.property.UnlistedEnum;
@@ -40,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("deprecation")
-public class BlockItemTube extends BlockContainer implements ITexturedObject {
+public class BlockItemTube extends BlockContainer implements IResourceHolder {
 
     public static UnlistedBool NORTH = new UnlistedBool("north");
     public static UnlistedBool EAST = new UnlistedBool("east");
@@ -359,7 +360,7 @@ public class BlockItemTube extends BlockContainer implements ITexturedObject {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public ResourceLocation getTextureLocation() {
+    public ResourceLocation getResource(EnumResourceType resourceType, int meta) {
         return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/blocks/itemtube.full.png");
     }
 }
