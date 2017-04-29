@@ -71,7 +71,7 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
     public HashMap<String, String> cache;
 
     /**
-     * Create a SimpleResoucePack for the specified mod, SimplePacks will auto gen simplemodels if you lack a blockstate or model file.
+     * Create a SimpleResourcePack for the specified mod, SimplePacks will auto gen simplemodels if you lack a blockstate or model file.
      * If the applicable file exists it will simply default to it.
      *
      * @param modID the id of the mod you want a simple pack for.
@@ -123,7 +123,7 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         String domain = name.substring(0, name.indexOf("/"));
         String path = name.substring(name.indexOf("/") + 1);
 
-        System.out.println("Converted " + name + " to " + new ResourceLocation(domain, path));
+        LOG.debug("Converted " + name + " to " + new ResourceLocation(domain, path));
         return new ResourceLocation(domain, path);
     }
 

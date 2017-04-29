@@ -39,15 +39,22 @@ public class ItemSiliconWafer extends Item implements IResourceHolder {
 
     @Override
     public ResourceLocation getResource(EnumResourceType resourceType, int meta) {
+        ResourceLocation result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer_missingno.png");
         WaferType type = WaferType.byMetadata(meta);
 
-        switch (type){
-            case PLAIN:  return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer.png");
-            case RED:  return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer_red.png");
-            case BLUE:  return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer_blue.png");
+        switch (type) {
+            case PLAIN:
+                result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer.png");
+                break;
+            case RED:
+                result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer_red.png");
+                break;
+            case BLUE:
+                result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer_blue.png");
+                break;
         }
 
-        return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer_missingno.png");
+        return result;
     }
 
     public enum WaferType implements IStringSerializable {
