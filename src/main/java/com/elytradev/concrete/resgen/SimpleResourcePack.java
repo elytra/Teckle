@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.*;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
@@ -203,7 +204,7 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
      **/
     private String getItemModel(String name) {
         String itemID = name.substring(name.lastIndexOf("/") + 1, name.lastIndexOf("."));
-        Item itemFromLocation = Item.getByNameOrId(modID + ":" + itemID);
+        Item itemFromLocation = getItem(name);
         String textureLocation = modID + ":items/" + itemID;
         Integer meta = getMetaFromName(name);
 
@@ -211,12 +212,18 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
             textureLocation = ((IResourceHolder) itemFromLocation).getResource(EnumResourceType.TEXTURE, meta).toString();
         }
 
-        // Return a block model file it this is an ItemBlock.
+        // Return a block model file if this is an ItemBlock.
         if (Block.getBlockFromItem(itemFromLocation) != Blocks.AIR) {
-            try {
-                cache.put(name, IOUtils.toString(getInputStreamByName(name.replace("/item/", "/block/"))));
-            } catch (IOException e) {
-                LOG.error("Failed to get item model for " + name);
+            if (itemFromLocation.getRegistryName().getResourcePath().equals(itemID)) {
+                try {
+                    cache.put(name, IOUtils.toString(getInputStreamByName(name.replace("/item/", "/block/"))));
+                } catch (IOException e) {
+                    LOG.error("Failed to get item model for " + name);
+                }
+            } else {
+                String simpleBlockModel = SIMPLE_BLOCK_MODEL;
+                simpleBlockModel = simpleBlockModel.replaceAll("#ALL", textureLocation);
+                cache.put(name, simpleBlockModel);
             }
             return cache.get(name);
         }
@@ -225,6 +232,28 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         simpleItemModel = simpleItemModel.replaceAll("#L0", textureLocation);
         cache.put(name, simpleItemModel);
         return simpleItemModel;
+    }
+
+    private Item getItem(String name) {
+        String itemID = name.substring(name.lastIndexOf("/") + 1, name.lastIndexOf("."));
+        if (Item.getByNameOrId(modID + ":" + itemID) != null) {
+            return Item.getByNameOrId(modID + ":" + itemID);
+        } else {
+            ResourceLocation location = nameToLocation(name);
+            try {
+                HashBiMap<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> customModelsMap = HashBiMap.create(getCustomModels());
+                String resourcePath = location.getResourcePath();
+                resourcePath = resourcePath.substring(resourcePath.lastIndexOf("/") + 1);
+                resourcePath = resourcePath.substring(0, resourcePath.lastIndexOf("."));
+                String domain = location.getResourceDomain();
+                location = new ModelResourceLocation(domain + ":" + resourcePath, isLocation(name, "/models/item/") ? "inventory" : "normal");
+                if (customModelsMap.inverse().containsKey(location))
+                    return customModelsMap.inverse().get(location).getLeft().get();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return Items.AIR;
+        }
     }
 
     /**
