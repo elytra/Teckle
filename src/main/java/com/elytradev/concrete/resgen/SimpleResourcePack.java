@@ -188,21 +188,7 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         String blockID = name.substring(name.lastIndexOf("/") + 1, name.lastIndexOf("."));
         Block blockFromLocation = Block.getBlockFromName(modID + ":" + blockID);
         String textureLocation = modID + ":blocks/" + blockID;
-
-        ResourceLocation location = nameToLocation(name);
-        Integer meta = 0;
-        try {
-            HashBiMap<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> customModelsMap = HashBiMap.create(getCustomModels());
-            String resourcePath = location.getResourcePath();
-            resourcePath = resourcePath.substring(resourcePath.lastIndexOf("/") + 1);
-            resourcePath = resourcePath.substring(0, resourcePath.lastIndexOf("."));
-            String domain = location.getResourceDomain();
-            location = new ModelResourceLocation(domain + ":" + resourcePath, "normal");
-            if (customModelsMap.inverse().containsKey(location))
-                meta = customModelsMap.inverse().get(location).getRight();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Integer meta = getMetaFromName(name);
 
         if (blockFromLocation instanceof IResourceHolder) {
             textureLocation = ((IResourceHolder) blockFromLocation).getResource(EnumResourceType.TEXTURE, meta).toString();
@@ -221,21 +207,7 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         String itemID = name.substring(name.lastIndexOf("/") + 1, name.lastIndexOf("."));
         Item itemFromLocation = Item.getByNameOrId(modID + ":" + itemID);
         String textureLocation = modID + ":items/" + itemID;
-
-        ResourceLocation location = nameToLocation(name);
-        Integer meta = 0;
-        try {
-            HashBiMap<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> customModelsMap = HashBiMap.create(getCustomModels());
-            String resourcePath = location.getResourcePath();
-            resourcePath = resourcePath.substring(resourcePath.lastIndexOf("/") + 1);
-            resourcePath = resourcePath.substring(0, resourcePath.lastIndexOf("."));
-            String domain = location.getResourceDomain();
-            location = new ModelResourceLocation(domain + ":" + resourcePath, "inventory");
-            if (customModelsMap.inverse().containsKey(location))
-                meta = customModelsMap.inverse().get(location).getRight();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Integer meta = getMetaFromName(name);
 
         if (itemFromLocation instanceof IResourceHolder) {
             textureLocation = ((IResourceHolder) itemFromLocation).getResource(EnumResourceType.TEXTURE, meta).toString();
@@ -255,6 +227,29 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         simpleItemModel = simpleItemModel.replaceAll("#L0", textureLocation);
         cache.put(name, simpleItemModel);
         return simpleItemModel;
+    }
+
+    /**
+     * Attempt to get metadata value from ModelLoader to account for custom mesh locations, returns 0 if none were found.
+     *
+     * @param name name provided by getInputStreamByName
+     * @return metadata if found, 0 if none.
+     */
+    private Integer getMetaFromName(String name) {
+        ResourceLocation location = nameToLocation(name);
+        try {
+            HashBiMap<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> customModelsMap = HashBiMap.create(getCustomModels());
+            String resourcePath = location.getResourcePath();
+            resourcePath = resourcePath.substring(resourcePath.lastIndexOf("/") + 1);
+            resourcePath = resourcePath.substring(0, resourcePath.lastIndexOf("."));
+            String domain = location.getResourceDomain();
+            location = new ModelResourceLocation(domain + ":" + resourcePath, isLocation(name, "/models/item/") ? "inventory" : "normal");
+            if (customModelsMap.inverse().containsKey(location))
+                return customModelsMap.inverse().get(location).getRight();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     @Override
