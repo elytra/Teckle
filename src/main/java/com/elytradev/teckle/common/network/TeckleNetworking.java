@@ -1,6 +1,6 @@
 package com.elytradev.teckle.common.network;
 
-import com.elytradev.concrete.NetworkContext;
+import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.teckle.common.TeckleMod;
 
 /**

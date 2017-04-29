@@ -39,18 +39,18 @@ public class ItemSiliconWafer extends Item implements IResourceHolder {
 
     @Override
     public ResourceLocation getResource(EnumResourceType resourceType, int meta) {
-        ResourceLocation result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer_missingno.png");
+        ResourceLocation result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "items/siliconwafer_missingno");
         WaferType type = WaferType.byMetadata(meta);
 
         switch (type) {
             case PLAIN:
-                result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer.png");
+                result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "items/siliconwafer_plain");
                 break;
             case RED:
-                result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer_red.png");
+                result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "items/siliconwafer_red");
                 break;
             case BLUE:
-                result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/siliconwafer_blue.png");
+                result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "items/siliconwafer_blue");
                 break;
         }
 

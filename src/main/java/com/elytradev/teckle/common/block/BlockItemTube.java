@@ -361,6 +361,6 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
     @Override
     @SideOnly(Side.CLIENT)
     public ResourceLocation getResource(EnumResourceType resourceType, int meta) {
-        return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/blocks/itemtube.full.png");
+        return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "blocks/itemtube.full");
     }
 }

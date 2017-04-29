@@ -1,6 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork;
 
-import com.elytradev.concrete.Marshallable;
+import com.elytradev.concrete.network.Marshallable;
 import com.elytradev.teckle.common.TeckleMod;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.math.BlockPos;

@@ -68,6 +68,6 @@ public class ItemPaintbrush extends Item implements IResourceHolder {
     public ResourceLocation getResource(EnumResourceType resourceType, int meta) {
         EnumDyeColor type = EnumDyeColor.byDyeDamage(meta);
 
-        return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "textures/items/paintbrush_" + type.getName() + ".png");
+        return new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "items/paintbrush_" + type.getName());
     }
 }

@@ -1,6 +1,6 @@
 package com.elytradev.teckle.common.network;
 
-import com.elytradev.concrete.Marshaller;
+import com.elytradev.concrete.network.Marshaller;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
