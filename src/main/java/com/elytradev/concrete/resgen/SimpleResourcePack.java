@@ -131,10 +131,8 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         try {
             Field field = ModelLoader.class.getDeclaredField("customModels");
             return (Map<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation>) FieldUtils.readStaticField(field, true);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            LOG.error("Caught exception getting customModels from the model loader, ", e);
         }
 
         return Maps.newHashMap();
