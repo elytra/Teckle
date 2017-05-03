@@ -39,7 +39,7 @@ import java.util.Set;
  * @author darkevilmac (Benjamin K)
  * @see IResourceHolder for custom texture locations for items and blocks.
  */
-public class SimpleResourcePack extends AbstractResourcePack implements IResourceManagerReloadListener {
+public class ConcreteResourcePack extends AbstractResourcePack implements IResourceManagerReloadListener {
 
     private static final Logger LOG = LogManager.getLogger("Concrete");
 
@@ -59,9 +59,9 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
 
     static {
         try {
-            SIMPLE_BLOCK_MODEL = IOUtils.toString(SimpleResourcePack.class.getResourceAsStream("simpleblock.json"));
-            SIMPLE_ITEM_MODEL = IOUtils.toString(SimpleResourcePack.class.getResourceAsStream("simpleitem.json"));
-            SIMPLE_BLOCK_STATE = IOUtils.toString(SimpleResourcePack.class.getResourceAsStream("simplestate.json"));
+            SIMPLE_BLOCK_MODEL = IOUtils.toString(ConcreteResourcePack.class.getResourceAsStream("concreteblockmodel.json"));
+            SIMPLE_ITEM_MODEL = IOUtils.toString(ConcreteResourcePack.class.getResourceAsStream("concreteitemmodel.json"));
+            SIMPLE_BLOCK_STATE = IOUtils.toString(ConcreteResourcePack.class.getResourceAsStream("concreteblockstate.json"));
         } catch (IOException e) {
             LOG.error("Caught IOException loading simple models, things will not definitely not work.", e);
         }
@@ -72,12 +72,12 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
     public HashMap<String, String> cache;
 
     /**
-     * Create a SimpleResourcePack for the specified mod, SimplePacks will auto gen simplemodels if you lack a blockstate or model file.
+     * Create a ConcreteResourcePack for the specified mod, SimplePacks will auto gen simplemodels if you lack a blockstate or model file.
      * If the applicable file exists it will simply default to it.
      *
      * @param modID the id of the mod you want a simple pack for.
      */
-    public SimpleResourcePack(String modID) {
+    public ConcreteResourcePack(String modID) {
         super(getPackFileByModID(modID));
         this.modID = modID;
         this.cache = Maps.newHashMap();
@@ -144,11 +144,11 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         // Default to fallback if possible.
         if (!((boolean) hasResourceName.invoke(realResourcePack, name))) {
             if (cache.containsKey(name)) {
-                LOG.debug("SimpleResourcePack was asked to obtain: " + name + " using cache.");
+                LOG.debug("ConcreteResourcePack was asked to obtain: " + name + " using cache.");
                 return IOUtils.toInputStream(cache.get(name));
             }
 
-            LOG.debug("SimpleResourcePack was asked to obtain: " + name);
+            LOG.debug("ConcreteResourcePack was asked to obtain: " + name);
             if (isLocation(name, "/blockstates/")) {
                 return IOUtils.toInputStream(getBlockState(name));
             } else if (isLocation(name, "/models/block/")) {

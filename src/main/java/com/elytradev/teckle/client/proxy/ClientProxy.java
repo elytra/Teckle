@@ -1,6 +1,6 @@
 package com.elytradev.teckle.client.proxy;
 
-import com.elytradev.concrete.resgen.SimpleResourcePack;
+import com.elytradev.concrete.resgen.ConcreteResourcePack;
 import com.elytradev.teckle.client.render.model.ModelItemTube;
 import com.elytradev.teckle.client.render.tile.TileTubeRenderer;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
@@ -33,7 +33,7 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void registerRenderers(LoaderState.ModState state) {
         if (state == LoaderState.ModState.PREINITIALIZED) {
-            new SimpleResourcePack(TeckleMod.MOD_ID);
+            new ConcreteResourcePack(TeckleMod.MOD_ID);
 
             registerSpecialItemRenderers();
         }
