@@ -1,4 +1,4 @@
-package com.elytradev.teckle.common.worldnetwork;
+package com.elytradev.teckle.common.worldnetwork.common;
 
 import com.elytradev.teckle.common.TeckleMod;
 import net.minecraft.nbt.NBTTagCompound;

@@ -3,7 +3,7 @@ package com.elytradev.teckle.client.render.tile;
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.tile.TileItemTube;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;

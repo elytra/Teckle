@@ -1,5 +1,7 @@
-package com.elytradev.teckle.common.worldnetwork;
+package com.elytradev.teckle.common.worldnetwork.common.node;
 
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 

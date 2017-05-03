@@ -1,4 +1,6 @@
-package com.elytradev.teckle.common.worldnetwork;
+package com.elytradev.teckle.common.worldnetwork.common.pathing;
+
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 
 /**
  * Used to store tagCompound about the usefulness of a node for making a path.

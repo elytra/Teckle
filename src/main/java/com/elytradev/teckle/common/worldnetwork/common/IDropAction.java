@@ -1,4 +1,4 @@
-package com.elytradev.teckle.common.worldnetwork;
+package com.elytradev.teckle.common.worldnetwork.common;
 
 public interface IDropAction {
 

@@ -1,4 +1,4 @@
-package com.elytradev.teckle.common.worldnetwork;
+package com.elytradev.teckle.common.worldnetwork.common;
 
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;

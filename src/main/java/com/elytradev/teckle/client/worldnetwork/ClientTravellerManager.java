@@ -1,7 +1,7 @@
 package com.elytradev.teckle.client.worldnetwork;
 
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkNode;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;

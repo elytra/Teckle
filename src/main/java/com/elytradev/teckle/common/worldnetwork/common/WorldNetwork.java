@@ -1,8 +1,9 @@
-package com.elytradev.teckle.common.worldnetwork;
+package com.elytradev.teckle.common.worldnetwork.common;
 
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.network.TravellerDataMessage;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.NBTTagCompound;

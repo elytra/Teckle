@@ -1,7 +1,7 @@
 package com.elytradev.teckle.common.tile.base;
 
-import com.elytradev.teckle.common.worldnetwork.WorldNetwork;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.util.EnumFacing;
 
 /**

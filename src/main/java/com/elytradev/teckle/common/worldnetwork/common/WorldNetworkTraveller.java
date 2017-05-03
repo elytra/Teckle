@@ -1,7 +1,13 @@
-package com.elytradev.teckle.common.worldnetwork;
+package com.elytradev.teckle.common.worldnetwork.common;
 
 import com.elytradev.teckle.common.network.TravellerDataMessage;
 import com.elytradev.teckle.common.network.TravellerMoveMessage;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEndpoint;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
+import com.elytradev.teckle.common.worldnetwork.common.pathing.EndpointData;
+import com.elytradev.teckle.common.worldnetwork.common.pathing.PathNode;
+import com.elytradev.teckle.common.worldnetwork.common.pathing.WorldNetworkPath;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -27,11 +33,6 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     public NBTTagCompound data;
     public List<Tuple<WorldNetworkNode, EnumFacing>> triedEndpoints = new ArrayList<>();
     public HashMap<String, IDropAction> dropActions = new HashMap<>();
-
-    public WorldNetworkEntryPoint getEntryPoint() {
-        return entryPoint;
-    }
-
     protected WorldNetworkEntryPoint entryPoint;
 
     public WorldNetworkTraveller(NBTTagCompound data) {
@@ -57,6 +58,10 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                 return facing;
 
         return EnumFacing.DOWN;
+    }
+
+    public WorldNetworkEntryPoint getEntryPoint() {
+        return entryPoint;
     }
 
     public EnumFacing getFacingVector() {

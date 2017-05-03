@@ -1,7 +1,7 @@
 package com.elytradev.teckle.client.worldnetwork;
 
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkPath;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.pathing.WorldNetworkPath;
 import net.minecraft.nbt.NBTTagCompound;
 
 /**

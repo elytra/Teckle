@@ -1,4 +1,4 @@
-package com.elytradev.teckle.common.worldnetwork;
+package com.elytradev.teckle.common.worldnetwork.common.pathing;
 
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;

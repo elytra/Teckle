@@ -2,7 +2,7 @@ package com.elytradev.teckle.common.proxy;
 
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
-import com.elytradev.teckle.common.worldnetwork.WorldNetworkDatabase;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.LoaderState;
 import net.minecraftforge.fml.common.network.NetworkRegistry;

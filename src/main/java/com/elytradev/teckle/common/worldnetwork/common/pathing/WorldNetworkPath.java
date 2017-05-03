@@ -1,7 +1,10 @@
-package com.elytradev.teckle.common.worldnetwork;
+package com.elytradev.teckle.common.worldnetwork.common.pathing;
 
 import com.elytradev.concrete.network.Marshallable;
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.worldnetwork.common.DummyWorldNetworkEndpoint;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.FMLCommonHandler;
