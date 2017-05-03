@@ -43,7 +43,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             this.data.setUniqueId("id", UUID.randomUUID());
     }
 
-    protected WorldNetworkTraveller(WorldNetworkEntryPoint entryPoint, NBTTagCompound data) {
+    public WorldNetworkTraveller(WorldNetworkEntryPoint entryPoint, NBTTagCompound data) {
         this.network = entryPoint.network;
         this.entryPoint = entryPoint;
 
