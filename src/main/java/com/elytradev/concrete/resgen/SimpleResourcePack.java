@@ -43,6 +43,8 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
 
     private static final Logger LOG = LogManager.getLogger("Concrete");
 
+    private static Accessor<List<IResourcePack>> resourcePackList = Accessors.findField(FMLClientHandler.class, "resourcePackList");
+
     private static Accessor<File> resourcePackFile = Accessors.findField(AbstractResourcePack.class, "field_110597_b", "resourcePackFile");
     private static Accessor<IResourcePack> legacyPack = Accessors.findField(LegacyV2Adapter.class, "field_191383_a", "pack");
     private static Accessor<Map<String, FallbackResourceManager>> domainResourceManagers = Accessors.findField(SimpleReloadableResourceManager.class, "field_110548_a", "domainResourceManagers");
@@ -92,6 +94,9 @@ public class SimpleResourcePack extends AbstractResourcePack implements IResourc
         if (realPack == null || this.realResourcePack == null) {
             throw new MissingRealpackException(modID);
         }
+
+        //Add our pack as a default pack, use FMLClientHandler's field for this so we don't need to worry about obf names
+        resourcePackList.get(FMLClientHandler.instance()).add(this);
 
         // Confirms that our resourcepack is available as soon as possible to prevent missing resource errors.
         if (Minecraft.getMinecraft().getResourceManager() instanceof SimpleReloadableResourceManager) {
