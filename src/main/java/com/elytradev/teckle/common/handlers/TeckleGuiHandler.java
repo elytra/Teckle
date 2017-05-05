@@ -1,11 +1,6 @@
 package com.elytradev.teckle.common.handlers;
 
-import com.elytradev.teckle.client.gui.GuiAlloyFurnace;
-import com.elytradev.teckle.client.gui.GuiFilter;
-import com.elytradev.teckle.common.container.ContainerAlloyFurnace;
-import com.elytradev.teckle.common.container.ContainerFilter;
-import com.elytradev.teckle.common.tile.TileAlloyFurnace;
-import com.elytradev.teckle.common.tile.TileFilter;
+import com.elytradev.teckle.common.tile.base.IElementProvider;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -20,39 +15,37 @@ public class TeckleGuiHandler implements IGuiHandler {
     public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
         BlockPos pos = new BlockPos(x, y, z);
         TileEntity te;
-        switch (ID) {
-            case 1:
-                te = world.getTileEntity(pos);
-                if (te instanceof TileFilter) {
-                    return new ContainerFilter((TileFilter) te, player);
-                }
-            case 2:
-                te = world.getTileEntity(pos);
-                if (te instanceof TileAlloyFurnace) {
-                    return new ContainerAlloyFurnace((TileAlloyFurnace) te, player);
-                }
-            default:
-                return null;
+        if (ID == ElementType.ELEMENT_PROVIDER.caseNumber) {
+            te = world.getTileEntity(pos);
+            if (te instanceof IElementProvider) {
+                return ((IElementProvider) te).getServerElement(player);
+            }
         }
+
+        return null;
     }
 
     @Override
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
         BlockPos pos = new BlockPos(x, y, z);
         TileEntity te;
-        switch (ID) {
-            case 1:
-                te = world.getTileEntity(pos);
-                if (te instanceof TileFilter) {
-                    return new GuiFilter((TileFilter) te, player);
-                }
-            case 2:
-                te = world.getTileEntity(pos);
-                if (te instanceof TileAlloyFurnace) {
-                    return new GuiAlloyFurnace((TileAlloyFurnace) te, player);
-                }
-            default:
-                return null;
+        if (ID == ElementType.ELEMENT_PROVIDER.caseNumber) {
+            te = world.getTileEntity(pos);
+            if (te instanceof IElementProvider) {
+                return ((IElementProvider) te).getClientElement(player);
+            }
+        }
+
+        return null;
+    }
+
+    public enum ElementType {
+        ELEMENT_PROVIDER(0);
+
+        public final int caseNumber;
+
+        ElementType(int caseNumber) {
+            this.caseNumber = caseNumber;
         }
     }
 

@@ -2,6 +2,7 @@ package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
+import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
 import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
@@ -246,7 +247,7 @@ public class BlockFilter extends BlockContainer {
         if (!playerIn.isSneaking()) {
             TileEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity != null) {
-                playerIn.openGui(TeckleMod.INSTANCE, 1, worldIn, pos.getX(), pos.getY(), pos.getZ());
+                playerIn.openGui(TeckleMod.INSTANCE, TeckleGuiHandler.ElementType.ELEMENT_PROVIDER.caseNumber, worldIn, pos.getX(), pos.getY(), pos.getZ());
                 return true;
             }
         }

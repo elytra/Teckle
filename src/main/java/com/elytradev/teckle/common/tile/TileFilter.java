@@ -3,9 +3,12 @@ package com.elytradev.teckle.common.tile;
 import com.elytradev.probe.api.IProbeData;
 import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.probe.api.impl.ProbeData;
+import com.elytradev.teckle.client.gui.GuiFilter;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockFilter;
+import com.elytradev.teckle.common.container.ContainerFilter;
+import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
@@ -31,6 +34,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -42,7 +47,7 @@ import java.util.Objects;
 /**
  * Created by darkevilmac on 3/30/2017.
  */
-public class TileFilter extends TileNetworkEntrypoint implements ITickable {
+public class TileFilter extends TileNetworkEntrypoint implements ITickable, IElementProvider {
 
     public EnumDyeColor colour = null;
     public AdvancedItemStackHandler filterData = new AdvancedItemStackHandler(9).withSlotLimit(slot -> 16);
@@ -434,6 +439,17 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable {
             return true;
         }
         return super.hasCapability(capability, facing);
+    }
+
+    @Override
+    public Object getServerElement(EntityPlayer player) {
+        return new ContainerFilter(this, player);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public Object getClientElement(EntityPlayer player) {
+        return new GuiFilter(this, player);
     }
 
     private final class ProbeCapability implements IProbeDataProvider {

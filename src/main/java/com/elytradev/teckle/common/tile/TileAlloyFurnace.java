@@ -1,8 +1,11 @@
 package com.elytradev.teckle.common.tile;
 
+import com.elytradev.teckle.client.gui.GuiAlloyFurnace;
 import com.elytradev.teckle.common.block.BlockAlloyFurnace;
+import com.elytradev.teckle.common.container.ContainerAlloyFurnace;
 import com.elytradev.teckle.common.crafting.AlloyRecipe;
 import com.elytradev.teckle.common.crafting.AlloyRecipes;
+import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,6 +18,8 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -24,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 
-public class TileAlloyFurnace extends TileEntity implements ITickable {
+public class TileAlloyFurnace extends TileEntity implements ITickable, IElementProvider {
 
     public AlloyRecipe activeRecipe;
     public int fuelBurnTime, currentFuelWorth, cookTime;
@@ -187,4 +192,14 @@ public class TileAlloyFurnace extends TileEntity implements ITickable {
         return this.world.getTileEntity(this.pos) == this && player.getDistanceSq((double) this.pos.getX() + 0.5D, (double) this.pos.getY() + 0.5D, (double) this.pos.getZ() + 0.5D) <= 64.0D;
     }
 
+    @Override
+    public Object getServerElement(EntityPlayer player) {
+        return new ContainerAlloyFurnace(this, player);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public Object getClientElement(EntityPlayer player) {
+        return new GuiAlloyFurnace(this, player);
+    }
 }

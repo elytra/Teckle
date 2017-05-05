@@ -96,7 +96,7 @@ public class ConcreteResourcePack extends AbstractResourcePack implements IResou
         }
 
         //Add our pack as a default pack, use FMLClientHandler's field for this so we don't need to worry about obf names
-        resourcePackList.get(FMLClientHandler.instance()).add(this);
+        resourcePackList.get(FMLClientHandler.instance()).add(resourcePackList.get(FMLClientHandler.instance()).indexOf(realPack), this);
 
         // Confirms that our resourcepack is available as soon as possible to prevent missing resource errors.
         if (Minecraft.getMinecraft().getResourceManager() instanceof SimpleReloadableResourceManager) {
@@ -105,7 +105,7 @@ public class ConcreteResourcePack extends AbstractResourcePack implements IResou
 
             // Forces this resource pack to be loaded early on. FML already did it's initial registration so we need to bypass that.
             FallbackResourceManager domainManager = domainResourceManagers.get(resourceManager).get(modID);
-            resourcePacks.get(domainManager).add(this);
+            resourcePacks.get(domainManager).add(resourcePacks.get(domainManager).indexOf(realPack), this);
         }
     }
 
@@ -142,21 +142,20 @@ public class ConcreteResourcePack extends AbstractResourcePack implements IResou
     @Override
     protected InputStream getInputStreamByName(String name) throws IOException {
         // Default to fallback if possible.
-        if (!((boolean) hasResourceName.invoke(realResourcePack, name))) {
-            if (cache.containsKey(name)) {
-                LOG.debug("ConcreteResourcePack was asked to obtain: " + name + " using cache.");
-                return IOUtils.toInputStream(cache.get(name));
-            }
-
-            LOG.debug("ConcreteResourcePack was asked to obtain: " + name);
-            if (isLocation(name, "/blockstates/")) {
-                return IOUtils.toInputStream(getBlockState(name));
-            } else if (isLocation(name, "/models/block/")) {
-                return IOUtils.toInputStream(getBlockModel(name));
-            } else if (isLocation(name, "/models/item/")) {
-                return IOUtils.toInputStream(getItemModel(name));
-            }
+        if (cache.containsKey(name)) {
+            LOG.debug("ConcreteResourcePack was asked to obtain: " + name + " using cache.");
+            return IOUtils.toInputStream(cache.get(name));
         }
+
+        LOG.debug("ConcreteResourcePack was asked to obtain: " + name);
+        if (isLocation(name, "/blockstates/")) {
+            return IOUtils.toInputStream(getBlockState(name));
+        } else if (isLocation(name, "/models/block/")) {
+            return IOUtils.toInputStream(getBlockModel(name));
+        } else if (isLocation(name, "/models/item/")) {
+            return IOUtils.toInputStream(getItemModel(name));
+        }
+
 
         // Cover ourself in the event of something odd happening.
         return (InputStream) getInputStreamByName.invoke(realResourcePack, name);
@@ -217,7 +216,13 @@ public class ConcreteResourcePack extends AbstractResourcePack implements IResou
         if (Block.getBlockFromItem(itemFromLocation) != Blocks.AIR) {
             if (itemFromLocation.getRegistryName().getResourcePath().equals(itemID)) {
                 try {
-                    cache.put(name, IOUtils.toString(getInputStreamByName(name.replace("/item/", "/block/"))));
+                    String blockName = name.replace("/item/", "/block/");
+
+                    if ((boolean) hasResourceName.invoke(realResourcePack, blockName)) {
+                        cache.put(name, IOUtils.toString((InputStream) getInputStreamByName.invoke(realResourcePack, blockName)));
+                    } else {
+                        cache.put(name, IOUtils.toString(getInputStreamByName(blockName)));
+                    }
                 } catch (IOException e) {
                     LOG.error("Failed to get item model for " + name);
                 }
@@ -282,9 +287,6 @@ public class ConcreteResourcePack extends AbstractResourcePack implements IResou
 
     @Override
     protected boolean hasResourceName(String name) {
-        if ((boolean) hasResourceName.invoke(realResourcePack, name))
-            return false;
-
         if (isLocation(name, "/blockstates/")) {
             LOG.debug("Location was provided " + name + ", matched blockstate check.");
             return true;
