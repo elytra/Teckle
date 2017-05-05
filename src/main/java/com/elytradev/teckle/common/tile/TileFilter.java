@@ -266,12 +266,14 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable, IEle
                 IItemHandler itemHandler = world.getTileEntity(pos.offset(facing.getOpposite()))
                         .getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
 
+
                 if (filterData.stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
                     for (ItemStack stack : filterData.getStacks()) {
                         if (!extractionData.isEmpty())
                             break;
                         if (stack.isEmpty())
                             continue;
+
                         for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
                             ItemStack extractTest = itemHandler.extractItem(slot, stack.getCount(), true);
                             if (Objects.equals(extractTest.getItem(), stack.getItem()) && extractTest.getMetadata() == stack.getMetadata()) {
