@@ -15,6 +15,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by darkevilmac on 3/25/2017.
@@ -70,6 +71,10 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
 
     public boolean isNodePresent(BlockPos nodePosition) {
         return networkNodes.containsKey(nodePosition);
+    }
+
+    public Stream<WorldNetworkNode> nodeStream() {
+        return networkNodes.values().stream();
     }
 
     public List<WorldNetworkNode> getNodes() {
