@@ -6,10 +6,7 @@ import com.elytradev.teckle.common.handlers.PaintbrushRecipe;
 import com.elytradev.teckle.common.item.ItemBlade;
 import com.elytradev.teckle.common.item.ItemPaintbrush;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
-import com.elytradev.teckle.common.tile.TileAlloyFurnace;
-import com.elytradev.teckle.common.tile.TileFilter;
-import com.elytradev.teckle.common.tile.TileItemTube;
-import com.elytradev.teckle.common.tile.TileTransposer;
+import com.elytradev.teckle.common.tile.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
@@ -41,6 +38,7 @@ public class TeckleObjects {
     public static BlockTransposer blockTransposer;
     public static BlockAlloyFurnace blockAlloyFurnace;
     public static BlockNikoliteOre blockNikoliteOre;
+    public static BlockFabricator blockFabricator;
 
     public static ItemPaintbrush itemPaintBrush;
     public static ItemBlade itemBlade;
@@ -80,6 +78,9 @@ public class TeckleObjects {
         blockAlloyFurnace = new BlockAlloyFurnace(Material.ROCK);
         registerBlock("alloyfurnace", blockAlloyFurnace);
 
+        blockFabricator = new BlockFabricator(Material.CIRCUITS);
+        registerBlock("fabricator", blockFabricator);
+
         blockNikoliteOre = new BlockNikoliteOre();
         registerBlock("nikolite_ore", blockNikoliteOre);
         OreDictionary.registerOre("oreNikolite", blockNikoliteOre);
@@ -114,6 +115,7 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileItemTube.class, "teckleItemTube");
         GameRegistry.registerTileEntity(TileFilter.class, "teckleFilter");
         GameRegistry.registerTileEntity(TileTransposer.class, "teckleTransposer");
+        GameRegistry.registerTileEntity(TileFabricator.class, "teckleFabricator");
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
 
         CraftingManager.getInstance().addRecipe(new PaintbrushRecipe());

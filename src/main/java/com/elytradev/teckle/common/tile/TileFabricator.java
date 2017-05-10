@@ -1,5 +1,7 @@
 package com.elytradev.teckle.common.tile;
 
+import com.elytradev.teckle.client.gui.GuiFabricator;
+import com.elytradev.teckle.common.container.ContainerFabricator;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import net.minecraft.entity.player.EntityPlayer;
@@ -118,13 +120,16 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
 
     @Override
     public Object getServerElement(EntityPlayer player) {
-        return null;
+        return new ContainerFabricator(this, player);
     }
 
     @Override
     @SideOnly(Side.CLIENT)
     public Object getClientElement(EntityPlayer player) {
-        return null;
+        return new GuiFabricator(this, player);
     }
 
+    public boolean isUsableByPlayer(EntityPlayer player) {
+        return this.world.getTileEntity(this.pos) == this && player.getDistanceSq((double) this.pos.getX() + 0.5D, (double) this.pos.getY() + 0.5D, (double) this.pos.getZ() + 0.5D) <= 64.0D;
+    }
 }
