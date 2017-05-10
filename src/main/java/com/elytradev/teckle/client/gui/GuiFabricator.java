@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -34,22 +35,24 @@ public class GuiFabricator extends GuiContainer {
     public void initGui() {
         super.initGui();
 
+
+        int x = (width - xSize) / 2;
+        int y = (height - ySize) / 2;
         buttonList.clear();
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                buttonList.add(new Template(j + i * 3, 62 + j * 18, 17 + i * 18));
+                buttonList.add(new Template(j + i * 3, x + 7 + j * 18, y + 16 + i * 18));
             }
         }
     }
 
     @Override
     protected void actionPerformed(GuiButton button) {
-        for (int i = 0; i < templates.length; i++) {
-            if (button == templates[i]) {
-                new FabricatorTemplateMessage(fabricator.getPos(), getMouseItem(), i).sendToServer();
+        if (button instanceof Template) {
+            int templateID = ((Template) button).templateIndex;
+            new FabricatorTemplateMessage(fabricator.getPos(), getMouseItem(), templateID).sendToServer();
 
-                fabricator.templates.set(i, getMouseItem());
-            }
+            fabricator.templates.set(templateID, getMouseItem());
         }
     }
 
@@ -60,7 +63,7 @@ public class GuiFabricator extends GuiContainer {
     }
 
     public ItemStack getMouseItem() {
-        return player.inventory.getItemStack();
+        return player.inventory.getItemStack().copy();
     }
 
     @Override
@@ -77,11 +80,15 @@ public class GuiFabricator extends GuiContainer {
         public Template(int buttonId, int x, int y) {
             super(buttonId, x, y, "");
             this.templateIndex = buttonId;
+
+            this.height = this.width = 18;
         }
 
         public void drawButton(Minecraft mc, int mouseX, int mouseY) {
             if (this.visible && !getTemplateStack().isEmpty()) {
-                GuiFabricator.this.itemRender.renderItemIntoGUI(getTemplateStack(), this.xPosition, this.yPosition);
+                GlStateManager.color(1, 1, 1);
+                RenderHelper.enableGUIStandardItemLighting();
+                GuiFabricator.this.itemRender.renderItemIntoGUI(getTemplateStack(), this.xPosition + 1, this.yPosition + 1);
             }
         }
 

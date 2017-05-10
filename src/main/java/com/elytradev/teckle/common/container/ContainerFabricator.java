@@ -19,7 +19,8 @@ public class ContainerFabricator extends Container {
         this.fabricator = tile;
         this.player = player;
 
-        bindPlayerInventory(player.inventory);
+        if (player != null)
+            bindPlayerInventory(player.inventory);
     }
 
     protected void bindPlayerInventory(InventoryPlayer inventoryplayer) {

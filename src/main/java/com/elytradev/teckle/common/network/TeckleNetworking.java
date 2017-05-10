@@ -16,6 +16,7 @@ public class TeckleNetworking {
         NETWORK.register(AlloyFurnaceMessage.class);
 
         NETWORK.register(FilterColourChangeMessage.class);
+        NETWORK.register(FabricatorTemplateMessage.class);
     }
 
 }
