@@ -4,8 +4,10 @@ import com.elytradev.teckle.common.tile.TileFabricator;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.items.SlotItemHandler;
 
 /**
  * Created by darkevilmac on 5/10/17.
@@ -18,6 +20,19 @@ public class ContainerFabricator extends Container {
     public ContainerFabricator(TileFabricator tile, EntityPlayer player) {
         this.fabricator = tile;
         this.player = player;
+
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                this.addSlotToContainer(new InaccessibleSlot(tile.craftingGrid, j + i * 3, 8 + j * 18, 17 + i * 18));
+            }
+        }
+
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                this.addSlotToContainer(new SlotItemHandler(tile.stackHandler, j + i * 3, 116 + j * 18, 17 + i * 18));
+            }
+        }
+
 
         if (player != null)
             bindPlayerInventory(player.inventory);
@@ -40,6 +55,11 @@ public class ContainerFabricator extends Container {
         return fabricator.isUsableByPlayer(player);
     }
 
+    @Override
+    public void onCraftMatrixChanged(IInventory inventoryIn) {
+    }
+
+    @Override
     public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.inventorySlots.get(index);
@@ -70,5 +90,16 @@ public class ContainerFabricator extends Container {
         }
 
         return itemstack;
+    }
+
+    public class InaccessibleSlot extends Slot {
+        public InaccessibleSlot(IInventory inventoryIn, int index, int xPosition, int yPosition) {
+            super(inventoryIn, index, xPosition, yPosition);
+        }
+
+        @Override
+        public boolean isItemValid(ItemStack stack) {
+            return false;
+        }
     }
 }

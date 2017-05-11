@@ -15,18 +15,34 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
+import javax.annotation.Nonnull;
+
 public class TileFabricator extends TileEntity implements ITickable, IElementProvider {
 
     public AdvancedItemStackHandler stackHandler = new AdvancedItemStackHandler(9);
-    public NonNullList<ItemStack> templates = NonNullList.withSize(9, ItemStack.EMPTY);
+    public IRecipe templateRecipe;
     public InventoryCrafting craftingGrid = new InventoryCrafting((Container) getServerElement(null), 3, 3);
     public int cooldown = 5;
+    private NonNullList<ItemStack> templates = NonNullList.withSize(9, ItemStack.EMPTY);
+
+    @Nonnull
+    public ItemStack getTemplateSlot(int index) {
+        return templates.get(index);
+    }
+
+    @Nonnull
+    public ItemStack setTemplateSlot(int index, @Nonnull ItemStack stack) {
+        ItemStack result = templates.set(index, stack);
+        generateTemplateRecipe();
+        return result;
+    }
 
     @Override
     public void update() {
@@ -49,14 +65,32 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
     public IRecipe getRecipe() {
         InventoryCrafting templateGrid = new InventoryCrafting((Container) getServerElement(null), 3, 3);
         for (int i = 0; i < templates.size(); i++) {
-            templateGrid.setInventorySlotContents(i, templates.get(i));
+            templateGrid.setInventorySlotContents(i, templates.get(i).copy());
         }
 
-        for (IRecipe iRecipe : CraftingManager.getInstance().getRecipeList()) {
-            if (iRecipe.matches(templateGrid, world) && iRecipe.matches(craftingGrid, world)) return iRecipe;
+        if (templateRecipe == null) {
+            generateTemplateRecipe();
         }
+
+        if (templateRecipe == null || templateRecipe.matches(templateGrid, world) && templateRecipe.matches(craftingGrid, world))
+            return templateRecipe;
 
         return null;
+    }
+
+    private void generateTemplateRecipe() {
+        InventoryCrafting templateGrid = new InventoryCrafting((Container) getServerElement(null), 3, 3);
+        for (int i = 0; i < templates.size(); i++) {
+            templateGrid.setInventorySlotContents(i, templates.get(i).copy());
+        }
+
+        templateRecipe = null;
+        for (IRecipe iRecipe : CraftingManager.getInstance().getRecipeList()) {
+            if (iRecipe.matches(templateGrid, world)) {
+                templateRecipe = iRecipe;
+                break;
+            }
+        }
     }
 
     /**
@@ -65,19 +99,34 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
     public void craft() {
         IRecipe recipe = getRecipe();
         if (recipe != null) {
-            ItemStack result = recipe.getCraftingResult(craftingGrid);
+            ItemStack result = recipe.getCraftingResult(craftingGrid).copy();
 
             int insertInto = -1;
             for (int i = 0; i < stackHandler.getStacks().size(); i++) {
-                if (stackHandler.insertItem(i, result, true).isEmpty()) {
+                if (stackHandler.insertItem(i, result.copy(), true).isEmpty()) {
                     insertInto = i;
                     break;
                 }
             }
             if (insertInto != -1) {
                 NonNullList<ItemStack> remainingItems = recipe.getRemainingItems(craftingGrid);
-                for (int i = 0; i < remainingItems.size(); i++) {
-                    craftingGrid.setInventorySlotContents(i, remainingItems.get(i));
+                for (int i = 0; i < remainingItems.size(); ++i) {
+                    ItemStack gridStack = this.craftingGrid.getStackInSlot(i);
+                    ItemStack remainingStack = remainingItems.get(i);
+
+                    if (!gridStack.isEmpty()) {
+                        this.craftingGrid.decrStackSize(i, 1);
+                        gridStack = this.craftingGrid.getStackInSlot(i);
+                    }
+
+                    if (!remainingStack.isEmpty()) {
+                        if (gridStack.isEmpty()) {
+                            this.craftingGrid.setInventorySlotContents(i, remainingStack);
+                        } else if (ItemStack.areItemsEqual(gridStack, remainingStack) && ItemStack.areItemStackTagsEqual(gridStack, remainingStack)) {
+                            remainingStack.grow(gridStack.getCount());
+                            this.craftingGrid.setInventorySlotContents(i, remainingStack);
+                        }
+                    }
                 }
 
                 stackHandler.insertItem(insertInto, result, false);
@@ -101,11 +150,18 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
                     for (int o = 0; o < itemHandler.getSlots(); o++) {
                         ItemStack stackInSlot = itemHandler.getStackInSlot(o);
                         if (!stackInSlot.isEmpty() && ItemHandlerHelper.canItemStacksStack(stackInSlot, templateStack)) {
-                            ItemStack extractAttempt = itemHandler.extractItem(o, craftingStack.getMaxStackSize() - craftingStack.getCount(), false);
+                            ItemStack extractAttempt = itemHandler.extractItem(o, MathHelper.clamp(craftingStack.getMaxStackSize() - craftingStack.getCount(), 0, 8), false);
                             if (!extractAttempt.isEmpty()) {
-                                ItemStack craftingStackCopy = craftingStack.copy();
-                                craftingStackCopy.grow(extractAttempt.getCount());
+                                ItemStack craftingStackCopy = null;
+                                if (craftingStack.isEmpty()) {
+                                    craftingStackCopy = templateStack.copy();
+                                    craftingStackCopy.setCount(extractAttempt.getCount());
+                                } else {
+                                    craftingStackCopy = craftingStack.copy();
+                                    craftingStackCopy.grow(extractAttempt.getCount());
+                                }
                                 craftingGrid.setInventorySlotContents(i, craftingStackCopy);
+                                break;
                             }
                         }
 

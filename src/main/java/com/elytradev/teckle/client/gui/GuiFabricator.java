@@ -4,6 +4,7 @@ import com.elytradev.teckle.common.container.ContainerFabricator;
 import com.elytradev.teckle.common.network.FabricatorTemplateMessage;
 import com.elytradev.teckle.common.tile.TileFabricator;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -12,6 +13,8 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+
+import java.io.IOException;
 
 /**
  * Created by darkevilmac on 4/12/2017.
@@ -32,16 +35,38 @@ public class GuiFabricator extends GuiContainer {
     }
 
     @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+
+        //copied from guiscreen, used to detect right clicks on templates
+        if (mouseButton == 1) {
+            for (int i = 0; i < this.templates.length; ++i) {
+                GuiButton guibutton = (GuiButton) this.templates[i];
+
+                if (guibutton.mousePressed(this.mc, mouseX, mouseY)) {
+                    net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Pre event = new net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Pre(this, guibutton, this.buttonList);
+                    if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event))
+                        break;
+                    guibutton = event.getButton();
+                    guibutton.playPressSound(this.mc.getSoundHandler());
+                    this.actionPerformed(guibutton);
+                    if (this.equals(this.mc.currentScreen))
+                        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Post(this, event.getButton(), this.buttonList));
+                }
+            }
+        }
+    }
+
+    @Override
     public void initGui() {
         super.initGui();
 
-
         int x = (width - xSize) / 2;
         int y = (height - ySize) / 2;
-        buttonList.clear();
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                buttonList.add(new Template(j + i * 3, x + 7 + j * 18, y + 16 + i * 18));
+                templates[j + i * 3] = new Template(j + i * 3, x + 7 + j * 18, y + 16 + i * 18);
+                buttonList.add(templates[j + i * 3]);
             }
         }
     }
@@ -52,7 +77,9 @@ public class GuiFabricator extends GuiContainer {
             int templateID = ((Template) button).templateIndex;
             new FabricatorTemplateMessage(fabricator.getPos(), getMouseItem(), templateID).sendToServer();
 
-            fabricator.templates.set(templateID, getMouseItem());
+            ItemStack mouseItem = getMouseItem();
+            mouseItem.setCount(1);
+            fabricator.setTemplateSlot(templateID, mouseItem);
         }
     }
 
@@ -60,6 +87,11 @@ public class GuiFabricator extends GuiContainer {
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
         fontRenderer.drawString(I18n.format("gui.inventory"), 8, 73, 0x404040);
+
+        if (fabricator.templateRecipe != null) {
+            RenderHelper.enableGUIStandardItemLighting();
+            this.itemRender.renderItemIntoGUI(fabricator.templateRecipe.getRecipeOutput(), 79, 34);
+        }
     }
 
     public ItemStack getMouseItem() {
@@ -74,6 +106,7 @@ public class GuiFabricator extends GuiContainer {
         GlStateManager.enableLighting();
     }
 
+
     public class Template extends GuiButton {
         public final int templateIndex;
 
@@ -84,16 +117,33 @@ public class GuiFabricator extends GuiContainer {
             this.height = this.width = 18;
         }
 
+        @Override
         public void drawButton(Minecraft mc, int mouseX, int mouseY) {
             if (this.visible && !getTemplateStack().isEmpty()) {
-                GlStateManager.color(1, 1, 1);
                 RenderHelper.enableGUIStandardItemLighting();
                 GuiFabricator.this.itemRender.renderItemIntoGUI(getTemplateStack(), this.xPosition + 1, this.yPosition + 1);
             }
+
+
+            GlStateManager.pushMatrix();
+            GlStateManager.color(1, 1, 1, 1F / 3F);
+            Minecraft.getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
+            drawTexturedModalRect(xPosition, yPosition, 7, 16, this.width, this.height);
+            GlStateManager.popMatrix();
+        }
+
+        @Override
+        public void playPressSound(SoundHandler soundHandlerIn) {
+            //dont.
+        }
+
+        @Override
+        public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+            return super.mousePressed(mc, mouseX, mouseY) && fabricator.craftingGrid.getStackInSlot(templateIndex).isEmpty();
         }
 
         private ItemStack getTemplateStack() {
-            return fabricator.templates.get(templateIndex);
+            return fabricator.getTemplateSlot(templateIndex);
         }
     }
 

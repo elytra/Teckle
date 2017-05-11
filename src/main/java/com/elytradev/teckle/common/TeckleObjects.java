@@ -15,12 +15,12 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,7 +83,7 @@ public class TeckleObjects {
 
         blockNikoliteOre = new BlockNikoliteOre();
         registerBlock("nikolite_ore", blockNikoliteOre);
-        OreDictionary.registerOre("oreNikolite", blockNikoliteOre);
+        OreDictionary.registerOre("oreNikolite", new ItemStack(blockNikoliteOre, 1));
 
         itemPaintBrush = new ItemPaintbrush();
         registerItem("paintbrush", itemPaintBrush);
@@ -94,7 +94,7 @@ public class TeckleObjects {
 
         itemNikolite = new Item();
         registerItem("nikolite", itemNikolite);
-        OreDictionary.registerOre("dustNikolite", itemNikolite);
+        OreDictionary.registerOre("dustNikolite", new ItemStack(itemNikolite, 1));
 
         itemSiliconBoule = new Item();
         registerItem("siliconboule", itemSiliconBoule);
@@ -104,7 +104,7 @@ public class TeckleObjects {
 
         itemBrassIngot = new Item();
         registerItem("brassingot", itemBrassIngot);
-        OreDictionary.registerOre("ingotBrass", itemBrassIngot);
+        OreDictionary.registerOre("ingotBrass", new ItemStack(itemBrassIngot, 1));
 
         skipItemMesh.add(itemSiliconWafer);
     }
@@ -118,13 +118,14 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileFabricator.class, "teckleFabricator");
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
 
-        CraftingManager.getInstance().addRecipe(new PaintbrushRecipe());
-        CraftingManager.getInstance().addRecipe(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule));
-        CraftingManager.getInstance().addRecipe(new ItemStack(blockAlloyFurnace), "BBB", "B B", "BBB", 'B', Blocks.BRICK_BLOCK);
-        CraftingManager.getInstance().addRecipe(new ItemStack(blockItemTube, 8), "BGB", 'B', "ingotBrass", 'G', "blockGlass");
-        CraftingManager.getInstance().addRecipe(new ItemStack(blockTransposer), "CCC", "WPW", "CRC", 'C', "cobblestone", 'W', "plankWood", 'P', Blocks.PISTON, 'R', Items.REDSTONE);
-        CraftingManager.getInstance().addRecipe(new ItemStack(blockFilter), "CCC", "GPG", "CWC", 'C', "cobblestone", 'G', "ingotGold", 'P', Blocks.PISTON, 'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()));
-        CraftingManager.getInstance().addRecipe(new ItemStack(itemBlade), "I  ", " S ", 'I', Items.IRON_INGOT, 'S', Items.STICK);
+        GameRegistry.addRecipe(new PaintbrushRecipe());
+        GameRegistry.addRecipe(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockAlloyFurnace), "BBB", "B B", "BBB", 'B', Blocks.BRICK_BLOCK));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockItemTube, 8), "BGB", 'B', itemBrassIngot, 'G', Blocks.GLASS));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockTransposer), "CCC", "WPW", "CRC", 'C', Blocks.COBBLESTONE, 'W', Blocks.PLANKS, 'P', Blocks.PISTON, 'R', Items.REDSTONE));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockFilter), "CCC", "GPG", "CWC", 'C', Blocks.COBBLESTONE, 'G', Items.GOLD_INGOT, 'P', Blocks.PISTON, 'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata())));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemBlade), "I  ", " S ", 'I', Items.IRON_INGOT, 'S', Items.STICK));
+
 
         // Forge doesn't use EnumDyeColor  for dye registration and also doesn't store this list anywhere public, so here we are copying forge colour arrays from OreDict.
         String[] dyes =
@@ -147,7 +148,7 @@ public class TeckleObjects {
                         "White"
                 };
         for (int i = 0; i < dyes.length; i++) {
-            CraftingManager.getInstance().addRecipe(new ItemStack(itemPaintBrush, 1, i),
+            GameRegistry.addShapedRecipe(new ItemStack(itemPaintBrush, 1, i),
                     "D  ", " W ", "  S", 'D', "dye" + dyes[i], 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
         }
 

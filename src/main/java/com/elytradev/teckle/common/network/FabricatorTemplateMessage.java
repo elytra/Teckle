@@ -37,7 +37,7 @@ public class FabricatorTemplateMessage extends Message {
         if (sender != null && sender.world != null) {
             TileFabricator fabricator = (TileFabricator) sender.world.getTileEntity(fabricatorPos);
 
-            fabricator.templates.set(templateIndex, stack);
+            fabricator.setTemplateSlot(templateIndex, stack);
         }
     }
 }
