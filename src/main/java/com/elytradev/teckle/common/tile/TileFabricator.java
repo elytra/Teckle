@@ -4,18 +4,22 @@ import com.elytradev.teckle.client.gui.GuiFabricator;
 import com.elytradev.teckle.common.container.ContainerFabricator;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
+import com.elytradev.teckle.common.tile.inv.ItemStream;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryCrafting;
+import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -23,6 +27,9 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class TileFabricator extends TileEntity implements ITickable, IElementProvider {
 
@@ -150,7 +157,7 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
                     for (int o = 0; o < itemHandler.getSlots(); o++) {
                         ItemStack stackInSlot = itemHandler.getStackInSlot(o);
                         if (!stackInSlot.isEmpty() && ItemHandlerHelper.canItemStacksStack(stackInSlot, templateStack)) {
-                            ItemStack extractAttempt = itemHandler.extractItem(o, MathHelper.clamp(craftingStack.getMaxStackSize() - craftingStack.getCount(), 0, 8), false);
+                            ItemStack extractAttempt = itemHandler.extractItem(o, MathHelper.clamp(craftingStack.getMaxStackSize() - craftingStack.getCount(), 0, 1), false);
                             if (!extractAttempt.isEmpty()) {
                                 ItemStack craftingStackCopy = null;
                                 if (craftingStack.isEmpty()) {
@@ -175,6 +182,25 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
     }
 
     @Override
+    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
+        if (Objects.equals(capability, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)) {
+            return true;
+        }
+
+        return super.hasCapability(capability, facing);
+    }
+
+    @Nullable
+    @Override
+    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+        if (Objects.equals(capability, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)) {
+            return (T) stackHandler;
+        }
+
+        return super.getCapability(capability, facing);
+    }
+
+    @Override
     public Object getServerElement(EntityPlayer player) {
         return new ContainerFabricator(this, player);
     }
@@ -183,6 +209,36 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
     @SideOnly(Side.CLIENT)
     public Object getClientElement(EntityPlayer player) {
         return new GuiFabricator(this, player);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound compound) {
+        super.readFromNBT(compound);
+
+        NonNullList<ItemStack> craftingSupplies = NonNullList.withSize(9, ItemStack.EMPTY);
+        ItemStackHelper.loadAllItems(compound.getCompoundTag("craftingSupplies"), craftingSupplies);
+        for (int i = 0; i < craftingSupplies.size(); i++) {
+            craftingGrid.setInventorySlotContents(i, craftingSupplies.get(i));
+        }
+
+        ItemStackHelper.loadAllItems(compound.getCompoundTag("templates"), templates);
+        stackHandler.deserializeNBT(compound.getCompoundTag("stacks"));
+    }
+
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        compound = super.writeToNBT(compound);
+
+        NBTTagCompound craftingSupplies = new NBTTagCompound();
+        NBTTagCompound templateData = new NBTTagCompound();
+        ItemStackHelper.saveAllItems(craftingSupplies, ItemStream.convertCollectedListToNonNull(ItemStream.createItemStream(craftingGrid).collect(Collectors.toList())));
+        ItemStackHelper.saveAllItems(templateData, templates);
+
+        compound.setTag("craftingSupplies", craftingSupplies);
+        compound.setTag("templates", templateData);
+        compound.setTag("stacks", stackHandler.serializeNBT());
+
+        return compound;
     }
 
     public boolean isUsableByPlayer(EntityPlayer player) {

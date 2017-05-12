@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "teckle:blocks/fabricator_bottom",
+    "up": "teckle:blocks/fabricator_top",
+    "north": "teckle:blocks/fabricator_side",
+    "south": "teckle:blocks/fabricator_side",
+    "west": "teckle:blocks/fabricator_side",
+    "east": "teckle:blocks/fabricator_side",
+    "particle": "teckle:blocks/fabricator_bottom"
+  }
+}

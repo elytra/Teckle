@@ -124,6 +124,7 @@ public class TeckleObjects {
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockItemTube, 8), "BGB", 'B', itemBrassIngot, 'G', Blocks.GLASS));
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockTransposer), "CCC", "WPW", "CRC", 'C', Blocks.COBBLESTONE, 'W', Blocks.PLANKS, 'P', Blocks.PISTON, 'R', Items.REDSTONE));
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockFilter), "CCC", "GPG", "CWC", 'C', Blocks.COBBLESTONE, 'G', Items.GOLD_INGOT, 'P', Blocks.PISTON, 'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata())));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockFabricator), "BBB", "WCW", "WRW", 'B', itemBrassIngot, 'W', Blocks.PLANKS, 'C', Blocks.CRAFTING_TABLE, 'R', Items.REDSTONE));
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemBlade), "I  ", " S ", 'I', Items.IRON_INGOT, 'S', Items.STICK));
 
 
