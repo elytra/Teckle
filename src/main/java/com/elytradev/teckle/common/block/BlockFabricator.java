@@ -3,10 +3,12 @@ package com.elytradev.teckle.common.block;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
 import com.elytradev.teckle.common.tile.TileFabricator;
+import com.elytradev.teckle.common.tile.inv.ItemStream;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
@@ -47,6 +49,20 @@ public class BlockFabricator extends BlockContainer {
 
         return false;
     }
+
+    @Override
+    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+        TileEntity tileAtPos = worldIn.getTileEntity(pos);
+        if (tileAtPos != null) {
+            TileFabricator fabricator = (TileFabricator) tileAtPos;
+            ItemStream.createItemStream(fabricator.craftingGrid).filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+            fabricator.stackHandler.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+        }
+
+        // Call super after we're done so we still have access to the tile.
+        super.breakBlock(worldIn, pos, state);
+    }
+
 
     @Override
     public EnumBlockRenderType getRenderType(IBlockState state) {
