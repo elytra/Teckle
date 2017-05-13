@@ -1,6 +1,5 @@
 <img src="https://raw.githubusercontent.com/elytra/Teckle/master/src/main/resources/assets/teckle/Logo.png" align="left" width="180px"/>
 
-# Teckle
 [>> Downloads <<](https://github.com/elytra/Teckle/releases)
 
 *Reviving old ideas since 2017.*
