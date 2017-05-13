@@ -1,7 +1,6 @@
-<img src="https://raw.githubusercontent.com/elytra/Teckle/master/src/main/resources/assets/teckle/Logo.png" align="left" width="180px"/>
+![Logo](https://raw.githubusercontent.com/elytra/Teckle/master/src/main/resources/assets/teckle/Logo.png)
 
 [>> Downloads <<](https://github.com/elytra/Teckle/releases)
-
 *Reviving old ideas since 2017.*
 
 **This mod is open source and under a permissive license.** All Elytra mods are,
