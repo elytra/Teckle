@@ -1,4 +1,4 @@
-package com.elytradev.concrete.resgen;
+package com.elytradev.notconcreteipromise.resgen;
 
 public enum EnumResourceType {
     MODEL,

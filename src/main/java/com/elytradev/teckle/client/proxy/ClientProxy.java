@@ -1,6 +1,6 @@
 package com.elytradev.teckle.client.proxy;
 
-import com.elytradev.concrete.resgen.ConcreteResourcePack;
+import com.elytradev.notconcreteipromise.resgen.ConcreteResourcePack;
 import com.elytradev.teckle.client.render.model.ModelItemTube;
 import com.elytradev.teckle.client.render.tile.TileTubeRenderer;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;

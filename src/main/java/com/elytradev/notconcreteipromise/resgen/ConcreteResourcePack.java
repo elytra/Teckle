@@ -1,4 +1,4 @@
-package com.elytradev.concrete.resgen;
+package com.elytradev.notconcreteipromise.resgen;
 
 import com.elytradev.concrete.reflect.accessor.Accessor;
 import com.elytradev.concrete.reflect.accessor.Accessors;

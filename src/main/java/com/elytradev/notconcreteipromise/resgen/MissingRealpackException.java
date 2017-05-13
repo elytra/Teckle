@@ -1,4 +1,4 @@
-package com.elytradev.concrete.resgen;
+package com.elytradev.notconcreteipromise.resgen;
 
 /**
  * Thrown when a ConcreteResourcePack can't find a valid fallback pack to use.
