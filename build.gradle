@@ -51,6 +51,16 @@ repositories {
     maven {
         url = 'http://repo.elytradev.com'
     }
+    maven {
+        // location of the maven that hosts JEI files
+        name = "Progwml6 maven"
+        url = "http://dvs1.progwml6.com/files/maven"
+    }
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "modmaven.k-4u.nl"
+    }
 }
 
 processResources {
@@ -75,6 +85,10 @@ processResources {
 dependencies {
     deobfCompile 'com.elytradev:probedataproviderapi:MC1.11.2_ver1.1.1'
     testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    // JEI things.
+    deobfCompile "mezz.jei:jei_${mc_version}:${jei_version}:api"
+    runtime "mezz.jei:jei_${mc_version}:${jei_version}"
 }
 
 jar {
