@@ -1,4 +1,9 @@
-# Teckle
-A tech mod that actually updates.
+![Logo](https://raw.githubusercontent.com/elytra/Teckle/master/src/main/resources/assets/teckle/Logo.png)
 
-Current Version: 1x10^-4
+[>> Downloads <<](https://github.com/elytra/Teckle/releases)
+*Reviving old ideas since 2017.*
+
+**This mod is open source and under a permissive license.** All Elytra mods are,
+and as such, can be included in any modpack on any platform without prior
+permission. We appreciate hearing about people using our mods, but you do not
+need to ask to use them. See the [LICENSE file](LICENSE) for more details.
