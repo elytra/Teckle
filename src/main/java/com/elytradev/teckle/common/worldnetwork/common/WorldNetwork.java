@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork.common;
 
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.network.TravellerDataMessage;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
@@ -8,10 +9,8 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,7 +19,7 @@ import java.util.stream.Stream;
 /**
  * Created by darkevilmac on 3/25/2017.
  */
-public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound> {
+public class WorldNetwork implements IWorldNetwork {
 
     public UUID id;
     public World world;
@@ -44,6 +43,7 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
         this(world, id, false);
     }
 
+    @Override
     public void registerNode(WorldNetworkNode node) {
         TeckleMod.LOG.debug(this + "/Registering a node, " + node);
         if (!networkNodes.containsKey(node.position))
@@ -54,10 +54,12 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
         TeckleMod.LOG.debug(this + "/Registered node, " + node);
     }
 
+    @Override
     public void unregisterNode(WorldNetworkNode node) {
         unregisterNodeAtPosition(node.position);
     }
 
+    @Override
     public void unregisterNodeAtPosition(BlockPos nodePosition) {
         TeckleMod.LOG.debug(this + "/Unregistering a node at, " + nodePosition);
         if (networkNodes.containsKey(nodePosition))
@@ -65,26 +67,32 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
         TeckleMod.LOG.debug(this + "/Unregistered node at, " + nodePosition);
     }
 
+    @Override
     public WorldNetworkNode getNodeFromPosition(BlockPos pos) {
         return networkNodes.get(pos);
     }
 
+    @Override
     public boolean isNodePresent(BlockPos nodePosition) {
         return networkNodes.containsKey(nodePosition);
     }
 
+    @Override
     public Stream<WorldNetworkNode> nodeStream() {
         return networkNodes.values().stream();
     }
 
+    @Override
     public List<WorldNetworkNode> getNodes() {
         return networkNodes.values().stream().collect(Collectors.toList());
     }
 
+    @Override
     public List<BlockPos> getNodePositions() {
         return Arrays.asList((BlockPos[]) networkNodes.keySet().toArray());
     }
 
+    @Override
     public void registerTraveller(WorldNetworkTraveller traveller, boolean send) {
         traveller.network = this;
         travellers.put(traveller.data, traveller);
@@ -93,6 +101,7 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
             new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
     }
 
+    @Override
     public void unregisterTraveller(WorldNetworkTraveller traveller, boolean immediate, boolean send) {
         if (!immediate) {
             travellersToUnregister.add(traveller);
@@ -108,12 +117,33 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
         }
     }
 
+    @Override
+    public void unregisterTraveller(NBTTagCompound data, boolean immediate, boolean send) {
+        if (!travellers.containsKey(data))
+            return;
+
+        WorldNetworkTraveller traveller = travellers.get(data);
+        if (!immediate) {
+            travellersToUnregister.add(travellers.get(data));
+        } else {
+            travellers.remove(data);
+            if (traveller.currentNode != null && getNodeFromPosition(traveller.currentNode.position) != null)
+                getNodeFromPosition(traveller.currentNode.position).unregisterTraveller(traveller);
+        }
+
+        if (send) {
+            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, traveller).sendToAllWatching(world, traveller.currentNode.position);
+        }
+    }
+
+    @Override
     public World getWorld() {
         return world;
     }
 
-    public WorldNetwork merge(WorldNetwork otherNetwork) {
-        int expectedSize = networkNodes.size() + otherNetwork.networkNodes.size();
+    @Override
+    public WorldNetwork merge(IWorldNetwork otherNetwork) {
+        int expectedSize = networkNodes.size() + otherNetwork.getNodes().size();
         TeckleMod.LOG.debug("Performing a merge of " + this + " and " + otherNetwork
                 + "\n Expecting a node count of " + expectedSize);
         WorldNetwork mergedNetwork = new WorldNetwork(this.world, null);
@@ -123,7 +153,8 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
         return mergedNetwork;
     }
 
-    public void transferNetworkData(WorldNetwork to) {
+    @Override
+    public void transferNetworkData(IWorldNetwork to) {
         List<WorldNetworkTraveller> travellersToMove = new ArrayList<>();
         travellersToMove.addAll(this.travellers.values());
         this.travellers.clear();
@@ -140,9 +171,7 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
         }
     }
 
-    /**
-     * Checks that the network's connections are fully valid, performs a split if needed.
-     */
+    @Override
     public void validateNetwork() {
         // Perform flood fill to validate all nodes are connected. Choose an arbitrary node to current from.
 
@@ -192,7 +221,12 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
         }
     }
 
-    public List<WorldNetworkNode> fillFromPos(BlockPos startAt, HashMap<BlockPos, WorldNetworkNode> knownNodes) {
+    @Override
+    public UUID getNetworkID() {
+        return this.id;
+    }
+
+    private List<WorldNetworkNode> fillFromPos(BlockPos startAt, HashMap<BlockPos, WorldNetworkNode> knownNodes) {
         List<BlockPos> posStack = new ArrayList<>();
         List<BlockPos> iteratedPositions = new ArrayList<>();
         List<WorldNetworkNode> out = new ArrayList<>();
@@ -294,7 +328,7 @@ public class WorldNetwork implements ITickable, INBTSerializable<NBTTagCompound>
 
             if (world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileNetworkMember) {
                 TileNetworkMember networkMember = (TileNetworkMember) world.getTileEntity(pos);
-                WorldNetworkNode node = networkMember.getNode(this);
+                WorldNetworkNode node = networkMember.createNode(this);
                 networkMember.setNode(node);
                 registerNode(node);
             }

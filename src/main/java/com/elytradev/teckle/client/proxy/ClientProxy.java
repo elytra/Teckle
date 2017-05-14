@@ -1,6 +1,5 @@
 package com.elytradev.teckle.client.proxy;
 
-import com.elytradev.notconcreteipromise.resgen.ConcreteResourcePack;
 import com.elytradev.teckle.client.render.model.ModelItemTube;
 import com.elytradev.teckle.client.render.tile.TileTubeRenderer;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
@@ -10,6 +9,7 @@ import com.elytradev.teckle.common.block.BlockItemTube;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.tile.TileItemTube;
+import com.elytradev.teckle.repack.concrete.resgen.ConcreteResourcePack;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;

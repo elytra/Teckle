@@ -1,8 +1,8 @@
 package com.elytradev.teckle.common.tile;
 
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
@@ -59,12 +59,12 @@ public class TileItemTube extends TileNetworkMember {
     }
 
     @Override
-    public void networkReloaded(WorldNetwork network) {
-        List<TileEntity> neighbourNodes = TeckleObjects.blockItemTube.getPotentialNeighbourNodes(network.world, pos, network, true);
+    public void networkReloaded(IWorldNetwork network) {
+        List<TileEntity> neighbourNodes = TeckleObjects.blockItemTube.getPotentialNeighbourNodes(network.getWorld(), pos, network, true);
         for (TileEntity neighbourNode : neighbourNodes) {
             if (neighbourNode instanceof TileNetworkMember) {
                 if (!getNode().network.isNodePresent(neighbourNode.getPos())) {
-                    getNode().network.registerNode(((TileNetworkMember) neighbourNode).getNode(getNode().network));
+                    getNode().network.registerNode(((TileNetworkMember) neighbourNode).createNode(getNode().network));
                     ((TileNetworkMember) neighbourNode).setNode(getNode().network.getNodeFromPosition(neighbourNode.getPos()));
                 }
             } else {
@@ -77,7 +77,7 @@ public class TileItemTube extends TileNetworkMember {
     }
 
     @Override
-    public WorldNetworkNode getNode(WorldNetwork network) {
+    public WorldNetworkNode createNode(IWorldNetwork network) {
         return new WorldNetworkNode(network, pos);
     }
 

@@ -1,6 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork.item;
 
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEndpoint;
 import net.minecraft.item.ItemStack;
@@ -17,7 +17,7 @@ import net.minecraftforge.items.IItemHandler;
  */
 public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
 
-    public ItemNetworkEndpoint(WorldNetwork network, BlockPos pos) {
+    public ItemNetworkEndpoint(IWorldNetwork network, BlockPos pos) {
         super(network, pos);
     }
 

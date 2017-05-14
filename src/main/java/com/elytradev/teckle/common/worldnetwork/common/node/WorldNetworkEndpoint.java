@@ -1,6 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork.common.node;
 
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -10,7 +10,7 @@ import net.minecraft.util.math.BlockPos;
  */
 public abstract class WorldNetworkEndpoint extends WorldNetworkNode {
 
-    public WorldNetworkEndpoint(WorldNetwork network, BlockPos position) {
+    public WorldNetworkEndpoint(IWorldNetwork network, BlockPos position) {
         super(network, position);
     }
 

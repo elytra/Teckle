@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork.common;
 
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.network.TravellerDataMessage;
 import com.elytradev.teckle.common.network.TravellerMoveMessage;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEndpoint;
@@ -25,7 +26,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
     public static final WorldNetworkTraveller NONE = new WorldNetworkTraveller(new NBTTagCompound());
 
-    public WorldNetwork network;
+    public IWorldNetwork network;
     public WorldNetworkNode previousNode = WorldNetworkNode.NONE, currentNode = WorldNetworkNode.NONE, nextNode = WorldNetworkNode.NONE;
     public WorldNetworkPath activePath;
     public float travelledDistance = 0F;
@@ -267,11 +268,11 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                 currentNode.unregisterTraveller(this);
                 genPath(true);
                 currentNode.registerTraveller(this);
-                new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, currentNode.position);
+                new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.getWorld(), currentNode.position);
                 travelledDistance = 0.5F;
                 TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
                 message.travelledDistance = travelledDistance;
-                message.sendToAllWatching(this.network.world, this.currentNode.position);
+                message.sendToAllWatching(this.network.getWorld(), this.currentNode.position);
             } else if (travelledDistance >= 1F) {
                 if (nextNode.isEndpoint()) {
                     if (travelledDistance >= 1.25F) {
@@ -280,7 +281,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this, injectionFace);
 
                         if (!didInject) {
-                            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, this.currentNode.position);
+                            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.getWorld(), this.currentNode.position);
                             triedEndpoints.add(new Tuple<>(nextNode, injectionFace));
                             previousNode.unregisterTraveller(this);
                             currentNode.unregisterTraveller(this);
@@ -289,7 +290,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                             travelledDistance = -1.15F;
                             TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
                             message.travelledDistance = travelledDistance;
-                            message.sendToAllWatching(this.network.world, this.currentNode.position);
+                            message.sendToAllWatching(this.network.getWorld(), this.currentNode.position);
                         } else {
                             network.unregisterTraveller(this, false, true);
                         }
@@ -299,11 +300,11 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         previousNode.unregisterTraveller(this);
                         currentNode.unregisterTraveller(this);
                         genPath(true);
-                        new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.world, currentNode.position);
+                        new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.getWorld(), currentNode.position);
                         travelledDistance = -1.1F;
                         TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
                         message.travelledDistance = travelledDistance;
-                        message.sendToAllWatching(this.network.world, this.currentNode.position);
+                        message.sendToAllWatching(this.network.getWorld(), this.currentNode.position);
                     }
                 } else {
                     travelledDistance = 0;
@@ -383,12 +384,12 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         return traveller;
     }
 
-    public void moveTo(WorldNetwork newNetwork) {
-        WorldNetwork prevNetwork = this.network;
+    public void moveTo(IWorldNetwork newNetwork) {
+        IWorldNetwork prevNetwork = this.network;
 
         prevNetwork.unregisterTraveller(this, true, false);
         this.network = newNetwork;
-        this.network.travellers.put(data, this);
+        this.network.registerTraveller(this, false);
 
         if (!network.isNodePresent(entryPoint.position)) {
             //TODO: Handle purgatory.
@@ -397,7 +398,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         if (!network.isNodePresent(currentNode.position)) {
             dropActions.values().forEach(action -> action.dropToWorld(WorldNetworkTraveller.this));
             prevNetwork.unregisterTraveller(this, true, false);
-            this.network.travellers.remove(data);
+            this.network.unregisterTraveller(data, true, false);
             return;
         } else {
         }
@@ -407,6 +408,6 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         }
 
         TravellerMoveMessage message = new TravellerMoveMessage(this);
-        message.sendToAllWatching(network.world, currentNode.position);
+        message.sendToAllWatching(network.getWorld(), currentNode.position);
     }
 }

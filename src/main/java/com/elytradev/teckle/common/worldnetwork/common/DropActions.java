@@ -16,7 +16,7 @@ public class DropActions {
     public static final HashMap<String, IDropAction> ACTIONS = new HashMap<>();
 
     public static Tuple<String, IDropAction> ITEMSTACK = new Tuple<>("itemstack", traveller -> {
-        World world = traveller.network.world;
+        World world = traveller.network.getWorld();
         BlockPos nodePos = traveller.currentNode.position;
         world.spawnEntity(new EntityItem(world, nodePos.getX(), nodePos.getY(),
                 nodePos.getZ(), new ItemStack(traveller.data.getCompoundTag("stack"))));

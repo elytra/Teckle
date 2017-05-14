@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.block;
 
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
@@ -80,12 +81,12 @@ public class BlockFilter extends BlockContainer {
         if (worldIn.isRemote)
             return;
 
-        List<WorldNetwork> neighbourNetworks = TeckleObjects.blockItemTube.getNeighbourNetworks(worldIn, pos);
+        List<IWorldNetwork> neighbourNetworks = TeckleObjects.blockItemTube.getNeighbourNetworks(worldIn, pos);
         TileFilter filter = ((TileFilter) worldIn.getTileEntity(pos));
         if (!neighbourNetworks.isEmpty()) {
             // Found neighbour networks, join the network or merge.
-            WorldNetwork network = neighbourNetworks.remove(0);
-            filter.setNode(filter.getNode(network));
+            IWorldNetwork network = neighbourNetworks.remove(0);
+            filter.setNode(filter.createNode(network));
             network.registerNode(filter.getNode());
 
             while (!neighbourNetworks.isEmpty()) {
@@ -95,7 +96,7 @@ public class BlockFilter extends BlockContainer {
             // No neighbours, make a new network.
             WorldNetwork network = new WorldNetwork(worldIn, null);
             WorldNetworkDatabase.registerWorldNetwork(network);
-            WorldNetworkNode node = filter.getNode(network);
+            WorldNetworkNode node = filter.createNode(network);
             network.registerNode(node);
             if (worldIn.getTileEntity(pos) != null) {
                 filter.setNode(node);
@@ -107,7 +108,7 @@ public class BlockFilter extends BlockContainer {
         for (TileEntity neighbourNode : neighbourNodes) {
             if (neighbourNode instanceof TileNetworkMember) {
                 if (!filter.getNode().network.isNodePresent(neighbourNode.getPos())) {
-                    filter.getNode().network.registerNode(((TileNetworkMember) neighbourNode).getNode(filter.getNode().network));
+                    filter.getNode().network.registerNode(((TileNetworkMember) neighbourNode).createNode(filter.getNode().network));
                     ((TileNetworkMember) neighbourNode).setNode(filter.getNode().network.getNodeFromPosition(neighbourNode.getPos()));
                 }
             } else {
@@ -135,11 +136,11 @@ public class BlockFilter extends BlockContainer {
 
         if (filter.getNode() == null || filter.getNode().network == null) {
             World world = filter.getWorld();
-            List<WorldNetwork> neighbourNetworks = TeckleObjects.blockItemTube.getNeighbourNetworks(world, pos);
+            List<IWorldNetwork> neighbourNetworks = TeckleObjects.blockItemTube.getNeighbourNetworks(world, pos);
             if (!neighbourNetworks.isEmpty()) {
                 // Found neighbour networks, join the network or merge.
-                WorldNetwork network = neighbourNetworks.remove(0);
-                filter.setNode(filter.getNode(network));
+                IWorldNetwork network = neighbourNetworks.remove(0);
+                filter.setNode(filter.createNode(network));
                 network.registerNode(filter.getNode());
 
                 while (!neighbourNetworks.isEmpty()) {
@@ -149,7 +150,7 @@ public class BlockFilter extends BlockContainer {
                 // No neighbours, make a new network.
                 WorldNetwork network = new WorldNetwork(world, null);
                 WorldNetworkDatabase.registerWorldNetwork(network);
-                WorldNetworkNode node = filter.getNode(network);
+                WorldNetworkNode node = filter.createNode(network);
                 network.registerNode(node);
                 if (world.getTileEntity(pos) != null) {
                     filter.setNode(node);
@@ -169,7 +170,7 @@ public class BlockFilter extends BlockContainer {
                         filter.getNode().network.registerNode(nodeEndpoint);
                     } else if (neighbourTile instanceof TileNetworkMember) {
                         if (((TileNetworkMember) neighbourTile).isValidNetworkMember(filter.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
-                            filter.getNode().network.registerNode(((TileNetworkMember) neighbourTile).getNode(filter.getNode().network));
+                            filter.getNode().network.registerNode(((TileNetworkMember) neighbourTile).createNode(filter.getNode().network));
                         }
                     }
                 }

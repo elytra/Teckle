@@ -1,8 +1,8 @@
 package com.elytradev.teckle.common.item;
 
-import com.elytradev.notconcreteipromise.resgen.EnumResourceType;
-import com.elytradev.notconcreteipromise.resgen.IResourceHolder;
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.repack.concrete.resgen.EnumResourceType;
+import com.elytradev.teckle.repack.concrete.resgen.IResourceHolder;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

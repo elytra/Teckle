@@ -1,4 +1,4 @@
-package com.elytradev.notconcreteipromise.resgen;
+package com.elytradev.teckle.repack.concrete.resgen;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;

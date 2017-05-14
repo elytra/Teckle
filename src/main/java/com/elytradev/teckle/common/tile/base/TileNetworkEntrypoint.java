@@ -1,6 +1,6 @@
 package com.elytradev.teckle.common.tile.base;
 
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.util.EnumFacing;
 
@@ -11,7 +11,7 @@ public abstract class TileNetworkEntrypoint extends TileNetworkMember {
     public abstract EnumFacing getFacing();
 
     @Override
-    public boolean isValidNetworkMember(WorldNetwork network, EnumFacing side) {
+    public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
         return side.equals(getFacing());
     }
 

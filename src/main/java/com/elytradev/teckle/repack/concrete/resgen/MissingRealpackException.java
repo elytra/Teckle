@@ -1,4 +1,4 @@
-package com.elytradev.notconcreteipromise.resgen;
+package com.elytradev.teckle.repack.concrete.resgen;
 
 /**
  * Thrown when a ConcreteResourcePack can't find a valid fallback pack to use.

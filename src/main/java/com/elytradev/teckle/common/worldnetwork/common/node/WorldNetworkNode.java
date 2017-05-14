@@ -1,7 +1,7 @@
 package com.elytradev.teckle.common.worldnetwork.common.node;
 
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -18,7 +18,7 @@ public class WorldNetworkNode {
     // Empty node, used instead of null because fuck NPEs.
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
     public BlockPos position;
-    public WorldNetwork network;
+    public IWorldNetwork network;
     private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
 
     protected WorldNetworkNode() {
@@ -26,15 +26,15 @@ public class WorldNetworkNode {
         this.network = null;
     }
 
-    public WorldNetworkNode(WorldNetwork network, BlockPos position) {
+    public WorldNetworkNode(IWorldNetwork network, BlockPos position) {
         this.position = position;
         this.network = network;
     }
 
     public boolean isLoaded() {
-        if (network == null || network.world == null)
+        if (network == null || network.getWorld() == null)
             return false;
-        return network.world.isBlockLoaded(position);
+        return network.getWorld().isBlockLoaded(position);
     }
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
@@ -46,8 +46,8 @@ public class WorldNetworkNode {
     }
 
     public TileNetworkMember getTile() {
-        if (network.world.getTileEntity(position) instanceof TileNetworkMember)
-            return (TileNetworkMember) network.world.getTileEntity(position);
+        if (network.getWorld().getTileEntity(position) instanceof TileNetworkMember)
+            return (TileNetworkMember) network.getWorld().getTileEntity(position);
         else return null;
     }
 

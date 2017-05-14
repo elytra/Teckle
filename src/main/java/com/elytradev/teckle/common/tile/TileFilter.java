@@ -3,6 +3,7 @@ package com.elytradev.teckle.common.tile;
 import com.elytradev.probe.api.IProbeData;
 import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.probe.api.impl.ProbeData;
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.client.gui.GuiFilter;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
@@ -13,7 +14,6 @@ import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -81,7 +81,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable, IEle
     }
 
     @Override
-    public WorldNetworkNode getNode(WorldNetwork network) {
+    public WorldNetworkNode createNode(IWorldNetwork network) {
         return new WorldNetworkEntryPoint(network, pos, getFacing());
     }
 
@@ -461,7 +461,7 @@ public class TileFilter extends TileNetworkEntrypoint implements ITickable, IEle
                 return;
 
             if (TeckleMod.INDEV)
-                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", node.network.id.toString().toUpperCase().replaceAll("-", ""))));
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", node.network.getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
 
             List<ItemStack> stacks = new ArrayList<>();
             for (int i = 0; i < buffer.getSlots(); i++) {

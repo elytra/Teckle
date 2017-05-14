@@ -44,9 +44,9 @@ public class ClientTravellerManager {
                     TileEntity tileAtCur = clientWorld.getTileEntity(traveller.currentNode.position);
 
                     if (tileAtPrev != null && tileAtPrev instanceof TileNetworkMember)
-                        ((TileNetworkMember) tileAtPrev).removeTraveller(traveller.data);
+                        ((TileNetworkMember) tileAtPrev).removeClientTraveller(traveller.data);
                     if (tileAtCur != null && tileAtCur instanceof TileNetworkMember)
-                        ((TileNetworkMember) tileAtCur).addTraveller(traveller);
+                        ((TileNetworkMember) tileAtCur).addClientTraveller(traveller);
                 }
             }
 
@@ -62,9 +62,9 @@ public class ClientTravellerManager {
             TileEntity tileAtCur = traveller.currentNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.currentNode.position) : null;
 
             if (tileAtPrev instanceof TileNetworkMember)
-                ((TileNetworkMember) tileAtPrev).removeTraveller(traveller.data);
+                ((TileNetworkMember) tileAtPrev).removeClientTraveller(traveller.data);
             if (tileAtCur instanceof TileNetworkMember)
-                ((TileNetworkMember) tileAtCur).removeTraveller(traveller.data);
+                ((TileNetworkMember) tileAtCur).removeClientTraveller(traveller.data);
         }
         travellersToRemove.forEach(tagCompound -> travellers.remove(tagCompound));
         travellersToRemove.clear();
@@ -90,9 +90,9 @@ public class ClientTravellerManager {
             TileEntity tileAtCur = traveller.currentNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.currentNode.position) : null;
 
             if (tileAtPrev instanceof TileNetworkMember)
-                ((TileNetworkMember) tileAtPrev).removeTraveller(traveller.data);
+                ((TileNetworkMember) tileAtPrev).removeClientTraveller(traveller.data);
             if (tileAtCur instanceof TileNetworkMember)
-                ((TileNetworkMember) tileAtCur).removeTraveller(traveller.data);
+                ((TileNetworkMember) tileAtCur).removeClientTraveller(traveller.data);
         }
     }
 
@@ -101,7 +101,7 @@ public class ClientTravellerManager {
         TileEntity tileAtCur = clientWorld.getTileEntity(value.currentNode.position);
 
         if (tileAtCur != null && tileAtCur instanceof TileNetworkMember)
-            ((TileNetworkMember) tileAtCur).addTraveller(value);
+            ((TileNetworkMember) tileAtCur).addClientTraveller(value);
 
         return travellers.put(key.getUniqueId("id"), value);
     }

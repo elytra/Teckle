@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.worldnetwork.common;
 
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.TeckleMod;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
@@ -24,7 +25,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
     protected static final String NAME = "tecklenetworks";
     public static HashMap<Integer, WorldNetworkDatabase> NETWORKDBS = new HashMap<>();
     public World world;
-    protected HashMap<UUID, WorldNetwork> networks = new HashMap<>();
+    protected HashMap<UUID, IWorldNetwork> networks = new HashMap<>();
 
     public WorldNetworkDatabase(World world) {
         super(NAME);
@@ -102,9 +103,9 @@ public class WorldNetworkDatabase extends WorldSavedData {
     public NBTTagCompound saveDatabase(NBTTagCompound databaseCompound) {
         databaseCompound.setInteger("world", world.provider.getDimension());
         databaseCompound.setInteger("nCount", networks.size());
-        List<WorldNetwork> worldNetworks = networks.values().stream().collect(Collectors.toList());
-        for (int i = 0; i < worldNetworks.size(); i++) {
-            databaseCompound.setTag("n" + i, worldNetworks.get(i).serializeNBT());
+        List<IWorldNetwork> iWorldNetworks = networks.values().stream().collect(Collectors.toList());
+        for (int i = 0; i < iWorldNetworks.size(); i++) {
+            databaseCompound.setTag("n" + i, iWorldNetworks.get(i).serializeNBT());
         }
 
         return databaseCompound;
@@ -123,7 +124,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
         }
     }
 
-    public WorldNetwork get(UUID id) {
+    public IWorldNetwork get(UUID id) {
         if (!networks.containsKey(id))
             networks.put(id, new WorldNetwork(world, id));
 
@@ -134,22 +135,22 @@ public class WorldNetworkDatabase extends WorldSavedData {
         if (networks.isEmpty() || !world.equals(e.world))
             return;
 
-        List<WorldNetwork> emptyNetworks = new ArrayList<>();
-        for (WorldNetwork network : networks.values()) {
-            if (network.networkNodes.isEmpty()) {
+        List<IWorldNetwork> emptyNetworks = new ArrayList<>();
+        for (IWorldNetwork network : networks.values()) {
+            if (network.getNodes().isEmpty()) {
                 if (!emptyNetworks.contains(network))
                     emptyNetworks.add(network);
 
                 TeckleMod.LOG.debug("Found empty network " + network);
                 continue;
             }
-            if (e.world.equals(network.world))
+            if (e.world.equals(network.getWorld()))
                 network.update();
         }
 
-        for (WorldNetwork emptyNetwork : emptyNetworks) {
+        for (IWorldNetwork emptyNetwork : emptyNetworks) {
             TeckleMod.LOG.debug("Removing empty network " + emptyNetwork);
-            networks.remove(emptyNetwork.id);
+            networks.remove(emptyNetwork.getNetworkID());
         }
 
         if (!this.isDirty())

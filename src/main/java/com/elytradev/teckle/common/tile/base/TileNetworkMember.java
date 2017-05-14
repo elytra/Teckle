@@ -4,9 +4,9 @@ import com.elytradev.probe.api.IProbeData;
 import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.probe.api.UnitDictionary;
 import com.elytradev.probe.api.impl.ProbeData;
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.TeckleMod;
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableList;
@@ -40,11 +40,11 @@ public abstract class TileNetworkMember extends TileEntity {
             travellers = new HashMap<>();
     }
 
-    public void addTraveller(DummyNetworkTraveller traveller) {
+    public void addClientTraveller(DummyNetworkTraveller traveller) {
         travellers.put(traveller.data, traveller);
     }
 
-    public void removeTraveller(NBTTagCompound data) {
+    public void removeClientTraveller(NBTTagCompound data) {
         travellers.remove(data);
     }
 
@@ -53,7 +53,7 @@ public abstract class TileNetworkMember extends TileEntity {
      *
      * @param network
      */
-    public void networkReloaded(WorldNetwork network) {
+    public void networkReloaded(IWorldNetwork network) {
     }
 
     /**
@@ -63,7 +63,7 @@ public abstract class TileNetworkMember extends TileEntity {
      * @param side    the direction of the neighbour that wants to add
      * @return true if can be added false otherwise.
      */
-    public boolean isValidNetworkMember(WorldNetwork network, EnumFacing side) {
+    public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
         return true;
     }
 
@@ -75,7 +75,7 @@ public abstract class TileNetworkMember extends TileEntity {
         this.node = node;
     }
 
-    public abstract WorldNetworkNode getNode(WorldNetwork network);
+    public abstract WorldNetworkNode createNode(IWorldNetwork network);
 
     public abstract boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from);
 
@@ -107,7 +107,7 @@ public abstract class TileNetworkMember extends TileEntity {
                 return;
 
             if (TeckleMod.INDEV)
-                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", node.network.id.toString().toUpperCase().replaceAll("-", ""))));
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", node.network.getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
 
             if (!TileNetworkMember.this.getNode().getTravellers().isEmpty()) {
                 data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.traveller.data")));
