@@ -1,6 +1,7 @@
 package com.elytradev.teckle.common;
 
 import com.elytradev.probe.api.IProbeDataProvider;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.common.crafting.AlloyRecipes;
 import com.elytradev.teckle.common.network.TeckleNetworking;
@@ -21,9 +22,6 @@ import org.apache.logging.log4j.Logger;
 import static com.elytradev.teckle.common.TeckleMod.MOD_ID;
 import static com.elytradev.teckle.common.TeckleMod.MOD_NAME;
 
-/**
- * Created by darkevilmac on 3/25/2017.
- */
 @Mod(modid = MOD_ID, name = MOD_NAME)
 public class TeckleMod {
 
@@ -49,6 +47,7 @@ public class TeckleMod {
         LOG = e.getModLog();
         OBJECTS.preInit(e);
         CapabilityWorldNetworkTile.register();
+        CapabilityWorldNetworkAssistant.register();
         TeckleNetworking.setupNetwork();
         DropActions.init();
         GameRegistry.registerWorldGenerator(new NikoliteOreGenerator(), 2);
