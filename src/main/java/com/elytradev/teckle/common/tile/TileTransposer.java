@@ -4,10 +4,11 @@ import com.elytradev.probe.api.IProbeData;
 import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.NetworkTileTransporter;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockTransposer;
-import com.elytradev.teckle.common.tile.base.TileNetworkEntrypoint;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
@@ -37,38 +38,87 @@ import java.util.Objects;
 /**
  * Created by darkevilmac on 4/21/2017.
  */
-public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
+public class TileTransposer extends TileNetworkMember implements ITickable {
 
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
+    private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
+
+        @Override
+        public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
+            return side.equals(getFacing());
+        }
+
+
+        @Override
+        public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
+            return new WorldNetworkEntryPoint(network, pos, getFacing());
+        }
+
+        @Override
+        public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
+            if (traveller.getEntryPoint().position.equals(TileTransposer.this.pos))
+                return true;
+
+            return from.equals(getFacing().getOpposite());
+        }
+
+        @Override
+        public boolean canConnectTo(EnumFacing side) {
+            return side.equals(getFacing()) || side.getOpposite().equals(getFacing());
+        }
+
+
+        @Override
+        public EnumFacing getFacing() {
+            if (world != null) {
+                IBlockState thisState = world.getBlockState(pos);
+                if (thisState.getBlock().equals(TeckleObjects.blockTransposer)) {
+                    return thisState.getValue(BlockTransposer.FACING);
+                }
+            }
+
+            return EnumFacing.DOWN;
+        }
+
+        @Override
+        public void acceptReturn(WorldNetworkTraveller traveller, EnumFacing side) {
+            if (!traveller.data.hasKey("stack"))
+                return; // wtf am I supposed to do with this???
+
+            ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
+            EnumFacing facing = getFacing();
+            BlockPos sourcePos = pos.offset(facing);
+
+            // Try and put it back where we found it.
+            if (side.equals(getFacing())) {
+                if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
+                    TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
+                    if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
+                        IItemHandler itemHandler = pushTo.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
+                        for (int slot = 0; slot < itemHandler.getSlots() && !stack.isEmpty(); slot++) {
+                            stack = itemHandler.insertItem(slot, stack, false);
+                        }
+                    }
+                }
+            }
+            if (!stack.isEmpty()) {
+                // Spawn into the world I guess.
+                ItemStack remaining = stack.copy();
+                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
+                    remaining = buffer.insertItem(i, remaining, false);
+                }
+
+                if (!remaining.isEmpty()) {
+                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
+                }
+            }
+        }
+    };
+
     private int cooldown = 0;
 
-    @Override
-    public WorldNetworkNode createNode(IWorldNetwork network) {
-        return new WorldNetworkEntryPoint(network, pos, getFacing());
-    }
-
-    @Override
-    public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        if (traveller.getEntryPoint().position.equals(this.pos))
-            return true;
-
-        return from.equals(getFacing().getOpposite());
-    }
-
-    @Override
-    public boolean canConnectTo(EnumFacing side) {
-        return side.equals(getFacing()) || side.getOpposite().equals(getFacing());
-    }
-
-    @Override
-    public WorldNetworkNode getNode() {
-        return super.getNode();
-    }
-
-    @Override
-    public void setNode(WorldNetworkNode node) {
-        super.setNode(node);
-    }
 
     /**
      * Attempt to push to our network, by pulling from our input position.
@@ -81,14 +131,14 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
         if (cooldown > 0)
             return result;
 
-        TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(getFacing()));
-        boolean destinationIsAir = world.isAirBlock(pos.offset(getFacing()));
-        boolean hasInsertionDestination = potentialInsertionTile != null && ((getNode() != null && getNode().network != null)
-                || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing().getOpposite())));
+        TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(networkTile.getFacing()));
+        boolean destinationIsAir = world.isAirBlock(pos.offset(networkTile.getFacing()));
+        boolean hasInsertionDestination = potentialInsertionTile != null && ((networkTile.getNode() != null && networkTile.getNode().network != null)
+                || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getFacing().getOpposite())));
 
         if (!world.isRemote && (hasInsertionDestination || destinationIsAir)) {
-            WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) getNode().network.getNodeFromPosition(pos);
-            EnumFacing facing = getFacing();
+            WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().network.getNodeFromPosition(pos);
+            EnumFacing facing = networkTile.getFacing();
 
             ItemStack extractionData = getExtractionData(facing);
 
@@ -110,7 +160,7 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
     }
 
     private boolean ejectExtractionData(EnumFacing facing, ItemStack extractionData) {
-        EnumFacing enumfacing = getFacing();
+        EnumFacing enumfacing = networkTile.getFacing();
         double x = pos.getX() + 0.7D * (double) enumfacing.getFrontOffsetX();
         double y = pos.getY() + 0.7D * (double) enumfacing.getFrontOffsetY();
         double z = pos.getZ() + 0.7D * (double) enumfacing.getFrontOffsetZ();
@@ -135,7 +185,7 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
 
     private boolean attemptInsertion(TileEntity potentialInsertionTile, WorldNetworkEntryPoint thisNode, ItemStack extractionData) {
         boolean result = false;
-        if (getNode() != null && getNode().network != null && potentialInsertionTile instanceof TileNetworkMember) {
+        if (networkTile.getNode() != null && networkTile.getNode().network != null && potentialInsertionTile instanceof TileNetworkMember) {
             NBTTagCompound tagCompound = new NBTTagCompound();
             tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
             WorldNetworkTraveller traveller = thisNode.addTraveller(tagCompound);
@@ -155,8 +205,8 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
                 }
             }
         } else {
-            IItemHandler insertHandler = world.getTileEntity(pos.offset(getFacing())).getCapability
-                    (CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing().getOpposite());
+            IItemHandler insertHandler = world.getTileEntity(pos.offset(networkTile.getFacing())).getCapability
+                    (CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getFacing().getOpposite());
 
             ItemStack remaining = extractionData;
             for (int i = 0; i < insertHandler.getSlots() && !remaining.isEmpty(); i++) {
@@ -209,54 +259,6 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
     }
 
     @Override
-    public EnumFacing getFacing() {
-        if (world != null) {
-            IBlockState thisState = world.getBlockState(pos);
-            if (thisState.getBlock().equals(TeckleObjects.blockTransposer)) {
-                return thisState.getValue(BlockTransposer.FACING);
-            }
-        }
-
-        return EnumFacing.DOWN;
-    }
-
-    @Override
-    public void acceptReturn(WorldNetworkTraveller traveller, EnumFacing side) {
-        if (!traveller.data.hasKey("stack"))
-            return; // wtf am I supposed to do with this???
-
-        ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
-        EnumFacing facing = getFacing();
-        BlockPos sourcePos = pos.offset(facing);
-
-        // Try and put it back where we found it.
-        if (side.equals(getFacing())) {
-            if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
-                TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
-                if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
-                    IItemHandler itemHandler = pushTo.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
-                    for (int slot = 0; slot < itemHandler.getSlots() && !stack.isEmpty(); slot++) {
-                        stack = itemHandler.insertItem(slot, stack, false);
-                    }
-                }
-            }
-        }
-        if (!stack.isEmpty()) {
-            // Spawn into the world I guess.
-            ItemStack remaining = stack.copy();
-            for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                remaining = buffer.insertItem(i, remaining, false);
-            }
-
-            if (!remaining.isEmpty()) {
-                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
-            }
-        }
-    }
-
-    @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
         if (oldState.getBlock() == newSate.getBlock()) {
             return false;
@@ -267,20 +269,20 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
 
     @Override
     public void update() {
-        if (world.isRemote || getNode() == null || getNode().network == null)
+        if (world.isRemote || networkTile.getNode() == null || networkTile.getNode().network == null)
             return;
 
         if (cooldown > 0) {
             cooldown--;
         }
 
-        boolean canFitItems = world.isAirBlock(pos.add(getFacing().getOpposite().getDirectionVec())) && canFitItemsInBuffer();
+        boolean canFitItems = world.isAirBlock(pos.add(networkTile.getFacing().getOpposite().getDirectionVec())) && canFitItemsInBuffer();
         if (canFitItems) {
-            List<EntityItem> itemsToPickup = getItemsInBlockPos(pos.add(getFacing().getOpposite().getDirectionVec()));
-            if (world.getBlockState(pos).getValue(BlockTransposer.TRIGGERED) && world.isAirBlock(pos.add(getFacing().getOpposite().getDirectionVec())
-                    .add(getFacing().getOpposite().getDirectionVec())))
-                itemsToPickup.addAll(getItemsInBlockPos(pos.add(getFacing().getOpposite().getDirectionVec())
-                        .add(getFacing().getOpposite().getDirectionVec())));
+            List<EntityItem> itemsToPickup = getItemsInBlockPos(pos.add(networkTile.getFacing().getOpposite().getDirectionVec()));
+            if (world.getBlockState(pos).getValue(BlockTransposer.TRIGGERED) && world.isAirBlock(pos.add(networkTile.getFacing().getOpposite().getDirectionVec())
+                    .add(networkTile.getFacing().getOpposite().getDirectionVec())))
+                itemsToPickup.addAll(getItemsInBlockPos(pos.add(networkTile.getFacing().getOpposite().getDirectionVec())
+                        .add(networkTile.getFacing().getOpposite().getDirectionVec())));
 
             for (EntityItem entityItem : itemsToPickup) {
                 ItemStack entityStack = entityItem.getEntityItem().copy();
@@ -336,26 +338,27 @@ public class TileTransposer extends TileNetworkEntrypoint implements ITickable {
             if (probeCapability == null) probeCapability = new TileTransposer.ProbeCapability();
             return (T) probeCapability;
         }
+        if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY)
+            return (T) networkTile;
         return super.getCapability(capability, facing);
     }
 
     @Override
     public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
         if (capability == null) return false;
-        if (capability == TeckleMod.PROBE_CAPABILITY) {
-            return true;
-        }
+        if (capability == TeckleMod.PROBE_CAPABILITY) return true;
+        if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) return true;
         return super.hasCapability(capability, facing);
     }
 
     private final class ProbeCapability implements IProbeDataProvider {
         @Override
         public void provideProbeData(List<IProbeData> data) {
-            if (node == null)
+            if (networkTile.node == null)
                 return;
 
             if (TeckleMod.INDEV)
-                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", node.network.getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", networkTile.node.network.getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
 
             List<ItemStack> stacks = new ArrayList<>();
             for (int i = 0; i < buffer.getSlots(); i++) {

@@ -1,6 +1,9 @@
 package com.elytradev.teckle.common.tile;
 
 import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.NetworkTileTransporter;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
@@ -12,6 +15,7 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -19,6 +23,44 @@ import java.util.List;
 public class TileItemTube extends TileNetworkMember {
 
     private EnumDyeColor colour = null;
+    private NetworkTileTransporter networkTile = new NetworkTileTransporter(WorldNetworkNode.class) {
+        @Override
+        public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
+            return true;
+        }
+
+        @Override
+        public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
+            if (TileItemTube.this.colour != null && traveller.data.hasKey("colour")) {
+                return TileItemTube.this.colour.equals(EnumDyeColor.byMetadata(traveller.data.getInteger("colour")));
+            }
+
+            return true;
+        }
+
+        @Override
+        public boolean canConnectTo(EnumFacing side) {
+            return true;
+        }
+
+        @Override
+        public void networkReloaded(IWorldNetwork network) {
+            List<TileEntity> neighbourNodes = TeckleObjects.blockItemTube.getPotentialNeighbourNodes(network.getWorld(), pos, network, true);
+            for (TileEntity neighbourTile : neighbourNodes) {
+                if (neighbourTile.hasCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, null)) {
+                    IWorldNetworkTile neighbourNetworkTile = neighbourTile.getCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, null);
+                    if (!getNode().network.isNodePresent(neighbourTile.getPos())) {
+                        getNode().network.registerNode(neighbourNetworkTile.createNode(getNode().network, neighbourTile.getPos()));
+                        neighbourNetworkTile.setNode(getNode().network.getNodeFromPosition(neighbourTile.getPos()));
+                    }
+                } else {
+                    if (!getNode().network.isNodePresent(neighbourTile.getPos())) {
+                        getNode().network.registerNode(new ItemNetworkEndpoint(getNode().network, neighbourTile.getPos()));
+                    }
+                }
+            }
+        }
+    };
 
     public EnumDyeColor getColour() {
         return colour;
@@ -58,42 +100,6 @@ public class TileItemTube extends TileNetworkMember {
         super.updateContainingBlockInfo();
     }
 
-    @Override
-    public void networkReloaded(IWorldNetwork network) {
-        List<TileEntity> neighbourNodes = TeckleObjects.blockItemTube.getPotentialNeighbourNodes(network.getWorld(), pos, network, true);
-        for (TileEntity neighbourNode : neighbourNodes) {
-            if (neighbourNode instanceof TileNetworkMember) {
-                if (!getNode().network.isNodePresent(neighbourNode.getPos())) {
-                    getNode().network.registerNode(((TileNetworkMember) neighbourNode).createNode(getNode().network));
-                    ((TileNetworkMember) neighbourNode).setNode(getNode().network.getNodeFromPosition(neighbourNode.getPos()));
-                }
-            } else {
-                if (!getNode().network.isNodePresent(neighbourNode.getPos())) {
-                    getNode().network.registerNode(new ItemNetworkEndpoint(getNode().network, neighbourNode.getPos()));
-                }
-            }
-        }
-
-    }
-
-    @Override
-    public WorldNetworkNode createNode(IWorldNetwork network) {
-        return new WorldNetworkNode(network, pos);
-    }
-
-    @Override
-    public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        if (this.colour != null && traveller.data.hasKey("colour")) {
-            return this.colour.equals(EnumDyeColor.byMetadata(traveller.data.getInteger("colour")));
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean canConnectTo(EnumFacing side) {
-        return true;
-    }
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
@@ -111,4 +117,25 @@ public class TileItemTube extends TileNetworkMember {
         return super.writeToNBT(compound);
     }
 
+    @Override
+    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+        if (capability == null) {
+            return null;
+        } else if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
+            return (T) networkTile;
+        }
+
+        return super.getCapability(capability, facing);
+    }
+
+    @Override
+    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+        if (capability == null) {
+            return false;
+        } else if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
+            return true;
+        }
+
+        return super.hasCapability(capability, facing);
+    }
 }

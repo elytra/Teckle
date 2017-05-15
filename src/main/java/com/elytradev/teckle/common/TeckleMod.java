@@ -1,6 +1,7 @@
 package com.elytradev.teckle.common;
 
 import com.elytradev.probe.api.IProbeDataProvider;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.common.crafting.AlloyRecipes;
 import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
@@ -47,6 +48,7 @@ public class TeckleMod {
         PROXY.registerHandlers();
         LOG = e.getModLog();
         OBJECTS.preInit(e);
+        CapabilityWorldNetworkTile.register();
         TeckleNetworking.setupNetwork();
         DropActions.init();
         GameRegistry.registerWorldGenerator(new NikoliteOreGenerator(), 2);

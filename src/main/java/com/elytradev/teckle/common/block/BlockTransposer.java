@@ -1,9 +1,10 @@
 package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.TileTransposer;
-import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
@@ -78,13 +79,14 @@ public class BlockTransposer extends BlockContainer {
         if (worldIn.isRemote)
             return;
 
+        TileEntity tileAtPos = worldIn.getTileEntity(pos);
         List<IWorldNetwork> neighbourNetworks = TeckleObjects.blockItemTube.getNeighbourNetworks(worldIn, pos);
-        TileTransposer transposer = ((TileTransposer) worldIn.getTileEntity(pos));
+        IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getTileNetworked(tileAtPos);
         if (!neighbourNetworks.isEmpty()) {
             // Found neighbour networks, join the network or merge.
             IWorldNetwork network = neighbourNetworks.remove(0);
-            transposer.setNode(transposer.createNode(network));
-            network.registerNode(transposer.getNode());
+            thisNetworkTile.setNode(thisNetworkTile.createNode(network, pos));
+            network.registerNode(thisNetworkTile.getNode());
 
             while (!neighbourNetworks.isEmpty()) {
                 network = network.merge(neighbourNetworks.remove(0));
@@ -93,34 +95,28 @@ public class BlockTransposer extends BlockContainer {
             // No neighbours, make a new network.
             WorldNetwork network = new WorldNetwork(worldIn, null);
             WorldNetworkDatabase.registerWorldNetwork(network);
-            WorldNetworkNode node = transposer.createNode(network);
+            WorldNetworkNode node = thisNetworkTile.createNode(network, pos);
             network.registerNode(node);
             if (worldIn.getTileEntity(pos) != null) {
-                transposer.setNode(node);
+                thisNetworkTile.setNode(node);
             }
         }
 
         //Check for possible neighbour nodes...
-        List<TileEntity> neighbourNodes = TeckleObjects.blockItemTube.getPotentialNeighbourNodes(worldIn, pos, transposer.getNode().network, false);
-        for (TileEntity neighbourNode : neighbourNodes) {
-            if (neighbourNode instanceof TileNetworkMember) {
-                if (!transposer.getNode().network.isNodePresent(neighbourNode.getPos())) {
-                    transposer.getNode().network.registerNode(((TileNetworkMember) neighbourNode).createNode(transposer.getNode().network));
-                    ((TileNetworkMember) neighbourNode).setNode(transposer.getNode().network.getNodeFromPosition(neighbourNode.getPos()));
+        List<TileEntity> neighbourNodes = TeckleObjects.blockItemTube.getPotentialNeighbourNodes(worldIn, pos, thisNetworkTile.getNode().network, false);
+        for (TileEntity neighbourTile : neighbourNodes) {
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(worldIn, neighbourTile.getPos())) {
+                IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(worldIn, neighbourTile.getPos());
+                if (!thisNetworkTile.getNode().network.isNodePresent(neighbourTile.getPos())) {
+                    thisNetworkTile.getNode().network.registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().network, neighbourTile.getPos()));
+                    neighbourNetworkTile.setNode(thisNetworkTile.getNode().network.getNodeFromPosition(neighbourTile.getPos()));
                 }
             } else {
-                if (!transposer.getNode().network.isNodePresent(neighbourNode.getPos())) {
-                    transposer.getNode().network.registerNode(new ItemNetworkEndpoint(transposer.getNode().network, neighbourNode.getPos()));
+                if (!thisNetworkTile.getNode().network.isNodePresent(neighbourTile.getPos())) {
+                    thisNetworkTile.getNode().network.registerNode(new ItemNetworkEndpoint(thisNetworkTile.getNode().network, neighbourTile.getPos()));
                 }
             }
         }
-    }
-
-    @Override
-    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
-        EnumFacing direction = EnumFacing.getDirectionFromEntityLiving(pos, placer);
-
-        return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer, hand).withProperty(FACING, direction).withProperty(TRIGGERED, false);
     }
 
     @Override
@@ -131,14 +127,15 @@ public class BlockTransposer extends BlockContainer {
         if (transposer.getWorld().isRemote)
             return;
 
-        if (transposer.getNode() == null || transposer.getNode().network == null) {
+        IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(blockAccess, pos);
+        if (thisNetworkTile.getNode() == null || thisNetworkTile.getNode().network == null) {
             World world = transposer.getWorld();
             List<IWorldNetwork> neighbourNetworks = TeckleObjects.blockItemTube.getNeighbourNetworks(world, pos);
             if (!neighbourNetworks.isEmpty()) {
                 // Found neighbour networks, join the network or merge.
                 IWorldNetwork network = neighbourNetworks.remove(0);
-                transposer.setNode(transposer.createNode(network));
-                network.registerNode(transposer.getNode());
+                thisNetworkTile.setNode(thisNetworkTile.createNode(network, pos));
+                network.registerNode(thisNetworkTile.getNode());
 
                 while (!neighbourNetworks.isEmpty()) {
                     network = network.merge(neighbourNetworks.remove(0));
@@ -147,15 +144,15 @@ public class BlockTransposer extends BlockContainer {
                 // No neighbours, make a new network.
                 WorldNetwork network = new WorldNetwork(world, null);
                 WorldNetworkDatabase.registerWorldNetwork(network);
-                WorldNetworkNode node = transposer.createNode(network);
+                WorldNetworkNode node = thisNetworkTile.createNode(network, pos);
                 network.registerNode(node);
                 if (world.getTileEntity(pos) != null) {
-                    transposer.setNode(node);
+                    thisNetworkTile.setNode(node);
                 }
             }
         }
 
-        if (!transposer.getNode().network.isNodePresent(neighbor)) {
+        if (!thisNetworkTile.getNode().network.isNodePresent(neighbor)) {
             // Node not already present, check if we can add to network.
             if (blockAccess.getTileEntity(neighbor) != null) {
                 TileEntity neighbourTile = blockAccess.getTileEntity(neighbor);
@@ -163,32 +160,41 @@ public class BlockTransposer extends BlockContainer {
                     if (neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
                             WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
                         // Create endpoint and put it in the network.
-                        ItemNetworkEndpoint nodeEndpoint = new ItemNetworkEndpoint(transposer.getNode().network, neighbor);
-                        transposer.getNode().network.registerNode(nodeEndpoint);
-                    } else if (neighbourTile instanceof TileNetworkMember) {
-                        if (((TileNetworkMember) neighbourTile).isValidNetworkMember(transposer.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
-                            transposer.getNode().network.registerNode(((TileNetworkMember) neighbourTile).createNode(transposer.getNode().network));
+                        ItemNetworkEndpoint nodeEndpoint = new ItemNetworkEndpoint(thisNetworkTile.getNode().network, neighbor);
+                        thisNetworkTile.getNode().network.registerNode(nodeEndpoint);
+                    } else if (CapabilityWorldNetworkTile.isPositionNetworkTile(blockAccess, neighbourTile.getPos())) {
+                        IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(blockAccess, neighbourTile.getPos());
+                        if (neighbourNetworkTile.isValidNetworkMember(thisNetworkTile.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
+                            thisNetworkTile.getNode().network.registerNode((neighbourNetworkTile.createNode(thisNetworkTile.getNode().network, neighbourTile.getPos())));
                         }
                     }
                 }
             }
         } else {
             if (blockAccess.getTileEntity(neighbor) == null) {
-                transposer.getNode().network.unregisterNodeAtPosition(neighbor);
+                thisNetworkTile.getNode().network.unregisterNodeAtPosition(neighbor);
             } else {
                 TileEntity neighbourTile = blockAccess.getTileEntity(neighbor);
                 if (!neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
                         WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
-                    if (neighbourTile instanceof TileNetworkMember) {
-                        if (((TileNetworkMember) neighbourTile).isValidNetworkMember(transposer.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
+                    if (CapabilityWorldNetworkTile.isPositionNetworkTile(blockAccess, neighbourTile.getPos())) {
+                        IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(blockAccess, neighbourTile.getPos());
+                        if (neighbourNetworkTile.isValidNetworkMember(thisNetworkTile.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
                             return;
                         }
                     }
 
-                    transposer.getNode().network.unregisterNodeAtPosition(neighbor);
+                    thisNetworkTile.getNode().network.unregisterNodeAtPosition(neighbor);
                 }
             }
         }
+    }
+
+    @Override
+    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
+        EnumFacing direction = EnumFacing.getDirectionFromEntityLiving(pos, placer);
+
+        return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer, hand).withProperty(FACING, direction).withProperty(TRIGGERED, false);
     }
 
     @Override
@@ -218,13 +224,14 @@ public class BlockTransposer extends BlockContainer {
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
         TileEntity tileAtPos = worldIn.getTileEntity(pos);
-        if (tileAtPos != null) {
-            TileNetworkMember networkMember = (TileNetworkMember) tileAtPos;
-            if (networkMember.getNode() == null)
+        if (tileAtPos != null && CapabilityWorldNetworkTile.isPositionNetworkTile(worldIn, pos)) {
+            IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(worldIn, pos);
+
+            if (neighbourNetworkTile.getNode() == null)
                 return;
-            networkMember.getNode().network.unregisterNodeAtPosition(pos);
-            networkMember.getNode().network.validateNetwork();
-            networkMember.setNode(null);
+            neighbourNetworkTile.getNode().network.unregisterNodeAtPosition(pos);
+            neighbourNetworkTile.getNode().network.validateNetwork();
+            neighbourNetworkTile.setNode(null);
 
             if (tileAtPos instanceof TileTransposer) {
                 TileTransposer transposer = (TileTransposer) worldIn.getTileEntity(pos);

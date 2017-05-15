@@ -1,9 +1,10 @@
 package com.elytradev.teckle.common.worldnetwork.common;
 
 import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.network.TravellerDataMessage;
-import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
@@ -16,9 +17,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Created by darkevilmac on 3/25/2017.
- */
 public class WorldNetwork implements IWorldNetwork {
 
     public UUID id;
@@ -326,10 +324,10 @@ public class WorldNetwork implements IWorldNetwork {
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             BlockPos pos = BlockPos.fromLong(compound.getLong("n" + i));
 
-            if (world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileNetworkMember) {
-                TileNetworkMember networkMember = (TileNetworkMember) world.getTileEntity(pos);
-                WorldNetworkNode node = networkMember.createNode(this);
-                networkMember.setNode(node);
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos)) {
+                IWorldNetworkTile networkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos);
+                WorldNetworkNode node = networkTile.createNode(this, pos);
+                networkTile.setNode(node);
                 registerNode(node);
             }
         }
@@ -343,7 +341,8 @@ public class WorldNetwork implements IWorldNetwork {
         }
 
         for (WorldNetworkNode networkNode : Lists.newArrayList(networkNodes.values())) {
-            ((TileNetworkMember) world.getTileEntity(networkNode.position)).networkReloaded(this);
+            if (networkNode.getNetworkTile() != null)
+                networkNode.getNetworkTile().networkReloaded(this);
         }
 
         for (WorldNetworkTraveller traveller : deserializedTravellers) {

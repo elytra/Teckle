@@ -1,15 +1,20 @@
-package com.elytradev.teckle.api;
+package com.elytradev.teckle.api.capabilities;
 
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+
+import javax.annotation.Nullable;
 
 /**
  * Used to store node data on tiles.
  */
-public interface IWorldNetworkNode {
+public interface IWorldNetworkTile {
 
     /**
      * Add client traveller, used for rendering.
@@ -24,6 +29,13 @@ public interface IWorldNetworkNode {
      * @param data
      */
     void removeClientTraveller(NBTTagCompound data);
+
+    /**
+     * Get an immutable map of all the client travellers on this tile.
+     *
+     * @return a map of travellers.
+     */
+    ImmutableMap<NBTTagCompound, DummyNetworkTraveller> getClientTravellers();
 
     /**
      * Called after a network has been loaded from WorldSavedData, allows adding of missing nodes for endpoints and such.
@@ -62,7 +74,7 @@ public interface IWorldNetworkNode {
      * @param network the network to create the node for.
      * @return a new node.
      */
-    WorldNetworkNode createNode(IWorldNetwork network);
+    WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos);
 
     /**
      * Check if the tile can accept a given traveller, DO NOT forward to your node.
@@ -92,5 +104,8 @@ public interface IWorldNetworkNode {
     default void acceptReturn(WorldNetworkTraveller traveller, EnumFacing side) {
     }
 
-
+    @Nullable
+    default EnumFacing getFacing() {
+        return null;
+    }
 }

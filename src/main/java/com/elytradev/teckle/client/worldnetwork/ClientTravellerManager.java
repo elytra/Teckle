@@ -1,6 +1,6 @@
 package com.elytradev.teckle.client.worldnetwork;
 
-import com.elytradev.teckle.common.tile.base.TileNetworkMember;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
@@ -43,10 +43,10 @@ public class ClientTravellerManager {
                     TileEntity tileAtPrev = clientWorld.getTileEntity(traveller.previousNode.position);
                     TileEntity tileAtCur = clientWorld.getTileEntity(traveller.currentNode.position);
 
-                    if (tileAtPrev != null && tileAtPrev instanceof TileNetworkMember)
-                        ((TileNetworkMember) tileAtPrev).removeClientTraveller(traveller.data);
-                    if (tileAtCur != null && tileAtCur instanceof TileNetworkMember)
-                        ((TileNetworkMember) tileAtCur).addClientTraveller(traveller);
+                    if (CapabilityWorldNetworkTile.isTileNetworked(tileAtPrev))
+                        CapabilityWorldNetworkTile.getTileNetworked(tileAtPrev).removeClientTraveller(traveller.data);
+                    if (CapabilityWorldNetworkTile.isTileNetworked(tileAtCur))
+                        CapabilityWorldNetworkTile.getTileNetworked(tileAtCur).addClientTraveller(traveller);
                 }
             }
 
@@ -61,10 +61,10 @@ public class ClientTravellerManager {
             TileEntity tileAtPrev = traveller.previousNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.previousNode.position) : null;
             TileEntity tileAtCur = traveller.currentNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.currentNode.position) : null;
 
-            if (tileAtPrev instanceof TileNetworkMember)
-                ((TileNetworkMember) tileAtPrev).removeClientTraveller(traveller.data);
-            if (tileAtCur instanceof TileNetworkMember)
-                ((TileNetworkMember) tileAtCur).removeClientTraveller(traveller.data);
+            if (CapabilityWorldNetworkTile.isTileNetworked(tileAtPrev))
+                CapabilityWorldNetworkTile.getTileNetworked(tileAtPrev).removeClientTraveller(traveller.data);
+            if (CapabilityWorldNetworkTile.isTileNetworked(tileAtCur))
+                CapabilityWorldNetworkTile.getTileNetworked(tileAtCur).removeClientTraveller(traveller.data);
         }
         travellersToRemove.forEach(tagCompound -> travellers.remove(tagCompound));
         travellersToRemove.clear();
@@ -89,10 +89,10 @@ public class ClientTravellerManager {
             TileEntity tileAtPrev = traveller.previousNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.previousNode.position) : null;
             TileEntity tileAtCur = traveller.currentNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.currentNode.position) : null;
 
-            if (tileAtPrev instanceof TileNetworkMember)
-                ((TileNetworkMember) tileAtPrev).removeClientTraveller(traveller.data);
-            if (tileAtCur instanceof TileNetworkMember)
-                ((TileNetworkMember) tileAtCur).removeClientTraveller(traveller.data);
+            if (CapabilityWorldNetworkTile.isTileNetworked(tileAtPrev))
+                CapabilityWorldNetworkTile.getTileNetworked(tileAtPrev).removeClientTraveller(traveller.data);
+            if (CapabilityWorldNetworkTile.isTileNetworked(tileAtCur))
+                CapabilityWorldNetworkTile.getTileNetworked(tileAtCur).removeClientTraveller(traveller.data);
         }
     }
 
@@ -100,8 +100,8 @@ public class ClientTravellerManager {
         World clientWorld = Minecraft.getMinecraft().world;
         TileEntity tileAtCur = clientWorld.getTileEntity(value.currentNode.position);
 
-        if (tileAtCur != null && tileAtCur instanceof TileNetworkMember)
-            ((TileNetworkMember) tileAtCur).addClientTraveller(value);
+        if (CapabilityWorldNetworkTile.isTileNetworked(tileAtCur))
+            CapabilityWorldNetworkTile.getTileNetworked(tileAtCur).addClientTraveller(value);
 
         return travellers.put(key.getUniqueId("id"), value);
     }

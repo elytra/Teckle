@@ -1,7 +1,8 @@
 package com.elytradev.teckle.common.worldnetwork.common.node;
 
 import com.elytradev.teckle.api.IWorldNetwork;
-import com.elytradev.teckle.common.tile.base.TileNetworkMember;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -21,7 +22,7 @@ public class WorldNetworkNode {
     public IWorldNetwork network;
     private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
 
-    protected WorldNetworkNode() {
+    public WorldNetworkNode() {
         this.position = new BlockPos(0, -1, 0);
         this.network = null;
     }
@@ -39,15 +40,15 @@ public class WorldNetworkNode {
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
         if (isLoaded()) {
-            if (getTile() != null)
-                return getTile().canAcceptTraveller(traveller, from);
+            if (getNetworkTile() != null)
+                return getNetworkTile().canAcceptTraveller(traveller, from);
         }
         return isLoaded();
     }
 
-    public TileNetworkMember getTile() {
-        if (network.getWorld().getTileEntity(position) instanceof TileNetworkMember)
-            return (TileNetworkMember) network.getWorld().getTileEntity(position);
+    public IWorldNetworkTile getNetworkTile() {
+        if (CapabilityWorldNetworkTile.isPositionNetworkTile(network.getWorld(), position))
+            return CapabilityWorldNetworkTile.getNetworkTileAtPosition(network.getWorld(), position);
         else return null;
     }
 

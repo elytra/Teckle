@@ -1,6 +1,6 @@
 {
-    "parent": "teckle:block/filter",
-    "textures": {
-        "side": "teckle:blocks/filterSideOff"
-    }
+  "parent": "teckle:block/filter",
+  "textures": {
+    "side": "teckle:blocks/filterSideOff"
+  }
 }

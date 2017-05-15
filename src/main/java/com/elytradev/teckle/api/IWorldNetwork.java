@@ -39,7 +39,6 @@ public interface IWorldNetwork extends INBTSerializable<NBTTagCompound>, ITickab
 
     void unregisterTraveller(NBTTagCompound traveller, boolean immediate, boolean send);
 
-
     World getWorld();
 
     WorldNetwork merge(IWorldNetwork otherNetwork);

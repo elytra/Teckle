@@ -1,11 +1,12 @@
 package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.block.property.UnlistedBool;
 import com.elytradev.teckle.common.block.property.UnlistedEnum;
 import com.elytradev.teckle.common.tile.TileItemTube;
-import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
@@ -171,12 +172,12 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
             return;
 
         List<IWorldNetwork> neighbourNetworks = getNeighbourNetworks(worldIn, pos);
-        TileItemTube tube = ((TileItemTube) worldIn.getTileEntity(pos));
+        IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(worldIn, pos);
         if (!neighbourNetworks.isEmpty()) {
             // Found neighbour networks, join the network or merge.
             IWorldNetwork network = neighbourNetworks.remove(0);
-            tube.setNode(tube.createNode(network));
-            network.registerNode(tube.getNode());
+            thisNetworkTile.setNode(thisNetworkTile.createNode(network, pos));
+            network.registerNode(thisNetworkTile.getNode());
 
             while (!neighbourNetworks.isEmpty()) {
                 network = network.merge(neighbourNetworks.remove(0));
@@ -185,68 +186,73 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
             // No neighbours, make a new network.
             WorldNetwork network = new WorldNetwork(worldIn, null);
             WorldNetworkDatabase.registerWorldNetwork(network);
-            WorldNetworkNode node = tube.createNode(network);
+            WorldNetworkNode node = thisNetworkTile.createNode(network, pos);
             network.registerNode(node);
             if (worldIn.getTileEntity(pos) != null) {
-                tube.setNode(node);
+                thisNetworkTile.setNode(node);
             }
         }
 
         //Check for possible neighbour nodes...
-        List<TileEntity> neighbourNodes = getPotentialNeighbourNodes(worldIn, pos, tube.getNode().network, false);
-        for (TileEntity neighbourNode : neighbourNodes) {
-            if (neighbourNode instanceof TileNetworkMember) {
-                if (!tube.getNode().network.isNodePresent(neighbourNode.getPos())) {
-                    tube.getNode().network.registerNode(((TileNetworkMember) neighbourNode).createNode(tube.getNode().network));
-                    ((TileNetworkMember) neighbourNode).setNode(tube.getNode().network.getNodeFromPosition(neighbourNode.getPos()));
+        List<TileEntity> neighbourNodes = getPotentialNeighbourNodes(worldIn, pos, thisNetworkTile.getNode().network, false);
+        for (TileEntity neighbourTile : neighbourNodes) {
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(worldIn, neighbourTile.getPos())) {
+                if (!thisNetworkTile.getNode().network.isNodePresent(neighbourTile.getPos())) {
+                    IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(worldIn, neighbourTile.getPos());
+                    thisNetworkTile.getNode().network.registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().network, neighbourTile.getPos()));
+                    neighbourNetworkTile.setNode(thisNetworkTile.getNode().network.getNodeFromPosition(neighbourTile.getPos()));
                 }
             } else {
-                if (!tube.getNode().network.isNodePresent(neighbourNode.getPos())) {
-                    tube.getNode().network.registerNode(new ItemNetworkEndpoint(tube.getNode().network, neighbourNode.getPos()));
+                if (!thisNetworkTile.getNode().network.isNodePresent(neighbourTile.getPos())) {
+                    thisNetworkTile.getNode().network.registerNode(new ItemNetworkEndpoint(thisNetworkTile.getNode().network, neighbourTile.getPos()));
                 }
             }
         }
     }
 
     @Override
-    public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
-        super.onNeighborChange(world, pos, neighbor);
+    public void onNeighborChange(IBlockAccess blockAccess, BlockPos pos, BlockPos neighbor) {
+        super.onNeighborChange(blockAccess, pos, neighbor);
         // Handles cleanup of endpoint nodes, or nodes that should have been removed but weren't.
-        TileItemTube tube = (TileItemTube) world.getTileEntity(pos);
+        TileItemTube tube = (TileItemTube) blockAccess.getTileEntity(pos);
         if (tube.getWorld().isRemote)
             return;
 
-        if (!tube.getNode().network.isNodePresent(neighbor)) {
+        World world = tube.getWorld();
+        IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(tube.getWorld(), pos);
+        if (!thisNetworkTile.getNode().network.isNodePresent(neighbor)) {
             // Node not already present, check if we can add to network.
-            if (world.getTileEntity(neighbor) != null) {
-                TileEntity neighbourTile = world.getTileEntity(neighbor);
+            if (blockAccess.getTileEntity(neighbor) != null) {
+                TileEntity neighbourTile = blockAccess.getTileEntity(neighbor);
                 if (neighbourTile != null) {
                     if (neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
                             WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
                         // Create endpoint and put it in the network.
-                        ItemNetworkEndpoint nodeEndpoint = new ItemNetworkEndpoint(tube.getNode().network, neighbor);
-                        tube.getNode().network.registerNode(nodeEndpoint);
-                    } else if (neighbourTile instanceof TileNetworkMember) {
-                        if (((TileNetworkMember) neighbourTile).isValidNetworkMember(tube.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
-                            tube.getNode().network.registerNode(((TileNetworkMember) neighbourTile).createNode(tube.getNode().network));
+                        ItemNetworkEndpoint nodeEndpoint = new ItemNetworkEndpoint(thisNetworkTile.getNode().network, neighbor);
+                        thisNetworkTile.getNode().network.registerNode(nodeEndpoint);
+                    } else if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos())) {
+                        IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos());
+                        if (neighbourNetworkTile.isValidNetworkMember(thisNetworkTile.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
+                            thisNetworkTile.getNode().network.registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().network, neighbourTile.getPos()));
                         }
                     }
                 }
             }
         } else {
-            if (world.getTileEntity(neighbor) == null) {
-                tube.getNode().network.unregisterNodeAtPosition(neighbor);
+            if (blockAccess.getTileEntity(neighbor) == null) {
+                thisNetworkTile.getNode().network.unregisterNodeAtPosition(neighbor);
             } else {
-                TileEntity neighbourTile = world.getTileEntity(neighbor);
+                TileEntity neighbourTile = blockAccess.getTileEntity(neighbor);
                 if (!neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
                         WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
-                    if (neighbourTile instanceof TileNetworkMember) {
-                        if (((TileNetworkMember) neighbourTile).isValidNetworkMember(tube.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
+                    if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos())) {
+                        IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos());
+                        if (neighbourNetworkTile.isValidNetworkMember(thisNetworkTile.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
                             return;
                         }
                     }
 
-                    tube.getNode().network.unregisterNodeAtPosition(neighbor);
+                    thisNetworkTile.getNode().network.unregisterNodeAtPosition(neighbor);
                 }
             }
         }
@@ -257,10 +263,11 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
         TileEntity tileAtPos = worldIn.getTileEntity(pos);
         if (tileAtPos != null) {
             TileItemTube tube = (TileItemTube) tileAtPos;
-            if (tube.getNode() != null) {
-                tube.getNode().network.unregisterNodeAtPosition(pos);
-                tube.getNode().network.validateNetwork();
-                tube.setNode(null);
+            IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(tube.getWorld(), pos);
+            if (thisNetworkTile.getNode() != null) {
+                thisNetworkTile.getNode().network.unregisterNodeAtPosition(pos);
+                thisNetworkTile.getNode().network.validateNetwork();
+                thisNetworkTile.setNode(null);
             }
         }
 
@@ -277,8 +284,7 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
     /**
      * Check if the block has any potential connections to tubes around it.
      *
-     * @param world the world to check within
-     * @param pos   the position of the tube to check around
+     * @param pos the position of the tube to check around
      * @return a list of neighbouring networks.
      */
     protected List<IWorldNetwork> getNeighbourNetworks(IBlockAccess world, BlockPos pos) {
@@ -286,10 +292,10 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
         for (EnumFacing facing : EnumFacing.VALUES) {
             BlockPos neighbourPos = pos.add(facing.getDirectionVec());
 
-            if (world.getTileEntity(neighbourPos) instanceof TileNetworkMember) {
-                TileNetworkMember neighbourNetworkMember = (TileNetworkMember) world.getTileEntity(neighbourPos);
-                if (!neighbourNetworks.contains(neighbourNetworkMember.getNode().network))
-                    neighbourNetworks.add(neighbourNetworkMember.getNode().network);
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourPos)) {
+                IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourPos);
+                if (!neighbourNetworks.contains(neighbourNetworkTile.getNode().network))
+                    neighbourNetworks.add(neighbourNetworkTile.getNode().network);
             }
         }
 
@@ -306,7 +312,7 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
             TileEntity neighbourTile = world.getTileEntity(neighbourPos);
 
             if (neighbourTile != null) {
-                if (neighbourTile instanceof TileNetworkMember && ((TileNetworkMember) neighbourTile).isValidNetworkMember(network, facing.getOpposite())) {
+                if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourPos)) {
                     neighbourNodes.add(neighbourTile);
                 } else if (neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
                         WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
@@ -340,7 +346,8 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
         if (tileAtPos != null) {
             if (tileAtPos.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)) {
                 canConnect = true;
-            } else if (tileAtPos instanceof TileNetworkMember && ((TileNetworkMember) tileAtPos).canConnectTo(side)) {
+            }
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos)) {
                 canConnect = true;
             }
         }
