@@ -18,6 +18,7 @@ package com.elytradev.teckle.api.capabilities.impl;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
@@ -41,9 +42,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Created by darkevilmac on 5/15/17.
+ * The network assistant for the teckle item worldnetwork.
  */
-public class ItemNetworkAssistant implements com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant<ItemStack> {
+public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
 
     /**
      * Check if the block has any potential connections to tubes around it.

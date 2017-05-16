@@ -47,7 +47,6 @@ public class CapabilityWorldNetworkAssistantHolder {
 
                     @Override
                     public void readNBT(Capability<IWorldNetworkAssistantHolder> capability, IWorldNetworkAssistantHolder instance, EnumFacing side, NBTBase base) {
-
                     }
                 },
                 WorldNetworkAssistantHolder::new);

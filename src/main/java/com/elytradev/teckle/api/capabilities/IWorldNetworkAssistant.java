@@ -31,14 +31,36 @@ import net.minecraftforge.common.util.INBTSerializable;
  */
 public interface IWorldNetworkAssistant<T extends INBTSerializable> {
 
+    /**
+     * To be called on the placement of a node that is used in a worldnetwork.
+     * Handles registration in the appropriate network.
+     *
+     * @param world the world the node is in.
+     * @param pos   the in world position of the node.
+     */
     void onNodePlaced(World world, BlockPos pos);
 
+    /**
+     * To be called when the neighbour of a node changes.
+     * Handles (de)registration in the appropriate network.
+     *
+     * @param world        the world the node is in.
+     * @param pos          the in world position of the node.
+     * @param neighbourPos the position of the change.
+     */
     void onNodeNeighbourChange(World world, BlockPos pos, BlockPos neighbourPos);
 
+    /**
+     * To be called when a node is destroyed.
+     * De-registers the node and performs network validations if needed.
+     *
+     * @param world the world the node is in.
+     * @param pos   the in world position of the node.
+     */
     void onNodeBroken(World world, BlockPos pos);
 
     /**
-     * Inserts the given data into a network
+     * Inserts the given data into the appropriate network.
      *
      * @param entryPoint the entry point node this data is coming from.
      * @param insertInto the position we're trying to insert into.

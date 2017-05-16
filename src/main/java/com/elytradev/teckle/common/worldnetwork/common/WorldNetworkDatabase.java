@@ -18,6 +18,7 @@ package com.elytradev.teckle.common.worldnetwork.common;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.TeckleMod;
+import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSavedData;
@@ -34,14 +35,15 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Created by darkevilmac on 4/3/2017.
+ * Stores and serializes worldnetworks and their data.
  */
 public class WorldNetworkDatabase extends WorldSavedData {
 
-    protected static final String NAME = "tecklenetworks";
-    public static HashMap<Integer, WorldNetworkDatabase> NETWORKDBS = new HashMap<>();
-    public World world;
-    protected HashMap<UUID, IWorldNetwork> networks = new HashMap<>();
+    private static final String NAME = "tecklenetworks";
+    private static HashMap<Integer, WorldNetworkDatabase> DIMENSION_DATABASES = Maps.newHashMap();
+
+    private HashMap<UUID, IWorldNetwork> networks = Maps.newHashMap();
+    private World world;
 
     public WorldNetworkDatabase(World world) {
         super(NAME);
@@ -57,55 +59,78 @@ public class WorldNetworkDatabase extends WorldSavedData {
     }
 
     @SubscribeEvent
-    public static void onWorldLoad(WorldEvent.Load e) {
+    private static void onWorldLoad(WorldEvent.Load e) {
         if (e.getWorld().isRemote)
             return;
 
-        if (!NETWORKDBS.containsKey(e.getWorld().provider.getDimension())) {
-            NETWORKDBS.put(e.getWorld().provider.getDimension(), new WorldNetworkDatabase(e.getWorld()));
-            getDatabase(e.getWorld());
+        if (!DIMENSION_DATABASES.containsKey(e.getWorld().provider.getDimension())) {
+            DIMENSION_DATABASES.put(e.getWorld().provider.getDimension(), new WorldNetworkDatabase(e.getWorld()));
+            getSavedDatabase(e.getWorld());
         }
     }
 
     @SubscribeEvent
-    public static void onWorldUnload(WorldEvent.Unload e) {
+    private static void onWorldUnload(WorldEvent.Unload e) {
         if (e.getWorld().isRemote)
             return;
 
-        if (NETWORKDBS.containsKey(e.getWorld().provider.getDimension())) {
-            NETWORKDBS.remove(e.getWorld().provider.getDimension());
+        if (DIMENSION_DATABASES.containsKey(e.getWorld().provider.getDimension())) {
+            DIMENSION_DATABASES.remove(e.getWorld().provider.getDimension());
         }
     }
 
     @SubscribeEvent
-    public static void onTickEvent(TickEvent.WorldTickEvent e) {
+    private static void onTickEvent(TickEvent.WorldTickEvent e) {
         if (e.phase.equals(TickEvent.Phase.START) || e.side.isClient())
             return;
 
-        NETWORKDBS.get(e.world.provider.getDimension()).onTick(e);
+        DIMENSION_DATABASES.get(e.world.provider.getDimension()).onTick(e);
     }
 
-    public static void registerWorldNetwork(WorldNetwork network) {
-        if (!NETWORKDBS.containsKey(network.world.provider.getDimension())) {
-            NETWORKDBS.put(network.world.provider.getDimension(), new WorldNetworkDatabase(network.world));
-            getDatabase(network.world);
+    /**
+     * Register a worldnetwork with the appropriate database.
+     *
+     * @param network the network to register.
+     */
+    public static void registerWorldNetwork(IWorldNetwork network) {
+        if (!DIMENSION_DATABASES.containsKey(network.getWorld().provider.getDimension())) {
+            DIMENSION_DATABASES.put(network.getWorld().provider.getDimension(), new WorldNetworkDatabase(network.getWorld()));
+            getSavedDatabase(network.getWorld());
         }
-        NETWORKDBS.get(network.world.provider.getDimension()).networks.put(network.id, network);
+        DIMENSION_DATABASES.get(network.getWorld().provider.getDimension()).networks.put(network.getNetworkID(), network);
     }
 
+    /**
+     * Get the worldnetworkdatabase for the given dimension id.
+     *
+     * @param world the world to get for.
+     * @return the database retrieved.
+     */
     public static WorldNetworkDatabase getNetworkDB(@Nonnull World world) {
         return getNetworkDB(world.provider.getDimension());
     }
 
+    /**
+     * Get the worldnetworkdatabase for the given dimension id.
+     *
+     * @param dim the dimension id of the database to retrieve.
+     * @return the database retrieved.
+     */
     public static WorldNetworkDatabase getNetworkDB(Integer dim) {
-        if (!NETWORKDBS.containsKey(dim)) {
-            NETWORKDBS.put(dim, new WorldNetworkDatabase(DimensionManager.getWorld(dim)));
-            getDatabase(DimensionManager.getWorld(dim));
+        if (!DIMENSION_DATABASES.containsKey(dim)) {
+            DIMENSION_DATABASES.put(dim, new WorldNetworkDatabase(DimensionManager.getWorld(dim)));
+            getSavedDatabase(DimensionManager.getWorld(dim));
         }
-        return NETWORKDBS.get(dim);
+        return DIMENSION_DATABASES.get(dim);
     }
 
-    private static WorldNetworkDatabase getDatabase(World world) {
+    /**
+     * Generate or load a worldnetworkdatabase for the given world.
+     *
+     * @param world the world to get for.
+     * @return the database retrieved.
+     */
+    private static WorldNetworkDatabase getSavedDatabase(@Nonnull World world) {
         WorldNetworkDatabase data = (WorldNetworkDatabase) world.getPerWorldStorage().getOrLoadData(WorldNetworkDatabase.class, "tecklenetworks");
         if (data == null) {
             data = WorldNetworkDatabase.getNetworkDB(world);
@@ -116,7 +141,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
         return data;
     }
 
-    public NBTTagCompound saveDatabase(NBTTagCompound databaseCompound) {
+    private NBTTagCompound saveDatabase(NBTTagCompound databaseCompound) {
         databaseCompound.setInteger("world", world.provider.getDimension());
         databaseCompound.setInteger("nCount", networks.size());
         List<IWorldNetwork> iWorldNetworks = networks.values().stream().collect(Collectors.toList());
@@ -127,12 +152,13 @@ public class WorldNetworkDatabase extends WorldSavedData {
         return databaseCompound;
     }
 
-    public void loadDatabase(NBTTagCompound compound) {
+
+    private void loadDatabase(NBTTagCompound compound) {
         if (world == null) {
             world = DimensionManager.getWorld(compound.getInteger("world"));
         }
 
-        WorldNetworkDatabase.NETWORKDBS.put(world.provider.getDimension(), this);
+        WorldNetworkDatabase.DIMENSION_DATABASES.put(world.provider.getDimension(), this);
 
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             WorldNetwork network = new WorldNetwork(world, null, true);
@@ -140,6 +166,11 @@ public class WorldNetworkDatabase extends WorldSavedData {
         }
     }
 
+    /**
+     * Get a worldnetwork with the given id.
+     *
+     * @return the associated worldnetwork, or a new network if one was not already present.
+     */
     public IWorldNetwork get(UUID id) {
         if (!networks.containsKey(id))
             networks.put(id, new WorldNetwork(world, id));
@@ -147,7 +178,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
         return networks.get(id);
     }
 
-    public void onTick(TickEvent.WorldTickEvent e) {
+    private void onTick(TickEvent.WorldTickEvent e) {
         if (networks.isEmpty() || !world.equals(e.world))
             return;
 
@@ -171,6 +202,10 @@ public class WorldNetworkDatabase extends WorldSavedData {
 
         if (!this.isDirty())
             this.markDirty();
+    }
+
+    public World getWorld() {
+        return world;
     }
 
     @Override
