@@ -16,11 +16,35 @@
 
 package com.elytradev.teckle.api.capabilities;
 
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
+import com.google.common.collect.ImmutableMap;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.INBTSerializable;
 
-
+/**
+ * Primarily used to allow mods to interact with worldnetworks.
+ * Whether that be hooks for node registration and detection or adding travellers to networks.
+ *
+ * @param <T>
+ */
 public interface IWorldNetworkAssistant<T extends INBTSerializable> {
 
+    void onNodePlaced(World world, BlockPos pos);
 
+    void onNodeNeighbourChange(World world, BlockPos pos, BlockPos neighbourPos);
+
+    void onNodeBroken(World world, BlockPos pos);
+
+    /**
+     * Inserts the given data into a network
+     *
+     * @param entryPoint the entry point node this data is coming from.
+     * @param insertInto the position we're trying to insert into.
+     * @param insertData the data we're inserting.
+     * @return the remaining data that was not inserted.
+     */
+    T insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, T insertData, ImmutableMap<String, NBTBase> additionalData);
 
 }

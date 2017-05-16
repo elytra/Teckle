@@ -43,7 +43,6 @@ public class CapabilityWorldNetworkTile {
 
                     @Override
                     public void readNBT(Capability<IWorldNetworkTile> capability, IWorldNetworkTile instance, EnumFacing side, NBTBase base) {
-
                     }
                 },
                 () -> new NetworkTileTransporter() {

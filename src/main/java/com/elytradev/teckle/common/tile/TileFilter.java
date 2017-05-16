@@ -21,6 +21,7 @@ import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.client.gui.GuiFilter;
 import com.elytradev.teckle.common.TeckleMod;
@@ -35,12 +36,15 @@ import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -263,17 +267,14 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
 
     private boolean attemptInsertion(TileEntity potentialInsertionTile, WorldNetworkEntryPoint thisNode, ItemStack extractionData) {
         boolean result = false;
-        if (networkTile.getNode() != null && networkTile.getNode().network != null && potentialInsertionTile instanceof TileNetworkMember) {
-            NBTTagCompound tagCompound = new NBTTagCompound();
-            tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
-            if (this.colour != null)
-                tagCompound.setInteger("colour", this.colour.getMetadata());
-            WorldNetworkTraveller traveller = thisNode.addTraveller(tagCompound);
-            if (!Objects.equals(traveller, WorldNetworkTraveller.NONE)) {
-                traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
+        if (CapabilityWorldNetworkTile.isTileNetworked(potentialInsertionTile)) {
+            IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
+            ImmutableMap<String, NBTBase> additionalData = colour == null ? ImmutableMap.of() : ImmutableMap.of("colour", new NBTTagInt(colour.getMetadata()));
+            ItemStack remaining = networkAssistant.insertData(thisNode, potentialInsertionTile.getPos(), extractionData, additionalData).copy();
+
+            if (extractionData.isEmpty()) {
                 result = true;
             } else {
-                ItemStack remaining = extractionData;
                 for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
                     remaining = buffer.insertItem(i, remaining, false);
                 }

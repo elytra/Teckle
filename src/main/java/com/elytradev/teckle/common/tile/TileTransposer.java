@@ -21,6 +21,7 @@ import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
@@ -32,6 +33,7 @@ import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
@@ -49,7 +51,6 @@ import net.minecraftforge.items.IItemHandler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Created by darkevilmac on 4/21/2017.
@@ -201,15 +202,13 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
     private boolean attemptInsertion(TileEntity potentialInsertionTile, WorldNetworkEntryPoint thisNode, ItemStack extractionData) {
         boolean result = false;
-        if (networkTile.getNode() != null && networkTile.getNode().network != null && potentialInsertionTile instanceof TileNetworkMember) {
-            NBTTagCompound tagCompound = new NBTTagCompound();
-            tagCompound.setTag("stack", extractionData.writeToNBT(new NBTTagCompound()));
-            WorldNetworkTraveller traveller = thisNode.addTraveller(tagCompound);
-            if (!Objects.equals(traveller, WorldNetworkTraveller.NONE)) {
-                traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
+        if (CapabilityWorldNetworkTile.isTileNetworked(potentialInsertionTile)) {
+            IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
+            ItemStack remaining = networkAssistant.insertData(thisNode, potentialInsertionTile.getPos(), extractionData, ImmutableMap.of()).copy();
+
+            if (extractionData.isEmpty()) {
                 result = true;
             } else {
-                ItemStack remaining = extractionData;
                 for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
                     remaining = buffer.insertItem(i, remaining, false);
                 }

@@ -16,16 +16,10 @@
 
 package com.elytradev.teckle.common.block;
 
-import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistantHolder;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
-import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
-import com.elytradev.teckle.common.TeckleObjects;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.common.tile.TileTransposer;
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
-import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
-import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockPistonBase;
@@ -47,10 +41,8 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.items.CapabilityItemHandler;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * Created by darkevilmac on 3/30/2017.
@@ -92,118 +84,16 @@ public class BlockTransposer extends BlockContainer {
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
-        if (worldIn.isRemote)
-            return;
 
-        TileEntity tileAtPos = worldIn.getTileEntity(pos);
-        List<IWorldNetwork> neighbourNetworks = TeckleObjects.blockItemTube.getNeighbourNetworks(worldIn, pos);
-        IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getTileNetworked(tileAtPos);
-        if (!neighbourNetworks.isEmpty()) {
-            // Found neighbour networks, join the network or merge.
-            IWorldNetwork network = neighbourNetworks.remove(0);
-            thisNetworkTile.setNode(thisNetworkTile.createNode(network, pos));
-            network.registerNode(thisNetworkTile.getNode());
-
-            while (!neighbourNetworks.isEmpty()) {
-                network = network.merge(neighbourNetworks.remove(0));
-            }
-        } else {
-            // No neighbours, make a new network.
-            WorldNetwork network = new WorldNetwork(worldIn, null);
-            WorldNetworkDatabase.registerWorldNetwork(network);
-            WorldNetworkNode node = thisNetworkTile.createNode(network, pos);
-            network.registerNode(node);
-            if (worldIn.getTileEntity(pos) != null) {
-                thisNetworkTile.setNode(node);
-            }
-        }
-
-        //Check for possible neighbour nodes...
-        List<TileEntity> neighbourNodes = TeckleObjects.blockItemTube.getPotentialNeighbourNodes(worldIn, pos, thisNetworkTile.getNode().network, false);
-        for (TileEntity neighbourTile : neighbourNodes) {
-            if (CapabilityWorldNetworkTile.isPositionNetworkTile(worldIn, neighbourTile.getPos())) {
-                IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(worldIn, neighbourTile.getPos());
-                if (!thisNetworkTile.getNode().network.isNodePresent(neighbourTile.getPos())) {
-                    thisNetworkTile.getNode().network.registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().network, neighbourTile.getPos()));
-                    neighbourNetworkTile.setNode(thisNetworkTile.getNode().network.getNodeFromPosition(neighbourTile.getPos()));
-                }
-            } else {
-                if (!thisNetworkTile.getNode().network.isNodePresent(neighbourTile.getPos())) {
-                    thisNetworkTile.getNode().network.registerNode(new ItemNetworkEndpoint(thisNetworkTile.getNode().network, neighbourTile.getPos()));
-                }
-            }
-        }
+        getNetworkHelper(worldIn).onNodePlaced(worldIn, pos);
     }
 
     @Override
     public void onNeighborChange(IBlockAccess blockAccess, BlockPos pos, BlockPos neighbor) {
         super.onNeighborChange(blockAccess, pos, neighbor);
-        // Handles cleanup of endpoint nodes, or nodes that should have been removed but weren't.
-        TileTransposer transposer = (TileTransposer) blockAccess.getTileEntity(pos);
-        if (transposer.getWorld().isRemote)
-            return;
+        TileEntity tile = blockAccess.getTileEntity(pos);
 
-        IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(blockAccess, pos);
-        if (thisNetworkTile.getNode() == null || thisNetworkTile.getNode().network == null) {
-            World world = transposer.getWorld();
-            List<IWorldNetwork> neighbourNetworks = TeckleObjects.blockItemTube.getNeighbourNetworks(world, pos);
-            if (!neighbourNetworks.isEmpty()) {
-                // Found neighbour networks, join the network or merge.
-                IWorldNetwork network = neighbourNetworks.remove(0);
-                thisNetworkTile.setNode(thisNetworkTile.createNode(network, pos));
-                network.registerNode(thisNetworkTile.getNode());
-
-                while (!neighbourNetworks.isEmpty()) {
-                    network = network.merge(neighbourNetworks.remove(0));
-                }
-            } else {
-                // No neighbours, make a new network.
-                WorldNetwork network = new WorldNetwork(world, null);
-                WorldNetworkDatabase.registerWorldNetwork(network);
-                WorldNetworkNode node = thisNetworkTile.createNode(network, pos);
-                network.registerNode(node);
-                if (world.getTileEntity(pos) != null) {
-                    thisNetworkTile.setNode(node);
-                }
-            }
-        }
-
-        if (!thisNetworkTile.getNode().network.isNodePresent(neighbor)) {
-            // Node not already present, check if we can add to network.
-            if (blockAccess.getTileEntity(neighbor) != null) {
-                TileEntity neighbourTile = blockAccess.getTileEntity(neighbor);
-                if (neighbourTile != null) {
-                    if (neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
-                            WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
-                        // Create endpoint and put it in the network.
-                        ItemNetworkEndpoint nodeEndpoint = new ItemNetworkEndpoint(thisNetworkTile.getNode().network, neighbor);
-                        thisNetworkTile.getNode().network.registerNode(nodeEndpoint);
-                    } else if (CapabilityWorldNetworkTile.isPositionNetworkTile(blockAccess, neighbourTile.getPos())) {
-                        IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(blockAccess, neighbourTile.getPos());
-                        if (neighbourNetworkTile.isValidNetworkMember(thisNetworkTile.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
-                            thisNetworkTile.getNode().network.registerNode((neighbourNetworkTile.createNode(thisNetworkTile.getNode().network, neighbourTile.getPos())));
-                        }
-                    }
-                }
-            }
-        } else {
-            if (blockAccess.getTileEntity(neighbor) == null) {
-                thisNetworkTile.getNode().network.unregisterNodeAtPosition(neighbor);
-            } else {
-                TileEntity neighbourTile = blockAccess.getTileEntity(neighbor);
-                if (!neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
-                        WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
-                    if (CapabilityWorldNetworkTile.isPositionNetworkTile(blockAccess, neighbourTile.getPos())) {
-                        IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(blockAccess, neighbourTile.getPos());
-                        if (neighbourNetworkTile.isValidNetworkMember(thisNetworkTile.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbor)))) {
-                            return;
-                        }
-                    }
-
-                    thisNetworkTile.getNode().network.unregisterNodeAtPosition(neighbor);
-                }
-            }
-        }
+        getNetworkHelper(tile.getWorld()).onNodeNeighbourChange(tile.getWorld(), pos, neighbor);
     }
 
     @Override
@@ -241,13 +131,7 @@ public class BlockTransposer extends BlockContainer {
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
         TileEntity tileAtPos = worldIn.getTileEntity(pos);
         if (tileAtPos != null && CapabilityWorldNetworkTile.isPositionNetworkTile(worldIn, pos)) {
-            IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(worldIn, pos);
-
-            if (neighbourNetworkTile.getNode() == null)
-                return;
-            neighbourNetworkTile.getNode().network.unregisterNodeAtPosition(pos);
-            neighbourNetworkTile.getNode().network.validateNetwork();
-            neighbourNetworkTile.setNode(null);
+            getNetworkHelper(worldIn).onNodeBroken(worldIn, pos);
 
             if (tileAtPos instanceof TileTransposer) {
                 TileTransposer transposer = (TileTransposer) worldIn.getTileEntity(pos);
@@ -259,6 +143,10 @@ public class BlockTransposer extends BlockContainer {
 
         // Call super after we're done so we still have access to the tile.
         super.breakBlock(worldIn, pos, state);
+    }
+
+    public IWorldNetworkAssistant<ItemStack> getNetworkHelper(World world) {
+        return world.getCapability(CapabilityWorldNetworkAssistantHolder.NETWORK_ASSISTANT_HOLDER_CAPABILITY, null).getAssistant(ItemStack.class);
     }
 
     @Override

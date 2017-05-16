@@ -16,8 +16,203 @@
 
 package com.elytradev.teckle.api.capabilities.impl;
 
+import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
+import com.elytradev.teckle.common.worldnetwork.common.DropActions;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
+import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
+import com.google.common.collect.ImmutableMap;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.items.CapabilityItemHandler;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 /**
  * Created by darkevilmac on 5/15/17.
  */
-public class ItemNetworkAssistant implements com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant {
+public class ItemNetworkAssistant implements com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant<ItemStack> {
+
+    /**
+     * Check if the block has any potential connections to tubes around it.
+     *
+     * @param pos the position of the tube to check around
+     * @return a list of neighbouring networks.
+     */
+    public static List<IWorldNetwork> getNeighbourNetworks(IWorldNetworkTile networkTile, World world, BlockPos pos) {
+        List<IWorldNetwork> neighbourNetworks = new ArrayList<>();
+        for (EnumFacing facing : EnumFacing.VALUES) {
+            BlockPos neighbourPos = pos.add(facing.getDirectionVec());
+
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourPos) && networkTile.canConnectTo(facing)) {
+                IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourPos);
+                if (!neighbourNetworks.contains(neighbourNetworkTile.getNode().network))
+                    neighbourNetworks.add(neighbourNetworkTile.getNode().network);
+            }
+        }
+
+        return neighbourNetworks;
+    }
+
+    /**
+     * Get a list of potential tiles to connect to.
+     *
+     * @return a list of tiles with an item handler or network tile.
+     */
+    public static List<TileEntity> getPotentialNeighbourNodes(IWorldNetworkTile networkTile, World world, BlockPos pos, boolean loadChunks) {
+        List<TileEntity> neighbourNodes = new ArrayList<>();
+
+        for (EnumFacing facing : EnumFacing.VALUES) {
+            BlockPos neighbourPos = pos.add(facing.getDirectionVec());
+            if (!loadChunks && !world.isBlockLoaded(neighbourPos))
+                continue;
+            TileEntity neighbourTile = world.getTileEntity(neighbourPos);
+
+            if (neighbourTile != null && networkTile.canConnectTo(facing)) {
+                if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourPos)) {
+                    neighbourNodes.add(neighbourTile);
+                } else if (neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
+                        WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
+                    neighbourNodes.add(neighbourTile);
+                }
+            }
+        }
+
+        return neighbourNodes;
+    }
+
+    @Override
+    public void onNodePlaced(World world, BlockPos pos) {
+        if (world.isRemote)
+            return;
+
+        IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos);
+        List<IWorldNetwork> neighbourNetworks = getNeighbourNetworks(thisNetworkTile, world, pos);
+        if (!neighbourNetworks.isEmpty()) {
+            // Found neighbour networks, join the network or merge.
+            IWorldNetwork network = neighbourNetworks.remove(0);
+            thisNetworkTile.setNode(thisNetworkTile.createNode(network, pos));
+            network.registerNode(thisNetworkTile.getNode());
+
+            while (!neighbourNetworks.isEmpty()) {
+                network = network.merge(neighbourNetworks.remove(0));
+            }
+        } else {
+            // No neighbours, make a new network.
+            WorldNetwork network = new WorldNetwork(world, null);
+            WorldNetworkDatabase.registerWorldNetwork(network);
+            WorldNetworkNode node = thisNetworkTile.createNode(network, pos);
+            network.registerNode(node);
+            if (world.getTileEntity(pos) != null) {
+                thisNetworkTile.setNode(node);
+            }
+        }
+
+        //Check for possible neighbour nodes...
+        List<TileEntity> neighbourNodes = getPotentialNeighbourNodes(thisNetworkTile, world, pos, false);
+        for (TileEntity neighbourTile : neighbourNodes) {
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos())) {
+                if (!thisNetworkTile.getNode().network.isNodePresent(neighbourTile.getPos())) {
+                    IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos());
+                    thisNetworkTile.getNode().network.registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().network, neighbourTile.getPos()));
+                    neighbourNetworkTile.setNode(thisNetworkTile.getNode().network.getNodeFromPosition(neighbourTile.getPos()));
+                }
+            } else {
+                if (!thisNetworkTile.getNode().network.isNodePresent(neighbourTile.getPos())) {
+                    thisNetworkTile.getNode().network.registerNode(new ItemNetworkEndpoint(thisNetworkTile.getNode().network, neighbourTile.getPos()));
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onNodeNeighbourChange(World world, BlockPos pos, BlockPos neighbourPos) {
+        if (world.isRemote)
+            return;
+
+        IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos);
+        if (!thisNetworkTile.getNode().network.isNodePresent(neighbourPos)) {
+            // Node not already present, check if we can add to network.
+            if (world.getTileEntity(neighbourPos) != null) {
+                TileEntity neighbourTile = world.getTileEntity(neighbourPos);
+                if (neighbourTile != null) {
+                    if (neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
+                            WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
+                        // Create endpoint and put it in the network.
+                        ItemNetworkEndpoint nodeEndpoint = new ItemNetworkEndpoint(thisNetworkTile.getNode().network, neighbourPos);
+                        thisNetworkTile.getNode().network.registerNode(nodeEndpoint);
+                    } else if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos())) {
+                        IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos());
+                        if (neighbourNetworkTile.isValidNetworkMember(thisNetworkTile.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
+                            thisNetworkTile.getNode().network.registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().network, neighbourTile.getPos()));
+                        }
+                    }
+                }
+            }
+        } else {
+            if (world.getTileEntity(neighbourPos) == null) {
+                thisNetworkTile.getNode().network.unregisterNodeAtPosition(neighbourPos);
+            } else {
+                TileEntity neighbourTile = world.getTileEntity(neighbourPos);
+                if (!neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
+                        WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
+                    if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos())) {
+                        IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos());
+                        if (neighbourNetworkTile.isValidNetworkMember(thisNetworkTile.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
+                            return;
+                        }
+                    }
+
+                    thisNetworkTile.getNode().network.unregisterNodeAtPosition(neighbourPos);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onNodeBroken(World world, BlockPos pos) {
+        if (world.isRemote)
+            return;
+
+        if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos)) {
+            IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos);
+            if (thisNetworkTile.getNode() != null) {
+                thisNetworkTile.getNode().network.unregisterNodeAtPosition(pos);
+                thisNetworkTile.getNode().network.validateNetwork();
+                thisNetworkTile.setNode(null);
+            }
+        }
+    }
+
+    @Override
+    public ItemStack insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, ItemStack insertData, ImmutableMap<String, NBTBase> additionalData) {
+        ItemStack remaining = insertData;
+        IWorldNetworkTile networkTile = entryPoint.getNetworkTile();
+        World world = entryPoint.network.getWorld();
+        if (networkTile.getNode() != null && networkTile.getNode().network != null && CapabilityWorldNetworkTile.isPositionNetworkTile(world, insertInto)) {
+            NBTTagCompound tagCompound = new NBTTagCompound();
+            tagCompound.setTag("stack", insertData.serializeNBT());
+            additionalData.forEach(tagCompound::setTag);
+            WorldNetworkTraveller traveller = entryPoint.addTraveller(tagCompound);
+            if (Objects.equals(traveller, WorldNetworkTraveller.NONE) || traveller == null) {
+                return remaining;
+            } else {
+                traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
+                remaining = ItemStack.EMPTY;
+            }
+        }
+        return remaining;
+    }
 }
