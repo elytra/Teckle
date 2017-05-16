@@ -14,9 +14,10 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.api.capabilities;
+package com.elytradev.teckle.api.capabilities.impl;
 
 import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;

@@ -16,6 +16,7 @@
 
 package com.elytradev.teckle.api.capabilities;
 
+import com.elytradev.teckle.api.capabilities.impl.WorldNetworkAssistantHolder;
 import com.elytradev.teckle.common.TeckleMod;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -27,42 +28,43 @@ import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class CapabilityWorldNetworkAssistant {
-    private static final ResourceLocation CAPABILITY_PROVIDER_NAME = new ResourceLocation(TeckleMod.MOD_ID, "NETWORK_ASSISTANT");
-    @CapabilityInject(IWorldNetworkAssistant.class)
-    public static Capability<IWorldNetworkAssistant> NETWORK_ASSISTANT_CAPABILITY = null;
+public class CapabilityWorldNetworkAssistantHolder {
+    private static final ResourceLocation CAPABILITY_PROVIDER_NAME = new ResourceLocation(TeckleMod.MOD_ID, "NETWORK_ASSISTANT_HOLDER");
+    @CapabilityInject(IWorldNetworkAssistantHolder.class)
+    public static Capability<IWorldNetworkAssistantHolder> NETWORK_ASSISTANT_HOLDER_CAPABILITY = null;
 
     public static void register() {
-        CapabilityManager.INSTANCE.register(IWorldNetworkAssistant.class, new Capability.IStorage<IWorldNetworkAssistant>() {
+        CapabilityManager.INSTANCE.register(IWorldNetworkAssistantHolder.class, new Capability.IStorage<IWorldNetworkAssistantHolder>() {
                     @Override
-                    public NBTBase writeNBT(Capability<IWorldNetworkAssistant> capability, IWorldNetworkAssistant instance, EnumFacing side) {
+                    public NBTBase writeNBT(Capability<IWorldNetworkAssistantHolder> capability, IWorldNetworkAssistantHolder instance, EnumFacing side) {
                         return new NBTTagCompound();
                     }
 
                     @Override
-                    public void readNBT(Capability<IWorldNetworkAssistant> capability, IWorldNetworkAssistant instance, EnumFacing side, NBTBase base) {
+                    public void readNBT(Capability<IWorldNetworkAssistantHolder> capability, IWorldNetworkAssistantHolder instance, EnumFacing side, NBTBase base) {
 
                     }
                 },
-                () -> new IWorldNetworkAssistant() {
-                });
-        MinecraftForge.EVENT_BUS.register(CapabilityWorldNetworkAssistant.class);
+                WorldNetworkAssistantHolder::new);
+        MinecraftForge.EVENT_BUS.register(CapabilityWorldNetworkAssistantHolder.class);
     }
 
     @SuppressWarnings({"deprecation", "unused"}) // forge docs specify using this instead...
+    @SubscribeEvent
     public static void attachWorldEvent(AttachCapabilitiesEvent.World e) {
         e.addCapability(CAPABILITY_PROVIDER_NAME, new ICapabilityProvider() {
-            public IWorldNetworkAssistant assistant;
+            public IWorldNetworkAssistantHolder assistantHolder;
 
             @Override
             public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
                 if (capability == null)
                     return false;
-                if (capability == NETWORK_ASSISTANT_CAPABILITY)
+                if (capability == NETWORK_ASSISTANT_HOLDER_CAPABILITY)
                     return true;
 
                 return false;
@@ -73,8 +75,10 @@ public class CapabilityWorldNetworkAssistant {
             public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
                 if (capability == null)
                     return null;
-                if (capability == NETWORK_ASSISTANT_CAPABILITY)
-                    return (T) assistant;
+                if (capability == NETWORK_ASSISTANT_HOLDER_CAPABILITY) {
+                    if (assistantHolder == null) assistantHolder = new WorldNetworkAssistantHolder();
+                    return (T) assistantHolder;
+                }
 
                 return null;
             }

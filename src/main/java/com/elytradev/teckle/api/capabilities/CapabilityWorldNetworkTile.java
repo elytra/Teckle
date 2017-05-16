@@ -17,6 +17,7 @@
 package com.elytradev.teckle.api.capabilities;
 
 import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;

@@ -14,13 +14,10 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.api.capabilities;
+package com.elytradev.teckle.api.capabilities.impl;
 
-import net.minecraftforge.common.util.INBTSerializable;
-
-
-public interface IWorldNetworkAssistant<T extends INBTSerializable> {
-
-
-
+/**
+ * Created by darkevilmac on 5/15/17.
+ */
+public class ItemNetworkAssistant implements com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant {
 }

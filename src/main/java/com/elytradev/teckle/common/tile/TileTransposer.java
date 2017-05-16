@@ -21,7 +21,7 @@ import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
-import com.elytradev.teckle.api.capabilities.NetworkTileTransporter;
+import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockTransposer;
