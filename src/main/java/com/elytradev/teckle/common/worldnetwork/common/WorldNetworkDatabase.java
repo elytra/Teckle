@@ -59,7 +59,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
     }
 
     @SubscribeEvent
-    private static void onWorldLoad(WorldEvent.Load e) {
+    public static void onWorldLoad(WorldEvent.Load e) {
         if (e.getWorld().isRemote)
             return;
 
@@ -70,7 +70,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
     }
 
     @SubscribeEvent
-    private static void onWorldUnload(WorldEvent.Unload e) {
+    public static void onWorldUnload(WorldEvent.Unload e) {
         if (e.getWorld().isRemote)
             return;
 
@@ -80,7 +80,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
     }
 
     @SubscribeEvent
-    private static void onTickEvent(TickEvent.WorldTickEvent e) {
+    public static void onTickEvent(TickEvent.WorldTickEvent e) {
         if (e.phase.equals(TickEvent.Phase.START) || e.side.isClient())
             return;
 
