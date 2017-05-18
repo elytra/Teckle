@@ -14,32 +14,33 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.container;
+package com.elytradev.teckle.common.tile.sortingmachine.modes;
 
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
+import net.minecraft.nbt.NBTBase;
 
-/**
- * Created by darkevilmac on 5/17/17.
- */
-public class ContainerSortingMachine extends Container {
-
-    public EntityPlayer player;
-    public TileSortingMachine sortingMachine;
-
-    public ContainerSortingMachine(TileSortingMachine tileSortingMachine, EntityPlayer player) {
-        this.player = player;
-        this.sortingMachine = tileSortingMachine;
+public class PullModeAuto extends PullMode {
+    public PullModeAuto() {
+        super(2);
     }
 
-    /**
-     * Determines whether supplied player can use this container
-     *
-     * @param playerIn
-     */
     @Override
-    public boolean canInteractWith(EntityPlayer playerIn) {
-        return sortingMachine.isUsableByPlayer(playerIn);
+    void onPulse(TileSortingMachine sortingMachine) {
+
+    }
+
+    @Override
+    void onTick(TileSortingMachine sortingMachine) {
+
+    }
+
+    @Override
+    public NBTBase serializeNBT() {
+        return null;
+    }
+
+    @Override
+    public void deserializeNBT(NBTBase nbt) {
+
     }
 }

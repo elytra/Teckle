@@ -17,7 +17,7 @@
 package com.elytradev.teckle.client.gui;
 
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
-import com.elytradev.teckle.common.tile.TileSortingMachine;
+import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayer;
 

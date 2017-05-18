@@ -39,7 +39,7 @@ public class DropActions {
         traveller.data.setTag("stack", new NBTTagCompound());
     });
 
-    public static void init() {
+    static {
         ACTIONS.put(ITEMSTACK.getFirst(), ITEMSTACK.getSecond());
     }
 

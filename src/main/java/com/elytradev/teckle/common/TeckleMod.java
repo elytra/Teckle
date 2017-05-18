@@ -23,7 +23,6 @@ import com.elytradev.teckle.common.crafting.AlloyRecipes;
 import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.worldgen.NikoliteOreGenerator;
-import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -65,7 +64,6 @@ public class TeckleMod {
         CapabilityWorldNetworkTile.register();
         CapabilityWorldNetworkAssistantHolder.register();
         TeckleNetworking.setupNetwork();
-        DropActions.init();
         GameRegistry.registerWorldGenerator(new NikoliteOreGenerator(), 2);
 
         PROXY.registerRenderers(e.getModState());

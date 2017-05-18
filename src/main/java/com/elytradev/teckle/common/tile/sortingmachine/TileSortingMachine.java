@@ -14,13 +14,17 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.tile;
+package com.elytradev.teckle.common.tile.sortingmachine;
 
 import com.elytradev.teckle.client.gui.GuiSortingMachine;
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.PullMode;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.PullModeSingleStep;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.SortMode;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
@@ -42,6 +46,10 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(40);
     public EnumDyeColor[] colours = new EnumDyeColor[8];
+
+    public PullMode pullMode = new PullModeSingleStep();
+    public SortMode sortMode;
+
 
     @Nullable
     @Override
@@ -109,6 +117,12 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
                 colours[i] = null;
             }
         }
+        try {
+            pullMode = PullMode.PULL_MODES.get(compound.getInteger("pullModeID")).newInstance();
+            pullMode.deserializeNBT(compound.getCompoundTag("pullMode"));
+        } catch (Exception e) {
+            TeckleMod.LOG.error("Failed to read sorting machine pull mode from nbt.", e);
+        }
 
         filterRows.deserializeNBT(compound.getCompoundTag("filterRows"));
     }
@@ -125,6 +139,8 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
         compound.setTag("colours", coloursTag);
         compound.setTag("filterRows", filterRows.serializeNBT());
+        compound.setTag("pullMode", pullMode.serializeNBT());
+        compound.setInteger("pullModeID", pullMode.getID());
 
         return super.writeToNBT(compound);
     }
@@ -143,5 +159,6 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public Object getClientElement(EntityPlayer player) {
         return new GuiSortingMachine(this, player);
     }
+
 
 }

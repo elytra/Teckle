@@ -14,27 +14,13 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.block;
+package com.elytradev.teckle.common.tile.sortingmachine.modes;
 
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
-import net.minecraft.block.BlockContainer;
-import net.minecraft.block.material.Material;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
 
-/**
- * Created by darkevilmac on 4/25/2017.
- */
-public class BlockSortingMachine extends BlockContainer {
-    protected BlockSortingMachine(Material materialIn) {
-        super(materialIn);
-    }
+public abstract class SortMode {
 
-    @Nullable
-    @Override
-    public TileEntity createNewTileEntity(World worldIn, int meta) {
-        return new TileSortingMachine();
-    }
+    public abstract void pulse(TileSortingMachine sortingMachine, PullMode mode);
+
 }
