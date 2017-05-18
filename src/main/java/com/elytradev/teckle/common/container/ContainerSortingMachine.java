@@ -14,27 +14,32 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.block;
+package com.elytradev.teckle.common.container;
 
 import com.elytradev.teckle.common.tile.TileSortingMachine;
-import net.minecraft.block.BlockContainer;
-import net.minecraft.block.material.Material;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 
 /**
- * Created by darkevilmac on 4/25/2017.
+ * Created by darkevilmac on 5/17/17.
  */
-public class BlockSortingMachine extends BlockContainer {
-    protected BlockSortingMachine(Material materialIn) {
-        super(materialIn);
+public class ContainerSortingMachine extends Container {
+
+    public EntityPlayer player;
+    public TileSortingMachine sortingMachine;
+
+    public ContainerSortingMachine(TileSortingMachine tileSortingMachine, EntityPlayer player) {
+        this.player = player;
+        this.sortingMachine = tileSortingMachine;
     }
 
-    @Nullable
+    /**
+     * Determines whether supplied player can use this container
+     *
+     * @param playerIn
+     */
     @Override
-    public TileEntity createNewTileEntity(World worldIn, int meta) {
-        return new TileSortingMachine();
+    public boolean canInteractWith(EntityPlayer playerIn) {
+        return sortingMachine.isUsableByPlayer(playerIn);
     }
 }
