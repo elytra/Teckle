@@ -20,6 +20,7 @@ import com.elytradev.concrete.reflect.accessor.Accessor;
 import com.elytradev.concrete.reflect.accessor.Accessors;
 import com.elytradev.concrete.reflect.invoker.Invoker;
 import com.elytradev.concrete.reflect.invoker.Invokers;
+import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import net.minecraft.block.Block;
@@ -144,15 +145,18 @@ public class ConcreteResourcePack extends AbstractResourcePack implements IResou
         return new ResourceLocation(domain, path);
     }
 
-    private static Map<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> getCustomModels() {
+    private static BiMap<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> getCustomModels() {
         try {
             Field field = ModelLoader.class.getDeclaredField("customModels");
-            return (Map<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation>) FieldUtils.readStaticField(field, true);
+            Map<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> readField = (Map<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation>) FieldUtils.readStaticField(field, true);
+            BiMap<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> customModels = HashBiMap.create(readField.size());
+            readField.forEach(customModels::forcePut);
+            return customModels;
         } catch (Exception e) {
             LOG.error("Caught exception getting customModels from the model loader, ", e);
         }
 
-        return Maps.newHashMap();
+        return HashBiMap.create();
     }
 
     @Override
@@ -263,14 +267,14 @@ public class ConcreteResourcePack extends AbstractResourcePack implements IResou
         } else {
             ResourceLocation location = nameToLocation(name);
             try {
-                HashBiMap<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> customModelsMap = HashBiMap.create(getCustomModels());
+                BiMap<Pair<RegistryDelegate<Item>, Integer>, ModelResourceLocation> customModels = getCustomModels();
                 String resourcePath = location.getResourcePath();
                 resourcePath = resourcePath.substring(resourcePath.lastIndexOf("/") + 1);
                 resourcePath = resourcePath.substring(0, resourcePath.lastIndexOf("."));
                 String domain = location.getResourceDomain();
                 location = new ModelResourceLocation(domain + ":" + resourcePath, isLocation(name, "/models/item/") ? "inventory" : "normal");
-                if (customModelsMap.inverse().containsKey(location))
-                    return customModelsMap.inverse().get(location).getLeft().get();
+                if (customModels.inverse().containsKey(location))
+                    return customModels.inverse().get(location).getLeft().get();
             } catch (Exception e) {
                 e.printStackTrace();
             }
