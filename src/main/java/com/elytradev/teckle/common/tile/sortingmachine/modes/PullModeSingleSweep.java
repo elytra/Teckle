@@ -21,8 +21,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class PullModeSingleSweep extends PullMode {
-
-    public int storedTicks;
+    public int storedTicks = 0;
     public int coolDown = 4;
 
     public PullModeSingleSweep() {
@@ -30,16 +29,17 @@ public class PullModeSingleSweep extends PullMode {
     }
 
     @Override
-    void onPulse(TileSortingMachine sortingMachine) {
+    public void onPulse(TileSortingMachine sortingMachine) {
         storedTicks++;
     }
 
     @Override
-    void onTick(TileSortingMachine sortingMachine) {
+    public void onTick(TileSortingMachine sortingMachine) {
         if (storedTicks > 0) {
             if (coolDown <= 0) {
                 sortingMachine.sortMode.pulse(sortingMachine, this);
 
+                storedTicks--;
                 coolDown = 4;
             }
 

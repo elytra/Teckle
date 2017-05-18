@@ -17,9 +17,20 @@
 package com.elytradev.teckle.common.tile.sortingmachine.modes;
 
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import net.minecraftforge.common.util.INBTSerializable;
 
 
-public abstract class SortMode {
+public abstract class SortMode implements INBTSerializable {
+
+    public int id;
+
+    public SortMode(int id) {
+        this.id = id;
+    }
+
+    public int getID() {
+        return id;
+    }
 
     public abstract void pulse(TileSortingMachine sortingMachine, PullMode mode);
 

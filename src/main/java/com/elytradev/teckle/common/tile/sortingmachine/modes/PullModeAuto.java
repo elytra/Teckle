@@ -18,29 +18,43 @@ package com.elytradev.teckle.common.tile.sortingmachine.modes;
 
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 
 public class PullModeAuto extends PullMode {
+    public int coolDown = 4;
+
     public PullModeAuto() {
         super(2);
     }
 
     @Override
-    void onPulse(TileSortingMachine sortingMachine) {
-
+    public void onPulse(TileSortingMachine sortingMachine) {
+        //NOOP
     }
 
     @Override
-    void onTick(TileSortingMachine sortingMachine) {
+    public void onTick(TileSortingMachine sortingMachine) {
+        if (coolDown <= 0) {
+            sortingMachine.sortMode.pulse(sortingMachine, this);
 
+            coolDown = 4;
+        }
+
+        if (coolDown > 0)
+            coolDown--;
     }
 
     @Override
     public NBTBase serializeNBT() {
-        return null;
+        NBTTagCompound tagCompound = new NBTTagCompound();
+        tagCompound.setInteger("cooldown", coolDown);
+
+        return tagCompound;
     }
 
     @Override
     public void deserializeNBT(NBTBase nbt) {
-
+        NBTTagCompound tagCompound = (NBTTagCompound) nbt;
+        this.coolDown = tagCompound.getInteger("cooldown");
     }
 }

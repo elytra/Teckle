@@ -102,7 +102,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         if (world.isRemote)
             return;
 
-
+        pullMode.onTick(this);
     }
 
     @Override

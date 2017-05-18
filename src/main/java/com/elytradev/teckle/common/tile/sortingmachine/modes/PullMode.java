@@ -43,12 +43,13 @@ public abstract class PullMode implements INBTSerializable {
         this.id = id;
     }
 
-    abstract void onPulse(TileSortingMachine sortingMachine);
-
-    abstract void onTick(TileSortingMachine sortingMachine);
-
     public int getID() {
         return id;
     }
+
+    public abstract void onPulse(TileSortingMachine sortingMachine);
+
+    public abstract void onTick(TileSortingMachine sortingMachine);
+
 
 }
