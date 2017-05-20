@@ -17,6 +17,7 @@
 package com.elytradev.teckle.common.tile.sortingmachine.modes;
 
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraftforge.common.util.INBTSerializable;
 
 
@@ -33,5 +34,9 @@ public abstract class SortMode implements INBTSerializable {
     }
 
     public abstract void pulse(TileSortingMachine sortingMachine, PullMode mode);
+
+    public abstract boolean canAcceptTraveller(WorldNetworkTraveller traveller);
+
+    public abstract WorldNetworkTraveller processExistingTraveller(WorldNetworkTraveller traveller);
 
 }
