@@ -206,7 +206,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
             NBTTagCompound tagCompound = new NBTTagCompound();
             tagCompound.setTag("stack", insertData.serializeNBT());
             additionalData.forEach(tagCompound::setTag);
-            WorldNetworkTraveller traveller = entryPoint.addTraveller(tagCompound);
+            WorldNetworkTraveller traveller = entryPoint.addTraveller(tagCompound, true);
             if (Objects.equals(traveller, WorldNetworkTraveller.NONE) || traveller == null) {
                 return remaining;
             } else {

@@ -25,6 +25,7 @@ import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.EndpointData;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.PathNode;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.WorldNetworkPath;
+import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -34,6 +35,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A piece of tagCompound travelling to a node in the network.
@@ -41,6 +43,7 @@ import java.util.*;
 public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTagCompound> {
 
     public static final WorldNetworkTraveller NONE = new WorldNetworkTraveller(new NBTTagCompound());
+    public static HashMap<WorldNetworkEntryPoint, List<Tuple<EndpointData, Boolean>>> roundRobinMap = Maps.newHashMap();
 
     public IWorldNetwork network;
     public WorldNetworkNode previousNode = WorldNetworkNode.NONE, currentNode = WorldNetworkNode.NONE, nextNode = WorldNetworkNode.NONE;
@@ -190,7 +193,6 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
      *
      * @return
      */
-
     public boolean genInitialPath() {
         BlockPos startPos = this.entryPoint.position.add(entryPoint.getFacing().getDirectionVec());
         if (!network.isNodePresent(startPos))
@@ -231,6 +233,49 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             sortedEndpointData.addAll(entry.getValue().values());
         }
         sortedEndpointData.sort(Comparator.comparingInt(o -> o.cost));
+        // Round robin checks, kind of messy but should work.
+        if (!sortedEndpointData.isEmpty()) {
+            int lowestCost = sortedEndpointData.get(0).cost;
+            List<EndpointData> lowestCostingEndpoints = sortedEndpointData.stream()
+                    .filter(endpointData -> endpointData.cost == lowestCost).collect(Collectors.toList());
+            List<Tuple<EndpointData, Boolean>> endpointDataToRemove = new ArrayList<>();
+
+            if (lowestCostingEndpoints.size() > 1) {
+                // More than one endpoint of equal value.
+
+                List<Tuple<EndpointData, Boolean>> roundRobinData;
+                if (roundRobinMap.containsKey(entryPoint)) {
+                    roundRobinData = roundRobinMap.get(entryPoint);
+
+                    for (EndpointData lowestCostingEndpoint : lowestCostingEndpoints) {
+                        if (!roundRobinData.stream().anyMatch(endpointDataBooleanTuple -> endpointDataBooleanTuple.getFirst().equals(lowestCostingEndpoint))) {
+                            roundRobinData.add(new Tuple<>(lowestCostingEndpoint, false));
+                        }
+                    }
+                } else {
+                    roundRobinData = new ArrayList<>();
+                    roundRobinMap.put(entryPoint, roundRobinData);
+                }
+
+                if (roundRobinData.isEmpty()) {
+                    roundRobinData.add(new Tuple<>(sortedEndpointData.get(0), true));
+                } else {
+                    for (Tuple<EndpointData, Boolean> roundRobinDatum : roundRobinData) {
+                        if (lowestCostingEndpoints.contains(roundRobinDatum.getFirst()) && roundRobinDatum.getSecond()) {
+                            endpointDataToRemove.add(roundRobinDatum);
+                        }
+                    }
+                }
+
+                if (lowestCostingEndpoints.size() == endpointDataToRemove.size()) {
+                    for (Tuple<EndpointData, Boolean> endpointDataBooleanTuple : endpointDataToRemove) {
+                        roundRobinData.remove(endpointDataBooleanTuple);
+                    }
+                } else {
+                    sortedEndpointData.removeIf(endpointData -> endpointDataToRemove.stream().anyMatch(endpointDataBooleanTuple -> endpointData.equals(endpointDataBooleanTuple.getFirst())));
+                }
+            }
+        }
 
         WorldNetworkPath path = null;
         if (sortedEndpointData.isEmpty()) {

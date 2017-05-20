@@ -55,12 +55,14 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         this.endpoint.network = this.network;
     }
 
-    public WorldNetworkTraveller addTraveller(NBTTagCompound data) {
+    public WorldNetworkTraveller addTraveller(NBTTagCompound data, boolean send) {
         WorldNetworkTraveller traveller = new WorldNetworkTraveller(this, data);
         if (traveller.genInitialPath()) {
             network.registerTraveller(traveller, false);
-            new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller, traveller.currentNode.position,
-                    traveller.previousNode.position).sendToAllWatching(network.getWorld(), position);
+            if (send) {
+                new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller, traveller.currentNode.position,
+                        traveller.previousNode.position).sendToAllWatching(network.getWorld(), position);
+            }
             return traveller;
         }
 
