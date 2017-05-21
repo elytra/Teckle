@@ -233,7 +233,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             sortedEndpointData.addAll(entry.getValue().values());
         }
         sortedEndpointData.sort(Comparator.comparingInt(o -> o.cost));
-        // Round robin checks, kind of messy but should work.
+        // Round robin checks, kind of messy but works.
         if (!sortedEndpointData.isEmpty()) {
             int lowestCost = sortedEndpointData.get(0).cost;
             List<EndpointData> lowestCostingEndpoints = sortedEndpointData.stream()
@@ -256,23 +256,41 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                     roundRobinData = new ArrayList<>();
                     roundRobinMap.put(entryPoint, roundRobinData);
                 }
+                // Quick clean of the data, remove any dormant nodes.
+                roundRobinData.removeIf(endpointDataBooleanTuple -> !endpointDataBooleanTuple.getFirst().node.realNode.network.isNodePresent(endpointDataBooleanTuple.getFirst().pos));
 
-                if (roundRobinData.isEmpty()) {
-                    roundRobinData.add(new Tuple<>(sortedEndpointData.get(0), true));
-                } else {
-                    for (Tuple<EndpointData, Boolean> roundRobinDatum : roundRobinData) {
-                        if (lowestCostingEndpoints.contains(roundRobinDatum.getFirst()) && roundRobinDatum.getSecond()) {
-                            endpointDataToRemove.add(roundRobinDatum);
-                        }
+                for (Tuple<EndpointData, Boolean> roundRobinDatum : roundRobinData) {
+                    if (lowestCostingEndpoints.contains(roundRobinDatum.getFirst()) && roundRobinDatum.getSecond()) {
+                        endpointDataToRemove.add(roundRobinDatum);
                     }
                 }
 
+                // Same amount of lowest endpoints as there are to remove, clear the list of round robin data.
                 if (lowestCostingEndpoints.size() == endpointDataToRemove.size()) {
                     for (Tuple<EndpointData, Boolean> endpointDataBooleanTuple : endpointDataToRemove) {
+                        if (sortedEndpointData.indexOf(endpointDataBooleanTuple.getFirst()) == 0) {
+                            // Prevents the initial round robin destination from getting used twice.
+                            roundRobinData.remove(endpointDataBooleanTuple);
+                            roundRobinData.add(new Tuple<>(endpointDataBooleanTuple.getFirst(), true));
+                            continue;
+                        }
+
                         roundRobinData.remove(endpointDataBooleanTuple);
                     }
                 } else {
                     sortedEndpointData.removeIf(endpointData -> endpointDataToRemove.stream().anyMatch(endpointDataBooleanTuple -> endpointData.equals(endpointDataBooleanTuple.getFirst())));
+
+                    // Mark the one being used as satisfied.
+                    try {
+                        EndpointData data = sortedEndpointData.get(0);
+
+                        if (data != null) {
+                            roundRobinData.removeIf(endpointDataBooleanTuple -> endpointDataBooleanTuple.getFirst().equals(data));
+                            roundRobinData.add(new Tuple<>(data, true));
+                        }
+                    } catch (Exception e) {
+                        // Not a big deal... eat the exception.
+                    }
                 }
             }
         }
