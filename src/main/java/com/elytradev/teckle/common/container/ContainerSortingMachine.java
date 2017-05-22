@@ -18,7 +18,10 @@ package com.elytradev.teckle.common.container;
 
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.Slot;
+import net.minecraftforge.items.SlotItemHandler;
 
 /**
  * Created by darkevilmac on 5/17/17.
@@ -31,6 +34,31 @@ public class ContainerSortingMachine extends Container {
     public ContainerSortingMachine(TileSortingMachine tileSortingMachine, EntityPlayer player) {
         this.player = player;
         this.sortingMachine = tileSortingMachine;
+
+        for (int box = 0; box < 8; box++) {
+            int xS = 11 + ((box & 3) * 40);
+            int yS = 8 + (box > 3 ? 62 : 0);
+            for (int slot = 0; slot < 6; slot++) {
+                int slotNumber = (box * 6) + slot;
+                int xPos = xS + ((slot & 1) * 18);
+                int yPos = yS + ((slot >= 2 ? (slot >= 4 ? 2 : 1) : 0) * 18);
+                this.addSlotToContainer(new SlotItemHandler(tileSortingMachine.filterRows, slotNumber, xPos, yPos));
+            }
+        }
+
+        bindPlayerInventory(player.inventory);
+    }
+
+    protected void bindPlayerInventory(InventoryPlayer inventoryplayer) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 9; j++) {
+                addSlotToContainer(new Slot(inventoryplayer, j + i * 9 + 9, 8 + j * 18, 76 + 84 + i * 18));
+            }
+        }
+
+        for (int i = 0; i < 9; i++) {
+            addSlotToContainer(new Slot(inventoryplayer, i, 8 + i * 18, 76 + 142));
+        }
     }
 
     /**

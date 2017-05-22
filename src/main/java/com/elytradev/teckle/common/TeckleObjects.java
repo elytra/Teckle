@@ -23,6 +23,7 @@ import com.elytradev.teckle.common.item.ItemBlade;
 import com.elytradev.teckle.common.item.ItemPaintbrush;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.tile.*;
+import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
@@ -52,6 +53,7 @@ public class TeckleObjects {
     public static BlockItemTube blockItemTube;
     public static BlockFilter blockFilter;
     public static BlockTransposer blockTransposer;
+    public static BlockSortingMachine blockSortingMachine;
     public static BlockAlloyFurnace blockAlloyFurnace;
     public static BlockNikoliteOre blockNikoliteOre;
     public static BlockFabricator blockFabricator;
@@ -90,6 +92,9 @@ public class TeckleObjects {
 
         blockTransposer = new BlockTransposer(Material.CIRCUITS);
         registerBlock("transposer", blockTransposer);
+
+        blockSortingMachine = new BlockSortingMachine(Material.CIRCUITS);
+        registerBlock("sortingmachine", blockSortingMachine);
 
         blockAlloyFurnace = new BlockAlloyFurnace(Material.ROCK);
         registerBlock("alloyfurnace", blockAlloyFurnace);
@@ -131,6 +136,7 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileItemTube.class, "teckleItemTube");
         GameRegistry.registerTileEntity(TileFilter.class, "teckleFilter");
         GameRegistry.registerTileEntity(TileTransposer.class, "teckleTransposer");
+        GameRegistry.registerTileEntity(TileSortingMachine.class, "teckleSortingMachine");
         GameRegistry.registerTileEntity(TileFabricator.class, "teckleFabricator");
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
 

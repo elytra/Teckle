@@ -54,7 +54,7 @@ import javax.annotation.Nullable;
 
 public class TileSortingMachine extends TileNetworkMember implements ITickable, IElementProvider {
 
-    public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(40);
+    public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(8 * 6);
     public EnumDyeColor[] colours = new EnumDyeColor[8];
 
     public PullMode pullMode = new PullModeSingleStep();

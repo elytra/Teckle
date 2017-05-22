@@ -18,21 +18,29 @@ package com.elytradev.teckle.client.gui;
 
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
 
 /**
  * Created by darkevilmac on 5/17/17.
  */
 public class GuiSortingMachine extends GuiContainer {
 
+    public static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation("teckle", "textures/gui/sortingmachine.png");
     public EntityPlayer player;
     public TileSortingMachine sortingMachine;
+
 
     public GuiSortingMachine(TileSortingMachine tileSortingMachine, EntityPlayer player) {
         super(new ContainerSortingMachine(tileSortingMachine, player));
         this.player = player;
         this.sortingMachine = tileSortingMachine;
+
+        this.xSize = 176;
+        this.ySize = 242;
     }
 
     /**
@@ -44,6 +52,9 @@ public class GuiSortingMachine extends GuiContainer {
      */
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-
+        GlStateManager.color(1, 1, 1);
+        Minecraft.getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
+        drawTexturedModalRect((width - xSize) / 2, (height - ySize) / 2, 0, 0, xSize, ySize);
+        GlStateManager.enableLighting();
     }
 }
