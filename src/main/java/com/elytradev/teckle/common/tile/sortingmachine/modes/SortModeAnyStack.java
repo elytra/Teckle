@@ -18,31 +18,20 @@ package com.elytradev.teckle.common.tile.sortingmachine.modes;
 
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraft.nbt.NBTBase;
 
-
-public abstract class SortMode implements INBTSerializable {
-
-    public int id;
-    public SortModeType type;
-
-    public SortMode(int id, SortModeType type) {
-        this.id = id;
-        this.type = type;
-
-        if (!type.subModes.contains(this.getClass()))
-            type.subModes.add(this.getClass());
+/**
+ * Created by darkevilmac on 5/22/17.
+ */
+public class SortModeAnyStack extends SortMode {
+    public SortModeAnyStack() {
+        super(3, SortModeType.SLOT);
     }
 
-    public int getID() {
-        return id;
-    }
+    @Override
+    public void pulse(TileSortingMachine sortingMachine, PullMode mode) {
 
-    public SortModeType getSortModeType() {
-        return type;
     }
-
-    public abstract void pulse(TileSortingMachine sortingMachine, PullMode mode);
 
     /**
      * Check if the traveller can enter the machine.
@@ -51,7 +40,10 @@ public abstract class SortMode implements INBTSerializable {
      * @param traveller
      * @return
      */
-    public abstract boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller);
+    @Override
+    public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
+        return false;
+    }
 
     /**
      * Sort a traveller going through the network and change it if needed.
@@ -60,7 +52,10 @@ public abstract class SortMode implements INBTSerializable {
      * @param traveller      the traveller entering the machine.
      * @return the modified traveller.
      */
-    public abstract WorldNetworkTraveller processExistingTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller);
+    @Override
+    public WorldNetworkTraveller processExistingTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
+        return null;
+    }
 
     /**
      * Get the position of the selector, if no selector is used in this mode return -1.
@@ -68,6 +63,18 @@ public abstract class SortMode implements INBTSerializable {
      * @param sortingMachine the sorting machine.
      * @return the selector position, a value between -1 and 7 (inclusive)
      */
-    public abstract int selectorPosition(TileSortingMachine sortingMachine);
+    @Override
+    public int selectorPosition(TileSortingMachine sortingMachine) {
+        return 0;
+    }
 
+    @Override
+    public NBTBase serializeNBT() {
+        return null;
+    }
+
+    @Override
+    public void deserializeNBT(NBTBase nbt) {
+
+    }
 }

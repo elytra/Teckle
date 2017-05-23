@@ -48,8 +48,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class TileSortingMachine extends TileNetworkMember implements ITickable, IElementProvider {
@@ -60,6 +63,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public PullMode pullMode = new PullModeSingleStep();
     public SortMode sortMode;
 
+    private List<IItemHandler> subHandlers;
     private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
@@ -106,6 +110,17 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
     };
 
+    public List<IItemHandler> getCompartmentHandlers() {
+        if (subHandlers == null || subHandlers.isEmpty()) {
+            subHandlers = new ArrayList<>();
+            for (int i = 0; i < 8; i++) {
+                subHandlers.add(filterRows.subHandler(i * 6, 6));
+            }
+        }
+
+        return subHandlers;
+    }
+
     @Nullable
     @Override
     public SPacketUpdateTileEntity getUpdatePacket() {
@@ -141,7 +156,6 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             }
         }
     }
-
 
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {

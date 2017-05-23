@@ -28,9 +28,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 
-/**
- * Created by darkevilmac on 5/17/17.
- */
+import javax.vecmath.Point2i;
+
 public class GuiSortingMachine extends GuiContainer {
 
     public static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation("teckle", "textures/gui/sortingmachine.png");
@@ -58,6 +57,8 @@ public class GuiSortingMachine extends GuiContainer {
 
             buttonList.add(new GuiColourPicker(i, i, guiLeft + xS, guiTop + yS));
         }
+
+        buttonList.add(new GuiSortTypeSelector(8, 10, 130));
     }
 
     /**
@@ -118,6 +119,32 @@ public class GuiSortingMachine extends GuiContainer {
                     GlStateManager.color(sheepColour[0], sheepColour[1], sheepColour[2]);
                     this.drawTexturedModalRect(this.xPosition + 1, this.yPosition + 1, xOffset + 1, yOffset - 4, this.width - 2, this.height - 2);
                     GlStateManager.popMatrix();
+                }
+            }
+        }
+    }
+
+    public class GuiSortTypeSelector extends GuiButton {
+
+        public GuiSortTypeSelector(int buttonId, int x, int y) {
+            super(buttonId, x, y, 16, 16, "");
+        }
+
+        public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+            if (this.visible) {
+                mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
+                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                int yOffset = 10;
+                int xOffset = 176;
+                if (isMouseOver()) {
+                    xOffset += 16;
+                }
+
+                this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
+
+                if (sortingMachine.sortMode != null) {
+                    Point2i modeOffset = sortingMachine.sortMode.getSortModeType().textureOffset();
+                    this.drawTexturedModalRect(this.xPosition, this.yPosition, modeOffset.x, modeOffset.y, this.width, this.height);
                 }
             }
         }
