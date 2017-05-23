@@ -16,12 +16,40 @@
 
 package com.elytradev.teckle.common.tile.sortingmachine.modes;
 
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraftforge.common.util.INBTSerializable;
 
+import java.util.ArrayList;
+
 
 public abstract class SortMode implements INBTSerializable {
+
+    public static final ArrayList<Class<? extends SortMode>> SORT_MODES;
+    public static final Class<? extends SortMode> SLOT_ANY_STACK = SortModeAnyStack.class;
+    public static final Class<? extends SortMode> SLOT_FULL_STACK = SortModeFullStack.class;
+    public static final Class<? extends SortMode> COMPARTMENT_FULL_MATCH_SELECTOR = SortModeFullMatchSelector.class;
+    public static final Class<? extends SortMode> COMPARTMENT_PARTIAL_MATCH_SELECTOR = SortModePartialMatchSelector.class;
+    public static final Class<? extends SortMode> COMPARTMENT_FULL_MATCH = SortModeFullMatch.class;
+
+    static {
+        SORT_MODES = new ArrayList<>();
+
+        SORT_MODES.add(0, COMPARTMENT_FULL_MATCH_SELECTOR);
+        SORT_MODES.add(1, COMPARTMENT_PARTIAL_MATCH_SELECTOR);
+        SORT_MODES.add(2, COMPARTMENT_FULL_MATCH);
+
+        SORT_MODES.add(3, SLOT_ANY_STACK);
+        SORT_MODES.add(4, SLOT_FULL_STACK);
+        try {
+            for (Class<? extends SortMode> sortMode : SORT_MODES) {
+                sortMode.newInstance();
+            }
+        } catch (Exception e) {
+            TeckleMod.LOG.error("Failed to instantiate sort modes.", e);
+        }
+    }
 
     public int id;
     public SortModeType type;
@@ -30,8 +58,7 @@ public abstract class SortMode implements INBTSerializable {
         this.id = id;
         this.type = type;
 
-        if (!type.subModes.contains(this.getClass()))
-            type.subModes.add(this.getClass());
+        type.add(this);
     }
 
     public int getID() {

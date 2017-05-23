@@ -20,6 +20,7 @@ import com.elytradev.teckle.common.tile.inv.ItemStream;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.items.IItemHandler;
 
 /**
@@ -27,7 +28,7 @@ import net.minecraftforge.items.IItemHandler;
  */
 public class SortModeFullMatch extends SortMode {
     public SortModeFullMatch() {
-        super(0, SortModeType.COMPARTMENT);
+        super(2, SortModeType.COMPARTMENT);
     }
 
     @Override
@@ -82,7 +83,7 @@ public class SortModeFullMatch extends SortMode {
 
     @Override
     public NBTBase serializeNBT() {
-        return null;
+        return new NBTTagCompound();
     }
 
     @Override

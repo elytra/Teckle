@@ -22,8 +22,8 @@ import javax.vecmath.Point2i;
 import java.util.ArrayList;
 
 public enum SortModeType {
-    COMPARTMENT(0, 216, 11),
-    SLOT(1, 232, 11);
+    COMPARTMENT(0, 216, 10),
+    SLOT(1, 232, 10);
 
     public static SortModeType[] TYPES;
 
@@ -35,17 +35,45 @@ public enum SortModeType {
     }
 
     public final int id;
-    public final ArrayList<Class<? extends SortMode>> subModes = Lists.newArrayList();
-    private int x, y;
+    private final ArrayList<Class<? extends SortMode>> subModes = Lists.newArrayList();
+    private int x, y, minID, maxID;
 
     SortModeType(int i, int x, int y) {
         this.id = i;
         this.x = x;
         this.y = y;
+
+        this.minID = Integer.MAX_VALUE;
+        this.maxID = Integer.MIN_VALUE;
     }
+
+    public ArrayList<Class<? extends SortMode>> getSubModes() {
+        return subModes;
+    }
+
+    public boolean add(SortMode sortMode) {
+        if (subModes.contains(sortMode.getClass()))
+            return false;
+
+        int id = sortMode.getID();
+
+        minID = minID > id ? id : minID;
+        maxID = maxID < id ? id : maxID;
+
+        return subModes.add(sortMode.getClass());
+    }
+
 
     public Point2i textureOffset() {
         return new Point2i(x, y);
+    }
+
+    public int minID() {
+        return minID;
+    }
+
+    public int maxID() {
+        return maxID;
     }
 
     public Class<? extends SortMode> getDefaultMode() {

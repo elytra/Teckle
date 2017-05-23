@@ -24,9 +24,9 @@ import net.minecraft.nbt.NBTTagCompound;
 /**
  * Created by darkevilmac on 5/22/17.
  */
-public class SortModeAnyStack extends SortMode {
-    public SortModeAnyStack() {
-        super(3, SortModeType.SLOT);
+public class SortModeFullStack extends SortMode {
+    public SortModeFullStack() {
+        super(4, SortModeType.SLOT);
     }
 
     @Override

@@ -24,14 +24,13 @@ import net.minecraft.nbt.NBTTagCompound;
 /**
  * Created by darkevilmac on 5/22/17.
  */
-public class SortModeAnyStack extends SortMode {
-    public SortModeAnyStack() {
-        super(3, SortModeType.SLOT);
+public class SortModeFullMatchSelector extends SortMode {
+    public SortModeFullMatchSelector() {
+        super(0, SortModeType.COMPARTMENT);
     }
 
     @Override
     public void pulse(TileSortingMachine sortingMachine, PullMode mode) {
-
     }
 
     /**
@@ -55,7 +54,7 @@ public class SortModeAnyStack extends SortMode {
      */
     @Override
     public WorldNetworkTraveller processExistingTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
-        return null;
+        return traveller;
     }
 
     /**
@@ -66,7 +65,7 @@ public class SortModeAnyStack extends SortMode {
      */
     @Override
     public int selectorPosition(TileSortingMachine sortingMachine) {
-        return 0;
+        return -1;
     }
 
     @Override

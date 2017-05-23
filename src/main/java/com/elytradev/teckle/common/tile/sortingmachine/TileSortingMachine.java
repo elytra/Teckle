@@ -30,6 +30,7 @@ import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.PullMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.PullModeSingleStep;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.SortMode;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.SortModeAnyStack;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -61,7 +62,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public EnumDyeColor[] colours = new EnumDyeColor[8];
 
     public PullMode pullMode = new PullModeSingleStep();
-    public SortMode sortMode;
+    public SortMode sortMode = new SortModeAnyStack();
 
     private List<IItemHandler> subHandlers;
     private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
@@ -129,32 +130,12 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     @Override
     public NBTTagCompound getUpdateTag() {
-        NBTTagCompound tagCompound = super.getUpdateTag();
-        NBTTagList coloursTag = new NBTTagList();
-        for (int i = 0; i < colours.length; i++) {
-            if (colours[i] != null) {
-                coloursTag.appendTag(new NBTTagInt(colours[i].getMetadata()));
-            } else {
-                coloursTag.appendTag(new NBTTagInt(-1));
-            }
-        }
-        tagCompound.setTag("colours", coloursTag);
-        return tagCompound;
+        return this.writeToNBT(new NBTTagCompound());
     }
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-        super.onDataPacket(net, pkt);
-
-        NBTTagList coloursTag = pkt.getNbtCompound().getTagList("colours", 3);
-
-        for (int i = 0; i < 8; i++) {
-            if (coloursTag.getIntAt(i) > -1) {
-                colours[i] = EnumDyeColor.byMetadata(coloursTag.getIntAt(i));
-            } else {
-                colours[i] = null;
-            }
-        }
+        this.readFromNBT(pkt.getNbtCompound());
     }
 
     @Override
@@ -189,8 +170,11 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         try {
             pullMode = PullMode.PULL_MODES.get(compound.getInteger("pullModeID")).newInstance();
             pullMode.deserializeNBT(compound.getCompoundTag("pullMode"));
+
+            sortMode = SortMode.SORT_MODES.get(compound.getInteger("sortModeID")).newInstance();
+            sortMode.deserializeNBT(compound.getCompoundTag("sortMode"));
         } catch (Exception e) {
-            TeckleMod.LOG.error("Failed to read sorting machine pull mode from nbt.", e);
+            TeckleMod.LOG.error("Failed to read sorting machine modes from nbt.", e);
         }
 
         filterRows.deserializeNBT(compound.getCompoundTag("filterRows"));
@@ -210,6 +194,9 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         compound.setTag("filterRows", filterRows.serializeNBT());
         compound.setTag("pullMode", pullMode.serializeNBT());
         compound.setInteger("pullModeID", pullMode.getID());
+
+        compound.setTag("sortMode", sortMode.serializeNBT());
+        compound.setInteger("sortModeID", sortMode.getID());
 
         return super.writeToNBT(compound);
     }

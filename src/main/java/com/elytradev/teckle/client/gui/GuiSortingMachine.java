@@ -16,9 +16,13 @@
 
 package com.elytradev.teckle.client.gui;
 
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
 import com.elytradev.teckle.common.network.SortingMachineColourChangeMessage;
+import com.elytradev.teckle.common.network.SortingMachineSortModeChangeMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.SortMode;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.SortModeType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -58,7 +62,8 @@ public class GuiSortingMachine extends GuiContainer {
             buttonList.add(new GuiColourPicker(i, i, guiLeft + xS, guiTop + yS));
         }
 
-        buttonList.add(new GuiSortTypeSelector(8, 10, 130));
+        buttonList.add(new GuiSortTypeSelector(8, guiLeft + 10, guiTop + 130));
+        buttonList.add(new GuiSortModeSelector(9, guiLeft + 40, guiTop + 130));
     }
 
     /**
@@ -79,6 +84,7 @@ public class GuiSortingMachine extends GuiContainer {
     @Override
     protected void actionPerformed(GuiButton button) {
         if (button instanceof GuiColourPicker) {
+            // Adjust the colour of a compartment.
             GuiColourPicker colourPicker = (GuiColourPicker) button;
             EnumDyeColor colour = sortingMachine.colours[colourPicker.colourIndex];
             if (colour == null) {
@@ -93,6 +99,36 @@ public class GuiSortingMachine extends GuiContainer {
 
             sortingMachine.colours[colourPicker.colourIndex] = colour;
             new SortingMachineColourChangeMessage(sortingMachine.getPos(), colourPicker.colourIndex, colour).sendToServer();
+        } else if (button instanceof GuiSortTypeSelector) {
+            // Change the sort type, and the mode to match.
+            try {
+                if (sortingMachine.sortMode.type == SortModeType.COMPARTMENT) {
+                    sortingMachine.sortMode = SortModeType.SLOT.getDefaultMode().newInstance();
+                } else {
+                    sortingMachine.sortMode = SortModeType.COMPARTMENT.getDefaultMode().newInstance();
+                }
+                new SortingMachineSortModeChangeMessage(sortingMachine.sortMode.getID(), sortingMachine.getPos()).sendToServer();
+            } catch (Exception e) {
+                TeckleMod.LOG.error("Failed to change mode type in sortingmachine gui, ", e);
+            }
+        } else if (button instanceof GuiSortModeSelector) {
+            // Actually change the sort mode.
+            int selectedMode = sortingMachine.sortMode.getID();
+            SortModeType sortModeType = sortingMachine.sortMode.type;
+
+            if (selectedMode < sortModeType.maxID()) {
+                selectedMode++;
+            } else if (selectedMode == sortModeType.maxID()) {
+                selectedMode = sortModeType.minID();
+            }
+
+            try {
+                sortingMachine.sortMode = SortMode.SORT_MODES.get(selectedMode).newInstance();
+            } catch (Exception e) {
+                TeckleMod.LOG.error("Failed to change mode in sortingmachine gui, ", e);
+            }
+
+            new SortingMachineSortModeChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();
         }
     }
 
@@ -132,6 +168,8 @@ public class GuiSortingMachine extends GuiContainer {
 
         public void drawButton(Minecraft mc, int mouseX, int mouseY) {
             if (this.visible) {
+                this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+
                 mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
                 int yOffset = 10;
@@ -145,6 +183,40 @@ public class GuiSortingMachine extends GuiContainer {
                 if (sortingMachine.sortMode != null) {
                     Point2i modeOffset = sortingMachine.sortMode.getSortModeType().textureOffset();
                     this.drawTexturedModalRect(this.xPosition, this.yPosition, modeOffset.x, modeOffset.y, this.width, this.height);
+                }
+            }
+        }
+    }
+
+    public class GuiSortModeSelector extends GuiButton {
+
+        public GuiSortModeSelector(int buttonId, int x, int y) {
+            super(buttonId, x, y, 16, 16, "");
+        }
+
+        public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+            if (this.visible) {
+                this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+
+                mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
+                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                int yOffset = 10;
+                int xOffset = 176;
+                if (isMouseOver()) {
+                    xOffset += 16;
+                }
+
+                this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
+
+                if (sortingMachine.sortMode != null) {
+                    Point2i modeOffset = sortingMachine.sortMode.getSortModeType().textureOffset();
+                    int additionalYOffset = (sortingMachine.sortMode.getID() * 16);
+                    if (sortingMachine.sortMode.type == SortModeType.SLOT) {
+                        additionalYOffset = ((sortingMachine.sortMode.getID() - 2) * 16);
+                    } else {
+                        additionalYOffset += 16;
+                    }
+                    this.drawTexturedModalRect(this.xPosition, this.yPosition, modeOffset.x, modeOffset.y + additionalYOffset, this.width, this.height);
                 }
             }
         }
