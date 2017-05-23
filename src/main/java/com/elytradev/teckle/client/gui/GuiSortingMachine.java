@@ -17,11 +17,15 @@
 package com.elytradev.teckle.client.gui;
 
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
+import com.elytradev.teckle.common.network.SortingMachineColourChangeMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 
 /**
@@ -43,6 +47,19 @@ public class GuiSortingMachine extends GuiContainer {
         this.ySize = 242;
     }
 
+    @Override
+    public void initGui() {
+        super.initGui();
+
+        buttonList.clear();
+        for (int i = 0; i < 8; i++) {
+            int xS = 10 + ((i & 3) * 40);
+            int yS = 61 + (i > 3 ? 62 : 0);
+
+            buttonList.add(new GuiColourPicker(i, i, guiLeft + xS, guiTop + yS));
+        }
+    }
+
     /**
      * Draws the background layer of this container (behind the items).
      *
@@ -56,5 +73,53 @@ public class GuiSortingMachine extends GuiContainer {
         Minecraft.getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
         drawTexturedModalRect((width - xSize) / 2, (height - ySize) / 2, 0, 0, xSize, ySize);
         GlStateManager.enableLighting();
+    }
+
+    @Override
+    protected void actionPerformed(GuiButton button) {
+        if (button instanceof GuiColourPicker) {
+            GuiColourPicker colourPicker = (GuiColourPicker) button;
+            EnumDyeColor colour = sortingMachine.colours[colourPicker.colourIndex];
+            if (colour == null) {
+                colour = EnumDyeColor.byMetadata(0);
+            } else {
+                if (colour.getMetadata() == 15) {
+                    colour = null;
+                } else {
+                    colour = EnumDyeColor.byMetadata(colour.getMetadata() + 1);
+                }
+            }
+
+            sortingMachine.colours[colourPicker.colourIndex] = colour;
+            new SortingMachineColourChangeMessage(sortingMachine.getPos(), colourPicker.colourIndex, colour).sendToServer();
+        }
+    }
+
+    public class GuiColourPicker extends GuiButton {
+
+        public int colourIndex = 0;
+
+        public GuiColourPicker(int buttonId, int colourIndex, int x, int y) {
+            super(buttonId, x, y, 36, 5, "");
+            this.colourIndex = colourIndex;
+        }
+
+        public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+            if (this.visible) {
+                mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
+                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                int yOffset = 5;
+                int xOffset = 176;
+                this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
+
+                if (GuiSortingMachine.this.sortingMachine.colours[colourIndex] != null) {
+                    float[] sheepColour = EntitySheep.getDyeRgb(GuiSortingMachine.this.sortingMachine.colours[colourIndex]);
+                    GlStateManager.pushMatrix();
+                    GlStateManager.color(sheepColour[0], sheepColour[1], sheepColour[2]);
+                    this.drawTexturedModalRect(this.xPosition + 1, this.yPosition + 1, xOffset + 1, yOffset - 4, this.width - 2, this.height - 2);
+                    GlStateManager.popMatrix();
+                }
+            }
+        }
     }
 }

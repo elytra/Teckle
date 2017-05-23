@@ -35,8 +35,30 @@ public abstract class SortMode implements INBTSerializable {
 
     public abstract void pulse(TileSortingMachine sortingMachine, PullMode mode);
 
-    public abstract boolean canAcceptTraveller(WorldNetworkTraveller traveller);
+    /**
+     * Check if the traveller can enter the machine.
+     *
+     * @param sortingMachine the sorting machine.
+     * @param traveller
+     * @return
+     */
+    public abstract boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller);
 
-    public abstract WorldNetworkTraveller processExistingTraveller(WorldNetworkTraveller traveller);
+    /**
+     * Sort a traveller going through the network and change it if needed.
+     *
+     * @param sortingMachine the sorting machine.
+     * @param traveller      the traveller entering the machine.
+     * @return the modified traveller.
+     */
+    public abstract WorldNetworkTraveller processExistingTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller);
+
+    /**
+     * Get the position of the selector, if no selector is used in this mode return -1.
+     *
+     * @param sortingMachine the sorting machine.
+     * @return the selector position, a value between -1 and 7 (inclusive)
+     */
+    public abstract int selectorPosition(TileSortingMachine sortingMachine);
 
 }

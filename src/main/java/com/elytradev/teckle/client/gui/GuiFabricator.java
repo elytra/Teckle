@@ -140,7 +140,6 @@ public class GuiFabricator extends GuiContainer {
                 GuiFabricator.this.itemRender.renderItemIntoGUI(getTemplateStack(), this.xPosition + 1, this.yPosition + 1);
             }
 
-
             GlStateManager.pushMatrix();
             GlStateManager.color(1, 1, 1, 1F / 3F);
             Minecraft.getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
