@@ -71,7 +71,7 @@ public abstract class SortMode implements INBTSerializable {
         return type;
     }
 
-    public abstract void pulse(TileSortingMachine sortingMachine, PullMode mode);
+    public abstract boolean pulse(TileSortingMachine sortingMachine, PullMode mode);
 
     /**
      * Check if the traveller can enter the machine.

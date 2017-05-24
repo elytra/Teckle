@@ -33,7 +33,7 @@ public class SortModeAnyStack extends SortMode {
     }
 
     @Override
-    public void pulse(TileSortingMachine sortingMachine, PullMode mode) {
+    public boolean pulse(TileSortingMachine sortingMachine, PullMode mode) {
         for (int compartmentNumber = 0; compartmentNumber < sortingMachine.getCompartmentHandlers().size(); compartmentNumber++) {
             IItemHandler compartment = sortingMachine.getCompartmentHandlers().get(compartmentNumber);
             EnumDyeColor compartmentColour = sortingMachine.colours[compartmentNumber];
@@ -44,6 +44,8 @@ public class SortModeAnyStack extends SortMode {
                 //TODO: Actually implement. :^)
             }
         }
+
+        return false;
     }
 
     /**

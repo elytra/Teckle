@@ -22,8 +22,8 @@ import javax.vecmath.Point2i;
 import java.util.ArrayList;
 
 public enum SortModeType {
-    COMPARTMENT(0, 216, 10, "sortmodetype.compartment"),
-    SLOT(1, 232, 10, "sortmodetype.slot");
+    COMPARTMENT(0, 176, 26, "sortmodetype.compartment"),
+    SLOT(1, 192, 26, "sortmodetype.slot");
 
     public static SortModeType[] TYPES;
 

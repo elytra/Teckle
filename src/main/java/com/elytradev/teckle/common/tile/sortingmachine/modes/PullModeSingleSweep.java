@@ -16,6 +16,7 @@
 
 package com.elytradev.teckle.common.tile.sortingmachine.modes;
 
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -35,11 +36,22 @@ public class PullModeSingleSweep extends PullMode {
 
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
+        // Quick check that this pull mode will work with our sort mode as this is only actually useful on a certain mode.
+        // The UI should prevent this from happening so this is just a backup.
+        if (sortingMachine.sortMode.getClass() != SortModeFullMatchSelector.class || sortingMachine.sortMode.getClass() != SortModePartialMatchSelector.class) {
+            try {
+                sortingMachine.pullMode = PullMode.SINGLE_STEP.newInstance();
+            } catch (Exception e) {
+                TeckleMod.LOG.error("Failed to change pull mode due to incompatibility with sort mode.", e);
+            }
+            return;
+        }
+
         if (storedTicks > 0) {
             if (coolDown <= 0) {
-                sortingMachine.sortMode.pulse(sortingMachine, this);
+                if (sortingMachine.sortMode.pulse(sortingMachine, this))
+                    storedTicks--;
 
-                storedTicks--;
                 coolDown = 4;
             }
 

@@ -32,7 +32,7 @@ public class SortModeFullMatch extends SortMode {
     }
 
     @Override
-    public void pulse(TileSortingMachine sortingMachine, PullMode mode) {
+    public boolean pulse(TileSortingMachine sortingMachine, PullMode mode) {
         // Pull mode not relevant for this task, first find what compartment can be satisfied.
 
         for (IItemHandler itemHandler : sortingMachine.getCompartmentHandlers()) {
@@ -40,6 +40,8 @@ public class SortModeFullMatch extends SortMode {
 
             }
         }
+
+        return false;
     }
 
     /**

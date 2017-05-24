@@ -30,8 +30,8 @@ public class SortModeFullStack extends SortMode {
     }
 
     @Override
-    public void pulse(TileSortingMachine sortingMachine, PullMode mode) {
-
+    public boolean pulse(TileSortingMachine sortingMachine, PullMode mode) {
+        return false;
     }
 
     /**
