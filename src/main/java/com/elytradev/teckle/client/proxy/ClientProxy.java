@@ -27,6 +27,7 @@ import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.repack.concrete.resgen.ConcreteResourcePack;
+import com.elytradev.teckle.repack.concrete.resgen.IResourceHolder;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;
@@ -110,7 +111,7 @@ public class ClientProxy extends CommonProxy {
         for (int i = 0; i < TeckleObjects.registeredItems.size(); i++) {
             modelResourceLocation = new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + TeckleObjects.registeredItems.keySet().toArray()[i], "inventory");
             itemToRegister = (Item) TeckleObjects.registeredItems.values().toArray()[i];
-            if (TeckleObjects.skipItemMesh.contains(itemToRegister))
+            if (TeckleObjects.skipItemMesh.contains(itemToRegister) || itemToRegister instanceof IResourceHolder)
                 continue;
             modelMesher.register(itemToRegister, 0, modelResourceLocation);
         }
@@ -136,7 +137,7 @@ public class ClientProxy extends CommonProxy {
 
             ModelResourceLocation resourceLocation = new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "ingot_" + ingotType.getName(), "inventory");
             ModelLoader.setCustomModelResourceLocation(TeckleObjects.itemIngot, ingotType.getMetadata(), resourceLocation);
-            TeckleMod.LOG.debug("Registering ingot model variant: " + ingotType.getMetadata() + " " + resourceLocation);
+            TeckleMod.LOG.info("Registering ingot model variant: " + ingotType.getMetadata() + " " + resourceLocation);
         }
     }
 

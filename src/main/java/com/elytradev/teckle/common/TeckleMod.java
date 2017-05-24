@@ -87,7 +87,10 @@ public class TeckleMod {
 
     @Mod.EventHandler
     public void onMissingMappings(FMLMissingMappingsEvent e) {
-        e.getAll().stream().filter(missingMapping -> missingMapping.resourceLocation.equals(new ResourceLocation("teckle:brassingot")))
-                .forEach(missingMapping -> missingMapping.remap(TeckleObjects.itemIngot));
+        for (FMLMissingMappingsEvent.MissingMapping missingMapping : e.getAll()) {
+            if (missingMapping.resourceLocation.equals(new ResourceLocation("teckle:brassingot"))) {
+                missingMapping.remap(TeckleObjects.itemIngot);
+            }
+        }
     }
 }

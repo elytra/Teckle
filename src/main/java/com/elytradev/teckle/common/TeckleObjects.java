@@ -121,14 +121,16 @@ public class TeckleObjects {
 
         itemSiliconWafer = new ItemSiliconWafer();
         registerItem("siliconwafer", itemSiliconWafer);
+        skipItemMesh.add(itemSiliconWafer);
 
         itemIngot = new ItemIngot();
         registerItem("ingot", itemIngot);
         Arrays.stream(ItemIngot.IngotType.values()).forEach(ingotType ->
                 OreDictionary.registerOre(ingotType.getOreName(),
                         new ItemStack(itemIngot, 1, ingotType.getMetadata())));
+        skipItemMesh.add(itemIngot);
 
-        skipItemMesh.add(itemSiliconWafer);
+
     }
 
     public void init(FMLInitializationEvent e) {

@@ -59,12 +59,13 @@ public class ItemIngot extends Item implements IResourceHolder {
 
     @Override
     public ResourceLocation getResource(EnumResourceType resourceType, int meta) {
-        ResourceLocation result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "items/siliconwafer_missingno");
+        ResourceLocation result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "items/ingot_brass");
         ItemIngot.IngotType type = ItemIngot.IngotType.byMetadata(meta);
         if (type != null) {
             result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "items/ingot_" + type.getName());
         }
 
+        System.out.println(result.toString());
         return result;
     }
 
