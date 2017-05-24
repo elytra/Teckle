@@ -71,17 +71,11 @@ public class CapabilityWorldNetworkTile {
      * @return true if present, false otherwise.
      */
     public static boolean isPositionNetworkTile(IBlockAccess world, BlockPos pos) {
-        if (world.getTileEntity(pos) == null || !world.getTileEntity(pos).hasCapability(NETWORK_TILE_CAPABILITY, null))
-            return false;
-
-        return true;
+        return !(world.getTileEntity(pos) == null || !world.getTileEntity(pos).hasCapability(NETWORK_TILE_CAPABILITY, null));
     }
 
     public static boolean isTileNetworked(TileEntity tileEntity) {
-        if (tileEntity == null || !tileEntity.hasCapability(NETWORK_TILE_CAPABILITY, null))
-            return false;
-
-        return true;
+        return !(tileEntity == null || !tileEntity.hasCapability(NETWORK_TILE_CAPABILITY, null));
     }
 
     public static IWorldNetworkTile getTileNetworked(TileEntity tileEntity) {

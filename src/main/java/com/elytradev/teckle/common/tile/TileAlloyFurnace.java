@@ -56,7 +56,7 @@ public class TileAlloyFurnace extends TileEntity implements ITickable, IElementP
             return TileEntityFurnace.isItemFuel(stack);
         } else if (slot == 10) {
             // Output slot
-            return activeRecipe != null ? ItemStack.areItemStacksEqual(stack, activeRecipe.getCraftingResult()) : false;
+            return activeRecipe != null && ItemStack.areItemStacksEqual(stack, activeRecipe.getCraftingResult());
         } else {
             // Recipe slots.
             return true;

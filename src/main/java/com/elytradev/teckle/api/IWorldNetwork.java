@@ -104,7 +104,7 @@ public interface IWorldNetwork extends INBTSerializable<NBTTagCompound>, ITickab
      *
      * @param traveller the traveller to remove.
      * @param immediate if true remove the traveller immediately instead of queueing for removal on next tick.
-     * @param send if data should be sent to clients set to true if not set to false.
+     * @param send      if data should be sent to clients set to true if not set to false.
      */
     void unregisterTraveller(WorldNetworkTraveller traveller, boolean immediate, boolean send);
 

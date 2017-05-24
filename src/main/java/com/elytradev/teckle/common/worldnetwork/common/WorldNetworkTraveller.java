@@ -48,8 +48,8 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     public IWorldNetwork network;
     public WorldNetworkNode previousNode = WorldNetworkNode.NONE, currentNode = WorldNetworkNode.NONE, nextNode = WorldNetworkNode.NONE;
     public WorldNetworkPath activePath;
-    public float travelledDistance = 0F;
     // The current distance travelled between our previous node, and the increment node.
+    public float travelledDistance = 0F;
     public NBTTagCompound data;
     public List<Tuple<WorldNetworkNode, EnumFacing>> triedEndpoints = new ArrayList<>();
     public HashMap<String, IDropAction> dropActions = new HashMap<>();

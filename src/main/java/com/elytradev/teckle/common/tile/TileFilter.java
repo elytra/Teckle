@@ -258,9 +258,9 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         entityitem.motionX = (double) facing.getFrontOffsetX() * d3;
         entityitem.motionY = 0.20000000298023224D;
         entityitem.motionZ = (double) facing.getFrontOffsetZ() * d3;
-        entityitem.motionX += world.rand.nextGaussian() * 0.007499999832361937D * (double) 2.5D;
-        entityitem.motionY += world.rand.nextGaussian() * 0.007499999832361937D * (double) 2.5D;
-        entityitem.motionZ += world.rand.nextGaussian() * 0.007499999832361937D * (double) 2.5D;
+        entityitem.motionX += world.rand.nextGaussian() * 0.007499999832361937D * 2.5D;
+        entityitem.motionY += world.rand.nextGaussian() * 0.007499999832361937D * 2.5D;
+        entityitem.motionZ += world.rand.nextGaussian() * 0.007499999832361937D * 2.5D;
         world.spawnEntity(entityitem);
         return true;
     }

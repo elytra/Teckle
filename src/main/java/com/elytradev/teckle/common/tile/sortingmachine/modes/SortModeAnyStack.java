@@ -18,8 +18,11 @@ package com.elytradev.teckle.common.tile.sortingmachine.modes;
 
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.items.IItemHandler;
 
 /**
  * Created by darkevilmac on 5/22/17.
@@ -31,7 +34,16 @@ public class SortModeAnyStack extends SortMode {
 
     @Override
     public void pulse(TileSortingMachine sortingMachine, PullMode mode) {
+        for (int compartmentNumber = 0; compartmentNumber < sortingMachine.getCompartmentHandlers().size(); compartmentNumber++) {
+            IItemHandler compartment = sortingMachine.getCompartmentHandlers().get(compartmentNumber);
+            EnumDyeColor compartmentColour = sortingMachine.colours[compartmentNumber];
 
+            for (int slot = 0; slot < compartment.getSlots(); slot++) {
+                ItemStack stackInSlot = compartment.getStackInSlot(slot);
+
+                //TODO: Actually implement. :^)
+            }
+        }
     }
 
     /**
@@ -43,7 +55,21 @@ public class SortModeAnyStack extends SortMode {
      */
     @Override
     public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
-        return false;
+        if (traveller.data.hasKey("stack")) {
+            ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
+
+            for (int compartmentNumber = 0; compartmentNumber < sortingMachine.getCompartmentHandlers().size(); compartmentNumber++) {
+                IItemHandler compartment = sortingMachine.getCompartmentHandlers().get(compartmentNumber);
+                for (int slot = 0; slot < compartment.getSlots(); slot++) {
+                    ItemStack stackInSlot = compartment.getStackInSlot(slot);
+                    if (ItemStack.areItemsEqual(travellerStack, stackInSlot)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return !sortingMachine.defaultRoute.isBlocked();
     }
 
     /**
@@ -55,7 +81,32 @@ public class SortModeAnyStack extends SortMode {
      */
     @Override
     public WorldNetworkTraveller processExistingTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
-        return null;
+        if (traveller.data.hasKey("stack")) {
+            ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
+
+            for (int compartmentNumber = 0; compartmentNumber < sortingMachine.getCompartmentHandlers().size(); compartmentNumber++) {
+                IItemHandler compartment = sortingMachine.getCompartmentHandlers().get(compartmentNumber);
+                EnumDyeColor compartmentColour = sortingMachine.colours[compartmentNumber];
+
+                for (int slot = 0; slot < compartment.getSlots(); slot++) {
+                    ItemStack stackInSlot = compartment.getStackInSlot(slot);
+                    if (ItemStack.areItemsEqual(travellerStack, stackInSlot)) {
+                        traveller.data.setInteger("colour", compartmentColour.getMetadata());
+                        return traveller;
+                    }
+                }
+            }
+
+            if (!sortingMachine.defaultRoute.isBlocked()) {
+                if (sortingMachine.defaultRoute.isColoured()) {
+                    traveller.data.setInteger("colour", sortingMachine.defaultRoute.getColour().getMetadata());
+                } else {
+                    traveller.data.removeTag("colour");
+                }
+            }
+        }
+
+        return traveller;
     }
 
     /**
@@ -66,16 +117,17 @@ public class SortModeAnyStack extends SortMode {
      */
     @Override
     public int selectorPosition(TileSortingMachine sortingMachine) {
-        return 0;
+        return -1;
     }
 
     @Override
     public NBTBase serializeNBT() {
+        // We don't store anything of interest.
         return new NBTTagCompound();
     }
 
     @Override
     public void deserializeNBT(NBTBase nbt) {
-
+        // We don't store anything of interest.
     }
 }

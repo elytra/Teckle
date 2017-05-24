@@ -63,10 +63,8 @@ public class CapabilityWorldNetworkAssistantHolder {
             public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
                 if (capability == null)
                     return false;
-                if (capability == NETWORK_ASSISTANT_HOLDER_CAPABILITY)
-                    return true;
+                return capability == NETWORK_ASSISTANT_HOLDER_CAPABILITY;
 
-                return false;
             }
 
             @Nullable

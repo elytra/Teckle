@@ -57,7 +57,7 @@ public class GuiFabricator extends GuiContainer {
         //copied from guiscreen, used to detect right clicks on templates
         if (mouseButton == 1) {
             for (int i = 0; i < this.templates.length; ++i) {
-                GuiButton guibutton = (GuiButton) this.templates[i];
+                GuiButton guibutton = this.templates[i];
 
                 if (guibutton.mousePressed(this.mc, mouseX, mouseY)) {
                     net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Pre event = new net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Pre(this, guibutton, this.buttonList);

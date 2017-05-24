@@ -42,13 +42,16 @@ import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
@@ -63,6 +66,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     public PullMode pullMode = new PullModeSingleStep();
     public SortMode sortMode = new SortModeAnyStack();
+    public DefaultRoute defaultRoute = DefaultRoute.NONE;
 
     private List<IItemHandler> subHandlers;
     private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
@@ -152,7 +156,21 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         if (world.isRemote)
             return;
 
-        pullMode.onTick(this);
+        if (getSource() != null)
+            pullMode.onTick(this);
+    }
+
+    public TileEntity getSource() {
+        if (world != null) {
+            EnumFacing facing = networkTile.getFacing();
+
+            TileEntity sourceTile = world.getTileEntity(pos.offset(facing));
+            if (sourceTile != null && sourceTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite())) {
+                return sourceTile;
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -231,5 +249,71 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         return new GuiSortingMachine(this, player);
     }
 
+    public enum DefaultRoute implements IStringSerializable {
+        WHITE(0, "white", EnumDyeColor.WHITE),
+        ORANGE(1, "orange", EnumDyeColor.ORANGE),
+        MAGENTA(2, "magenta", EnumDyeColor.MAGENTA),
+        LIGHT_BLUE(3, "light_blue", EnumDyeColor.LIGHT_BLUE),
+        YELLOW(4, "yellow", EnumDyeColor.YELLOW),
+        LIME(5, "lime", EnumDyeColor.LIME),
+        PINK(6, "pink", EnumDyeColor.PINK),
+        GRAY(7, "gray", EnumDyeColor.GRAY),
+        SILVER(8, "silver", EnumDyeColor.SILVER),
+        CYAN(9, "cyan", EnumDyeColor.CYAN),
+        PURPLE(10, "purple", EnumDyeColor.PURPLE),
+        BLUE(11, "blue", EnumDyeColor.BLUE),
+        BROWN(12, "brown", EnumDyeColor.BROWN),
+        GREEN(13, "green", EnumDyeColor.GREEN),
+        RED(14, "red", EnumDyeColor.RED),
+        BLACK(15, "black", EnumDyeColor.BLACK),
+        NONE(16, "none", null),
+        BLOCKED(17, "blocked", null);
+
+        private static final DefaultRoute[] META_LOOKUP = new DefaultRoute[values().length];
+
+        static {
+            for (DefaultRoute ingotType : values()) {
+                META_LOOKUP[ingotType.getMetadata()] = ingotType;
+            }
+        }
+
+        private final int meta;
+        private final String name;
+        private final EnumDyeColor colour;
+
+        DefaultRoute(int meta, String name, EnumDyeColor colour) {
+            this.meta = meta;
+            this.name = name;
+            this.colour = colour;
+        }
+
+        public static DefaultRoute byMetadata(int meta) {
+            if (meta < 0 || meta >= META_LOOKUP.length) {
+                meta = 0;
+            }
+
+            return META_LOOKUP[meta];
+        }
+
+        public int getMetadata() {
+            return this.meta;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public EnumDyeColor getColour() {
+            return colour;
+        }
+
+        public boolean isBlocked() {
+            return this == BLOCKED;
+        }
+
+        public boolean isColoured() {
+            return this != BLOCKED && this != NONE;
+        }
+    }
 
 }

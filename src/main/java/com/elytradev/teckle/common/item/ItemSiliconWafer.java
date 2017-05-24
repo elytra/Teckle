@@ -70,6 +70,7 @@ public class ItemSiliconWafer extends Item implements IResourceHolder {
         BLUE(2, "blue", "_blue");
 
         private static final ItemSiliconWafer.WaferType[] META_LOOKUP = new ItemSiliconWafer.WaferType[values().length];
+
         static {
             for (WaferType waferType : values()) {
                 META_LOOKUP[waferType.getMetadata()] = waferType;
