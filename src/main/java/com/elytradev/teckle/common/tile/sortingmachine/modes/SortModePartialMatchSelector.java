@@ -26,7 +26,7 @@ import net.minecraft.nbt.NBTTagCompound;
  */
 public class SortModePartialMatchSelector extends SortMode {
     public SortModePartialMatchSelector() {
-        super(1, SortModeType.COMPARTMENT);
+        super(1, "sortmode.partialmatchselector", SortModeType.COMPARTMENT);
     }
 
     @Override

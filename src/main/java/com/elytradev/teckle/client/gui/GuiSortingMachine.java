@@ -23,16 +23,19 @@ import com.elytradev.teckle.common.network.SortingMachineSortModeChangeMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.SortMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.SortModeType;
+import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 
 import javax.vecmath.Point2i;
+import java.util.Arrays;
 
 public class GuiSortingMachine extends GuiContainer {
 
@@ -79,6 +82,24 @@ public class GuiSortingMachine extends GuiContainer {
         Minecraft.getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
         drawTexturedModalRect((width - xSize) / 2, (height - ySize) / 2, 0, 0, xSize, ySize);
         GlStateManager.enableLighting();
+    }
+
+    /**
+     * Draw the foreground layer for the GuiContainer (everything in front of the items)
+     *
+     * @param mouseX
+     * @param mouseY
+     */
+    @Override
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(-guiLeft, -guiTop, 0);
+        for (int i = 0; i < buttonList.size(); i++) {
+            if (buttonList.get(i) instanceof IHoverable) {
+                ((IHoverable) buttonList.get(i)).drawHover(mc, mouseX, mouseY);
+            }
+        }
+        GlStateManager.popMatrix();
     }
 
     @Override
@@ -160,7 +181,7 @@ public class GuiSortingMachine extends GuiContainer {
         }
     }
 
-    public class GuiSortTypeSelector extends GuiButton {
+    public class GuiSortTypeSelector extends GuiButton implements IHoverable {
 
         public GuiSortTypeSelector(int buttonId, int x, int y) {
             super(buttonId, x, y, 16, 16, "");
@@ -186,9 +207,21 @@ public class GuiSortingMachine extends GuiContainer {
                 }
             }
         }
+
+        @Override
+        public void drawHover(Minecraft mc, int mouseX, int mouseY) {
+            if (!visible)
+                return;
+
+            if (sortingMachine.sortMode != null) {
+                if (isMouseOver()) {
+                    GuiSortingMachine.this.drawHoveringText(ChatFormatting.BOLD + I18n.format(sortingMachine.sortMode.type.getUnlocalizedName()), mouseX, mouseY);
+                }
+            }
+        }
     }
 
-    public class GuiSortModeSelector extends GuiButton {
+    public class GuiSortModeSelector extends GuiButton implements IHoverable {
 
         public GuiSortModeSelector(int buttonId, int x, int y) {
             super(buttonId, x, y, 16, 16, "");
@@ -217,6 +250,19 @@ public class GuiSortingMachine extends GuiContainer {
                         additionalYOffset += 16;
                     }
                     this.drawTexturedModalRect(this.xPosition, this.yPosition, modeOffset.x, modeOffset.y + additionalYOffset, this.width, this.height);
+                }
+            }
+        }
+
+        @Override
+        public void drawHover(Minecraft mc, int mouseX, int mouseY) {
+            if (!visible)
+                return;
+
+            if (sortingMachine.sortMode != null) {
+                if (isMouseOver()) {
+                    GuiSortingMachine.this.drawHoveringText(Arrays.asList(ChatFormatting.BOLD + I18n.format(sortingMachine.sortMode.getUnlocalizedName()),
+                            I18n.format(sortingMachine.sortMode.getUnlocalizedName() + ".tooltip")), mouseX, mouseY);
                 }
             }
         }

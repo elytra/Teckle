@@ -51,12 +51,14 @@ public abstract class SortMode implements INBTSerializable {
         }
     }
 
+    private final String unlocalizedName;
     public int id;
     public SortModeType type;
 
-    public SortMode(int id, SortModeType type) {
+    public SortMode(int id, String unlocalizedName, SortModeType type) {
         this.id = id;
         this.type = type;
+        this.unlocalizedName = unlocalizedName;
 
         type.add(this);
     }
@@ -97,4 +99,7 @@ public abstract class SortMode implements INBTSerializable {
      */
     public abstract int selectorPosition(TileSortingMachine sortingMachine);
 
+    public String getUnlocalizedName() {
+        return unlocalizedName;
+    }
 }

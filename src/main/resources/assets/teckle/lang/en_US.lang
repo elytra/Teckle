@@ -34,3 +34,18 @@ item.teckle.siliconwafer.blue.name=Blue Doped Wafer
 tooltip.teckle.node.network=Network %s
 tooltip.teckle.traveller.data=Travellers
 tooltip.teckle.filter.buffer=Buffer
+
+sortmodetype.compartment=Compartment
+sortmodetype.slot=Slot
+
+sortmode.partialmatchselector=Partial Match with Selector
+sortmode.fullmatchselector=Full Match with Selector
+sortmode.fullmatch=Full Match
+sortmode.anystack=Any Stack
+sortmode.fullstack=Any Full Stack
+
+sortmode.partialmatchselector.tooltip=Sort when any item set in the current compartment is available.
+sortmode.fullmatchselector.tooltip=Sort when every item set in the current compartment is available.
+sortmode.fullmatch.tooltip=Sort when every item in any compartment is available.
+sortmode.anystack.tooltip=Sort when any item in any compartment is available.
+sortmode.fullstack.tooltip=Sort when the specified amount of any item in any compartment is available.

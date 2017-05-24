@@ -28,7 +28,7 @@ import net.minecraftforge.items.IItemHandler;
  */
 public class SortModeFullMatch extends SortMode {
     public SortModeFullMatch() {
-        super(2, SortModeType.COMPARTMENT);
+        super(2, "sortmode.fullmatch", SortModeType.COMPARTMENT);
     }
 
     @Override

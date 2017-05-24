@@ -22,8 +22,8 @@ import javax.vecmath.Point2i;
 import java.util.ArrayList;
 
 public enum SortModeType {
-    COMPARTMENT(0, 216, 10),
-    SLOT(1, 232, 10);
+    COMPARTMENT(0, 216, 10, "sortmodetype.compartment"),
+    SLOT(1, 232, 10, "sortmodetype.slot");
 
     public static SortModeType[] TYPES;
 
@@ -37,11 +37,13 @@ public enum SortModeType {
     public final int id;
     private final ArrayList<Class<? extends SortMode>> subModes = Lists.newArrayList();
     private int x, y, minID, maxID;
+    private String unlocalizedName;
 
-    SortModeType(int i, int x, int y) {
+    SortModeType(int i, int x, int y, String unlocalizedName) {
         this.id = i;
         this.x = x;
         this.y = y;
+        this.unlocalizedName = unlocalizedName;
 
         this.minID = Integer.MAX_VALUE;
         this.maxID = Integer.MIN_VALUE;
@@ -74,6 +76,10 @@ public enum SortModeType {
 
     public int maxID() {
         return maxID;
+    }
+
+    public String getUnlocalizedName() {
+        return unlocalizedName;
     }
 
     public Class<? extends SortMode> getDefaultMode() {

@@ -26,7 +26,7 @@ import net.minecraft.nbt.NBTTagCompound;
  */
 public class SortModeFullMatchSelector extends SortMode {
     public SortModeFullMatchSelector() {
-        super(0, SortModeType.COMPARTMENT);
+        super(0, "sortmode.fullmatchselector", SortModeType.COMPARTMENT);
     }
 
     @Override

@@ -26,7 +26,7 @@ import net.minecraft.nbt.NBTTagCompound;
  */
 public class SortModeAnyStack extends SortMode {
     public SortModeAnyStack() {
-        super(3, SortModeType.SLOT);
+        super(3, "sortmode.anystack", SortModeType.SLOT);
     }
 
     @Override
