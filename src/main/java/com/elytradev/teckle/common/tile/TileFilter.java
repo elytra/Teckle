@@ -71,7 +71,7 @@ import java.util.Objects;
 public class TileFilter extends TileNetworkMember implements ITickable, IElementProvider {
 
     public EnumDyeColor colour = null;
-    public AdvancedItemStackHandler filterData = new AdvancedItemStackHandler(9).withSlotLimit(slot -> 16);
+    public AdvancedItemStackHandler filterData = new AdvancedItemStackHandler(9);
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
     private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
         @Override
@@ -338,15 +338,15 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                             continue;
 
                         for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
-                            ItemStack extractTest = itemHandler.extractItem(slot, stack.getCount(), true);
+                            ItemStack extractTest = itemHandler.extractItem(slot, stack.getCount() > 1 ? stack.getCount() : stack.getMaxStackSize(), true);
                             if (Objects.equals(extractTest.getItem(), stack.getItem()) && extractTest.getMetadata() == stack.getMetadata()) {
-                                extractionData = itemHandler.extractItem(slot, stack.getCount(), false);
+                                extractionData = itemHandler.extractItem(slot, stack.getCount() > 1 ? stack.getCount() : stack.getMaxStackSize(), false);
                             }
                         }
                     }
                 } else {
                     for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
-                        extractionData = itemHandler.extractItem(slot, 8, false);
+                        extractionData = itemHandler.extractItem(slot, 64, false);
                     }
                 }
             }
