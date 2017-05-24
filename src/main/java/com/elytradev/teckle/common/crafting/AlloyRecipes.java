@@ -17,6 +17,7 @@
 package com.elytradev.teckle.common.crafting;
 
 import com.elytradev.teckle.common.TeckleObjects;
+import com.elytradev.teckle.common.item.ItemIngot;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
@@ -68,11 +69,11 @@ public class AlloyRecipes {
         recipes.put(blueDopedWaferRecipe.getCraftingResult(), blueDopedWaferRecipe);
 
         AlloyRecipe brassIngotRecipe = new AlloyRecipe(
-                new ItemStack(TeckleObjects.itemBrassIngot),
+                new ItemStack(TeckleObjects.itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()),
                 new Tuple<>("ingotTin", 1),
                 new Tuple<>("ingotCopper", 3)
         );
-        recipes.put(new ItemStack(TeckleObjects.itemBrassIngot), brassIngotRecipe);
+        recipes.put(new ItemStack(TeckleObjects.itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()), brassIngotRecipe);
     }
 
 

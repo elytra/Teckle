@@ -20,6 +20,7 @@ import com.elytradev.teckle.common.block.*;
 import com.elytradev.teckle.common.crafting.RecipeSlice;
 import com.elytradev.teckle.common.handlers.PaintbrushRecipe;
 import com.elytradev.teckle.common.item.ItemBlade;
+import com.elytradev.teckle.common.item.ItemIngot;
 import com.elytradev.teckle.common.item.ItemPaintbrush;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.tile.*;
@@ -39,10 +40,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Block registration is here, to keep the mod class nice and small.
@@ -62,8 +60,9 @@ public class TeckleObjects {
     public static ItemBlade itemBlade;
     public static Item itemNikolite;
     public static Item itemSiliconBoule;
-    public static Item itemBrassIngot;
     public static ItemSiliconWafer itemSiliconWafer;
+    public static ItemIngot itemIngot;
+
 
     public static CreativeTabs creativeTab = new CreativeTabs(TeckleMod.MOD_ID) {
         @Override
@@ -123,9 +122,11 @@ public class TeckleObjects {
         itemSiliconWafer = new ItemSiliconWafer();
         registerItem("siliconwafer", itemSiliconWafer);
 
-        itemBrassIngot = new Item();
-        registerItem("brassingot", itemBrassIngot);
-        OreDictionary.registerOre("ingotBrass", new ItemStack(itemBrassIngot, 1));
+        itemIngot = new ItemIngot();
+        registerItem("ingot", itemIngot);
+        Arrays.stream(ItemIngot.IngotType.values()).forEach(ingotType ->
+                OreDictionary.registerOre(ingotType.getOreName(),
+                        new ItemStack(itemIngot, 1, ingotType.getMetadata())));
 
         skipItemMesh.add(itemSiliconWafer);
     }
@@ -143,10 +144,10 @@ public class TeckleObjects {
         GameRegistry.addRecipe(new PaintbrushRecipe());
         GameRegistry.addRecipe(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule));
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockAlloyFurnace), "BBB", "B B", "BBB", 'B', Blocks.BRICK_BLOCK));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockItemTube, 8), "BGB", 'B', itemBrassIngot, 'G', Blocks.GLASS));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockItemTube, 8), "BGB", 'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()), 'G', Blocks.GLASS));
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockTransposer), "CCC", "WPW", "CRC", 'C', Blocks.COBBLESTONE, 'W', Blocks.PLANKS, 'P', Blocks.PISTON, 'R', Items.REDSTONE));
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockFilter), "CCC", "GPG", "CWC", 'C', Blocks.COBBLESTONE, 'G', Items.GOLD_INGOT, 'P', Blocks.PISTON, 'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata())));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockFabricator), "BBB", "WCW", "WRW", 'B', itemBrassIngot, 'W', Blocks.PLANKS, 'C', Blocks.CRAFTING_TABLE, 'R', Items.REDSTONE));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockFabricator), "BBB", "WCW", "WRW", 'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()), 'W', Blocks.PLANKS, 'C', Blocks.CRAFTING_TABLE, 'R', Items.REDSTONE));
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemBlade), "I  ", " S ", 'I', Items.IRON_INGOT, 'S', Items.STICK));
 
 
@@ -174,7 +175,6 @@ public class TeckleObjects {
             GameRegistry.addShapedRecipe(new ItemStack(itemPaintBrush, 1, i),
                     "D  ", " W ", "  S", 'D', "dye" + dyes[i], 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
         }
-
     }
 
     public void postInit(FMLPostInitializationEvent e) {
@@ -217,4 +217,6 @@ public class TeckleObjects {
         GameRegistry.register(item);
         TeckleObjects.registeredItems.put(id, item);
     }
+
+
 }

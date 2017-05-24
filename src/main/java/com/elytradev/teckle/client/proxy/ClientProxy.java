@@ -22,6 +22,7 @@ import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockItemTube;
+import com.elytradev.teckle.common.item.ItemIngot;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.tile.TileItemTube;
@@ -119,7 +120,7 @@ public class ClientProxy extends CommonProxy {
         for (int i = 0; i < EnumDyeColor.values().length; i++) {
             EnumDyeColor color = EnumDyeColor.byDyeDamage(i);
             ModelLoader.setCustomModelResourceLocation(TeckleObjects.itemPaintBrush, i, new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "paintbrush_" + color.getName(), "inventory"));
-            TeckleMod.LOG.info("Registering paintbrush model variant: " + i + " " + new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "paintbrush_" + color.getName()), "inventory");
+            TeckleMod.LOG.debug("Registering paintbrush model variant: " + i + " " + new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "paintbrush_" + color.getName()), "inventory");
         }
 
         for (int i = 0; i < ItemSiliconWafer.WaferType.values().length; i++) {
@@ -127,7 +128,15 @@ public class ClientProxy extends CommonProxy {
 
             ModelResourceLocation resourceLocation = new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "siliconwafer" + waferType.getSuffix(), "inventory");
             ModelLoader.setCustomModelResourceLocation(TeckleObjects.itemSiliconWafer, i, resourceLocation);
-            TeckleMod.LOG.info("Registering wafer model variant: " + i + " " + resourceLocation);
+            TeckleMod.LOG.debug("Registering wafer model variant: " + i + " " + resourceLocation);
+        }
+
+        for (int i = 0; i < ItemIngot.IngotType.values().length; i++) {
+            ItemIngot.IngotType ingotType = ItemIngot.IngotType.byMetadata(i);
+
+            ModelResourceLocation resourceLocation = new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "ingot_" + ingotType.getName(), "inventory");
+            ModelLoader.setCustomModelResourceLocation(TeckleObjects.itemIngot, ingotType.getMetadata(), resourceLocation);
+            TeckleMod.LOG.debug("Registering ingot model variant: " + ingotType.getMetadata() + " " + resourceLocation);
         }
     }
 
@@ -135,6 +144,7 @@ public class ClientProxy extends CommonProxy {
     public void onModelBakeEvent(ModelBakeEvent e) {
         ModelItemTube tubeModel = new ModelItemTube();
         e.getModelRegistry().putObject(new ModelResourceLocation("teckle:tube.item", "normal"), tubeModel);
+
     }
 
     @Override

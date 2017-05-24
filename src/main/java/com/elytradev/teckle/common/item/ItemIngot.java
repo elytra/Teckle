@@ -26,20 +26,24 @@ import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 
-public class ItemSiliconWafer extends Item implements IResourceHolder {
+/**
+ * Created by darkevilmac on 5/23/17.
+ */
+public class ItemIngot extends Item implements IResourceHolder {
 
-    public ItemSiliconWafer() {
+    public ItemIngot() {
+
     }
 
     @Override
     public String getUnlocalizedName(ItemStack stack) {
-        return super.getUnlocalizedName() + "." + WaferType.byMetadata(stack.getMetadata()).getName();
+        return super.getUnlocalizedName() + "." + ItemIngot.IngotType.byMetadata(stack.getMetadata()).getName();
     }
 
     @Override
     public void getSubItems(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> subItems) {
-        for (WaferType waferType : WaferType.values()) {
-            subItems.add(new ItemStack(itemIn, 1, waferType.getMetadata()));
+        for (ItemIngot.IngotType ingotType : ItemIngot.IngotType.values()) {
+            subItems.add(new ItemStack(itemIn, 1, ingotType.getMetadata()));
         }
     }
 
@@ -56,37 +60,38 @@ public class ItemSiliconWafer extends Item implements IResourceHolder {
     @Override
     public ResourceLocation getResource(EnumResourceType resourceType, int meta) {
         ResourceLocation result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "items/siliconwafer_missingno");
-        WaferType type = WaferType.byMetadata(meta);
+        ItemIngot.IngotType type = ItemIngot.IngotType.byMetadata(meta);
         if (type != null) {
-            result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "items/siliconwafer_" + type.getName());
+            result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "items/ingot_" + type.getName());
         }
 
         return result;
     }
 
-    public enum WaferType implements IStringSerializable {
-        PLAIN(0, "plain", ""),
-        RED(1, "red", "_red"),
-        BLUE(2, "blue", "_blue");
 
-        private static final ItemSiliconWafer.WaferType[] META_LOOKUP = new ItemSiliconWafer.WaferType[values().length];
+    public enum IngotType implements IStringSerializable {
+        BRASS(0, "brass", "ingotBrass"),
+        RED_ALLOY(1, "redalloy", "ingotRedAlloy"),
+        BLUE_ALLOY(2, "bluealloy", "ingotBlueAlloy");
+
+        private static final ItemIngot.IngotType[] META_LOOKUP = new ItemIngot.IngotType[values().length];
+
         static {
-            for (WaferType waferType : values()) {
-                META_LOOKUP[waferType.getMetadata()] = waferType;
+            for (ItemIngot.IngotType ingotType : values()) {
+                META_LOOKUP[ingotType.getMetadata()] = ingotType;
             }
         }
 
         private final int meta;
-        private final String name;
-        private String suffix;
+        private final String name, oreName;
 
-        WaferType(int metaIn, String nameIn, String suffix) {
+        IngotType(int metaIn, String nameIn, String oreName) {
             this.meta = metaIn;
             this.name = nameIn;
-            this.suffix = suffix;
+            this.oreName = oreName;
         }
 
-        public static ItemSiliconWafer.WaferType byMetadata(int meta) {
+        public static ItemIngot.IngotType byMetadata(int meta) {
             if (meta < 0 || meta >= META_LOOKUP.length) {
                 meta = 0;
             }
@@ -106,8 +111,8 @@ public class ItemSiliconWafer extends Item implements IResourceHolder {
             return this.name;
         }
 
-        public String getSuffix() {
-            return this.suffix;
+        public String getOreName() {
+            return oreName;
         }
     }
 }

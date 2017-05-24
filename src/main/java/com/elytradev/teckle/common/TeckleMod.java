@@ -24,11 +24,13 @@ import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.worldgen.NikoliteOreGenerator;
 import net.minecraft.launchwrapper.Launch;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLMissingMappingsEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -81,5 +83,11 @@ public class TeckleMod {
         PROXY.registerRenderers(e.getModState());
 
         AlloyRecipes.getInstance().init();
+    }
+
+    @Mod.EventHandler
+    public void onMissingMappings(FMLMissingMappingsEvent e) {
+        e.getAll().stream().filter(missingMapping -> missingMapping.resourceLocation.equals(new ResourceLocation("teckle:brassingot")))
+                .forEach(missingMapping -> missingMapping.remap(TeckleObjects.itemIngot));
     }
 }
