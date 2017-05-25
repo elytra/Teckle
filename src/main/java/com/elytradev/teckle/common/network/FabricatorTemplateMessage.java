@@ -52,7 +52,8 @@ public class FabricatorTemplateMessage extends Message {
     protected void handle(EntityPlayer sender) {
         if (sender != null && sender.world != null) {
             TileFabricator fabricator = (TileFabricator) sender.world.getTileEntity(fabricatorPos);
-
+            if (!fabricator.isUsableByPlayer(sender))
+                return;
             fabricator.setTemplateSlot(templateIndex, stack);
         }
     }

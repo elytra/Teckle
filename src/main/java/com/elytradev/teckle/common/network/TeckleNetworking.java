@@ -35,6 +35,7 @@ public class TeckleNetworking {
         NETWORK.register(FabricatorTemplateMessage.class);
         NETWORK.register(SortingMachineColourChangeMessage.class);
         NETWORK.register(SortingMachineSortModeChangeMessage.class);
+        NETWORK.register(SortingMachinePullModeChangeMessage.class);
     }
 
 }

@@ -49,6 +49,9 @@ public class SortingMachineSortModeChangeMessage extends Message {
         if (sender != null && sender.world != null) {
             TileSortingMachine sortingMachine = (TileSortingMachine) sender.world.getTileEntity(sortingMachinePos);
 
+            if (!sortingMachine.isUsableByPlayer(sender))
+                return;
+
             try {
                 sortingMachine.sortMode = SortMode.SORT_MODES.get(sortModeID).newInstance();
             } catch (Exception e) {

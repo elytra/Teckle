@@ -189,7 +189,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             pullMode = PullMode.PULL_MODES.get(compound.getInteger("pullModeID")).newInstance();
             pullMode.deserializeNBT(compound.getCompoundTag("pullMode"));
 
-            sortMode = SortMode.SORT_MODES.get(compound.getInteger("sortModeID")).newInstance();
+            sortMode = SortMode.SORT_MODES.get(compound.getInteger("pullModeID")).newInstance();
             sortMode.deserializeNBT(compound.getCompoundTag("sortMode"));
         } catch (Exception e) {
             TeckleMod.LOG.error("Failed to read sorting machine modes from nbt.", e);
@@ -214,7 +214,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         compound.setInteger("pullModeID", pullMode.getID());
 
         compound.setTag("sortMode", sortMode.serializeNBT());
-        compound.setInteger("sortModeID", sortMode.getID());
+        compound.setInteger("pullModeID", sortMode.getID());
 
         return super.writeToNBT(compound);
     }

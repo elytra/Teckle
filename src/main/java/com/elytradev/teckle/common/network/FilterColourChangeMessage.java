@@ -50,7 +50,8 @@ public class FilterColourChangeMessage extends Message {
     protected void handle(EntityPlayer sender) {
         if (sender != null && sender.world != null) {
             TileFilter filter = (TileFilter) sender.world.getTileEntity(filterPos);
-
+            if (!filter.isUsableByPlayer(sender))
+                return;
             filter.colour = this.colour == -1 ? null : EnumDyeColor.byMetadata(this.colour);
         }
     }
