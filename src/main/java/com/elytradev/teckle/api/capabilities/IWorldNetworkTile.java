@@ -120,6 +120,11 @@ public interface IWorldNetworkTile {
     default void acceptReturn(WorldNetworkTraveller traveller, EnumFacing side) {
     }
 
+    /**
+     * The output face of the tile, only applies to tiles that add things to networks.
+     *
+     * @return the output face of the tile, null if this doesn't output.
+     */
     @Nullable
     default EnumFacing getFacing() {
         return null;
