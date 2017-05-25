@@ -51,3 +51,11 @@ sortmode.fullmatchselector.tooltip=Sort when every item set in the current compa
 sortmode.fullmatch.tooltip=Sort when every item in any compartment is available.
 sortmode.anystack.tooltip=Sort when any item in any compartment is available.
 sortmode.fullstack.tooltip=Sort when the specified amount of any item in any compartment is available.
+
+pullmode.auto=Automatic
+pullmode.singlestep=Single Step
+pullmode.singlesweep=Single Sweep
+
+pullmode.auto.tooltip=Automatically pulse when items are available.
+pullmode.singlestep.tooltip=Attempt to satisfy the current compartment on redstone pulse, if no compartment is selected then pull.
+pullmode.singlesweep.tooltip=Sweep through all compartments on redstone pulse.

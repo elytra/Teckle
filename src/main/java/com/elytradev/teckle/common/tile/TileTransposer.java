@@ -104,7 +104,6 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
             ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
             EnumFacing facing = getFacing();
-            BlockPos sourcePos = pos.offset(facing);
 
             // Try and put it back where we found it.
             if (side.equals(getFacing())) {

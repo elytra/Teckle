@@ -24,7 +24,7 @@ public class PullModeAuto extends PullMode {
     public int coolDown = 4;
 
     public PullModeAuto() {
-        super(2);
+        super(2, 208, 58, "pullmode.auto");
     }
 
     @Override

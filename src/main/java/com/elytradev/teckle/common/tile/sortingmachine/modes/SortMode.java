@@ -52,7 +52,7 @@ public abstract class SortMode implements INBTSerializable {
     }
 
     private final String unlocalizedName;
-    public int id;
+    private final int id;
     public SortModeType type;
 
     public SortMode(int id, String unlocalizedName, SortModeType type) {

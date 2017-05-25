@@ -19,8 +19,10 @@ package com.elytradev.teckle.client.gui;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
 import com.elytradev.teckle.common.network.SortingMachineColourChangeMessage;
+import com.elytradev.teckle.common.network.SortingMachinePullModeChangeMessage;
 import com.elytradev.teckle.common.network.SortingMachineSortModeChangeMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.PullMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.SortMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.SortModeType;
 import com.mojang.realmsclient.gui.ChatFormatting;
@@ -67,6 +69,10 @@ public class GuiSortingMachine extends GuiContainer {
 
         buttonList.add(new GuiSortTypeSelector(8, guiLeft + 10, guiTop + 130));
         buttonList.add(new GuiSortModeSelector(9, guiLeft + 40, guiTop + 130));
+
+        if (sortingMachine.getSource() != null) {
+            buttonList.add(new GuiPullModeSelector(10, guiLeft + 150, guiTop + 130));
+        }
     }
 
     /**
@@ -146,10 +152,43 @@ public class GuiSortingMachine extends GuiContainer {
             try {
                 sortingMachine.sortMode = SortMode.SORT_MODES.get(selectedMode).newInstance();
             } catch (Exception e) {
-                TeckleMod.LOG.error("Failed to change mode in sortingmachine gui, ", e);
+                TeckleMod.LOG.error("Failed to change sort mode in sortingmachine gui, ", e);
             }
 
             new SortingMachineSortModeChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();
+        } else if (button instanceof GuiPullModeSelector) {
+            if (sortingMachine.getSource() == null) {
+                buttonList.remove(button);
+                return;
+            }
+            int selectedMode = sortingMachine.pullMode.getID();
+
+            if (selectedMode < PullMode.PULL_MODES.size() - 1) {
+                selectedMode++;
+            } else if (selectedMode == PullMode.PULL_MODES.size() - 1) {
+                selectedMode = 0;
+            }
+
+            if (PullMode.PULL_MODES.get(selectedMode) == PullMode.SINGLE_SWEEP) {
+                // Prevent us from using an invalid pull mode if possible.
+                if (sortingMachine.sortMode.getClass() == SortMode.SLOT_ANY_STACK
+                        || sortingMachine.sortMode.getClass() == SortMode.SLOT_FULL_STACK
+                        || sortingMachine.sortMode.getClass() == SortMode.COMPARTMENT_FULL_MATCH) {
+                    if (selectedMode < PullMode.PULL_MODES.size() - 1) {
+                        selectedMode++;
+                    } else if (selectedMode == PullMode.PULL_MODES.size() - 1) {
+                        selectedMode = 0;
+                    }
+                }
+            }
+
+            try {
+                sortingMachine.pullMode = PullMode.PULL_MODES.get(selectedMode).newInstance();
+            } catch (Exception e) {
+                TeckleMod.LOG.error("Failed to change pull mode in sortingmachine gui, ", e);
+            }
+
+            new SortingMachinePullModeChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();
         }
     }
 
@@ -263,6 +302,47 @@ public class GuiSortingMachine extends GuiContainer {
                 if (isMouseOver()) {
                     GuiSortingMachine.this.drawHoveringText(Arrays.asList(ChatFormatting.BOLD + I18n.format(sortingMachine.sortMode.getUnlocalizedName()),
                             I18n.format(sortingMachine.sortMode.getUnlocalizedName() + ".tooltip")), mouseX, mouseY);
+                }
+            }
+        }
+    }
+
+    public class GuiPullModeSelector extends GuiButton implements IHoverable {
+
+        public GuiPullModeSelector(int buttonId, int x, int y) {
+            super(buttonId, x, y, 16, 16, "");
+        }
+
+        public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+            if (this.visible) {
+                this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+
+                mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
+                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                int yOffset = 10;
+                int xOffset = 176;
+                if (isMouseOver()) {
+                    xOffset += 16;
+                }
+
+                this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
+
+                if (sortingMachine.sortMode != null) {
+                    Point2i modeOffset = sortingMachine.pullMode.textureOffset();
+                    this.drawTexturedModalRect(this.xPosition, this.yPosition, modeOffset.x, modeOffset.y, this.width, this.height);
+                }
+            }
+        }
+
+        @Override
+        public void drawHover(Minecraft mc, int mouseX, int mouseY) {
+            if (!visible)
+                return;
+
+            if (sortingMachine.sortMode != null) {
+                if (isMouseOver()) {
+                    GuiSortingMachine.this.drawHoveringText(Arrays.asList(ChatFormatting.BOLD + I18n.format(sortingMachine.pullMode.getUnlocalizedName()),
+                            I18n.format(sortingMachine.pullMode.getUnlocalizedName() + ".tooltip")), mouseX, mouseY);
                 }
             }
         }

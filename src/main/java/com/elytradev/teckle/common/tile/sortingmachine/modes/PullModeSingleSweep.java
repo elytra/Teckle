@@ -26,7 +26,7 @@ public class PullModeSingleSweep extends PullMode {
     public int coolDown = 4;
 
     public PullModeSingleSweep() {
-        super(1);
+        super(1, 208, 42, "pullmode.singlesweep");
     }
 
     @Override

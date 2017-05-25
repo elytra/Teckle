@@ -19,6 +19,7 @@ package com.elytradev.teckle.common.tile.sortingmachine.modes;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraftforge.common.util.INBTSerializable;
 
+import javax.vecmath.Point2i;
 import java.util.ArrayList;
 
 public abstract class PullMode implements INBTSerializable {
@@ -37,14 +38,26 @@ public abstract class PullMode implements INBTSerializable {
         PULL_MODES.add(2, AUTOMATIC);
     }
 
-    public int id;
+    private final int id, x, y;
+    private final String unlocalizedName;
 
-    public PullMode(int id) {
+    public PullMode(int id, int x, int y, String unlocalizedName) {
         this.id = id;
+        this.x = x;
+        this.y = y;
+        this.unlocalizedName = unlocalizedName;
     }
 
     public int getID() {
         return id;
+    }
+
+    public String getUnlocalizedName() {
+        return unlocalizedName;
+    }
+
+    public Point2i textureOffset() {
+        return new Point2i(x, y);
     }
 
     public abstract void onPulse(TileSortingMachine sortingMachine);

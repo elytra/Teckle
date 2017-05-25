@@ -22,7 +22,7 @@ import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.client.gui.GuiSortingMachine;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
-import com.elytradev.teckle.common.block.BlockFilter;
+import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
@@ -101,8 +101,8 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         public EnumFacing getFacing() {
             if (world != null) {
                 IBlockState thisState = world.getBlockState(pos);
-                if (thisState.getBlock().equals(TeckleObjects.blockFilter)) {
-                    return thisState.getValue(BlockFilter.FACING);
+                if (thisState.getBlock().equals(TeckleObjects.blockSortingMachine)) {
+                    return thisState.getValue(BlockSortingMachine.FACING);
                 }
             }
 
@@ -163,9 +163,10 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public TileEntity getSource() {
         if (world != null) {
             EnumFacing facing = networkTile.getFacing();
+            BlockPos sourcePos = pos.offset(facing.getOpposite());
 
-            TileEntity sourceTile = world.getTileEntity(pos.offset(facing));
-            if (sourceTile != null && sourceTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite())) {
+            TileEntity sourceTile = world.getTileEntity(sourcePos);
+            if (sourceTile != null && sourceTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
                 return sourceTile;
             }
         }

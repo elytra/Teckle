@@ -25,7 +25,7 @@ public class PullModeSingleStep extends PullMode {
     public int coolDown = 4;
 
     public PullModeSingleStep() {
-        super(0);
+        super(0, 208, 26, "pullmode.singlestep");
     }
 
     @Override
