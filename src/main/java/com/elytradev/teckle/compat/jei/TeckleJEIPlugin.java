@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.jei;
+package com.elytradev.teckle.compat.jei;
 
 import mezz.jei.api.BlankModPlugin;
 import mezz.jei.api.IModRegistry;

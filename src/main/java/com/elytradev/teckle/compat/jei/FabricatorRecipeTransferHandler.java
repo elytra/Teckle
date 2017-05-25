@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.jei;
+package com.elytradev.teckle.compat.jei;
 
 import com.elytradev.teckle.common.container.ContainerFabricator;
 import com.elytradev.teckle.common.network.FabricatorTemplateMessage;

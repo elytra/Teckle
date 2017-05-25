@@ -144,7 +144,8 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
             return;
 
         IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos);
-        if (!thisNetworkTile.getNode().network.isNodePresent(neighbourPos)) {
+        if (thisNetworkTile != null && thisNetworkTile.getNode() != null && thisNetworkTile.getNode().network != null
+                && !thisNetworkTile.getNode().network.isNodePresent(neighbourPos)) {
             // Node not already present, check if we can add to network.
             if (world.getTileEntity(neighbourPos) != null) {
                 TileEntity neighbourTile = world.getTileEntity(neighbourPos);

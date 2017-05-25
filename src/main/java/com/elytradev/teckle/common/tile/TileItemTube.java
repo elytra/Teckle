@@ -25,16 +25,25 @@ import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
+import mcmultipart.api.container.IMultipartContainer;
+import mcmultipart.api.multipart.IMultipartTile;
+import mcmultipart.api.multipart.MultipartHelper;
+import mcmultipart.api.slot.EnumSlotAccess;
+import mcmultipart.api.slot.IPartSlot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
+
+import static com.elytradev.teckle.common.TeckleMod.MULTIPART_CAPABILITY;
 
 public class TileItemTube extends TileNetworkMember {
 
@@ -56,6 +65,37 @@ public class TileItemTube extends TileNetworkMember {
 
         @Override
         public boolean canConnectTo(EnumFacing side) {
+            if (MULTIPART_CAPABILITY != null) {
+                //MCMP loaded, do some checks.
+                TileEntity neighbourTile = world.getTileEntity(pos.offset(side));
+                IMultipartTile multipartTile = (IMultipartTile) getCapability(MULTIPART_CAPABILITY, null);
+                if (multipartTile != null) {
+                    Optional<IMultipartContainer> optionalContainer = MultipartHelper.getContainer(world, pos);
+
+                    if (optionalContainer.isPresent()) {
+                        IMultipartContainer container = optionalContainer.get();
+
+                        for (IPartSlot slot : container.getParts().keySet()) {
+                            if (slot.getFaceAccess(side) == EnumSlotAccess.NONE)
+                                return false;
+                        }
+                    }
+                }
+                if (neighbourTile != null && neighbourTile.hasCapability(MULTIPART_CAPABILITY, side.getOpposite())) {
+                    BlockPos neighbourPos = pos.offset(side);
+                    Optional<IMultipartContainer> optionalContainer = MultipartHelper.getContainer(world, neighbourPos);
+
+                    if (optionalContainer.isPresent()) {
+                        IMultipartContainer container = optionalContainer.get();
+
+                        for (IPartSlot slot : container.getParts().keySet()) {
+                            if (slot.getFaceAccess(side.getOpposite()) == EnumSlotAccess.NONE)
+                                return false;
+                        }
+                    }
+                }
+            }
+
             return true;
         }
 
@@ -84,6 +124,10 @@ public class TileItemTube extends TileNetworkMember {
 
     public void setColour(EnumDyeColor colour) {
         this.colour = colour;
+    }
+
+    public NetworkTileTransporter getNetworkTile() {
+        return networkTile;
     }
 
     @Nullable

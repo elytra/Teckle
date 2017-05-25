@@ -25,6 +25,8 @@ import net.minecraft.nbt.NBTTagCompound;
  * Created by darkevilmac on 5/22/17.
  */
 public class SortModePartialMatchSelector extends SortMode {
+    private int selectorPosition = 0;
+
     public SortModePartialMatchSelector() {
         super(1, "sortmode.partialmatchselector", SortModeType.COMPARTMENT);
     }
@@ -66,7 +68,7 @@ public class SortModePartialMatchSelector extends SortMode {
      */
     @Override
     public int selectorPosition(TileSortingMachine sortingMachine) {
-        return -1;
+        return selectorPosition;
     }
 
     @Override

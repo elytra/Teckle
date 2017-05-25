@@ -23,6 +23,7 @@ import com.elytradev.teckle.common.crafting.AlloyRecipes;
 import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.worldgen.NikoliteOreGenerator;
+import mcmultipart.api.multipart.IMultipartTile;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
@@ -53,6 +54,10 @@ public class TeckleMod {
 
     @CapabilityInject(IProbeDataProvider.class)
     public static Capability<?> PROBE_CAPABILITY;
+
+    @CapabilityInject(IMultipartTile.class)
+    public static Capability<?> MULTIPART_CAPABILITY;
+
     public static Logger LOG;
 
     @SidedProxy(serverSide = "com.elytradev.teckle.common.proxy.CommonProxy", clientSide = "com.elytradev.teckle.client.proxy.ClientProxy")

@@ -25,6 +25,9 @@ import net.minecraft.nbt.NBTTagCompound;
  * Created by darkevilmac on 5/22/17.
  */
 public class SortModeFullMatchSelector extends SortMode {
+
+    public int selectorPosition = 0;
+
     public SortModeFullMatchSelector() {
         super(0, "sortmode.fullmatchselector", SortModeType.COMPARTMENT);
     }
@@ -66,7 +69,7 @@ public class SortModeFullMatchSelector extends SortMode {
      */
     @Override
     public int selectorPosition(TileSortingMachine sortingMachine) {
-        return -1;
+        return selectorPosition;
     }
 
     @Override

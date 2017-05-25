@@ -36,8 +36,8 @@ public class PullModeSingleSweep extends PullMode {
 
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
-        // Quick check that this pull mode will work with our sort mode as this is only actually useful on a certain mode.
-        // The UI should prevent this from happening so this is just a backup.
+        // Quick check that this pull mode will work with our sort mode as this is only actually useful on a certain set of modes.
+        // The UI should prevent this from happening so this is essentially just a sanity check.
         if (sortingMachine.sortMode.getClass() != SortModeFullMatchSelector.class || sortingMachine.sortMode.getClass() != SortModePartialMatchSelector.class) {
             try {
                 sortingMachine.pullMode = PullMode.SINGLE_STEP.newInstance();

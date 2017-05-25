@@ -98,6 +98,22 @@ public class GuiSortingMachine extends GuiContainer {
      */
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        int selectorPosition = sortingMachine.sortMode.selectorPosition(sortingMachine);
+        if (selectorPosition != -1) {
+            int textureX = 176;
+            int textureY = 90;
+
+            int posX = 8 + ((selectorPosition & 3) * 40);
+            int posY = 5;
+
+            if (selectorPosition > 3) {
+                posY += 60;
+            }
+
+            Minecraft.getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
+            this.drawTexturedModalRect(posX, posY, textureX, textureY, 40, 57);
+        }
+
         GlStateManager.pushMatrix();
         GlStateManager.translate(-guiLeft, -guiTop, 0);
         for (int i = 0; i < buttonList.size(); i++) {
