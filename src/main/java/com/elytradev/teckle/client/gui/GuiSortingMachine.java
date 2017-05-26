@@ -19,6 +19,7 @@ package com.elytradev.teckle.client.gui;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
 import com.elytradev.teckle.common.network.SortingMachineColourChangeMessage;
+import com.elytradev.teckle.common.network.SortingMachineDefaultRouteChangeMessage;
 import com.elytradev.teckle.common.network.SortingMachinePullModeChangeMessage;
 import com.elytradev.teckle.common.network.SortingMachineSortModeChangeMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
@@ -69,9 +70,10 @@ public class GuiSortingMachine extends GuiContainer {
 
         buttonList.add(new GuiSortTypeSelector(8, guiLeft + 10, guiTop + 130));
         buttonList.add(new GuiSortModeSelector(9, guiLeft + 40, guiTop + 130));
+        buttonList.add(new GuiDefaultRouteSelector(10, guiLeft + 64, guiTop + 133));
 
         if (sortingMachine.getSource() != null) {
-            buttonList.add(new GuiPullModeSelector(10, guiLeft + 150, guiTop + 130));
+            buttonList.add(new GuiPullModeSelector(11, guiLeft + 150, guiTop + 130));
         }
     }
 
@@ -142,6 +144,19 @@ public class GuiSortingMachine extends GuiContainer {
 
             sortingMachine.colours[colourPicker.colourIndex] = colour;
             new SortingMachineColourChangeMessage(sortingMachine.getPos(), colourPicker.colourIndex, colour).sendToServer();
+        } else if (button instanceof GuiDefaultRouteSelector) {
+            // Adjust the default route.
+            TileSortingMachine.DefaultRoute defaultRoute = sortingMachine.defaultRoute;
+            int selectedMode = defaultRoute.getMetadata();
+
+            if (selectedMode < TileSortingMachine.DefaultRoute.values().length - 1) {
+                selectedMode++;
+            } else if (selectedMode == TileSortingMachine.DefaultRoute.values().length - 1) {
+                selectedMode = 0;
+            }
+
+            sortingMachine.defaultRoute = TileSortingMachine.DefaultRoute.byMetadata(selectedMode);
+            new SortingMachineDefaultRouteChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();
         } else if (button instanceof GuiSortTypeSelector) {
             // Change the sort type, and the mode to match.
             try {
@@ -173,6 +188,7 @@ public class GuiSortingMachine extends GuiContainer {
 
             new SortingMachineSortModeChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();
         } else if (button instanceof GuiPullModeSelector) {
+            // Change the pull mode.
             if (sortingMachine.getSource() == null) {
                 buttonList.remove(button);
                 return;
@@ -231,6 +247,52 @@ public class GuiSortingMachine extends GuiContainer {
                     GlStateManager.color(sheepColour[0], sheepColour[1], sheepColour[2]);
                     this.drawTexturedModalRect(this.xPosition + 1, this.yPosition + 1, xOffset + 1, yOffset - 4, this.width - 2, this.height - 2);
                     GlStateManager.popMatrix();
+                }
+            }
+        }
+    }
+
+    public class GuiDefaultRouteSelector extends GuiButton implements IHoverable {
+
+        public GuiDefaultRouteSelector(int buttonId, int x, int y) {
+            super(buttonId, x, y, 9, 9, "");
+        }
+
+        public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+            if (this.visible) {
+                this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+
+                mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
+                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                int yOffset = 0;
+                int xOffset = 230;
+
+                if (!sortingMachine.defaultRoute.isColoured()) {
+                    xOffset -= 18;
+                    if (sortingMachine.defaultRoute.isBlocked()) {
+                        xOffset += 9;
+                    }
+                }
+
+                this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
+                if (sortingMachine.defaultRoute.isColoured()) {
+                    float[] sheepColour = EntitySheep.getDyeRgb(sortingMachine.defaultRoute.getColour());
+                    GlStateManager.pushMatrix();
+                    GlStateManager.color(sheepColour[0], sheepColour[1], sheepColour[2]);
+                    this.drawTexturedModalRect(this.xPosition + 1, this.yPosition + 1, xOffset + 1, yOffset + 1, this.width - 2, this.height - 2);
+                    GlStateManager.popMatrix();
+                }
+            }
+        }
+
+        @Override
+        public void drawHover(Minecraft mc, int mouseX, int mouseY) {
+            if (!visible)
+                return;
+
+            if (sortingMachine.sortMode != null) {
+                if (isMouseOver()) {
+                    GuiSortingMachine.this.drawHoveringText(ChatFormatting.BOLD + I18n.format(sortingMachine.defaultRoute.getName()), mouseX, mouseY);
                 }
             }
         }

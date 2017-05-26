@@ -369,7 +369,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
 
         public String getName() {
-            return this.name;
+            return "defaultroute." + this.name;
         }
 
         public EnumDyeColor getColour() {
