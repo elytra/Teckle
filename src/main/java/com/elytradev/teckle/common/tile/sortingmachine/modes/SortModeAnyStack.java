@@ -18,12 +18,16 @@ package com.elytradev.teckle.common.tile.sortingmachine.modes;
 
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+
+import java.util.List;
 
 /**
  * Created by darkevilmac on 5/22/17.
@@ -38,22 +42,49 @@ public class SortModeAnyStack extends SortMode {
         if (sortingMachine.getSource() == null)
             return false;
 
-        IItemHandler sourceItemHandler = sortingMachine.getSource().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, sortingMachine.getFacing().getOpposite());
+        IItemHandler pushStackHandler = sortingMachine.buffer;
+        List<ItemStack> stacksToPush = sortingMachine.buffer.getStacks();
+        if (stacksToPush.stream().allMatch(itemStack -> itemStack.isEmpty())) {
+            stacksToPush = sortingMachine.getStacksFromSource();
+            if (stacksToPush.isEmpty())
+                return true;
+            pushStackHandler = sortingMachine.getSource().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, sortingMachine.getFacing());
+        }
 
-        for (int compartmentNumber = 0; compartmentNumber < sortingMachine.getCompartmentHandlers().size(); compartmentNumber++) {
-            IItemHandler compartment = sortingMachine.getCompartmentHandlers().get(compartmentNumber);
-            EnumDyeColor compartmentColour = sortingMachine.colours[compartmentNumber];
+        for (int i = 0; i < stacksToPush.size(); i++) {
+            ItemStack stackFromSource = stacksToPush.get(i);
+            if (stackFromSource.isEmpty())
+                continue;
 
-            for (int slot = 0; slot < compartment.getSlots(); slot++) {
-                ItemStack compartmentStack = compartment.getStackInSlot(slot);
+            for (int compartmentNumber = 0; compartmentNumber < sortingMachine.getCompartmentHandlers().size(); compartmentNumber++) {
+                IItemHandler compartment = sortingMachine.getCompartmentHandlers().get(compartmentNumber);
+                EnumDyeColor compartmentColour = sortingMachine.colours[compartmentNumber];
 
-                if (compartmentStack.isEmpty())
+                for (int slot = 0; slot < compartment.getSlots(); slot++) {
+                    ItemStack compartmentStack = compartment.getStackInSlot(slot);
+                    if (compartmentStack.isEmpty())
+                        continue;
+
+                    ItemStack result = sortingMachine.addToNetwork(pushStackHandler, slot, 64, compartmentColour == null ? ImmutableMap.of()
+                            : ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())));
+
+                    if (result.isEmpty())
+                        return true;
+                }
+            }
+
+        }
+
+        if (!sortingMachine.defaultRoute.isBlocked()) {
+            for (int sourceSlot = 0; sourceSlot < pushStackHandler.getSlots(); sourceSlot++) {
+                ItemStack sourceStack = pushStackHandler.getStackInSlot(sourceSlot);
+                if (sourceStack.isEmpty())
                     continue;
 
-                // Found an item, scan the pull place for it.
-                for (int sourceSlot = 0; sourceSlot < sourceItemHandler.getSlots(); sourceSlot++) {
-
-                }
+                ItemStack result = sortingMachine.addToNetwork(pushStackHandler, sourceSlot, 64, !sortingMachine.defaultRoute.isColoured() ? ImmutableMap.of()
+                        : ImmutableMap.of("colour", new NBTTagInt(sortingMachine.defaultRoute.getMetadata())));
+                if (result.isEmpty())
+                    return true;
             }
         }
 

@@ -18,6 +18,7 @@ package com.elytradev.teckle.common.tile.sortingmachine;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.client.gui.GuiSortingMachine;
@@ -32,12 +33,16 @@ import com.elytradev.teckle.common.tile.sortingmachine.modes.PullMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.PullModeSingleStep;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.SortMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.SortModeAnyStack;
+import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagList;
@@ -57,6 +62,7 @@ import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -64,6 +70,8 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(8 * 6);
     public EnumDyeColor[] colours = new EnumDyeColor[8];
+    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
+
 
     public PullMode pullMode = new PullModeSingleStep();
     public SortMode sortMode = new SortModeAnyStack();
@@ -253,6 +261,57 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     public EnumFacing getFacing() {
         return networkTile.getFacing();
+    }
+
+    public ItemStack addToNetwork(IItemHandler source, int slot, int quantity, ImmutableMap<String, NBTBase> additionalData) {
+        TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(getFacing()));
+        ItemStack remaining = source.extractItem(slot, quantity, false).copy();
+
+        if (CapabilityWorldNetworkTile.isTileNetworked(potentialInsertionTile)) {
+            IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
+
+            remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getNetworkTile().getNode(), potentialInsertionTile.getPos(), remaining, additionalData).copy();
+
+            if (remaining.isEmpty()) {
+                return ItemStack.EMPTY;
+            } else {
+                // Couldn't put the stuff in the network, shove it into the buffer to try again later.
+                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
+                    remaining = buffer.insertItem(i, remaining, false);
+                }
+
+                if (!remaining.isEmpty()) {
+                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
+                }
+            }
+        } else {
+
+        }
+
+        return remaining;
+    }
+
+    /**
+     * Get a list of stacks that can be sorted from the source.
+     *
+     * @return the list of all itemstacks available for sorting.
+     */
+    public List<ItemStack> getStacksFromSource() {
+        List<ItemStack> stacks = Collections.emptyList();
+
+        if (getSource() != null && getSource().hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing())) {
+            IItemHandler sourceItemHandler = getSource().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing());
+
+            for (int i = 0; i < sourceItemHandler.getSlots(); i++) {
+                ItemStack stackInSlot = sourceItemHandler.getStackInSlot(i);
+
+                stacks.add(i, stackInSlot);
+            }
+        }
+
+        return stacks;
     }
 
     public IWorldNetworkTile getNetworkTile() {
