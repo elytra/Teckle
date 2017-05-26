@@ -1,6 +1,7 @@
 package com.elytradev.teckle.compat.mcmp;
 
 import com.elytradev.teckle.common.TeckleObjects;
+import com.elytradev.teckle.common.block.BlockItemTube;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import mcmultipart.api.container.IPartInfo;
 import mcmultipart.api.multipart.IMultipart;
@@ -10,9 +11,14 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.property.IExtendedBlockState;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Simple multipart for tubes.
@@ -28,6 +34,21 @@ public class MultipartTube implements IMultipart {
         return EnumCenterSlot.CENTER;
     }
 
+    @SuppressWarnings("deprecation")
+    @Override
+    public List<AxisAlignedBB> getOcclusionBoxes(IPartInfo part) {
+        AxisAlignedBB bb = getBlock().getBoundingBox(getBlock().getDefaultState(), part.getActualWorld(), part.getPartPos());
+        if (part.getState() instanceof IExtendedBlockState && part.getState().getBlock() == getBlock()) {
+            IExtendedBlockState extendedState = (IExtendedBlockState) part.getState();
+
+            if (extendedState.getValue(BlockItemTube.NODE) == null || !extendedState.getValue(BlockItemTube.NODE)) {
+                bb = bb.expandXyz(-(1f / 16f));
+            }
+        }
+
+        return Collections.singletonList(bb);
+    }
+
     @Override
     public void onPartChanged(IPartInfo part, IPartInfo otherPart) {
         if (part.getTile() != null && part.getTile().getTileEntity() instanceof TileItemTube) {
@@ -37,6 +58,12 @@ public class MultipartTube implements IMultipart {
                 tube.getNetworkTile().getNode().network.validateNetwork();
             }
         }
+    }
+
+    @Override
+    public void onPartAdded(IPartInfo part, IPartInfo otherPart) {
+        // Node is killed when block is destroyed, this adds it back.
+        TeckleObjects.blockItemTube.getNetworkHelper(part.getActualWorld()).onNodePlaced(part.getPartWorld(), part.getPartPos());
     }
 
     @Override

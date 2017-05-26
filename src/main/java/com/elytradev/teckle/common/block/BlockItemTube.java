@@ -211,9 +211,7 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
         List<EnumFacing> connections = new ArrayList<>();
 
         for (EnumFacing facing : EnumFacing.VALUES) {
-            BlockPos neighbourPos = pos.add(facing.getDirectionVec());
-
-            if (canConnectTo(world, neighbourPos, facing.getOpposite())) {
+            if (canConnectTo(world, pos, facing.getOpposite())) {
                 connections.add(facing);
             }
         }
@@ -222,18 +220,22 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
     }
 
     private boolean canConnectTo(IBlockAccess world, BlockPos pos, EnumFacing side) {
-        TileEntity tileAtPos = world.getTileEntity(pos);
+        BlockPos connectionPos = pos.add(side.getOpposite().getDirectionVec());
+        TileEntity tileAtPos = world.getTileEntity(connectionPos);
 
         boolean canConnect = false;
-
         if (tileAtPos != null) {
             if (tileAtPos.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)) {
                 canConnect = true;
             }
-            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos)
-                    && CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos).canConnectTo(side.getOpposite())) {
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, connectionPos)
+                    && CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, connectionPos).canConnectTo(side)) {
                 canConnect = true;
             }
+        }
+
+        if (canConnect && CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos)) {
+            canConnect = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos).canConnectTo(side.getOpposite());
         }
 
         return canConnect;

@@ -76,12 +76,12 @@ public class TileItemTube extends TileNetworkMember {
                         IMultipartContainer container = optionalContainer.get();
 
                         for (IPartSlot slot : container.getParts().keySet()) {
-                            if (slot.getFaceAccess(side) == EnumSlotAccess.NONE)
+                            if (slot.getFaceAccess(side.getOpposite()) == EnumSlotAccess.NONE)
                                 return false;
                         }
                     }
                 }
-                if (neighbourTile != null && neighbourTile.hasCapability(MULTIPART_CAPABILITY, side.getOpposite())) {
+                if (neighbourTile != null && neighbourTile.hasCapability(MULTIPART_CAPABILITY, null)) {
                     BlockPos neighbourPos = pos.offset(side);
                     Optional<IMultipartContainer> optionalContainer = MultipartHelper.getContainer(world, neighbourPos);
 
@@ -89,7 +89,7 @@ public class TileItemTube extends TileNetworkMember {
                         IMultipartContainer container = optionalContainer.get();
 
                         for (IPartSlot slot : container.getParts().keySet()) {
-                            if (slot.getFaceAccess(side.getOpposite()) == EnumSlotAccess.NONE)
+                            if (slot.getFaceAccess(side) == EnumSlotAccess.NONE)
                                 return false;
                         }
                     }

@@ -18,6 +18,7 @@ package com.elytradev.teckle.common.tile.sortingmachine;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.client.gui.GuiSortingMachine;
 import com.elytradev.teckle.common.TeckleMod;
@@ -248,6 +249,14 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     @SideOnly(Side.CLIENT)
     public Object getClientElement(EntityPlayer player) {
         return new GuiSortingMachine(this, player);
+    }
+
+    public EnumFacing getFacing() {
+        return networkTile.getFacing();
+    }
+
+    public IWorldNetworkTile getNetworkTile() {
+        return networkTile;
     }
 
     public enum DefaultRoute implements IStringSerializable {

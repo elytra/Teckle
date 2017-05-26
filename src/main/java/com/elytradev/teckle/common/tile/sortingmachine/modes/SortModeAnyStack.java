@@ -22,6 +22,7 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
 /**
@@ -34,14 +35,25 @@ public class SortModeAnyStack extends SortMode {
 
     @Override
     public boolean pulse(TileSortingMachine sortingMachine, PullMode mode) {
+        if (sortingMachine.getSource() == null)
+            return false;
+
+        IItemHandler sourceItemHandler = sortingMachine.getSource().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, sortingMachine.getFacing().getOpposite());
+
         for (int compartmentNumber = 0; compartmentNumber < sortingMachine.getCompartmentHandlers().size(); compartmentNumber++) {
             IItemHandler compartment = sortingMachine.getCompartmentHandlers().get(compartmentNumber);
             EnumDyeColor compartmentColour = sortingMachine.colours[compartmentNumber];
 
             for (int slot = 0; slot < compartment.getSlots(); slot++) {
-                ItemStack stackInSlot = compartment.getStackInSlot(slot);
+                ItemStack compartmentStack = compartment.getStackInSlot(slot);
 
-                //TODO: Actually implement. :^)
+                if (compartmentStack.isEmpty())
+                    continue;
+
+                // Found an item, scan the pull place for it.
+                for (int sourceSlot = 0; sourceSlot < sourceItemHandler.getSlots(); sourceSlot++) {
+
+                }
             }
         }
 

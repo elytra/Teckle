@@ -65,7 +65,6 @@ public class ItemIngot extends Item implements IResourceHolder {
             result = new ResourceLocation(TeckleMod.RESOURCE_DOMAIN + "items/ingot_" + type.getName());
         }
 
-        System.out.println(result.toString());
         return result;
     }
 
