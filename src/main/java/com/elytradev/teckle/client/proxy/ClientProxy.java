@@ -32,11 +32,9 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
@@ -73,12 +71,7 @@ public class ClientProxy extends CommonProxy {
                 return -1;
             }, TeckleObjects.blockItemTube);
 
-            Minecraft.getMinecraft().getItemColors().registerItemColorHandler(new IItemColor() {
-                @Override
-                public int getColorFromItemstack(ItemStack stack, int tintIndex) {
-                    return 11696387;
-                }
-            }, TeckleObjects.blockItemTube);
+            Minecraft.getMinecraft().getItemColors().registerItemColorHandler((stack, tintIndex) -> 11696387, TeckleObjects.blockItemTube);
         }
 
         if (state == LoaderState.ModState.POSTINITIALIZED) {

@@ -38,11 +38,12 @@ public class MultipartTube implements IMultipart {
     @Override
     public List<AxisAlignedBB> getOcclusionBoxes(IPartInfo part) {
         AxisAlignedBB bb = getBlock().getBoundingBox(getBlock().getDefaultState(), part.getActualWorld(), part.getPartPos());
+        bb = bb.expandXyz((-1f / 16f));
         if (part.getState() instanceof IExtendedBlockState && part.getState().getBlock() == getBlock()) {
             IExtendedBlockState extendedState = (IExtendedBlockState) part.getState();
 
-            if (extendedState.getValue(BlockItemTube.NODE) == null || !extendedState.getValue(BlockItemTube.NODE)) {
-                bb = bb.expandXyz(-(1f / 16f));
+            if (extendedState.getValue(BlockItemTube.NODE) != null && extendedState.getValue(BlockItemTube.NODE)) {
+                bb = bb.expandXyz((1f / 16f));
             }
         }
 

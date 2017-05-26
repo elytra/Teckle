@@ -3,11 +3,16 @@ package com.elytradev.teckle.compat.mcmp;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.TileItemTube;
+import mcmultipart.MCMultiPart;
 import mcmultipart.api.addon.IMCMPAddon;
 import mcmultipart.api.addon.MCMPAddon;
+import mcmultipart.api.container.IMultipartContainer;
+import mcmultipart.api.container.IPartInfo;
 import mcmultipart.api.multipart.IMultipartRegistry;
 import mcmultipart.api.multipart.IMultipartTile;
+import mcmultipart.api.multipart.MultipartHelper;
 import mcmultipart.api.ref.MCMPCapabilities;
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -17,10 +22,12 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Teckle MCMP addon, used to provide compat when MCMP is present.
@@ -35,6 +42,24 @@ public class TeckleMCMPAddon implements IMCMPAddon {
         registry.registerPartWrapper(TeckleObjects.blockItemTube, new MultipartTube());
         Item itemTube = Item.REGISTRY.getObject(TeckleObjects.blockItemTube.getRegistryName());
         registry.registerStackWrapper(itemTube, s -> true, TeckleObjects.blockItemTube);
+
+        if (FMLLaunchHandler.side().isClient()) {
+            Minecraft.getMinecraft().getBlockColors().registerBlockColorHandler((state, worldIn, pos, tintIndex) -> {
+                Optional<IMultipartContainer> container = MultipartHelper.getContainer(worldIn, pos);
+
+                if (container.isPresent()) {
+                    IMultipartContainer iMultipartContainer = container.get();
+
+                    for (IPartInfo partInfo : iMultipartContainer.getParts().values()) {
+                        if (partInfo.getPart() instanceof MultipartTube) {
+                            return Minecraft.getMinecraft().getBlockColors().colorMultiplier(partInfo.getState(), partInfo.getPartWorld(), pos, tintIndex);
+                        }
+                    }
+                }
+
+                return -1;
+            }, MCMultiPart.multipart);
+        }
     }
 
     @SubscribeEvent
