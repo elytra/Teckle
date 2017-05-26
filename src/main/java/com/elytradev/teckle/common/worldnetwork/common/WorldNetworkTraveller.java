@@ -116,8 +116,10 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         nextNode.cost = Integer.MAX_VALUE;
                         endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(nextNode, direction.getOpposite()));
                     } else {
-                        nodeStack.add(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos)));
-                        iteratedPositions.add(neighbourPos);
+                        if (network.getNodeFromPosition(neighbourPos).getNetworkTile().canConnectTo(direction.getOpposite())) {
+                            nodeStack.add(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos)));
+                            iteratedPositions.add(neighbourPos);
+                        }
                     }
                 }
             }
@@ -221,8 +223,10 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         }
                         endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos)), direction.getOpposite()));
                     } else {
-                        nodeStack.add(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos)));
-                        iteratedPositions.add(neighbourPos);
+                        if (network.getNodeFromPosition(neighbourPos).getNetworkTile().canConnectTo(direction.getOpposite())) {
+                            nodeStack.add(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos)));
+                            iteratedPositions.add(neighbourPos);
+                        }
                     }
                 }
             }
