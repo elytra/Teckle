@@ -14,10 +14,11 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.tile.sortingmachine.modes;
+package com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode;
 
 import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.item.EnumDyeColor;

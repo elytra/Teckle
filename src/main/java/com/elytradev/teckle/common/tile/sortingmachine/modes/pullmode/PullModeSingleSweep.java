@@ -14,15 +14,18 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.tile.sortingmachine.modes;
+package com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode;
 
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModeFullMatchSelector;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModePartialMatchSelector;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class PullModeSingleSweep extends PullMode {
-    public int storedTicks = 0;
+    public int remainingSweeps = 0;
+    public int selectorIncrementsRemaining = 0;
     public int coolDown = 4;
 
     public PullModeSingleSweep() {
@@ -31,7 +34,9 @@ public class PullModeSingleSweep extends PullMode {
 
     @Override
     public void onPulse(TileSortingMachine sortingMachine) {
-        storedTicks++;
+        remainingSweeps++;
+
+        selectorIncrementsRemaining = 8 - sortingMachine.sortMode.selectorPosition(sortingMachine);
     }
 
     @Override
@@ -47,10 +52,18 @@ public class PullModeSingleSweep extends PullMode {
             return;
         }
 
-        if (storedTicks > 0) {
+        if (remainingSweeps > 0) {
             if (coolDown <= 0) {
-                if (sortingMachine.sortMode.pulse(sortingMachine, this))
-                    storedTicks--;
+                if (selectorIncrementsRemaining > 0) {
+                    if (sortingMachine.sortMode.pulse(sortingMachine, this)) {
+                        selectorIncrementsRemaining = 8 - sortingMachine.sortMode.selectorPosition(sortingMachine);
+
+                        if (selectorIncrementsRemaining <= 0) {
+                            remainingSweeps--;
+                            selectorIncrementsRemaining = 8;
+                        }
+                    }
+                }
 
                 coolDown = 4;
             }
@@ -64,7 +77,8 @@ public class PullModeSingleSweep extends PullMode {
     public NBTBase serializeNBT() {
         NBTTagCompound tagCompound = new NBTTagCompound();
         tagCompound.setInteger("cooldown", coolDown);
-        tagCompound.setInteger("storedTicks", storedTicks);
+        tagCompound.setInteger("remainingSweeps", remainingSweeps);
+        tagCompound.setInteger("selectorIncrementsRemaining", selectorIncrementsRemaining);
 
         return tagCompound;
     }
@@ -72,7 +86,8 @@ public class PullModeSingleSweep extends PullMode {
     @Override
     public void deserializeNBT(NBTBase nbt) {
         NBTTagCompound tagCompound = (NBTTagCompound) nbt;
-        this.storedTicks = tagCompound.getInteger("storedTicks");
+        this.remainingSweeps = tagCompound.getInteger("remainingSweeps");
+        this.selectorIncrementsRemaining = tagCompound.getInteger("selectorIncrementsRemaining");
         this.coolDown = tagCompound.getInteger("cooldown");
     }
 }

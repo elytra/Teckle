@@ -23,9 +23,9 @@ import com.elytradev.teckle.common.network.SortingMachineDefaultRouteChangeMessa
 import com.elytradev.teckle.common.network.SortingMachinePullModeChangeMessage;
 import com.elytradev.teckle.common.network.SortingMachineSortModeChangeMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
-import com.elytradev.teckle.common.tile.sortingmachine.modes.PullMode;
-import com.elytradev.teckle.common.tile.sortingmachine.modes.SortMode;
-import com.elytradev.teckle.common.tile.sortingmachine.modes.SortModeType;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModeType;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;

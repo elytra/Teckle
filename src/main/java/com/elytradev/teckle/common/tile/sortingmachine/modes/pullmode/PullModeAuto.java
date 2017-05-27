@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.tile.sortingmachine.modes;
+package com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode;
 
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.nbt.NBTBase;

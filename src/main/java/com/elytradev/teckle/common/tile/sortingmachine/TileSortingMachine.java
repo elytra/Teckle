@@ -30,10 +30,10 @@ import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.SlotData;
-import com.elytradev.teckle.common.tile.sortingmachine.modes.PullMode;
-import com.elytradev.teckle.common.tile.sortingmachine.modes.PullModeSingleStep;
-import com.elytradev.teckle.common.tile.sortingmachine.modes.SortMode;
-import com.elytradev.teckle.common.tile.sortingmachine.modes.SortModeAnyStack;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullModeSingleStep;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModeAnyStack;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
@@ -72,7 +72,6 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(8 * 6);
     public EnumDyeColor[] colours = new EnumDyeColor[8];
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
-
 
     public PullMode pullMode = new PullModeSingleStep();
     public SortMode sortMode = new SortModeAnyStack();

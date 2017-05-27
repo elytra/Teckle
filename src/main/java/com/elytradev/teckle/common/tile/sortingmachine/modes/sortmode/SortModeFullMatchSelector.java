@@ -14,9 +14,10 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.tile.sortingmachine.modes;
+package com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode;
 
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -24,11 +25,12 @@ import net.minecraft.nbt.NBTTagCompound;
 /**
  * Created by darkevilmac on 5/22/17.
  */
-public class SortModePartialMatchSelector extends SortMode {
-    private int selectorPosition = 0;
+public class SortModeFullMatchSelector extends SortMode {
 
-    public SortModePartialMatchSelector() {
-        super(1, "sortmode.partialmatchselector", SortModeType.COMPARTMENT);
+    public int selectorPosition = 0;
+
+    public SortModeFullMatchSelector() {
+        super(0, "sortmode.fullmatchselector", SortModeType.COMPARTMENT);
     }
 
     @Override
