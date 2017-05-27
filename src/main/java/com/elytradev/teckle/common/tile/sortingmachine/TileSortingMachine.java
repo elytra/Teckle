@@ -29,6 +29,7 @@ import com.elytradev.teckle.common.container.ContainerSortingMachine;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
+import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.PullMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.PullModeSingleStep;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.SortMode;
@@ -298,16 +299,20 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
      *
      * @return the list of all itemstacks available for sorting.
      */
-    public List<ItemStack> getStacksFromSource() {
-        List<ItemStack> stacks = Collections.emptyList();
+    public List<SlotData> getStacksToPush() {
+        List<SlotData> stacks = Collections.emptyList();
+
+        if (!buffer.stream().allMatch(ItemStack::isEmpty)) {
+            for (int i = 0; i < buffer.getStacks().size(); i++) {
+                stacks.add(new SlotData(buffer, i));
+            }
+            return stacks;
+        }
 
         if (getSource() != null && getSource().hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing())) {
             IItemHandler sourceItemHandler = getSource().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, getFacing());
-
             for (int i = 0; i < sourceItemHandler.getSlots(); i++) {
-                ItemStack stackInSlot = sourceItemHandler.getStackInSlot(i);
-
-                stacks.add(i, stackInSlot);
+                stacks.add(new SlotData(sourceItemHandler, i));
             }
         }
 

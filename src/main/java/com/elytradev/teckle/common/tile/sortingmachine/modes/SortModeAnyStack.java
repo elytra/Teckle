@@ -16,6 +16,7 @@
 
 package com.elytradev.teckle.common.tile.sortingmachine.modes;
 
+import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.google.common.collect.ImmutableMap;
@@ -24,14 +25,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.List;
 
-/**
- * Created by darkevilmac on 5/22/17.
- */
 public class SortModeAnyStack extends SortMode {
     public SortModeAnyStack() {
         super(3, "sortmode.anystack", SortModeType.SLOT);
@@ -42,17 +39,13 @@ public class SortModeAnyStack extends SortMode {
         if (sortingMachine.getSource() == null)
             return false;
 
-        IItemHandler pushStackHandler = sortingMachine.buffer;
-        List<ItemStack> stacksToPush = sortingMachine.buffer.getStacks();
-        if (stacksToPush.stream().allMatch(itemStack -> itemStack.isEmpty())) {
-            stacksToPush = sortingMachine.getStacksFromSource();
-            if (stacksToPush.isEmpty())
-                return true;
-            pushStackHandler = sortingMachine.getSource().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, sortingMachine.getFacing());
-        }
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        if (stacksToPush.isEmpty())
+            return false;
 
+        IItemHandler pushStackHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
         for (int i = 0; i < stacksToPush.size(); i++) {
-            ItemStack stackFromSource = stacksToPush.get(i);
+            ItemStack stackFromSource = stacksToPush.get(i).getStack();
             if (stackFromSource.isEmpty())
                 continue;
 
