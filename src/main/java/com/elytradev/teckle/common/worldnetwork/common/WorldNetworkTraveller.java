@@ -103,7 +103,6 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite()))) {
                     continue;
                 }
-
                 WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
                 if (neighbourNode.canAcceptTraveller(this, direction.getOpposite())) {
                     if (!endpoints.containsKey(neighbourPos)) {
