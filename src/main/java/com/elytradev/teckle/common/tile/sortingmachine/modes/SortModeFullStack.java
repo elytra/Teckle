@@ -16,66 +16,68 @@
 
 package com.elytradev.teckle.common.tile.sortingmachine.modes;
 
+import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
+import com.google.common.collect.ImmutableMap;
+import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraftforge.items.IItemHandler;
 
-/**
- * Created by darkevilmac on 5/22/17.
- */
-public class SortModeFullStack extends SortMode {
+import java.util.List;
+
+public class SortModeFullStack extends SortModeAnyStack {
     public SortModeFullStack() {
         super(4, "sortmode.fullstack", SortModeType.SLOT);
     }
 
     @Override
     public boolean pulse(TileSortingMachine sortingMachine, PullMode mode) {
+        if (sortingMachine.getSource() == null)
+            return false;
+
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        if (stacksToPush.isEmpty())
+            return false;
+
+        IItemHandler pushStackHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
+        for (int i = 0; i < stacksToPush.size(); i++) {
+            ItemStack stackFromSource = stacksToPush.get(i).getStack();
+            if (stackFromSource.isEmpty())
+                continue;
+
+            for (int compartmentNumber = 0; compartmentNumber < sortingMachine.getCompartmentHandlers().size(); compartmentNumber++) {
+                IItemHandler compartment = sortingMachine.getCompartmentHandlers().get(compartmentNumber);
+                EnumDyeColor compartmentColour = sortingMachine.colours[compartmentNumber];
+
+                for (int slot = 0; slot < compartment.getSlots(); slot++) {
+                    ItemStack compartmentStack = compartment.getStackInSlot(slot);
+                    if (compartmentStack.isEmpty())
+                        continue;
+
+                    ItemStack result = sortingMachine.addToNetwork(pushStackHandler, slot, 64, compartmentColour == null ? ImmutableMap.of()
+                            : ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())));
+
+                    if (result.isEmpty())
+                        return true;
+                }
+            }
+
+        }
+
+        if (!sortingMachine.defaultRoute.isBlocked()) {
+            for (int sourceSlot = 0; sourceSlot < pushStackHandler.getSlots(); sourceSlot++) {
+                ItemStack sourceStack = pushStackHandler.getStackInSlot(sourceSlot);
+                if (sourceStack.isEmpty())
+                    continue;
+
+                ItemStack result = sortingMachine.addToNetwork(pushStackHandler, sourceSlot, 64, !sortingMachine.defaultRoute.isColoured() ? ImmutableMap.of()
+                        : ImmutableMap.of("colour", new NBTTagInt(sortingMachine.defaultRoute.getMetadata())));
+                if (result.isEmpty())
+                    return true;
+            }
+        }
+
         return false;
-    }
-
-    /**
-     * Check if the traveller can enter the machine.
-     *
-     * @param sortingMachine the sorting machine.
-     * @param traveller
-     * @return
-     */
-    @Override
-    public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
-        return false;
-    }
-
-    /**
-     * Sort a traveller going through the network and change it if needed.
-     *
-     * @param sortingMachine the sorting machine.
-     * @param traveller      the traveller entering the machine.
-     * @return the modified traveller.
-     */
-    @Override
-    public WorldNetworkTraveller processExistingTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
-        return null;
-    }
-
-    /**
-     * Get the position of the selector, if no selector is used in this mode return -1.
-     *
-     * @param sortingMachine the sorting machine.
-     * @return the selector position, a value between -1 and 7 (inclusive)
-     */
-    @Override
-    public int selectorPosition(TileSortingMachine sortingMachine) {
-        return 0;
-    }
-
-    @Override
-    public NBTBase serializeNBT() {
-        return new NBTTagCompound();
-    }
-
-    @Override
-    public void deserializeNBT(NBTBase nbt) {
-
     }
 }

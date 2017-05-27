@@ -30,6 +30,10 @@ import net.minecraftforge.items.IItemHandler;
 import java.util.List;
 
 public class SortModeAnyStack extends SortMode {
+    public SortModeAnyStack(int id, String unlocalizedName, SortModeType type) {
+        super(id, unlocalizedName, type);
+    }
+
     public SortModeAnyStack() {
         super(3, "sortmode.anystack", SortModeType.SLOT);
     }
@@ -58,7 +62,7 @@ public class SortModeAnyStack extends SortMode {
                     if (compartmentStack.isEmpty())
                         continue;
 
-                    ItemStack result = sortingMachine.addToNetwork(pushStackHandler, slot, 64, compartmentColour == null ? ImmutableMap.of()
+                    ItemStack result = sortingMachine.addToNetwork(pushStackHandler, slot, compartmentStack.getCount(), compartmentColour == null ? ImmutableMap.of()
                             : ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())));
 
                     if (result.isEmpty())
@@ -74,7 +78,7 @@ public class SortModeAnyStack extends SortMode {
                 if (sourceStack.isEmpty())
                     continue;
 
-                ItemStack result = sortingMachine.addToNetwork(pushStackHandler, sourceSlot, 64, !sortingMachine.defaultRoute.isColoured() ? ImmutableMap.of()
+                ItemStack result = sortingMachine.addToNetwork(pushStackHandler, sourceSlot, sourceStack.getCount(), !sortingMachine.defaultRoute.isColoured() ? ImmutableMap.of()
                         : ImmutableMap.of("colour", new NBTTagInt(sortingMachine.defaultRoute.getMetadata())));
                 if (result.isEmpty())
                     return true;
