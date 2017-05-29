@@ -55,6 +55,7 @@ public class PullModeSingleStep extends PullMode {
         NBTTagCompound tagCompound = new NBTTagCompound();
         tagCompound.setInteger("pulses", pulses);
         tagCompound.setInteger("cooldown", coolDown);
+        tagCompound.setBoolean("isPaused", isPaused());
 
         return tagCompound;
     }
@@ -64,5 +65,10 @@ public class PullModeSingleStep extends PullMode {
         NBTTagCompound tagCompound = (NBTTagCompound) nbt;
         this.pulses = tagCompound.getInteger("pulses");
         this.coolDown = tagCompound.getInteger("cooldown");
+        if (tagCompound.getBoolean("isPaused")) {
+            pause();
+        } else {
+            unpause();
+        }
     }
 }

@@ -51,6 +51,7 @@ public class PullModeAuto extends PullMode {
     public NBTBase serializeNBT() {
         NBTTagCompound tagCompound = new NBTTagCompound();
         tagCompound.setInteger("cooldown", coolDown);
+        tagCompound.setBoolean("isPaused", isPaused());
 
         return tagCompound;
     }
@@ -59,5 +60,11 @@ public class PullModeAuto extends PullMode {
     public void deserializeNBT(NBTBase nbt) {
         NBTTagCompound tagCompound = (NBTTagCompound) nbt;
         this.coolDown = tagCompound.getInteger("cooldown");
+
+        if (tagCompound.getBoolean("isPaused")) {
+            pause();
+        } else {
+            unpause();
+        }
     }
 }

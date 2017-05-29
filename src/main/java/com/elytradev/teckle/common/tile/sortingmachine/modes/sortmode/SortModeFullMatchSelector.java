@@ -16,12 +16,14 @@
 
 package com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode;
 
+import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.ItemStream;
 import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
@@ -30,12 +32,14 @@ import net.minecraft.nbt.NBTTagInt;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public class SortModeFullMatchSelector extends SortMode {
 
     public int selectorPosition = 0;
+    public int compartmentSlot = 0;
 
     public SortModeFullMatchSelector() {
         super(0, "sortmode.fullmatchselector", SortModeType.COMPARTMENT);
@@ -55,7 +59,46 @@ public class SortModeFullMatchSelector extends SortMode {
             return false;
         }
 
-        return false;
+        IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
+        Map<SlotData, Integer> slotsToExtract = Maps.newHashMap();
+
+        // Gather information to shove in the buffer, as well as confirm that it will all fit.
+        for (int i = 0; i < compartmentHandler.getSlots(); i++) {
+            ItemStack compartmentStackInSlot = compartmentHandler.getStackInSlot(i);
+            if (compartmentStackInSlot.isEmpty())
+                continue;
+
+            Optional<SlotData> matchingSlotData = stacksToPush.stream().filter(slotData -> compartmentStackInSlot.isItemEqual(slotData.getStack())
+                    && compartmentStackInSlot.getCount() >= slotData.getStack().getCount()).findFirst();
+            if (matchingSlotData.isPresent() && matchingSlotData.get().canExtractCount(compartmentStackInSlot.getCount())
+                    && sortingMachine.buffer.canInsertItem(compartmentStackInSlot.copy())) {
+                slotsToExtract.put(matchingSlotData.get(), compartmentStackInSlot.getCount());
+            } else {
+                return false;
+            }
+        }
+        AdvancedItemStackHandler bufferClone = sortingMachine.buffer.copy();
+        // Confirm the buffer can fit everything before attempting actual insertion into the real thing.
+        for (Map.Entry<SlotData, Integer> slotCountEntry : slotsToExtract.entrySet()) {
+            SlotData slotData = slotCountEntry.getKey();
+            Integer count = slotCountEntry.getValue();
+
+            // If it didn't fit, return false.
+            if (!bufferClone.insertItem(slotData.extract(count, true), false).isEmpty()) {
+                return false;
+            }
+        }
+
+        for (Map.Entry<SlotData, Integer> slotCountEntry : slotsToExtract.entrySet()) {
+            SlotData slotData = slotCountEntry.getKey();
+            Integer count = slotCountEntry.getValue();
+
+            sortingMachine.buffer.insertItem(slotData.extract(count, false), false);
+        }
+
+        sortingMachine.getPullMode().pause();
+
+        return true;
     }
 
     /**
@@ -95,12 +138,17 @@ public class SortModeFullMatchSelector extends SortMode {
 
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
-        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
-        if (stacksToPush.isEmpty())
+        if (!sortingMachine.getPullMode().isPaused())
             return;
 
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        if (stacksToPush.isEmpty()) {
+            sortingMachine.getPullMode().unpause();
+            return;
+        }
+
         IItemHandler pushStackHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
-        if (pushStackHandler == sortingMachine.buffer) {
+        if (pushStackHandler != sortingMachine.buffer) {
             return;
         }
 
@@ -109,17 +157,33 @@ public class SortModeFullMatchSelector extends SortMode {
         EnumDyeColor compartmentColour = sortingMachine.colours[selectorPosition - 1];
         ItemStack selectedStack = null;
         SlotData selectedStackInSlot = null;
+        ItemStack selectedCompartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
+
+        if (selectedCompartmentStack.isEmpty() && compartmentSlot < 7) {
+            for (int currentCompartmentItem = 0; currentCompartmentItem < compartmentHandler.getSlots(); currentCompartmentItem++) {
+                if (!compartmentHandler.getStackInSlot(currentCompartmentItem).isEmpty()) {
+                    selectedCompartmentStack = compartmentHandler.getStackInSlot(currentCompartmentItem);
+                    break;
+                }
+            }
+        } else {
+            sortingMachine.getPullMode().unpause();
+            return;
+        }
+
+        if (selectedCompartmentStack.isEmpty()) {
+            compartmentSlot = 0;
+            sortingMachine.getPullMode().unpause();
+        }
 
         for (int slot = 0; slot < pushStackHandler.getSlots(); slot++) {
             ItemStack stackInSlot = pushStackHandler.getStackInSlot(slot);
 
             if (stackInSlot.isEmpty())
                 continue;
-            Optional<ItemStack> compartmentStack = compartmentStream.filter(itemStack -> itemStack.isItemEqual(stackInSlot)
-                    && itemStack.getCount() >= stackInSlot.getCount()).findFirst();
 
-            if (compartmentStack.isPresent()) {
-                selectedStack = compartmentStack.get();
+            if (selectedCompartmentStack.isItemEqual(stackInSlot) && selectedCompartmentStack.getCount() >= stackInSlot.getCount()) {
+                selectedStack = selectedCompartmentStack.copy();
                 selectedStackInSlot = new SlotData(pushStackHandler, slot);
             } else {
                 return;
@@ -131,15 +195,37 @@ public class SortModeFullMatchSelector extends SortMode {
 
         sortingMachine.addToNetwork(selectedStackInSlot.itemHandler, selectedStackInSlot.slot, selectedStack.getCount(),
                 compartmentColour != null ? ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())) : ImmutableMap.of());
+
+        Stream<ItemStack> bufferStream = ItemStream.createItemStream(pushStackHandler);
+        // If the buffer has been emptied move the selector.
+        if (bufferStream.allMatch(ItemStack::isEmpty)) {
+            sortingMachine.getPullMode().unpause();
+
+            if (selectorPosition == 8) {
+                selectorPosition = 0;
+            } else {
+                selectorPosition++;
+            }
+        }
     }
 
     @Override
     public NBTBase serializeNBT() {
+        NBTTagCompound tagCompound = new NBTTagCompound();
+
+        tagCompound.setInteger("selectorPosition", selectorPosition);
+        tagCompound.setInteger("compartmentSlot", compartmentSlot);
+
         return new NBTTagCompound();
     }
 
     @Override
     public void deserializeNBT(NBTBase nbt) {
+        if (!(nbt instanceof NBTTagCompound))
+            return;
 
+        NBTTagCompound tagCompound = (NBTTagCompound) nbt;
+        selectorPosition = tagCompound.getInteger("selectorPosition");
+        compartmentSlot = tagCompound.getInteger("compartmentSlot");
     }
 }

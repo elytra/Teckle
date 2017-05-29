@@ -24,4 +24,11 @@ public class SlotData {
         return itemHandler.getStackInSlot(slot).isEmpty();
     }
 
+    public boolean canExtractCount(int count) {
+        return itemHandler.extractItem(slot, count, true).getCount() == count;
+    }
+
+    public ItemStack extract(Integer count, boolean simulate) {
+        return itemHandler.extractItem(slot, count, simulate);
+    }
 }

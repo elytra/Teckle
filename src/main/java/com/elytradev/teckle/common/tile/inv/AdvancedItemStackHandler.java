@@ -59,6 +59,34 @@ public class AdvancedItemStackHandler extends ItemStackHandler {
             return stack;
     }
 
+    public boolean canInsertItem(@Nonnull ItemStack stack) {
+        for (int i = 0; i < getSlots(); i++) {
+            if (insertItem(i, stack, true).isEmpty())
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Attempt to insert all of the items provided and no less, if it's unable to fit everything the original stack will be returned.
+     * <p>
+     * Parameters are the same as normal insertItem.
+     */
+    public ItemStack insertItem(@Nonnull ItemStack stack, boolean simulate) {
+        ItemStack remaining = stack.copy();
+        for (int i = 0; i < getSlots(); i++) {
+            remaining = insertItem(i, stack, true);
+        }
+
+        if (remaining.isEmpty() && !simulate) {
+            for (int i = 0; i < getSlots(); i++) {
+                remaining = insertItem(i, stack, simulate);
+            }
+        }
+
+        return remaining;
+    }
+
     @Override
     protected void onContentsChanged(int slot) {
         changeListener.onContentChange(slot);
@@ -117,6 +145,15 @@ public class AdvancedItemStackHandler extends ItemStackHandler {
 
     public NonNullList<ItemStack> getStacks() {
         return stacks;
+    }
+
+    public AdvancedItemStackHandler copy() {
+        AdvancedItemStackHandler advancedItemStackHandler = new AdvancedItemStackHandler(this.getSlots());
+        for (int i = 0; i < getSlots(); i++) {
+            advancedItemStackHandler.setStackInSlot(i, this.getStackInSlot(i).copy());
+        }
+
+        return advancedItemStackHandler;
     }
 
     public interface IContentChangeListener {

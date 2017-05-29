@@ -82,6 +82,7 @@ public class PullModeSingleSweep extends PullMode {
         tagCompound.setInteger("cooldown", coolDown);
         tagCompound.setInteger("remainingSweeps", remainingSweeps);
         tagCompound.setInteger("selectorIncrementsRemaining", selectorIncrementsRemaining);
+        tagCompound.setBoolean("isPaused", isPaused());
 
         return tagCompound;
     }
@@ -92,5 +93,11 @@ public class PullModeSingleSweep extends PullMode {
         this.remainingSweeps = tagCompound.getInteger("remainingSweeps");
         this.selectorIncrementsRemaining = tagCompound.getInteger("selectorIncrementsRemaining");
         this.coolDown = tagCompound.getInteger("cooldown");
+
+        if (tagCompound.getBoolean("isPaused")) {
+            pause();
+        } else {
+            unpause();
+        }
     }
 }
