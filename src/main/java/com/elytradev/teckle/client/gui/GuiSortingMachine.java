@@ -100,7 +100,7 @@ public class GuiSortingMachine extends GuiContainer {
      */
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        int selectorPosition = sortingMachine.sortMode.selectorPosition(sortingMachine);
+        int selectorPosition = sortingMachine.getSortMode().selectorPosition(sortingMachine);
         if (selectorPosition != -1) {
             int textureX = 176;
             int textureY = 90;
@@ -160,19 +160,19 @@ public class GuiSortingMachine extends GuiContainer {
         } else if (button instanceof GuiSortTypeSelector) {
             // Change the sort type, and the mode to match.
             try {
-                if (sortingMachine.sortMode.type == SortModeType.COMPARTMENT) {
-                    sortingMachine.sortMode = SortModeType.SLOT.getDefaultMode().newInstance();
+                if (sortingMachine.getSortMode().type == SortModeType.COMPARTMENT) {
+                    sortingMachine.setSortMode(SortModeType.SLOT.getDefaultMode().newInstance());
                 } else {
-                    sortingMachine.sortMode = SortModeType.COMPARTMENT.getDefaultMode().newInstance();
+                    sortingMachine.setSortMode(SortModeType.COMPARTMENT.getDefaultMode().newInstance());
                 }
-                new SortingMachineSortModeChangeMessage(sortingMachine.sortMode.getID(), sortingMachine.getPos()).sendToServer();
+                new SortingMachineSortModeChangeMessage(sortingMachine.getSortMode().getID(), sortingMachine.getPos()).sendToServer();
             } catch (Exception e) {
                 TeckleMod.LOG.error("Failed to change mode type in sortingmachine gui, ", e);
             }
         } else if (button instanceof GuiSortModeSelector) {
             // Actually change the sort mode.
-            int selectedMode = sortingMachine.sortMode.getID();
-            SortModeType sortModeType = sortingMachine.sortMode.type;
+            int selectedMode = sortingMachine.getSortMode().getID();
+            SortModeType sortModeType = sortingMachine.getSortMode().type;
 
             if (selectedMode < sortModeType.maxID()) {
                 selectedMode++;
@@ -181,7 +181,7 @@ public class GuiSortingMachine extends GuiContainer {
             }
 
             try {
-                sortingMachine.sortMode = SortMode.SORT_MODES.get(selectedMode).newInstance();
+                sortingMachine.setSortMode(SortMode.SORT_MODES.get(selectedMode).newInstance());
             } catch (Exception e) {
                 TeckleMod.LOG.error("Failed to change sort mode in sortingmachine gui, ", e);
             }
@@ -193,7 +193,7 @@ public class GuiSortingMachine extends GuiContainer {
                 buttonList.remove(button);
                 return;
             }
-            int selectedMode = sortingMachine.pullMode.getID();
+            int selectedMode = sortingMachine.getPullMode().getID();
 
             if (selectedMode < PullMode.PULL_MODES.size() - 1) {
                 selectedMode++;
@@ -203,9 +203,9 @@ public class GuiSortingMachine extends GuiContainer {
 
             if (PullMode.PULL_MODES.get(selectedMode) == PullMode.SINGLE_SWEEP) {
                 // Prevent us from using an invalid pull mode if possible.
-                if (sortingMachine.sortMode.getClass() == SortMode.SLOT_ANY_STACK
-                        || sortingMachine.sortMode.getClass() == SortMode.SLOT_FULL_STACK
-                        || sortingMachine.sortMode.getClass() == SortMode.COMPARTMENT_FULL_MATCH) {
+                if (sortingMachine.getSortMode().getClass() == SortMode.SLOT_ANY_STACK
+                        || sortingMachine.getSortMode().getClass() == SortMode.SLOT_FULL_STACK
+                        || sortingMachine.getSortMode().getClass() == SortMode.COMPARTMENT_FULL_MATCH) {
                     if (selectedMode < PullMode.PULL_MODES.size() - 1) {
                         selectedMode++;
                     } else if (selectedMode == PullMode.PULL_MODES.size() - 1) {
@@ -215,7 +215,7 @@ public class GuiSortingMachine extends GuiContainer {
             }
 
             try {
-                sortingMachine.pullMode = PullMode.PULL_MODES.get(selectedMode).newInstance();
+                sortingMachine.setPullMode(PullMode.PULL_MODES.get(selectedMode).newInstance());
             } catch (Exception e) {
                 TeckleMod.LOG.error("Failed to change pull mode in sortingmachine gui, ", e);
             }
@@ -290,7 +290,7 @@ public class GuiSortingMachine extends GuiContainer {
             if (!visible)
                 return;
 
-            if (sortingMachine.sortMode != null) {
+            if (sortingMachine.getSortMode() != null) {
                 if (isMouseOver()) {
                     GuiSortingMachine.this.drawHoveringText(ChatFormatting.BOLD + I18n.format(sortingMachine.defaultRoute.getName()), mouseX, mouseY);
                 }
@@ -318,8 +318,8 @@ public class GuiSortingMachine extends GuiContainer {
 
                 this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
 
-                if (sortingMachine.sortMode != null) {
-                    Point2i modeOffset = sortingMachine.sortMode.getSortModeType().textureOffset();
+                if (sortingMachine.getSortMode() != null) {
+                    Point2i modeOffset = sortingMachine.getSortMode().getSortModeType().textureOffset();
                     this.drawTexturedModalRect(this.xPosition, this.yPosition, modeOffset.x, modeOffset.y, this.width, this.height);
                 }
             }
@@ -330,9 +330,9 @@ public class GuiSortingMachine extends GuiContainer {
             if (!visible)
                 return;
 
-            if (sortingMachine.sortMode != null) {
+            if (sortingMachine.getSortMode() != null) {
                 if (isMouseOver()) {
-                    GuiSortingMachine.this.drawHoveringText(ChatFormatting.BOLD + I18n.format(sortingMachine.sortMode.type.getUnlocalizedName()), mouseX, mouseY);
+                    GuiSortingMachine.this.drawHoveringText(ChatFormatting.BOLD + I18n.format(sortingMachine.getSortMode().type.getUnlocalizedName()), mouseX, mouseY);
                 }
             }
         }
@@ -358,11 +358,11 @@ public class GuiSortingMachine extends GuiContainer {
 
                 this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
 
-                if (sortingMachine.sortMode != null) {
-                    Point2i modeOffset = sortingMachine.sortMode.getSortModeType().textureOffset();
-                    int additionalYOffset = (sortingMachine.sortMode.getID() * 16);
-                    if (sortingMachine.sortMode.type == SortModeType.SLOT) {
-                        additionalYOffset = ((sortingMachine.sortMode.getID() - 2) * 16);
+                if (sortingMachine.getSortMode() != null) {
+                    Point2i modeOffset = sortingMachine.getSortMode().getSortModeType().textureOffset();
+                    int additionalYOffset = (sortingMachine.getSortMode().getID() * 16);
+                    if (sortingMachine.getSortMode().type == SortModeType.SLOT) {
+                        additionalYOffset = ((sortingMachine.getSortMode().getID() - 2) * 16);
                     } else {
                         additionalYOffset += 16;
                     }
@@ -376,10 +376,10 @@ public class GuiSortingMachine extends GuiContainer {
             if (!visible)
                 return;
 
-            if (sortingMachine.sortMode != null) {
+            if (sortingMachine.getSortMode() != null) {
                 if (isMouseOver()) {
-                    GuiSortingMachine.this.drawHoveringText(Arrays.asList(ChatFormatting.BOLD + I18n.format(sortingMachine.sortMode.getUnlocalizedName()),
-                            I18n.format(sortingMachine.sortMode.getUnlocalizedName() + ".tooltip")), mouseX, mouseY);
+                    GuiSortingMachine.this.drawHoveringText(Arrays.asList(ChatFormatting.BOLD + I18n.format(sortingMachine.getSortMode().getUnlocalizedName()),
+                            I18n.format(sortingMachine.getSortMode().getUnlocalizedName() + ".tooltip")), mouseX, mouseY);
                 }
             }
         }
@@ -405,8 +405,8 @@ public class GuiSortingMachine extends GuiContainer {
 
                 this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
 
-                if (sortingMachine.sortMode != null) {
-                    Point2i modeOffset = sortingMachine.pullMode.textureOffset();
+                if (sortingMachine.getSortMode() != null) {
+                    Point2i modeOffset = sortingMachine.getPullMode().textureOffset();
                     this.drawTexturedModalRect(this.xPosition, this.yPosition, modeOffset.x, modeOffset.y, this.width, this.height);
                 }
             }
@@ -417,10 +417,10 @@ public class GuiSortingMachine extends GuiContainer {
             if (!visible)
                 return;
 
-            if (sortingMachine.sortMode != null) {
+            if (sortingMachine.getSortMode() != null) {
                 if (isMouseOver()) {
-                    GuiSortingMachine.this.drawHoveringText(Arrays.asList(ChatFormatting.BOLD + I18n.format(sortingMachine.pullMode.getUnlocalizedName()),
-                            I18n.format(sortingMachine.pullMode.getUnlocalizedName() + ".tooltip")), mouseX, mouseY);
+                    GuiSortingMachine.this.drawHoveringText(Arrays.asList(ChatFormatting.BOLD + I18n.format(sortingMachine.getPullMode().getUnlocalizedName()),
+                            I18n.format(sortingMachine.getPullMode().getUnlocalizedName() + ".tooltip")), mouseX, mouseY);
                 }
             }
         }

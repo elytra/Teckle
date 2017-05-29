@@ -21,7 +21,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class PullModeSingleStep extends PullMode {
-    public boolean tick = false;
+    public int pulses;
     public int coolDown = 4;
 
     public PullModeSingleStep() {
@@ -30,15 +30,18 @@ public class PullModeSingleStep extends PullMode {
 
     @Override
     public void onPulse(TileSortingMachine sortingMachine) {
-        tick = true;
+        pulses++;
     }
 
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
-        if (tick) {
+        if (isPaused())
+            return;
+
+        if (pulses > 0) {
             if (coolDown <= 0) {
-                sortingMachine.sortMode.pulse(sortingMachine, this);
-                tick = false;
+                sortingMachine.getSortMode().pulse(sortingMachine, this);
+                pulses--;
                 coolDown = 4;
             }
 
@@ -50,7 +53,7 @@ public class PullModeSingleStep extends PullMode {
     @Override
     public NBTBase serializeNBT() {
         NBTTagCompound tagCompound = new NBTTagCompound();
-        tagCompound.setBoolean("tick", tick);
+        tagCompound.setInteger("pulses", pulses);
         tagCompound.setInteger("cooldown", coolDown);
 
         return tagCompound;
@@ -59,7 +62,7 @@ public class PullModeSingleStep extends PullMode {
     @Override
     public void deserializeNBT(NBTBase nbt) {
         NBTTagCompound tagCompound = (NBTTagCompound) nbt;
-        this.tick = tagCompound.getBoolean("tick");
+        this.pulses = tagCompound.getInteger("pulses");
         this.coolDown = tagCompound.getInteger("cooldown");
     }
 }

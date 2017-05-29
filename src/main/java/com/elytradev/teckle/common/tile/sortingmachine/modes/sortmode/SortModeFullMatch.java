@@ -81,7 +81,12 @@ public class SortModeFullMatch extends SortMode {
      */
     @Override
     public int selectorPosition(TileSortingMachine sortingMachine) {
-        return -1;
+        return 0;
+    }
+
+    @Override
+    public void onTick(TileSortingMachine sortingMachine) {
+
     }
 
     @Override

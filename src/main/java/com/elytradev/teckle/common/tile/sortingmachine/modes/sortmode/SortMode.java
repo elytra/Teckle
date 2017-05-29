@@ -93,12 +93,14 @@ public abstract class SortMode implements INBTSerializable {
     public abstract WorldNetworkTraveller processExistingTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller);
 
     /**
-     * Get the position of the selector, if no selector is used in this mode return -1.
+     * Get the position of the selector, if no selector is used in this mode return 0.
      *
      * @param sortingMachine the sorting machine.
-     * @return the selector position, a value between -1 and 7 (inclusive)
+     * @return the selector position, a value between 0 and 8 (inclusive)
      */
     public abstract int selectorPosition(TileSortingMachine sortingMachine);
+
+    public abstract void onTick(TileSortingMachine sortingMachine);
 
     public String getUnlocalizedName() {
         return unlocalizedName;

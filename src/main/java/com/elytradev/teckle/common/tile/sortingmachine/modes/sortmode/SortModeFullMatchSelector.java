@@ -16,15 +16,23 @@
 
 package com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode;
 
+import com.elytradev.teckle.common.tile.inv.ItemStream;
+import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.google.common.collect.ImmutableMap;
+import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraftforge.items.IItemHandler;
 
-/**
- * Created by darkevilmac on 5/22/17.
- */
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 public class SortModeFullMatchSelector extends SortMode {
 
     public int selectorPosition = 0;
@@ -35,6 +43,18 @@ public class SortModeFullMatchSelector extends SortMode {
 
     @Override
     public boolean pulse(TileSortingMachine sortingMachine, PullMode mode) {
+        if (sortingMachine.getSource() == null)
+            return false;
+
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        if (stacksToPush.isEmpty())
+            return false;
+
+        IItemHandler pushStackHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
+        if (pushStackHandler == sortingMachine.buffer) {
+            return false;
+        }
+
         return false;
     }
 
@@ -47,7 +67,7 @@ public class SortModeFullMatchSelector extends SortMode {
      */
     @Override
     public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
-        return false;
+        return !sortingMachine.defaultRoute.isBlocked();
     }
 
     /**
@@ -71,6 +91,46 @@ public class SortModeFullMatchSelector extends SortMode {
     @Override
     public int selectorPosition(TileSortingMachine sortingMachine) {
         return selectorPosition;
+    }
+
+    @Override
+    public void onTick(TileSortingMachine sortingMachine) {
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        if (stacksToPush.isEmpty())
+            return;
+
+        IItemHandler pushStackHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
+        if (pushStackHandler == sortingMachine.buffer) {
+            return;
+        }
+
+        IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition - 1);
+        Stream<ItemStack> compartmentStream = ItemStream.createItemStream(compartmentHandler);
+        EnumDyeColor compartmentColour = sortingMachine.colours[selectorPosition - 1];
+        ItemStack selectedStack = null;
+        SlotData selectedStackInSlot = null;
+
+        for (int slot = 0; slot < pushStackHandler.getSlots(); slot++) {
+            ItemStack stackInSlot = pushStackHandler.getStackInSlot(slot);
+
+            if (stackInSlot.isEmpty())
+                continue;
+            Optional<ItemStack> compartmentStack = compartmentStream.filter(itemStack -> itemStack.isItemEqual(stackInSlot)
+                    && itemStack.getCount() >= stackInSlot.getCount()).findFirst();
+
+            if (compartmentStack.isPresent()) {
+                selectedStack = compartmentStack.get();
+                selectedStackInSlot = new SlotData(pushStackHandler, slot);
+            } else {
+                return;
+            }
+        }
+
+        if (selectedStack == null)
+            return;
+
+        sortingMachine.addToNetwork(selectedStackInSlot.itemHandler, selectedStackInSlot.slot, selectedStack.getCount(),
+                compartmentColour != null ? ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())) : ImmutableMap.of());
     }
 
     @Override

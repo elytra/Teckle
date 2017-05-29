@@ -69,14 +69,12 @@ import java.util.List;
 
 public class TileSortingMachine extends TileNetworkMember implements ITickable, IElementProvider {
 
-    public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(8 * 6);
+    public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(48);
     public EnumDyeColor[] colours = new EnumDyeColor[8];
-    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
-
-    public PullMode pullMode = new PullModeSingleStep();
-    public SortMode sortMode = new SortModeAnyStack();
+    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(18);
     public DefaultRoute defaultRoute = DefaultRoute.NONE;
-
+    private PullMode pullMode = new PullModeSingleStep();
+    private SortMode sortMode = new SortModeAnyStack();
     private List<IItemHandler> subHandlers;
     private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
         @Override
@@ -96,7 +94,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
             if (from.equals(getFacing().getOpposite())) {
                 // Allows use of filters for filtering items already in tubes. Not really a good reason to do this but it was possible in RP2 so it's possible in Teckle.
-                return sortMode.canAcceptTraveller(TileSortingMachine.this, traveller);
+                return getSortMode().canAcceptTraveller(TileSortingMachine.this, traveller);
             }
             return false;
         }
@@ -166,7 +164,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             return;
 
         if (getSource() != null)
-            pullMode.onTick(this);
+            getPullMode().onTick(this);
     }
 
     public TileEntity getSource() {
@@ -196,11 +194,11 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             }
         }
         try {
-            pullMode = PullMode.PULL_MODES.get(compound.getInteger("pullModeID")).newInstance();
-            pullMode.deserializeNBT(compound.getCompoundTag("pullMode"));
+            setPullMode(PullMode.PULL_MODES.get(compound.getInteger("pullModeID")).newInstance());
+            getPullMode().deserializeNBT(compound.getCompoundTag("pullMode"));
 
-            sortMode = SortMode.SORT_MODES.get(compound.getInteger("sortModeID")).newInstance();
-            sortMode.deserializeNBT(compound.getCompoundTag("sortMode"));
+            setSortMode(SortMode.SORT_MODES.get(compound.getInteger("sortModeID")).newInstance());
+            getSortMode().deserializeNBT(compound.getCompoundTag("sortMode"));
         } catch (Exception e) {
             TeckleMod.LOG.error("Failed to read sorting machine modes from nbt.", e);
         }
@@ -220,11 +218,11 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
         compound.setTag("colours", coloursTag);
         compound.setTag("filterRows", filterRows.serializeNBT());
-        compound.setTag("pullMode", pullMode.serializeNBT());
-        compound.setInteger("pullModeID", pullMode.getID());
+        compound.setTag("pullMode", getPullMode().serializeNBT());
+        compound.setInteger("pullModeID", getPullMode().getID());
 
-        compound.setTag("sortMode", sortMode.serializeNBT());
-        compound.setInteger("sortModeID", sortMode.getID());
+        compound.setTag("sortMode", getSortMode().serializeNBT());
+        compound.setInteger("sortModeID", getSortMode().getID());
 
         return super.writeToNBT(compound);
     }
@@ -320,6 +318,26 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     public IWorldNetworkTile getNetworkTile() {
         return networkTile;
+    }
+
+    public PullMode getPullMode() {
+        return pullMode;
+    }
+
+    public void setPullMode(PullMode pullMode) {
+        this.pullMode = pullMode;
+    }
+
+    public SortMode getSortMode() {
+        return sortMode;
+    }
+
+    public void setSortMode(SortMode sortMode) {
+        this.sortMode = sortMode;
+
+        if (this.getPullMode().isPaused()) {
+            this.getPullMode().unpause();
+        }
     }
 
     public enum DefaultRoute implements IStringSerializable {

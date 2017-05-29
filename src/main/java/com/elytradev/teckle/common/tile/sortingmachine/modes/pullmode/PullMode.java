@@ -40,6 +40,7 @@ public abstract class PullMode implements INBTSerializable {
 
     private final int id, x, y;
     private final String unlocalizedName;
+    private boolean paused;
 
     public PullMode(int id, int x, int y, String unlocalizedName) {
         this.id = id;
@@ -58,6 +59,18 @@ public abstract class PullMode implements INBTSerializable {
 
     public Point2i textureOffset() {
         return new Point2i(x, y);
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void pause() {
+        paused = true;
+    }
+
+    public void unpause() {
+        paused = false;
     }
 
     public abstract void onPulse(TileSortingMachine sortingMachine);

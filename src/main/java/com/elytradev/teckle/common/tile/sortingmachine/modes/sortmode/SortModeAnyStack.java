@@ -152,15 +152,14 @@ public class SortModeAnyStack extends SortMode {
         return traveller;
     }
 
-    /**
-     * Get the position of the selector, if no selector is used in this mode return -1.
-     *
-     * @param sortingMachine the sorting machine.
-     * @return the selector position, a value between -1 and 7 (inclusive)
-     */
     @Override
     public int selectorPosition(TileSortingMachine sortingMachine) {
-        return -1;
+        return 0;
+    }
+
+    @Override
+    public void onTick(TileSortingMachine sortingMachine) {
+
     }
 
     @Override

@@ -53,7 +53,7 @@ public class SortingMachineSortModeChangeMessage extends Message {
                 return;
 
             try {
-                sortingMachine.sortMode = SortMode.SORT_MODES.get(sortModeID).newInstance();
+                sortingMachine.setSortMode(SortMode.SORT_MODES.get(sortModeID).newInstance());
             } catch (Exception e) {
                 TeckleMod.LOG.error("Failed to instantiate sort mode from packet.");
             }

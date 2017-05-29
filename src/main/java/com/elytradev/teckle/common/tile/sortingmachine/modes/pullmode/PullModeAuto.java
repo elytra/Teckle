@@ -34,8 +34,11 @@ public class PullModeAuto extends PullMode {
 
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
+        if (isPaused())
+            return;
+
         if (coolDown <= 0) {
-            sortingMachine.sortMode.pulse(sortingMachine, this);
+            sortingMachine.getSortMode().pulse(sortingMachine, this);
 
             coolDown = 4;
         }

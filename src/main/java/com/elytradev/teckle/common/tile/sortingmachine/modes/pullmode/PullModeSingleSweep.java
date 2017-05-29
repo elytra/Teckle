@@ -36,16 +36,19 @@ public class PullModeSingleSweep extends PullMode {
     public void onPulse(TileSortingMachine sortingMachine) {
         remainingSweeps++;
 
-        selectorIncrementsRemaining = 8 - sortingMachine.sortMode.selectorPosition(sortingMachine);
+        selectorIncrementsRemaining = 8 - sortingMachine.getSortMode().selectorPosition(sortingMachine);
     }
 
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
+        if (isPaused())
+            return;
+
         // Quick check that this pull mode will work with our sort mode as this is only actually useful on a certain set of modes.
         // The UI should prevent this from happening so this is essentially just a sanity check.
-        if (sortingMachine.sortMode.getClass() != SortModeFullMatchSelector.class || sortingMachine.sortMode.getClass() != SortModePartialMatchSelector.class) {
+        if (sortingMachine.getSortMode().getClass() != SortModeFullMatchSelector.class || sortingMachine.getSortMode().getClass() != SortModePartialMatchSelector.class) {
             try {
-                sortingMachine.pullMode = PullMode.SINGLE_STEP.newInstance();
+                sortingMachine.setPullMode(PullMode.SINGLE_STEP.newInstance());
             } catch (Exception e) {
                 TeckleMod.LOG.error("Failed to change pull mode due to incompatibility with sort mode.", e);
             }
@@ -55,8 +58,8 @@ public class PullModeSingleSweep extends PullMode {
         if (remainingSweeps > 0) {
             if (coolDown <= 0) {
                 if (selectorIncrementsRemaining > 0) {
-                    if (sortingMachine.sortMode.pulse(sortingMachine, this)) {
-                        selectorIncrementsRemaining = 8 - sortingMachine.sortMode.selectorPosition(sortingMachine);
+                    if (sortingMachine.getSortMode().pulse(sortingMachine, this)) {
+                        selectorIncrementsRemaining = 8 - sortingMachine.getSortMode().selectorPosition(sortingMachine);
 
                         if (selectorIncrementsRemaining <= 0) {
                             remainingSweeps--;

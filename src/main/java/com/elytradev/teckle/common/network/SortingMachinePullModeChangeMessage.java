@@ -52,7 +52,7 @@ public class SortingMachinePullModeChangeMessage extends Message {
                 return;
 
             try {
-                sortingMachine.pullMode = PullMode.PULL_MODES.get(pullModeID).newInstance();
+                sortingMachine.setPullMode(PullMode.PULL_MODES.get(pullModeID).newInstance());
             } catch (Exception e) {
                 TeckleMod.LOG.error("Failed to instantiate pull mode from packet.");
             }

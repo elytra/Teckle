@@ -73,6 +73,11 @@ public class SortModePartialMatchSelector extends SortMode {
     }
 
     @Override
+    public void onTick(TileSortingMachine sortingMachine) {
+
+    }
+
+    @Override
     public NBTBase serializeNBT() {
         return new NBTTagCompound();
     }

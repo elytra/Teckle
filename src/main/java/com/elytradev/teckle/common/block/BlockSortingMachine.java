@@ -112,7 +112,7 @@ public class BlockSortingMachine extends BlockContainer {
             if (powered) {
                 worldIn.setBlockState(pos, state.withProperty(TRIGGERED, true));
                 if (!hadPower)
-                    ((TileSortingMachine) tileentity).pullMode.onPulse((TileSortingMachine) tileentity);
+                    ((TileSortingMachine) tileentity).getPullMode().onPulse((TileSortingMachine) tileentity);
             } else {
                 worldIn.setBlockState(pos, state.withProperty(TRIGGERED, false));
             }
