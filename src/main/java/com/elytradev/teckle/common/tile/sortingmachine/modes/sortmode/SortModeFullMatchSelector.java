@@ -159,6 +159,13 @@ public class SortModeFullMatchSelector extends SortMode {
             }
 
             stacksLeftToSatisfy.remove(matchingStack.get());
+            if (stacksLeftToSatisfy.isEmpty()) {
+                if (selectorPosition == 8) {
+                    selectorPosition = 0;
+                } else {
+                    selectorPosition++;
+                }
+            }
             return traveller;
         }
 
