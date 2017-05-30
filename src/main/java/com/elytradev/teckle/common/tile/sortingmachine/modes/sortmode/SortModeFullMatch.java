@@ -54,9 +54,7 @@ public class SortModeFullMatch extends SortMode {
      */
     @Override
     public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
-        // This mode cant accept incoming travellers due to a lack of ability for travellers to store multiple stacks of items.
-        // TODO: Confirm functionality makes sense once default routing is fully implemented.
-        return false;
+        return !sortingMachine.defaultRoute.isBlocked();
     }
 
     /**
@@ -68,7 +66,11 @@ public class SortModeFullMatch extends SortMode {
      */
     @Override
     public WorldNetworkTraveller processExistingTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
-        // This should never happen.
+        if (sortingMachine.defaultRoute.isColoured()) {
+            traveller.data.setInteger("colour", sortingMachine.defaultRoute.getColour().getMetadata());
+        } else {
+            traveller.data.removeTag("colour");
+        }
 
         return traveller;
     }

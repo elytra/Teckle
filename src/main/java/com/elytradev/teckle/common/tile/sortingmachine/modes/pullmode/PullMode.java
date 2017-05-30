@@ -29,6 +29,8 @@ public abstract class PullMode implements INBTSerializable {
     public static final Class<? extends PullMode> SINGLE_STEP = PullModeSingleStep.class;
     public static final Class<? extends PullMode> SINGLE_SWEEP = PullModeSingleSweep.class;
     public static final Class<? extends PullMode> AUTOMATIC = PullModeAuto.class;
+    public static final Class<? extends PullMode> INLINE = PullModeInline.class;
+
 
     static {
         PULL_MODES = new ArrayList<>();
@@ -36,6 +38,7 @@ public abstract class PullMode implements INBTSerializable {
         PULL_MODES.add(0, SINGLE_STEP);
         PULL_MODES.add(1, SINGLE_SWEEP);
         PULL_MODES.add(2, AUTOMATIC);
+        PULL_MODES.add(3, INLINE);
     }
 
     private final int id, x, y;

@@ -120,6 +120,26 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         public void acceptReturn(WorldNetworkTraveller traveller, EnumFacing side) {
 
         }
+
+        /**
+         * Called when a traveller is added to this tile, used for modifying the traveller.
+         *
+         * @param traveller the traveller added to this tile.
+         */
+        @Override
+        public void onTravellerAdded(WorldNetworkTraveller traveller) {
+            sortMode.processExistingTraveller(TileSortingMachine.this, traveller);
+        }
+
+        /**
+         * Called when a traveller is removed from this tile, used for modifying the traveller.
+         *
+         * @param traveller the traveller removed from the tile.
+         */
+        @Override
+        public void onTravellerRemoved(WorldNetworkTraveller traveller) {
+            traveller.quickRepath();
+        }
     };
 
     public List<IItemHandler> getCompartmentHandlers() {

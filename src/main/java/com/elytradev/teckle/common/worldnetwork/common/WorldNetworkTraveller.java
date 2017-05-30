@@ -404,6 +404,19 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         travelledDistance += (1F / 10F);
     }
 
+    public void quickRepath() {
+        previousNode.unregisterTraveller(this);
+        currentNode.unregisterTraveller(this);
+        genPath(true);
+        currentNode.registerTraveller(this);
+        new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.getWorld(), currentNode.position);
+        if (travelledDistance > 0.5F)
+            travelledDistance = 0.5F;
+        TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
+        message.travelledDistance = travelledDistance;
+        message.sendToAllWatching(this.network.getWorld(), this.currentNode.position);
+    }
+
     @Override
     public NBTTagCompound serializeNBT() {
         NBTTagCompound tagCompound = new NBTTagCompound();

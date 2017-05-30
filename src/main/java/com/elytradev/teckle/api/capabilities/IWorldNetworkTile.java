@@ -121,6 +121,23 @@ public interface IWorldNetworkTile {
     }
 
     /**
+     * Called when a traveller is added to this tile, used for modifying the traveller.
+     *
+     * @param traveller the traveller added to this tile.
+     */
+    default void onTravellerAdded(WorldNetworkTraveller traveller) {
+    }
+
+    /**
+     * Called when a traveller is removed from this tile, used for modifying the traveller.
+     *
+     * @param traveller the traveller removed from the tile.
+     */
+    default void onTravellerRemoved(WorldNetworkTraveller traveller) {
+
+    }
+
+    /**
      * The output face of the tile, only applies to tiles that add things to networks.
      *
      * @return the output face of the tile, null if this doesn't output.

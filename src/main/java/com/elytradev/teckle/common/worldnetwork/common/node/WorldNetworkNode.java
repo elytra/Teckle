@@ -70,10 +70,14 @@ public class WorldNetworkNode {
 
     public void registerTraveller(WorldNetworkTraveller traveller) {
         travellers.put(traveller.data.getUniqueId("id"), traveller);
+
+        this.getNetworkTile().onTravellerAdded(traveller);
     }
 
     public void unregisterTraveller(WorldNetworkTraveller traveller) {
         travellers.remove(traveller.data.getUniqueId("id"));
+
+        this.getNetworkTile().onTravellerRemoved(traveller);
     }
 
     public boolean isEndpoint() {
