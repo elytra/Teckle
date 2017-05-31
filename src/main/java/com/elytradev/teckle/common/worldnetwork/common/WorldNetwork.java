@@ -317,8 +317,8 @@ public class WorldNetwork implements IWorldNetwork {
         List<WorldNetworkNode> nodes = getNodes();
         for (int i = 0; i < nodes.size(); i++) {
             compound.setLong("n" + i, nodes.get(i).position.toLong());
-            if (nodes.get(i).getNetworkTile().getCapabilitySide() != null)
-                compound.setInteger("f" + i, nodes.get(i).getNetworkTile().getCapabilitySide().getIndex());
+            if (nodes.get(i).getNetworkTile().getCapabilityFace() != null)
+                compound.setInteger("f" + i, nodes.get(i).getNetworkTile().getCapabilityFace().getIndex());
         }
 
         // Serialize travellers.

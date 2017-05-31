@@ -152,7 +152,7 @@ public interface IWorldNetworkTile {
      *
      * @return the face used to get this tile from a capability
      */
-    default EnumFacing getCapabilitySide() {
+    default EnumFacing getCapabilityFace() {
         return null;
     }
 }
