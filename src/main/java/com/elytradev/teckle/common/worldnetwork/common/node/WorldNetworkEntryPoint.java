@@ -18,7 +18,7 @@ package com.elytradev.teckle.common.worldnetwork.common.node;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
-import com.elytradev.teckle.common.network.TravellerDataMessage;
+import com.elytradev.teckle.common.network.messages.TravellerDataMessage;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;

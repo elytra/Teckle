@@ -14,48 +14,49 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.network;
+package com.elytradev.teckle.common.network.messages;
 
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.concrete.network.annotation.field.MarshalledAs;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
-import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import com.elytradev.teckle.common.network.TeckleNetworking;
+import com.elytradev.teckle.common.tile.TileAlloyFurnace;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * Created by darkevilmac on 5/22/17.
+ * Created by darkevilmac on 4/20/2017.
  */
-@ReceivedOn(Side.SERVER)
-public class SortingMachineColourChangeMessage extends Message {
+@ReceivedOn(Side.CLIENT)
+public class AlloyFurnaceMessage extends Message {
 
-    public BlockPos pos;
-    @MarshalledAs("i8")
-    public int colourIndex;
-    @MarshalledAs("i8")
-    public int colour;
+    public BlockPos furnacePos;
+    @MarshalledAs("int")
+    public int cookTime, fuelBurnTime, currentFuelWorth;
 
-    public SortingMachineColourChangeMessage(NetworkContext ctx) {
+    public AlloyFurnaceMessage(NetworkContext ctx) {
         super(ctx);
     }
 
-    public SortingMachineColourChangeMessage(BlockPos pos, int colourIndex, EnumDyeColor colour) {
+    public AlloyFurnaceMessage(TileAlloyFurnace alloyFurnace) {
         super(TeckleNetworking.NETWORK);
-        this.pos = pos;
-        this.colourIndex = colourIndex;
-        this.colour = colour == null ? -1 : colour.getMetadata();
+        this.furnacePos = alloyFurnace.getPos();
+        this.cookTime = alloyFurnace.cookTime;
+        this.fuelBurnTime = alloyFurnace.fuelBurnTime;
+        this.currentFuelWorth = alloyFurnace.currentFuelWorth;
     }
 
     @Override
     protected void handle(EntityPlayer sender) {
-        if (sender != null && sender.world != null) {
-            TileSortingMachine sortingMachine = (TileSortingMachine) sender.world.getTileEntity(pos);
-            if (!sortingMachine.isUsableByPlayer(sender))
-                return;
-            sortingMachine.colours[colourIndex] = this.colour == -1 ? null : EnumDyeColor.byMetadata(this.colour);
+        if (sender.world != null && sender.world.getTileEntity(furnacePos) instanceof TileAlloyFurnace) {
+            TileAlloyFurnace alloyFurnace = (TileAlloyFurnace) sender.world.getTileEntity(furnacePos);
+
+            alloyFurnace.fuelBurnTime = this.fuelBurnTime;
+            alloyFurnace.cookTime = this.cookTime;
+            alloyFurnace.currentFuelWorth = this.currentFuelWorth;
         }
     }
+
 }

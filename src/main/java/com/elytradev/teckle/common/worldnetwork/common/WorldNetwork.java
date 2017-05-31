@@ -20,7 +20,7 @@ import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.common.TeckleMod;
-import com.elytradev.teckle.common.network.TravellerDataMessage;
+import com.elytradev.teckle.common.network.messages.TravellerDataMessage;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;

@@ -16,6 +16,7 @@
 
 package com.elytradev.teckle.common.container;
 
+import com.elytradev.teckle.common.network.messages.SortingMachineSelectorMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -30,6 +31,8 @@ public class ContainerSortingMachine extends Container {
 
     public EntityPlayer player;
     public TileSortingMachine sortingMachine;
+
+    private int selectorPos = -1;
 
     public ContainerSortingMachine(TileSortingMachine tileSortingMachine, EntityPlayer player) {
         this.player = player;
@@ -69,5 +72,15 @@ public class ContainerSortingMachine extends Container {
     @Override
     public boolean canInteractWith(EntityPlayer playerIn) {
         return sortingMachine.isUsableByPlayer(playerIn);
+    }
+
+    @Override
+    public void detectAndSendChanges() {
+        super.detectAndSendChanges();
+
+        if (selectorPos != sortingMachine.getSortMode().selectorPosition(sortingMachine)) {
+            this.selectorPos = sortingMachine.getSortMode().selectorPosition(sortingMachine);
+            new SortingMachineSelectorMessage(selectorPos, sortingMachine.getPos()).sendToAllWatching(sortingMachine);
+        }
     }
 }

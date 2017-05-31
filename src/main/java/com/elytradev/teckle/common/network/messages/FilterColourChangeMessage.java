@@ -14,47 +14,46 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.network;
+package com.elytradev.teckle.common.network.messages;
 
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.concrete.network.annotation.field.MarshalledAs;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
-import com.elytradev.teckle.common.tile.TileFabricator;
+import com.elytradev.teckle.common.network.TeckleNetworking;
+import com.elytradev.teckle.common.tile.TileFilter;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * Created by darkevilmac on 5/10/17.
+ * Created by darkevilmac on 4/12/2017.
  */
 @ReceivedOn(Side.SERVER)
-public class FabricatorTemplateMessage extends Message {
+public class FilterColourChangeMessage extends Message {
 
-    public BlockPos fabricatorPos;
+    public BlockPos filterPos;
     @MarshalledAs("i8")
-    public int templateIndex;
-    public ItemStack stack;
+    public int colour;
 
-    public FabricatorTemplateMessage(NetworkContext ctx) {
+    public FilterColourChangeMessage(NetworkContext ctx) {
         super(ctx);
     }
 
-    public FabricatorTemplateMessage(BlockPos fabricatorPos, ItemStack stack, int templateIndex) {
+    public FilterColourChangeMessage(BlockPos filterPos, EnumDyeColor colour) {
         super(TeckleNetworking.NETWORK);
-        this.fabricatorPos = fabricatorPos;
-        this.stack = stack;
-        this.templateIndex = templateIndex;
+        this.filterPos = filterPos;
+        this.colour = colour == null ? -1 : colour.getMetadata();
     }
 
     @Override
     protected void handle(EntityPlayer sender) {
         if (sender != null && sender.world != null) {
-            TileFabricator fabricator = (TileFabricator) sender.world.getTileEntity(fabricatorPos);
-            if (!fabricator.isUsableByPlayer(sender))
+            TileFilter filter = (TileFilter) sender.world.getTileEntity(filterPos);
+            if (!filter.isUsableByPlayer(sender))
                 return;
-            fabricator.setTemplateSlot(templateIndex, stack);
+            filter.colour = this.colour == -1 ? null : EnumDyeColor.byMetadata(this.colour);
         }
     }
 }

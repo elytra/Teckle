@@ -14,33 +14,34 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.network;
+package com.elytradev.teckle.common.network.messages;
 
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.concrete.network.annotation.field.MarshalledAs;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
-import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
 @ReceivedOn(Side.SERVER)
-public class SortingMachinePullModeChangeMessage extends Message {
+public class SortingMachineSortModeChangeMessage extends Message {
 
     @MarshalledAs("i8")
-    public int pullModeID;
+    public int sortModeID;
     public BlockPos sortingMachinePos;
 
-    public SortingMachinePullModeChangeMessage(NetworkContext ctx) {
+    public SortingMachineSortModeChangeMessage(NetworkContext ctx) {
         super(ctx);
     }
 
-    public SortingMachinePullModeChangeMessage(int pullModeID, BlockPos sortingMachinePos) {
+    public SortingMachineSortModeChangeMessage(int sortModeID, BlockPos sortingMachinePos) {
         super(TeckleNetworking.NETWORK);
-        this.pullModeID = pullModeID;
+        this.sortModeID = sortModeID;
         this.sortingMachinePos = sortingMachinePos;
     }
 
@@ -48,13 +49,14 @@ public class SortingMachinePullModeChangeMessage extends Message {
     protected void handle(EntityPlayer sender) {
         if (sender != null && sender.world != null) {
             TileSortingMachine sortingMachine = (TileSortingMachine) sender.world.getTileEntity(sortingMachinePos);
+
             if (!sortingMachine.isUsableByPlayer(sender))
                 return;
 
             try {
-                sortingMachine.setPullMode(PullMode.PULL_MODES.get(pullModeID).newInstance());
+                sortingMachine.setSortMode(SortMode.SORT_MODES.get(sortModeID).newInstance());
             } catch (Exception e) {
-                TeckleMod.LOG.error("Failed to instantiate pull mode from packet.");
+                TeckleMod.LOG.error("Failed to instantiate sort mode from packet.");
             }
             sortingMachine.markDirty();
         }

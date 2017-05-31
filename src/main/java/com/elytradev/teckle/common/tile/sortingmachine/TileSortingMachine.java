@@ -73,6 +73,8 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public EnumDyeColor[] colours = new EnumDyeColor[8];
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(18);
     public DefaultRoute defaultRoute = DefaultRoute.NONE;
+    @SideOnly(Side.CLIENT)
+    private int selectorPos;
     private PullMode pullMode = new PullModeSingleStep();
     private SortMode sortMode = new SortModeAnyStack();
     private List<IItemHandler> subHandlers;
@@ -391,6 +393,16 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         if (this.getPullMode().isPaused()) {
             this.getPullMode().unpause();
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    public int getSelectorPos() {
+        return selectorPos;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void setSelectorPos(int selectorPos) {
+        this.selectorPos = selectorPos;
     }
 
     public enum DefaultRoute implements IStringSerializable {

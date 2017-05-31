@@ -17,7 +17,7 @@
 package com.elytradev.teckle.client.gui;
 
 import com.elytradev.teckle.common.container.ContainerFabricator;
-import com.elytradev.teckle.common.network.FabricatorTemplateMessage;
+import com.elytradev.teckle.common.network.messages.FabricatorTemplateMessage;
 import com.elytradev.teckle.common.tile.TileFabricator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;

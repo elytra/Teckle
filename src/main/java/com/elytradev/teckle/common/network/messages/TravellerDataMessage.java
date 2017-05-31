@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.network;
+package com.elytradev.teckle.common.network.messages;
 
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
@@ -22,6 +22,7 @@ import com.elytradev.concrete.network.annotation.field.MarshalledAs;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
+import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.WorldNetworkPath;

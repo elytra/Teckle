@@ -16,27 +16,34 @@
 
 package com.elytradev.teckle.common.network;
 
+import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.network.messages.*;
 
 /**
- * Created by darkevilmac on 3/31/2017.
+ * Used for registering packets and storing a global network context for Teckle.
  */
 public class TeckleNetworking {
 
     public static final NetworkContext NETWORK = NetworkContext.forChannel(TeckleMod.MOD_ID);
 
     public static void setupNetwork() {
-        NETWORK.register(TravellerDataMessage.class);
-        NETWORK.register(TravellerMoveMessage.class);
-        NETWORK.register(AlloyFurnaceMessage.class);
+        registerMessage(TravellerDataMessage.class);
+        registerMessage(TravellerMoveMessage.class);
+        registerMessage(AlloyFurnaceMessage.class);
 
-        NETWORK.register(FilterColourChangeMessage.class);
-        NETWORK.register(FabricatorTemplateMessage.class);
-        NETWORK.register(SortingMachineColourChangeMessage.class);
-        NETWORK.register(SortingMachineSortModeChangeMessage.class);
-        NETWORK.register(SortingMachinePullModeChangeMessage.class);
-        NETWORK.register(SortingMachineDefaultRouteChangeMessage.class);
+        registerMessage(FilterColourChangeMessage.class);
+        registerMessage(FabricatorTemplateMessage.class);
+        registerMessage(SortingMachineColourChangeMessage.class);
+        registerMessage(SortingMachineSortModeChangeMessage.class);
+        registerMessage(SortingMachinePullModeChangeMessage.class);
+        registerMessage(SortingMachineDefaultRouteChangeMessage.class);
+        registerMessage(SortingMachineSelectorMessage.class);
+    }
+
+    private static void registerMessage(Class<? extends Message> clazz) {
+        NETWORK.register(clazz);
     }
 
 }

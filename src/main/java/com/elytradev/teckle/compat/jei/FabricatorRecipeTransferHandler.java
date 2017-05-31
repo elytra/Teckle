@@ -17,7 +17,7 @@
 package com.elytradev.teckle.compat.jei;
 
 import com.elytradev.teckle.common.container.ContainerFabricator;
-import com.elytradev.teckle.common.network.FabricatorTemplateMessage;
+import com.elytradev.teckle.common.network.messages.FabricatorTemplateMessage;
 import com.elytradev.teckle.common.tile.TileFabricator;
 import mezz.jei.api.gui.IGuiIngredient;
 import mezz.jei.api.gui.IRecipeLayout;

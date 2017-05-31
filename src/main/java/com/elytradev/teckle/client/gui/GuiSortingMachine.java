@@ -18,10 +18,10 @@ package com.elytradev.teckle.client.gui;
 
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
-import com.elytradev.teckle.common.network.SortingMachineColourChangeMessage;
-import com.elytradev.teckle.common.network.SortingMachineDefaultRouteChangeMessage;
-import com.elytradev.teckle.common.network.SortingMachinePullModeChangeMessage;
-import com.elytradev.teckle.common.network.SortingMachineSortModeChangeMessage;
+import com.elytradev.teckle.common.network.messages.SortingMachineColourChangeMessage;
+import com.elytradev.teckle.common.network.messages.SortingMachineDefaultRouteChangeMessage;
+import com.elytradev.teckle.common.network.messages.SortingMachinePullModeChangeMessage;
+import com.elytradev.teckle.common.network.messages.SortingMachineSortModeChangeMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;
@@ -100,7 +100,7 @@ public class GuiSortingMachine extends GuiContainer {
      */
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        int selectorPosition = sortingMachine.getSortMode().selectorPosition(sortingMachine);
+        int selectorPosition = sortingMachine.getSelectorPos();
         if (selectorPosition != -1) {
             int textureX = 176;
             int textureY = 90;

@@ -14,45 +14,50 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.network;
+package com.elytradev.teckle.common.network.messages;
 
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.concrete.network.annotation.field.MarshalledAs;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
-import com.elytradev.teckle.common.tile.TileFilter;
+import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.network.TeckleNetworking;
+import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
-/**
- * Created by darkevilmac on 4/12/2017.
- */
 @ReceivedOn(Side.SERVER)
-public class FilterColourChangeMessage extends Message {
+public class SortingMachinePullModeChangeMessage extends Message {
 
-    public BlockPos filterPos;
     @MarshalledAs("i8")
-    public int colour;
+    public int pullModeID;
+    public BlockPos sortingMachinePos;
 
-    public FilterColourChangeMessage(NetworkContext ctx) {
+    public SortingMachinePullModeChangeMessage(NetworkContext ctx) {
         super(ctx);
     }
 
-    public FilterColourChangeMessage(BlockPos filterPos, EnumDyeColor colour) {
+    public SortingMachinePullModeChangeMessage(int pullModeID, BlockPos sortingMachinePos) {
         super(TeckleNetworking.NETWORK);
-        this.filterPos = filterPos;
-        this.colour = colour == null ? -1 : colour.getMetadata();
+        this.pullModeID = pullModeID;
+        this.sortingMachinePos = sortingMachinePos;
     }
 
     @Override
     protected void handle(EntityPlayer sender) {
         if (sender != null && sender.world != null) {
-            TileFilter filter = (TileFilter) sender.world.getTileEntity(filterPos);
-            if (!filter.isUsableByPlayer(sender))
+            TileSortingMachine sortingMachine = (TileSortingMachine) sender.world.getTileEntity(sortingMachinePos);
+            if (!sortingMachine.isUsableByPlayer(sender))
                 return;
-            filter.colour = this.colour == -1 ? null : EnumDyeColor.byMetadata(this.colour);
+
+            try {
+                sortingMachine.setPullMode(PullMode.PULL_MODES.get(pullModeID).newInstance());
+            } catch (Exception e) {
+                TeckleMod.LOG.error("Failed to instantiate pull mode from packet.");
+            }
+            sortingMachine.markDirty();
         }
     }
 }

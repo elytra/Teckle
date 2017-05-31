@@ -17,7 +17,7 @@
 package com.elytradev.teckle.client.gui;
 
 import com.elytradev.teckle.common.container.ContainerFilter;
-import com.elytradev.teckle.common.network.FilterColourChangeMessage;
+import com.elytradev.teckle.common.network.messages.FilterColourChangeMessage;
 import com.elytradev.teckle.common.tile.TileFilter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;

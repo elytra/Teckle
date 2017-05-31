@@ -43,6 +43,9 @@ public class SortModeFullMatchSelector extends SortMode {
 
     public int selectorPosition = 0;
     public int compartmentSlot = 0;
+
+    public int coolDown = 5;
+
     public List<ItemStack> stacksLeftToSatisfy = Lists.newArrayList();
 
     public SortModeFullMatchSelector() {
@@ -65,6 +68,22 @@ public class SortModeFullMatchSelector extends SortMode {
 
         IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
         Map<SlotData, Integer> slotsToExtract = Maps.newHashMap();
+
+        if (ItemStream.createItemStream(compartmentHandler).allMatch(ItemStack::isEmpty)) {
+            boolean changedSelector = false;
+            for (int i = selectorPosition + 1; i < 8; i++) {
+                IItemHandler selectedCompartmentHandler = sortingMachine.getCompartmentHandlers().get(i);
+
+                if (ItemStream.createItemStream(selectedCompartmentHandler).anyMatch(stack -> !stack.isEmpty())) {
+                    selectorPosition = i;
+                    changedSelector = true;
+                    break;
+                }
+            }
+
+            if (!changedSelector)
+                selectorPosition = 0;
+        }
 
         // Gather information to shove in the buffer, as well as confirm that it will all fit.
         for (int i = 0; i < compartmentHandler.getSlots(); i++) {
@@ -191,6 +210,14 @@ public class SortModeFullMatchSelector extends SortMode {
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
         if (!(sortingMachine.getPullMode() instanceof PullModeInline)) {
+
+            if (coolDown > 0) {
+                coolDown--;
+                return;
+            }
+
+            coolDown = 5;
+
             if (!sortingMachine.getPullMode().isPaused())
                 return;
 
@@ -202,6 +229,7 @@ public class SortModeFullMatchSelector extends SortMode {
 
             IItemHandler bufferHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
             if (bufferHandler != sortingMachine.buffer) {
+                sortingMachine.getPullMode().unpause();
                 return;
             }
 
@@ -253,16 +281,33 @@ public class SortModeFullMatchSelector extends SortMode {
             sortingMachine.addToNetwork(selectedStackInSlot.itemHandler, selectedStackInSlot.slot, selectedStack.getCount(),
                     compartmentColour != null ? ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())) : ImmutableMap.of());
 
-            Stream<ItemStack> bufferStream = ItemStream.createItemStream(bufferHandler);
+            Stream<ItemStack> bufferStream = ItemStream.createItemStream(sortingMachine.buffer);
             // If the buffer has been emptied move the selector.
             if (bufferStream.allMatch(ItemStack::isEmpty)) {
                 sortingMachine.getPullMode().unpause();
 
-                if (selectorPosition == 8) {
-                    selectorPosition = 0;
-                } else {
-                    selectorPosition++;
+                for (int i = selectorPosition + 1; i < 8; i++) {
+                    IItemHandler selectedCompartmentHandler = sortingMachine.getCompartmentHandlers().get(i);
+
+                    if (ItemStream.createItemStream(selectedCompartmentHandler).anyMatch(stack -> !stack.isEmpty())) {
+                        selectorPosition = i;
+                        return;
+                    }
                 }
+
+                // Try again from 0...
+                for (int i = 0; i < 8; i++) {
+                    IItemHandler selectedCompartmentHandler = sortingMachine.getCompartmentHandlers().get(i);
+
+                    if (ItemStream.createItemStream(selectedCompartmentHandler).anyMatch(stack -> !stack.isEmpty())) {
+                        selectorPosition = i;
+                        return;
+                    }
+                }
+
+                // Nothing was found, resort to 0...
+                selectorPosition = 0;
+                return;
             }
         }
     }
@@ -273,6 +318,7 @@ public class SortModeFullMatchSelector extends SortMode {
 
         tagCompound.setInteger("selectorPosition", selectorPosition);
         tagCompound.setInteger("compartmentSlot", compartmentSlot);
+        tagCompound.setInteger("cooldown", coolDown);
 
         return new NBTTagCompound();
     }
@@ -285,5 +331,6 @@ public class SortModeFullMatchSelector extends SortMode {
         NBTTagCompound tagCompound = (NBTTagCompound) nbt;
         selectorPosition = tagCompound.getInteger("selectorPosition");
         compartmentSlot = tagCompound.getInteger("compartmentSlot");
+        coolDown = tagCompound.getInteger("cooldown");
     }
 }
