@@ -75,11 +75,16 @@ public class AdvancedItemStackHandler extends ItemStackHandler {
     public ItemStack insertItem(@Nonnull ItemStack stack, boolean simulate) {
         ItemStack remaining = stack.copy();
         for (int i = 0; i < getSlots(); i++) {
+            if (remaining.isEmpty())
+                break;
             remaining = insertItem(i, stack, true);
         }
 
         if (remaining.isEmpty() && !simulate) {
+            remaining = stack.copy();
             for (int i = 0; i < getSlots(); i++) {
+                if (remaining.isEmpty())
+                    break;
                 remaining = insertItem(i, stack, simulate);
             }
         }

@@ -73,7 +73,7 @@ public class SortModePartialMatchSelector extends SortMode {
                 continue;
 
             Optional<SlotData> matchingSlotData = stacksToPush.stream().filter(slotData -> compartmentStackInSlot.isItemEqual(slotData.getStack())
-                    && compartmentStackInSlot.getCount() >= slotData.getStack().getCount()).findFirst();
+                    && compartmentStackInSlot.getCount() <= slotData.getStack().getCount()).findFirst();
             if (matchingSlotData.isPresent() && matchingSlotData.get().canExtractCount(compartmentStackInSlot.getCount())
                     && sortingMachine.buffer.canInsertItem(compartmentStackInSlot.copy())) {
                 slotsToExtract.put(matchingSlotData.get(), compartmentStackInSlot.getCount());
@@ -198,8 +198,8 @@ public class SortModePartialMatchSelector extends SortMode {
                 return;
             }
 
-            IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition - 1);
-            EnumDyeColor compartmentColour = sortingMachine.colours[selectorPosition - 1];
+            IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
+            EnumDyeColor compartmentColour = sortingMachine.colours[selectorPosition];
             ItemStack selectedStack = null;
             SlotData selectedStackInSlot = null;
             ItemStack selectedCompartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
