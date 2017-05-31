@@ -81,12 +81,12 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new WorldNetworkEntryPoint(network, pos, getFacing());
+            return new WorldNetworkEntryPoint(network, pos, getOutputFace());
         }
 
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return side.equals(getFacing());
+            return side.equals(getOutputFace());
         }
 
         @Override
@@ -94,7 +94,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             if (traveller.getEntryPoint().position.equals(TileSortingMachine.this.pos))
                 return true;
 
-            if (from.equals(getFacing().getOpposite())) {
+            if (from.equals(getOutputFace().getOpposite())) {
                 // Allows use of filters for filtering items already in tubes. Not really a good reason to do this but it was possible in RP2 so it's possible in Teckle.
                 return getSortMode().canAcceptTraveller(TileSortingMachine.this, traveller);
             }
@@ -103,11 +103,11 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         @Override
         public boolean canConnectTo(EnumFacing side) {
-            return side.equals(getFacing()) || side.getOpposite().equals(getFacing());
+            return side.equals(getOutputFace()) || side.getOpposite().equals(getOutputFace());
         }
 
         @Override
-        public EnumFacing getFacing() {
+        public EnumFacing getOutputFace() {
             if (world != null) {
                 IBlockState thisState = world.getBlockState(pos);
                 if (thisState.getBlock().equals(TeckleObjects.blockSortingMachine)) {
@@ -124,11 +124,11 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
                 return; // wtf am I supposed to do with this???
 
             ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
-            EnumFacing facing = getFacing();
+            EnumFacing facing = getOutputFace();
             BlockPos sourcePos = pos.offset(facing);
 
             // Try and put it back where we found it.
-            if (side.equals(getFacing())) {
+            if (side.equals(getOutputFace())) {
                 if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
                     TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
                     if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
@@ -224,7 +224,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     public TileEntity getSource() {
         if (world != null) {
-            EnumFacing facing = networkTile.getFacing();
+            EnumFacing facing = networkTile.getOutputFace();
             BlockPos sourcePos = pos.offset(facing.getOpposite());
 
             TileEntity sourceTile = world.getTileEntity(sourcePos);
@@ -313,7 +313,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     }
 
     public EnumFacing getFacing() {
-        return networkTile.getFacing();
+        return networkTile.getOutputFace();
     }
 
     public ItemStack addToNetwork(IItemHandler source, int slot, int quantity, ImmutableMap<String, NBTBase> additionalData) {

@@ -71,19 +71,35 @@ public class CapabilityWorldNetworkTile {
      * @return true if present, false otherwise.
      */
     public static boolean isPositionNetworkTile(IBlockAccess world, BlockPos pos) {
-        return !(world.getTileEntity(pos) == null || !world.getTileEntity(pos).hasCapability(NETWORK_TILE_CAPABILITY, null));
+        return isPositionNetworkTile(world, pos, null);
+    }
+
+    public static boolean isPositionNetworkTile(IBlockAccess world, BlockPos pos, EnumFacing face) {
+        return !(world.getTileEntity(pos) == null || !world.getTileEntity(pos).hasCapability(NETWORK_TILE_CAPABILITY, face));
+    }
+
+    public static boolean isTileNetworked(TileEntity tileEntity, EnumFacing face) {
+        return !(tileEntity == null || !tileEntity.hasCapability(NETWORK_TILE_CAPABILITY, face));
     }
 
     public static boolean isTileNetworked(TileEntity tileEntity) {
-        return !(tileEntity == null || !tileEntity.hasCapability(NETWORK_TILE_CAPABILITY, null));
+        return isTileNetworked(tileEntity, null);
     }
 
     public static IWorldNetworkTile getTileNetworked(TileEntity tileEntity) {
-        return tileEntity.getCapability(NETWORK_TILE_CAPABILITY, null);
+        return getTileNetworked(tileEntity, null);
+    }
+
+    public static IWorldNetworkTile getTileNetworked(TileEntity tileEntity, EnumFacing face) {
+        return tileEntity.getCapability(NETWORK_TILE_CAPABILITY, face);
     }
 
     public static IWorldNetworkTile getNetworkTileAtPosition(IBlockAccess world, BlockPos pos) {
-        return world.getTileEntity(pos).getCapability(NETWORK_TILE_CAPABILITY, null);
+        return getNetworkTileAtPosition(world, pos, null);
+    }
+
+    public static IWorldNetworkTile getNetworkTileAtPosition(IBlockAccess world, BlockPos pos, EnumFacing face) {
+        return world.getTileEntity(pos).getCapability(NETWORK_TILE_CAPABILITY, face);
     }
 
 }

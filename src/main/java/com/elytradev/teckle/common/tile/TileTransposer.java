@@ -62,13 +62,13 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return side.equals(getFacing());
+            return side.equals(getOutputFace());
         }
 
 
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new WorldNetworkEntryPoint(network, pos, getFacing());
+            return new WorldNetworkEntryPoint(network, pos, getOutputFace());
         }
 
         @Override
@@ -76,17 +76,17 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             if (traveller.getEntryPoint().position.equals(TileTransposer.this.pos))
                 return true;
 
-            return from.equals(getFacing().getOpposite());
+            return from.equals(getOutputFace().getOpposite());
         }
 
         @Override
         public boolean canConnectTo(EnumFacing side) {
-            return side.equals(getFacing()) || side.getOpposite().equals(getFacing());
+            return side.equals(getOutputFace()) || side.getOpposite().equals(getOutputFace());
         }
 
 
         @Override
-        public EnumFacing getFacing() {
+        public EnumFacing getOutputFace() {
             if (world != null) {
                 IBlockState thisState = world.getBlockState(pos);
                 if (thisState.getBlock().equals(TeckleObjects.blockTransposer)) {
@@ -103,10 +103,10 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                 return; // wtf am I supposed to do with this???
 
             ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
-            EnumFacing facing = getFacing();
+            EnumFacing facing = getOutputFace();
 
             // Try and put it back where we found it.
-            if (side.equals(getFacing())) {
+            if (side.equals(getOutputFace())) {
                 if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
                     TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
                     if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
@@ -147,14 +147,14 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         if (cooldown > 0)
             return result;
 
-        TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(networkTile.getFacing()));
-        boolean destinationIsAir = world.isAirBlock(pos.offset(networkTile.getFacing()));
+        TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(networkTile.getOutputFace()));
+        boolean destinationIsAir = world.isAirBlock(pos.offset(networkTile.getOutputFace()));
         boolean hasInsertionDestination = potentialInsertionTile != null && ((networkTile.getNode() != null && networkTile.getNode().network != null)
-                || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getFacing().getOpposite())));
+                || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getOutputFace().getOpposite())));
 
         if (!world.isRemote && (hasInsertionDestination || destinationIsAir)) {
             WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().network.getNodeFromPosition(pos);
-            EnumFacing facing = networkTile.getFacing();
+            EnumFacing facing = networkTile.getOutputFace();
 
             ItemStack extractionData = getExtractionData(facing);
 
@@ -176,7 +176,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
     }
 
     private boolean ejectExtractionData(EnumFacing facing, ItemStack extractionData) {
-        EnumFacing enumfacing = networkTile.getFacing();
+        EnumFacing enumfacing = networkTile.getOutputFace();
         double x = pos.getX() + 0.7D * (double) enumfacing.getFrontOffsetX();
         double y = pos.getY() + 0.7D * (double) enumfacing.getFrontOffsetY();
         double z = pos.getZ() + 0.7D * (double) enumfacing.getFrontOffsetZ();
@@ -219,8 +219,8 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                 }
             }
         } else {
-            IItemHandler insertHandler = world.getTileEntity(pos.offset(networkTile.getFacing())).getCapability
-                    (CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getFacing().getOpposite());
+            IItemHandler insertHandler = world.getTileEntity(pos.offset(networkTile.getOutputFace())).getCapability
+                    (CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getOutputFace().getOpposite());
 
             ItemStack remaining = extractionData;
             for (int i = 0; i < insertHandler.getSlots() && !remaining.isEmpty(); i++) {
@@ -290,13 +290,13 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             cooldown--;
         }
 
-        boolean canFitItems = world.isAirBlock(pos.add(networkTile.getFacing().getOpposite().getDirectionVec())) && canFitItemsInBuffer();
+        boolean canFitItems = world.isAirBlock(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec())) && canFitItemsInBuffer();
         if (canFitItems) {
-            List<EntityItem> itemsToPickup = getItemsInBlockPos(pos.add(networkTile.getFacing().getOpposite().getDirectionVec()));
-            if (world.getBlockState(pos).getValue(BlockTransposer.TRIGGERED) && world.isAirBlock(pos.add(networkTile.getFacing().getOpposite().getDirectionVec())
-                    .add(networkTile.getFacing().getOpposite().getDirectionVec())))
-                itemsToPickup.addAll(getItemsInBlockPos(pos.add(networkTile.getFacing().getOpposite().getDirectionVec())
-                        .add(networkTile.getFacing().getOpposite().getDirectionVec())));
+            List<EntityItem> itemsToPickup = getItemsInBlockPos(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec()));
+            if (world.getBlockState(pos).getValue(BlockTransposer.TRIGGERED) && world.isAirBlock(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec())
+                    .add(networkTile.getOutputFace().getOpposite().getDirectionVec())))
+                itemsToPickup.addAll(getItemsInBlockPos(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec())
+                        .add(networkTile.getOutputFace().getOpposite().getDirectionVec())));
 
             for (EntityItem entityItem : itemsToPickup) {
                 ItemStack entityStack = entityItem.getEntityItem().copy();

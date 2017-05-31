@@ -317,6 +317,8 @@ public class WorldNetwork implements IWorldNetwork {
         List<WorldNetworkNode> nodes = getNodes();
         for (int i = 0; i < nodes.size(); i++) {
             compound.setLong("n" + i, nodes.get(i).position.toLong());
+            if (nodes.get(i).getNetworkTile().getCapabilitySide() != null)
+                compound.setInteger("f" + i, nodes.get(i).getNetworkTile().getCapabilitySide().getIndex());
         }
 
         // Serialize travellers.
@@ -339,9 +341,13 @@ public class WorldNetwork implements IWorldNetwork {
 
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             BlockPos pos = BlockPos.fromLong(compound.getLong("n" + i));
+            EnumFacing face = null;
+            if (compound.hasKey("f" + i)) {
+                face = EnumFacing.values()[compound.getInteger("f" + i)];
+            }
 
-            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos)) {
-                IWorldNetworkTile networkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos);
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, face)) {
+                IWorldNetworkTile networkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, face);
                 WorldNetworkNode node = networkTile.createNode(this, pos);
                 networkTile.setNode(node);
                 registerNode(node);

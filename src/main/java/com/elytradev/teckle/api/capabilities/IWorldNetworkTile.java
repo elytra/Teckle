@@ -143,7 +143,16 @@ public interface IWorldNetworkTile {
      * @return the output face of the tile, null if this doesn't output.
      */
     @Nullable
-    default EnumFacing getFacing() {
+    default EnumFacing getOutputFace() {
+        return null;
+    }
+
+    /**
+     * Get the face that this tile is associated with, should be equal to the face used in getCapability calls.
+     *
+     * @return the face used to get this tile from a capability
+     */
+    default EnumFacing getCapabilitySide() {
         return null;
     }
 }
