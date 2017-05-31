@@ -21,7 +21,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class PullModeAuto extends PullMode {
-    public int coolDown = 4;
+    public int coolDown = 6;
 
     public PullModeAuto() {
         super(2, 208, 58, "pullmode.auto");
@@ -40,7 +40,7 @@ public class PullModeAuto extends PullMode {
         if (coolDown <= 0) {
             sortingMachine.getSortMode().pulse(sortingMachine, this);
 
-            coolDown = 4;
+            coolDown = 6;
         }
 
         if (coolDown > 0)

@@ -39,6 +39,7 @@ import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
@@ -63,7 +64,6 @@ import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 
@@ -118,7 +118,38 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         @Override
         public void acceptReturn(WorldNetworkTraveller traveller, EnumFacing side) {
+            if (!traveller.data.hasKey("stack"))
+                return; // wtf am I supposed to do with this???
 
+            ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
+            EnumFacing facing = getFacing();
+            BlockPos sourcePos = pos.offset(facing);
+
+            // Try and put it back where we found it.
+            if (side.equals(getFacing())) {
+                if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
+                    TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
+                    if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
+                        IItemHandler itemHandler = pushTo.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
+                        for (int slot = 0; slot < itemHandler.getSlots() && !stack.isEmpty(); slot++) {
+                            stack = itemHandler.insertItem(slot, stack, false);
+                        }
+                    }
+                }
+            }
+            if (!stack.isEmpty()) {
+                ItemStack remaining = stack.copy();
+                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
+                    remaining = buffer.insertItem(i, remaining, false);
+                }
+
+                // Spawn into the world I guess.
+                if (!remaining.isEmpty()) {
+                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
+                }
+            }
         }
 
         /**
@@ -185,6 +216,8 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         if (getSource() != null)
             getPullMode().onTick(this);
+
+        getSortMode().onTick(this);
     }
 
     public TileEntity getSource() {
@@ -317,7 +350,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
      * @return the list of all itemstacks available for sorting.
      */
     public List<SlotData> getStacksToPush() {
-        List<SlotData> stacks = Collections.emptyList();
+        List<SlotData> stacks = Lists.newArrayList();
 
         if (!buffer.stream().allMatch(ItemStack::isEmpty)) {
             for (int i = 0; i < buffer.getStacks().size(); i++) {

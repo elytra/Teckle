@@ -53,10 +53,10 @@ public class SortModeFullStack extends SortModeAnyStack {
 
                 for (int slot = 0; slot < compartment.getSlots(); slot++) {
                     ItemStack compartmentStack = compartment.getStackInSlot(slot);
-                    if (compartmentStack.isEmpty())
+                    if (compartmentStack.isEmpty() || !compartmentStack.isItemEqual(stackFromSource))
                         continue;
 
-                    ItemStack result = sortingMachine.addToNetwork(pushStackHandler, slot, 64, compartmentColour == null ? ImmutableMap.of()
+                    ItemStack result = sortingMachine.addToNetwork(pushStackHandler, i, 64, compartmentColour == null ? ImmutableMap.of()
                             : ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())));
 
                     if (result.isEmpty())

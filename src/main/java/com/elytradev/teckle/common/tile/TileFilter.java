@@ -159,12 +159,12 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                 }
             }
             if (!stack.isEmpty()) {
-                // Spawn into the world I guess.
                 ItemStack remaining = stack.copy();
                 for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
                     remaining = buffer.insertItem(i, remaining, false);
                 }
 
+                // Spawn into the world I guess.
                 if (!remaining.isEmpty()) {
                     WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
                     remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));

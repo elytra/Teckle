@@ -60,10 +60,10 @@ public class SortModeAnyStack extends SortMode {
 
                 for (int slot = 0; slot < compartment.getSlots(); slot++) {
                     ItemStack compartmentStack = compartment.getStackInSlot(slot);
-                    if (compartmentStack.isEmpty())
+                    if (compartmentStack.isEmpty() || !compartmentStack.isItemEqual(stackFromSource))
                         continue;
 
-                    ItemStack result = sortingMachine.addToNetwork(pushStackHandler, slot, compartmentStack.getCount(), compartmentColour == null ? ImmutableMap.of()
+                    ItemStack result = sortingMachine.addToNetwork(pushStackHandler, i, compartmentStack.getCount(), compartmentColour == null ? ImmutableMap.of()
                             : ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())));
 
                     if (result.isEmpty())
@@ -154,7 +154,7 @@ public class SortModeAnyStack extends SortMode {
 
     @Override
     public int selectorPosition(TileSortingMachine sortingMachine) {
-        return 0;
+        return -1;
     }
 
     @Override
