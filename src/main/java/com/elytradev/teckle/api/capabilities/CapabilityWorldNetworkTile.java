@@ -70,6 +70,7 @@ public class CapabilityWorldNetworkTile {
      * @param pos   the position of the tile.
      * @return true if present, false otherwise.
      */
+    @Deprecated
     public static boolean isPositionNetworkTile(IBlockAccess world, BlockPos pos) {
         return isPositionNetworkTile(world, pos, null);
     }
@@ -82,10 +83,12 @@ public class CapabilityWorldNetworkTile {
         return !(tileEntity == null || !tileEntity.hasCapability(NETWORK_TILE_CAPABILITY, face));
     }
 
+    @Deprecated
     public static boolean isTileNetworked(TileEntity tileEntity) {
         return isTileNetworked(tileEntity, null);
     }
 
+    @Deprecated
     public static IWorldNetworkTile getTileNetworked(TileEntity tileEntity) {
         return getTileNetworked(tileEntity, null);
     }
@@ -94,6 +97,7 @@ public class CapabilityWorldNetworkTile {
         return tileEntity.getCapability(NETWORK_TILE_CAPABILITY, face);
     }
 
+    @Deprecated
     public static IWorldNetworkTile getNetworkTileAtPosition(IBlockAccess world, BlockPos pos) {
         return getNetworkTileAtPosition(world, pos, null);
     }
