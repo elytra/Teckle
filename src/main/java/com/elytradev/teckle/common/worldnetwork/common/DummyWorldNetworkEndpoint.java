@@ -25,7 +25,7 @@ import net.minecraft.util.math.BlockPos;
  */
 public class DummyWorldNetworkEndpoint extends WorldNetworkEndpoint {
     public DummyWorldNetworkEndpoint(WorldNetwork network, BlockPos position) {
-        super(network, position);
+        super(network, position, null);
     }
 
     @Override

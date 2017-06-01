@@ -26,8 +26,8 @@ import net.minecraft.util.math.BlockPos;
  */
 public abstract class WorldNetworkEndpoint extends WorldNetworkNode {
 
-    public WorldNetworkEndpoint(IWorldNetwork network, BlockPos position) {
-        super(network, position);
+    public WorldNetworkEndpoint(IWorldNetwork network, BlockPos position, EnumFacing capabilityFace) {
+        super(network, position, capabilityFace);
     }
 
     /**

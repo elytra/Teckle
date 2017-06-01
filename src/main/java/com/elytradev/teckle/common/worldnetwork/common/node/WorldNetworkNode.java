@@ -36,6 +36,7 @@ public class WorldNetworkNode {
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
     public BlockPos position;
     public IWorldNetwork network;
+    public EnumFacing capabilityFace = null;
     private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
 
     public WorldNetworkNode() {
@@ -43,9 +44,10 @@ public class WorldNetworkNode {
         this.network = null;
     }
 
-    public WorldNetworkNode(IWorldNetwork network, BlockPos position) {
+    public WorldNetworkNode(IWorldNetwork network, BlockPos position, EnumFacing capabilityFace) {
         this.position = position;
         this.network = network;
+        this.capabilityFace = capabilityFace;
     }
 
     public boolean isLoaded() {
@@ -63,8 +65,8 @@ public class WorldNetworkNode {
     }
 
     public IWorldNetworkTile getNetworkTile() {
-        if (CapabilityWorldNetworkTile.isPositionNetworkTile(network.getWorld(), position))
-            return CapabilityWorldNetworkTile.getNetworkTileAtPosition(network.getWorld(), position);
+        if (CapabilityWorldNetworkTile.isPositionNetworkTile(network.getWorld(), position, capabilityFace))
+            return CapabilityWorldNetworkTile.getNetworkTileAtPosition(network.getWorld(), position, capabilityFace);
         else return null;
     }
 
@@ -78,6 +80,14 @@ public class WorldNetworkNode {
         travellers.remove(traveller.data.getUniqueId("id"));
 
         this.getNetworkTile().onTravellerRemoved(traveller);
+    }
+
+    public EnumFacing getCapabilityFace() {
+        return capabilityFace;
+    }
+
+    public void setCapabilityFace(EnumFacing capabilityFace) {
+        this.capabilityFace = capabilityFace;
     }
 
     public boolean isEndpoint() {

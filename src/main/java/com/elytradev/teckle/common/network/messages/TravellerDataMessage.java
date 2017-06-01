@@ -89,8 +89,8 @@ public class TravellerDataMessage extends Message {
                 traveller.currentNode = path.next();
                 traveller.nextNode = path.next();
             } else {
-                traveller.previousNode = new WorldNetworkNode(null, prev);
-                traveller.currentNode = new WorldNetworkNode(null, current);
+                traveller.previousNode = new WorldNetworkNode(null, prev, null);
+                traveller.currentNode = new WorldNetworkNode(null, current, null);
                 traveller.nextNode = path.next();
             }
 

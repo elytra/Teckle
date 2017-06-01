@@ -33,8 +33,8 @@ import net.minecraftforge.items.IItemHandler;
  */
 public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
 
-    public ItemNetworkEndpoint(IWorldNetwork network, BlockPos pos) {
-        super(network, pos);
+    public ItemNetworkEndpoint(IWorldNetwork network, BlockPos pos, EnumFacing capabilityFace) {
+        super(network, pos, capabilityFace);
     }
 
     @Override

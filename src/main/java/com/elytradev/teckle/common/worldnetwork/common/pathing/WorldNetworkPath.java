@@ -22,6 +22,7 @@ import com.elytradev.teckle.common.worldnetwork.common.DummyWorldNetworkEndpoint
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
@@ -136,6 +137,7 @@ public class WorldNetworkPath implements Marshallable {
 
         for (PathNode pathNode : path) {
             buf.writeLong(pathNode.realNode.position.toLong());
+            buf.writeInt(pathNode.realNode.getCapabilityFace() == null ? -1 : pathNode.realNode.getCapabilityFace().getIndex());
         }
     }
 
@@ -145,7 +147,12 @@ public class WorldNetworkPath implements Marshallable {
 
         for (int i = 0; i < size; i++) {
             BlockPos pos = BlockPos.fromLong(buf.readLong());
-            WorldNetworkNode networkNode = new WorldNetworkNode(null, pos);
+            int faceIndex = buf.readInt();
+            EnumFacing capFace = null;
+            if (faceIndex != -1) {
+                capFace = EnumFacing.VALUES[faceIndex];
+            }
+            WorldNetworkNode networkNode = new WorldNetworkNode(null, pos, capFace);
             if (i == size - 1) {
                 networkNode = new DummyWorldNetworkEndpoint(null, pos);
             }

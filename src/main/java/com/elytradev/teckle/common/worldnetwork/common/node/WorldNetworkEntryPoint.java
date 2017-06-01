@@ -31,7 +31,7 @@ import net.minecraft.world.World;
  */
 public class WorldNetworkEntryPoint extends WorldNetworkNode {
 
-    public WorldNetworkEndpoint endpoint = new WorldNetworkEndpoint(network, position) {
+    public WorldNetworkEndpoint endpoint = new WorldNetworkEndpoint(network, position, getCapabilityFace()) {
         @Override
         public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {
             World world = network.getWorld();

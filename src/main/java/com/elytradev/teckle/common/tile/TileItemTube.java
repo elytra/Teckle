@@ -103,15 +103,19 @@ public class TileItemTube extends TileNetworkMember {
         public void networkReloaded(IWorldNetwork network) {
             List<TileEntity> neighbourNodes = ItemNetworkAssistant.getPotentialNeighbourNodes(networkTile, world, pos, true);
             for (TileEntity neighbourTile : neighbourNodes) {
-                if (neighbourTile.hasCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, null)) {
-                    IWorldNetworkTile neighbourNetworkTile = neighbourTile.getCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, null);
+                BlockPos posDiff = pos
+                        .subtract(neighbourTile.getPos());
+                EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+
+                if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos(), capabilityFace)) {
                     if (!getNode().network.isNodePresent(neighbourTile.getPos())) {
+                        IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
                         getNode().network.registerNode(neighbourNetworkTile.createNode(getNode().network, neighbourTile.getPos()));
                         neighbourNetworkTile.setNode(getNode().network.getNodeFromPosition(neighbourTile.getPos()));
                     }
                 } else {
                     if (!getNode().network.isNodePresent(neighbourTile.getPos())) {
-                        getNode().network.registerNode(new ItemNetworkEndpoint(getNode().network, neighbourTile.getPos()));
+                        getNode().network.registerNode(new ItemNetworkEndpoint(getNode().network, neighbourTile.getPos(), capabilityFace));
                     }
                 }
             }
