@@ -127,7 +127,7 @@ public class BlockSortingMachine extends BlockContainer {
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
         TileEntity tileAtPos = worldIn.getTileEntity(pos);
-        if (tileAtPos != null && CapabilityWorldNetworkTile.isPositionNetworkTile(worldIn, pos)) {
+        if (tileAtPos != null && CapabilityWorldNetworkTile.isPositionNetworkTile(worldIn, pos, null)) {
             getNetworkHelper(worldIn).onNodeBroken(worldIn, pos);
 
             if (tileAtPos instanceof TileSortingMachine) {

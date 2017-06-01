@@ -267,7 +267,10 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
 
     private boolean attemptInsertion(TileEntity potentialInsertionTile, WorldNetworkEntryPoint thisNode, ItemStack extractionData) {
         boolean result = false;
-        if (CapabilityWorldNetworkTile.isTileNetworked(potentialInsertionTile)) {
+        BlockPos posDiff = pos.subtract(potentialInsertionTile.getPos());
+        EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+
+        if (CapabilityWorldNetworkTile.isTileNetworked(potentialInsertionTile, capabilityFace)) {
             IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
             ImmutableMap<String, NBTBase> additionalData = colour == null ? ImmutableMap.of() : ImmutableMap.of("colour", new NBTTagInt(colour.getMetadata()));
             ItemStack remaining = networkAssistant.insertData(thisNode, potentialInsertionTile.getPos(), extractionData, additionalData).copy();

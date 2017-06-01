@@ -22,6 +22,7 @@ import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.client.gui.GuiSortingMachine;
+import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockSortingMachine;
@@ -65,6 +66,7 @@ import net.minecraftforge.items.IItemHandler;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 public class TileSortingMachine extends TileNetworkMember implements ITickable, IElementProvider {
@@ -78,6 +80,54 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     private PullMode pullMode = new PullModeSingleStep();
     private SortMode sortMode = new SortModeAnyStack();
     private List<IItemHandler> subHandlers;
+
+    private IWorldNetworkTile endPointTile = new IWorldNetworkTile() {
+        @Override
+        public void addClientTraveller(DummyNetworkTraveller traveller) {
+
+        }
+
+        @Override
+        public void removeClientTraveller(NBTTagCompound data) {
+
+        }
+
+        @Override
+        public ImmutableMap<NBTTagCompound, DummyNetworkTraveller> getClientTravellers() {
+            return null;
+        }
+
+        @Override
+        public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
+            return false;
+        }
+
+        @Override
+        public WorldNetworkNode getNode() {
+            return null;
+        }
+
+        @Override
+        public void setNode(WorldNetworkNode node) {
+
+        }
+
+        @Override
+        public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
+            return null;
+        }
+
+        @Override
+        public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
+            return false;
+        }
+
+        @Override
+        public boolean canConnectTo(EnumFacing side) {
+            return false;
+        }
+    };
+
     private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
@@ -289,15 +339,21 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     @Override
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         if (capability == null) return null;
-        if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY)
-            return (T) networkTile;
+        if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
+            if (Objects.equals(facing, getFacing()))
+                return (T) networkTile;
+            else if (Objects.equals(facing, getFacing().getOpposite()))
+                return (T) endPointTile;
+        }
         return super.getCapability(capability, facing);
     }
 
     @Override
     public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
         if (capability == null) return false;
-        if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) return true;
+        if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY
+                && (Objects.equals(facing, getFacing()) || Objects.equals(facing, getFacing().getOpposite())))
+            return true;
         return super.hasCapability(capability, facing);
     }
 
@@ -320,7 +376,10 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(getFacing()));
         ItemStack remaining = source.extractItem(slot, quantity, false).copy();
 
-        if (CapabilityWorldNetworkTile.isTileNetworked(potentialInsertionTile)) {
+        BlockPos posDiff = pos.subtract(potentialInsertionTile.getPos());
+        EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+
+        if (CapabilityWorldNetworkTile.isTileNetworked(potentialInsertionTile, capabilityFace)) {
             IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
 
             remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getNetworkTile().getNode(), potentialInsertionTile.getPos(), remaining, additionalData).copy();

@@ -138,6 +138,7 @@ public class SortModeFullMatch extends SortMode {
      * @param traveller
      * @return
      */
+    @SuppressWarnings("OptionalIsPresent")
     @Override
     public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
         if (!traveller.data.hasKey("stack")) {
@@ -170,7 +171,6 @@ public class SortModeFullMatch extends SortMode {
         if (matchingStack.isPresent()) {
             return true;
         }
-
 
         return !sortingMachine.defaultRoute.isBlocked();
     }
