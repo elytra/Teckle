@@ -82,9 +82,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     private SortMode sortMode = new SortModeAnyStack();
     private List<IItemHandler> subHandlers;
 
-    private IWorldNetworkTile endPointTile = new IWorldNetworkTile() {
-        public ItemNetworkEndpoint node;
-
+    private IWorldNetworkTile endPointTile = new NetworkTileTransporter() {
         @Override
         public void addClientTraveller(DummyNetworkTraveller traveller) {
             //NOOP
@@ -106,19 +104,8 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
 
         @Override
-        public WorldNetworkNode getNode() {
-            return node;
-        }
-
-        @Override
-        public void setNode(WorldNetworkNode node) {
-            if (node instanceof ItemNetworkEndpoint)
-                this.node = (ItemNetworkEndpoint) node;
-        }
-
-        @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new ItemNetworkEndpoint(network, pos, getOutputFace());
+            return new ItemNetworkEndpoint(network, pos, getCapabilityFace());
         }
 
         @Override
@@ -145,14 +132,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         @Override
         public EnumFacing getCapabilityFace() {
-            if (world != null) {
-                IBlockState thisState = world.getBlockState(pos);
-                if (thisState.getBlock().equals(TeckleObjects.blockSortingMachine)) {
-                    return thisState.getValue(BlockSortingMachine.FACING).getOpposite();
-                }
-            }
-
-            return EnumFacing.DOWN;
+            return getOutputFace().getOpposite();
         }
     };
 
