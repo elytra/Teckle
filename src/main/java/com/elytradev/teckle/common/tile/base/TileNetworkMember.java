@@ -23,10 +23,12 @@ import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistantHolder;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -73,31 +75,36 @@ public abstract class TileNetworkMember extends TileEntity {
     private final class ProbeCapability implements IProbeDataProvider {
         @Override
         public void provideProbeData(List<IProbeData> data) {
-            if (!TileNetworkMember.this.hasCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, null))
-                return;
+            List<WorldNetworkNode> nodes = Lists.newArrayList();
+            for (EnumFacing facing : EnumFacing.VALUES) {
+                if (!CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, facing))
+                    continue;
+                IWorldNetworkTile networkTileAtPosition = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
+                WorldNetworkNode node = networkTileAtPosition.getNode();
+                String faceName = networkTileAtPosition.getCapabilityFace() == null ? "" : networkTileAtPosition.getCapabilityFace().getName();
+                if (node == null || nodes.contains(node))
+                    continue;
 
-            WorldNetworkNode node = TileNetworkMember.this.getCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, null).getNode();
+                nodes.add(node);
+                if (TeckleMod.INDEV)
+                    data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network",
+                            faceName, node.network.getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
 
-            if (node == null)
-                return;
+                if (!node.getTravellers().isEmpty()) {
+                    data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.traveller.data")));
+                }
 
-            if (TeckleMod.INDEV)
-                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", node.network.getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
-
-            if (!node.getTravellers().isEmpty()) {
-                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.traveller.data")));
-            }
-
-            for (WorldNetworkTraveller traveller : node.getTravellers()) {
-                float distance = (Float.valueOf(traveller.activePath.getIndex()) / Float.valueOf(traveller.activePath.pathPositions().size())) * 10F;
-                distance += traveller.travelledDistance;
-                distance -= 0.1F;
-                distance = MathHelper.clamp(distance, 0F, 10F);
-                if (distance > 0) {
-                    ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
-                    data.add(new ProbeData(new TextComponentString(stack.getDisplayName()))
-                            .withInventory(ImmutableList.of(stack))
-                            .withBar(0, distance * 10, 100, UnitDictionary.PERCENT));
+                for (WorldNetworkTraveller traveller : node.getTravellers()) {
+                    float distance = (Float.valueOf(traveller.activePath.getIndex()) / Float.valueOf(traveller.activePath.pathPositions().size())) * 10F;
+                    distance += traveller.travelledDistance;
+                    distance -= 0.1F;
+                    distance = MathHelper.clamp(distance, 0F, 10F);
+                    if (distance > 0) {
+                        ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
+                        data.add(new ProbeData(new TextComponentString(stack.getDisplayName()))
+                                .withInventory(ImmutableList.of(stack))
+                                .withBar(0, distance * 10, 100, UnitDictionary.PERCENT));
+                    }
                 }
             }
         }

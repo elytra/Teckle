@@ -39,6 +39,7 @@ import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
+import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
@@ -82,39 +83,42 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     private List<IItemHandler> subHandlers;
 
     private IWorldNetworkTile endPointTile = new IWorldNetworkTile() {
+        public ItemNetworkEndpoint node;
+
         @Override
         public void addClientTraveller(DummyNetworkTraveller traveller) {
-
+            //NOOP
         }
 
         @Override
         public void removeClientTraveller(NBTTagCompound data) {
-
+            //NOOP
         }
 
         @Override
         public ImmutableMap<NBTTagCompound, DummyNetworkTraveller> getClientTravellers() {
-            return null;
+            return ImmutableMap.of();
         }
 
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return false;
+            return side.equals(getOutputFace().getOpposite());
         }
 
         @Override
         public WorldNetworkNode getNode() {
-            return null;
+            return node;
         }
 
         @Override
         public void setNode(WorldNetworkNode node) {
-
+            if (node instanceof ItemNetworkEndpoint)
+                this.node = (ItemNetworkEndpoint) node;
         }
 
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return null;
+            return new ItemNetworkEndpoint(network, pos, getOutputFace());
         }
 
         @Override
@@ -124,7 +128,31 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         @Override
         public boolean canConnectTo(EnumFacing side) {
-            return false;
+            return side.getOpposite().equals(getOutputFace());
+        }
+
+        @Override
+        public EnumFacing getOutputFace() {
+            if (world != null) {
+                IBlockState thisState = world.getBlockState(pos);
+                if (thisState.getBlock().equals(TeckleObjects.blockSortingMachine)) {
+                    return thisState.getValue(BlockSortingMachine.FACING);
+                }
+            }
+
+            return EnumFacing.DOWN;
+        }
+
+        @Override
+        public EnumFacing getCapabilityFace() {
+            if (world != null) {
+                IBlockState thisState = world.getBlockState(pos);
+                if (thisState.getBlock().equals(TeckleObjects.blockSortingMachine)) {
+                    return thisState.getValue(BlockSortingMachine.FACING).getOpposite();
+                }
+            }
+
+            return EnumFacing.DOWN;
         }
     };
 
@@ -153,7 +181,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         @Override
         public boolean canConnectTo(EnumFacing side) {
-            return side.equals(getOutputFace()) || side.getOpposite().equals(getOutputFace());
+            return side.equals(getOutputFace());
         }
 
         @Override
@@ -222,6 +250,18 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         @Override
         public void onTravellerRemoved(WorldNetworkTraveller traveller) {
             traveller.quickRepath();
+        }
+
+        @Override
+        public EnumFacing getCapabilityFace() {
+            if (world != null) {
+                IBlockState thisState = world.getBlockState(pos);
+                if (thisState.getBlock().equals(TeckleObjects.blockSortingMachine)) {
+                    return thisState.getValue(BlockSortingMachine.FACING);
+                }
+            }
+
+            return EnumFacing.DOWN;
         }
     };
 

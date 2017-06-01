@@ -101,6 +101,9 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
 
         for (EnumFacing facing : EnumFacing.VALUES) {
             IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
+            if (thisNetworkTile == null)
+                continue;
+
             List<IWorldNetwork> neighbourNetworks = getNeighbourNetworks(thisNetworkTile, world, pos);
             if (!neighbourNetworks.isEmpty()) {
                 // Found neighbour networks, join the network or merge.
