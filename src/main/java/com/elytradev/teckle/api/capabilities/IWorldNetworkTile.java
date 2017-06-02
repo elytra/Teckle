@@ -22,6 +22,7 @@ import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
@@ -121,23 +122,6 @@ public interface IWorldNetworkTile {
     }
 
     /**
-     * Called when a traveller is added to this tile, used for modifying the traveller.
-     *
-     * @param traveller the traveller added to this tile.
-     */
-    default void onTravellerAdded(WorldNetworkTraveller traveller) {
-    }
-
-    /**
-     * Called when a traveller is removed from this tile, used for modifying the traveller.
-     *
-     * @param traveller the traveller removed from the tile.
-     */
-    default void onTravellerRemoved(WorldNetworkTraveller traveller) {
-
-    }
-
-    /**
      * The output face of the tile, only applies to tiles that add things to networks.
      *
      * @return the output face of the tile, null if this doesn't output.
@@ -154,5 +138,14 @@ public interface IWorldNetworkTile {
      */
     default EnumFacing getCapabilityFace() {
         return null;
+    }
+
+    /**
+     * Get the tile entity at the position of this node.
+     *
+     * @return the tile entity at this position.
+     */
+    default TileEntity getTileEntity() {
+        return this.getNode().network.getWorld().getTileEntity(getNode().position);
     }
 }

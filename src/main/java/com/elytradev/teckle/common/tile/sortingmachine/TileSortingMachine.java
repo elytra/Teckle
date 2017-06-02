@@ -22,7 +22,6 @@ import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.client.gui.GuiSortingMachine;
-import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockSortingMachine;
@@ -39,7 +38,6 @@ import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
-import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
@@ -56,6 +54,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -68,6 +67,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 public class TileSortingMachine extends TileNetworkMember implements ITickable, IElementProvider {
@@ -75,6 +75,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(48);
     public EnumDyeColor[] colours = new EnumDyeColor[8];
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(18);
+    public List<WorldNetworkTraveller> returnedTravellers = Lists.newArrayList();
     public DefaultRoute defaultRoute = DefaultRoute.NONE;
     @SideOnly(Side.CLIENT)
     private int selectorPos;
@@ -84,33 +85,18 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     private IWorldNetworkTile endPointTile = new NetworkTileTransporter() {
         @Override
-        public void addClientTraveller(DummyNetworkTraveller traveller) {
-            //NOOP
-        }
-
-        @Override
-        public void removeClientTraveller(NBTTagCompound data) {
-            //NOOP
-        }
-
-        @Override
-        public ImmutableMap<NBTTagCompound, DummyNetworkTraveller> getClientTravellers() {
-            return ImmutableMap.of();
-        }
-
-        @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
             return side.equals(getOutputFace().getOpposite());
         }
 
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new ItemNetworkEndpoint(network, pos, getCapabilityFace());
+            return new SortingMachineEndpoint(network, pos, getCapabilityFace());
         }
 
         @Override
         public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-            return false;
+            return sortMode.canAcceptTraveller(TileSortingMachine.this, traveller, from) || !defaultRoute.isBlocked();
         }
 
         @Override
@@ -136,7 +122,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
     };
 
-    private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
+    private NetworkTileTransporter entryPointTile = new NetworkTileTransporter() {
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
             return new WorldNetworkEntryPoint(network, pos, getOutputFace());
@@ -154,7 +140,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
             if (from.equals(getOutputFace().getOpposite())) {
                 // Allows use of filters for filtering items already in tubes. Not really a good reason to do this but it was possible in RP2 so it's possible in Teckle.
-                return getSortMode().canAcceptTraveller(TileSortingMachine.this, traveller);
+                return getSortMode().canAcceptTraveller(TileSortingMachine.this, traveller, from);
             }
             return false;
         }
@@ -183,7 +169,6 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
             ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
             EnumFacing facing = getOutputFace();
-            BlockPos sourcePos = pos.offset(facing);
 
             // Try and put it back where we found it.
             if (side.equals(getOutputFace())) {
@@ -198,38 +183,9 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
                 }
             }
             if (!stack.isEmpty()) {
-                ItemStack remaining = stack.copy();
-                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                    remaining = buffer.insertItem(i, remaining, false);
-                }
-
-                // Spawn into the world I guess.
-                if (!remaining.isEmpty()) {
-                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
-                }
+                traveller.data.setTag("stack", stack.serializeNBT());
+                returnedTravellers.add(traveller);
             }
-        }
-
-        /**
-         * Called when a traveller is added to this tile, used for modifying the traveller.
-         *
-         * @param traveller the traveller added to this tile.
-         */
-        @Override
-        public void onTravellerAdded(WorldNetworkTraveller traveller) {
-            sortMode.processExistingTraveller(TileSortingMachine.this, traveller);
-        }
-
-        /**
-         * Called when a traveller is removed from this tile, used for modifying the traveller.
-         *
-         * @param traveller the traveller removed from the tile.
-         */
-        @Override
-        public void onTravellerRemoved(WorldNetworkTraveller traveller) {
-            traveller.quickRepath();
         }
 
         @Override
@@ -286,6 +242,43 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         if (world.isRemote)
             return;
 
+        if (!returnedTravellers.isEmpty()) {
+            WorldNetworkTraveller traveller = returnedTravellers.get(0);
+
+            if (getOutput() != null) {
+                ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
+
+                if (travellerStack.isEmpty()) {
+                    returnedTravellers.remove(0);
+                    return;
+                }
+
+                TileEntity outputTile = getOutput();
+                IItemHandler outputItemHandler = outputTile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, this.entryPointTile.getOutputFace().getOpposite());
+                if (outputItemHandler != null) {
+                    ItemStack remaining = travellerStack.copy();
+
+                    for (int i = 0; i < outputItemHandler.getSlots(); i++) {
+                        if (remaining.isEmpty()) {
+                            returnedTravellers.remove(0);
+                            return;
+                        }
+                        remaining = outputItemHandler.insertItem(i, remaining, false).copy();
+                    }
+                }
+            } else if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos.offset(entryPointTile.getOutputFace()), entryPointTile.getOutputFace().getOpposite())) {
+                BlockPos outputPos = pos.offset(entryPointTile.getOutputFace());
+
+                ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(traveller.data.getKeySet().stream().map(s -> new Tuple<>(s, traveller.data.getTag(s))).collect(Collectors.toMap(o -> o.getFirst(), n -> n.getSecond())));
+                ItemStack result = (ItemStack) getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) entryPointTile.getNode(),
+                        outputPos, new ItemStack(traveller.data.getCompoundTag("stack")), collect);
+                if (result.isEmpty())
+                    returnedTravellers.remove(0);
+            }
+
+            return;
+        }
+
         if (getSource() != null)
             getPullMode().onTick(this);
 
@@ -294,11 +287,25 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     public TileEntity getSource() {
         if (world != null) {
-            EnumFacing facing = networkTile.getOutputFace();
+            EnumFacing facing = entryPointTile.getOutputFace();
             BlockPos sourcePos = pos.offset(facing.getOpposite());
 
             TileEntity sourceTile = world.getTileEntity(sourcePos);
             if (sourceTile != null && sourceTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
+                return sourceTile;
+            }
+        }
+
+        return null;
+    }
+
+    public TileEntity getOutput() {
+        if (world != null) {
+            EnumFacing facing = entryPointTile.getOutputFace();
+            BlockPos sourcePos = pos.offset(facing);
+
+            TileEntity sourceTile = world.getTileEntity(sourcePos);
+            if (sourceTile != null && sourceTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite())) {
                 return sourceTile;
             }
         }
@@ -361,7 +368,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         if (capability == null) return null;
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
             if (Objects.equals(facing, getFacing()))
-                return (T) networkTile;
+                return (T) entryPointTile;
             else if (Objects.equals(facing, getFacing().getOpposite()))
                 return (T) endPointTile;
         }
@@ -389,7 +396,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     }
 
     public EnumFacing getFacing() {
-        return networkTile.getOutputFace();
+        return entryPointTile.getOutputFace();
     }
 
     public ItemStack addToNetwork(IItemHandler source, int slot, int quantity, ImmutableMap<String, NBTBase> additionalData) {
@@ -402,7 +409,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         if (CapabilityWorldNetworkTile.isTileNetworked(potentialInsertionTile, capabilityFace)) {
             IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
 
-            remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getNetworkTile().getNode(), potentialInsertionTile.getPos(), remaining, additionalData).copy();
+            remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getEntryPointTile().getNode(), potentialInsertionTile.getPos(), remaining, additionalData).copy();
 
             if (remaining.isEmpty()) {
                 return ItemStack.EMPTY;
@@ -418,8 +425,20 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
                     DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
                 }
             }
-        } else {
+        } else if (getOutput() != null) {
+            TileEntity outputTile = getOutput();
+            IItemHandler outputItemHandler = outputTile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, this.entryPointTile.getOutputFace().getOpposite());
+            if (outputItemHandler != null) {
+                ItemStack remainingInserted = remaining.copy();
 
+                for (int i = 0; i < outputItemHandler.getSlots(); i++) {
+                    if (remainingInserted.isEmpty()) {
+                        return remainingInserted;
+                    }
+                    remainingInserted = outputItemHandler.insertItem(i, remainingInserted, false).copy();
+                }
+                return remainingInserted;
+            }
         }
 
         return remaining;
@@ -450,8 +469,8 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         return stacks;
     }
 
-    public IWorldNetworkTile getNetworkTile() {
-        return networkTile;
+    public IWorldNetworkTile getEntryPointTile() {
+        return entryPointTile;
     }
 
     public PullMode getPullMode() {

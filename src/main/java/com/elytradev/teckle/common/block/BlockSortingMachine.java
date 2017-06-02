@@ -135,6 +135,7 @@ public class BlockSortingMachine extends BlockContainer {
 
                 // Vomit the sorting data.
                 sortingMachine.filterRows.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+                sortingMachine.returnedTravellers.forEach(traveller -> traveller.dropActions.forEach((s, iDropAction) -> iDropAction.dropToWorld(traveller)));
             }
         }
 

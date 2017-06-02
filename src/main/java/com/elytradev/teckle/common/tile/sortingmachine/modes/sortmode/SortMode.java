@@ -20,6 +20,7 @@ import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.ArrayList;
@@ -79,9 +80,10 @@ public abstract class SortMode implements INBTSerializable {
      *
      * @param sortingMachine the sorting machine.
      * @param traveller
+     * @param from
      * @return
      */
-    public abstract boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller);
+    public abstract boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from);
 
     /**
      * Sort a traveller going through the network and change it if needed.
@@ -105,4 +107,13 @@ public abstract class SortMode implements INBTSerializable {
     public String getUnlocalizedName() {
         return unlocalizedName;
     }
+
+    /**
+     * Accept the given traveller if the machine is set to inline mode.
+     *
+     * @param traveller the traveller to accept.
+     * @param from      the side the traveller is to be injected into.
+     * @return true if the entire traveller is accepted, false otherwise.
+     */
+    public abstract boolean acceptTraveller(WorldNetworkTraveller traveller, EnumFacing from);
 }

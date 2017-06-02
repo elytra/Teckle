@@ -30,6 +30,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.List;
@@ -108,10 +109,11 @@ public class SortModePartialMatchSelector extends SortMode {
      *
      * @param sortingMachine the sorting machine.
      * @param traveller
+     * @param from
      * @return
      */
     @Override
-    public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
+    public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
         if (!traveller.data.hasKey("stack")) {
             return false;
         }
@@ -253,6 +255,18 @@ public class SortModePartialMatchSelector extends SortMode {
                 }
             }
         }
+    }
+
+    /**
+     * Accept the given traveller if the machine is set to inline mode.
+     *
+     * @param traveller the traveller to accept.
+     * @param from      the side the traveller is to be injected into.
+     * @return true if the entire traveller is accepted, false otherwise.
+     */
+    @Override
+    public boolean acceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
+        return false;
     }
 
     @Override
