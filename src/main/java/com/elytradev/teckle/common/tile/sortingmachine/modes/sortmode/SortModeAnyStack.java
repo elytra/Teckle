@@ -103,7 +103,8 @@ public class SortModeAnyStack extends SortMode {
      */
     @Override
     public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
-        return acceptTraveller(sortingMachine, traveller, true).isEmpty();
+        ItemStack acceptionResult = acceptTraveller(sortingMachine, traveller, true);
+        return acceptionResult != null && acceptionResult.isEmpty();
     }
 
     @Override
@@ -166,7 +167,7 @@ public class SortModeAnyStack extends SortMode {
                 BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getEntryPointTile().getOutputFace());
                 ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
                 ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(),
-                        insertInto, travellerStack, collect, false, true);
+                        insertInto, travellerStack, collect, false, false);
                 if (!result.isEmpty() && !simulate) {
                     traveller.data.setTag("stack", result.serializeNBT());
                 }
