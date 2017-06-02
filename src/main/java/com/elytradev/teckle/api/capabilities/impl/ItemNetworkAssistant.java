@@ -36,6 +36,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,6 +159,9 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
         EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
         IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, capabilityFace.getOpposite());
 
+        if (thisNetworkTile == null)
+            return;
+
         if (thisNetworkTile != null && thisNetworkTile.getNode() != null && thisNetworkTile.getNode().network != null
                 && !thisNetworkTile.getNode().network.isNodePresent(neighbourPos)) {
             // Node not already present, check if we can add to network.
@@ -213,22 +217,45 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
     }
 
     @Override
-    public ItemStack insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, ItemStack insertData, ImmutableMap<String, NBTBase> additionalData) {
-        ItemStack remaining = insertData;
+    public ItemStack insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, ItemStack insertData,
+                                ImmutableMap<String, NBTBase> additionalData, boolean networksInsertionOnly, boolean simulate) {
+        ItemStack remaining = insertData.copy();
         IWorldNetworkTile networkTile = entryPoint.getNetworkTile();
         World world = entryPoint.network.getWorld();
-        if (networkTile.getNode() != null && networkTile.getNode().network != null && CapabilityWorldNetworkTile.isPositionNetworkTile(world, insertInto)) {
+        if (networkTile.getNode() != null && networkTile.getNode().network != null
+                && CapabilityWorldNetworkTile.isPositionNetworkTile(world, insertInto)) {
             NBTTagCompound tagCompound = new NBTTagCompound();
             tagCompound.setTag("stack", insertData.serializeNBT());
             additionalData.forEach(tagCompound::setTag);
-            WorldNetworkTraveller traveller = entryPoint.addTraveller(tagCompound, true);
+            WorldNetworkTraveller traveller = entryPoint.addTraveller(tagCompound, !simulate);
+            if (simulate)
+                entryPoint.network.unregisterTraveller(traveller, true, false);
             if (Objects.equals(traveller, WorldNetworkTraveller.NONE) || traveller == null) {
-                return remaining;
+                return remaining.copy();
             } else {
                 traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
                 remaining = ItemStack.EMPTY;
             }
         }
+        if (!remaining.isEmpty() && !networksInsertionOnly) {
+            if (world.getTileEntity(insertInto) != null) {
+                TileEntity insertionTile = world.getTileEntity(insertInto);
+                EnumFacing insertFace = entryPoint.getNetworkTile().getOutputFace().getOpposite();
+                if (insertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, insertFace)) {
+                    IItemHandler insertionHandler = insertionTile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, insertFace);
+
+                    ItemStack remainingInserted = remaining.copy();
+                    for (int i = 0; i < insertionHandler.getSlots(); i++) {
+                        if (remainingInserted.isEmpty()) {
+                            return remainingInserted;
+                        }
+                        remainingInserted = insertionHandler.insertItem(i, remainingInserted, simulate).copy();
+                    }
+                    remaining = remainingInserted;
+                }
+            }
+        }
+
         return remaining;
     }
 }

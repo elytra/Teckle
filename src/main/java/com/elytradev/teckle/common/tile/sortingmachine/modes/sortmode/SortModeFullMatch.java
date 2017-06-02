@@ -16,7 +16,6 @@
 
 package com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode;
 
-import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.ItemStream;
 import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
@@ -108,14 +107,13 @@ public class SortModeFullMatch extends SortMode {
                 return false;
             }
         }
-        AdvancedItemStackHandler bufferClone = sortingMachine.buffer.copy();
         // Confirm the buffer can fit everything before attempting actual insertion into the real thing.
         for (Map.Entry<SlotData, Integer> slotCountEntry : slotsToExtract.entrySet()) {
             SlotData slotData = slotCountEntry.getKey();
             Integer count = slotCountEntry.getValue();
 
             // If it didn't fit, return false.
-            if (!bufferClone.insertItem(slotData.extract(count, true), false).isEmpty()) {
+            if (!sortingMachine.buffer.insertItem(slotData.extract(count, true), true).isEmpty()) {
                 return false;
             }
         }
@@ -184,7 +182,6 @@ public class SortModeFullMatch extends SortMode {
      * @param traveller      the traveller entering the machine.
      * @return the modified traveller.
      */
-    @Override
     public WorldNetworkTraveller processExistingTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
         if (!traveller.data.hasKey("stack")) {
             return traveller;
@@ -299,13 +296,15 @@ public class SortModeFullMatch extends SortMode {
     /**
      * Accept the given traveller if the machine is set to inline mode.
      *
+     *
+     * @param sortingMachine
      * @param traveller the traveller to accept.
      * @param from      the side the traveller is to be injected into.
      * @return true if the entire traveller is accepted, false otherwise.
      */
     @Override
-    public boolean acceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        return false;
+    public ItemStack acceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
+        return null;
     }
 
     @Override

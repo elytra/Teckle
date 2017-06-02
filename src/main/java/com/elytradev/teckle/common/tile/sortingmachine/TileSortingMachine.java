@@ -54,7 +54,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -78,54 +77,14 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public List<WorldNetworkTraveller> returnedTravellers = Lists.newArrayList();
     public DefaultRoute defaultRoute = DefaultRoute.NONE;
     @SideOnly(Side.CLIENT)
-    private int selectorPos;
+    private int selectorPos = -1;
     private PullMode pullMode = new PullModeSingleStep();
     private SortMode sortMode = new SortModeAnyStack();
     private List<IItemHandler> subHandlers;
-
-    private IWorldNetworkTile endPointTile = new NetworkTileTransporter() {
-        @Override
-        public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return side.equals(getOutputFace().getOpposite());
-        }
-
-        @Override
-        public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new SortingMachineEndpoint(network, pos, getCapabilityFace());
-        }
-
-        @Override
-        public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-            return sortMode.canAcceptTraveller(TileSortingMachine.this, traveller, from) || !defaultRoute.isBlocked();
-        }
-
-        @Override
-        public boolean canConnectTo(EnumFacing side) {
-            return side.getOpposite().equals(getOutputFace());
-        }
-
-        @Override
-        public EnumFacing getOutputFace() {
-            if (world != null) {
-                IBlockState thisState = world.getBlockState(pos);
-                if (thisState.getBlock().equals(TeckleObjects.blockSortingMachine)) {
-                    return thisState.getValue(BlockSortingMachine.FACING);
-                }
-            }
-
-            return EnumFacing.DOWN;
-        }
-
-        @Override
-        public EnumFacing getCapabilityFace() {
-            return getOutputFace().getOpposite();
-        }
-    };
-
     private NetworkTileTransporter entryPointTile = new NetworkTileTransporter() {
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new WorldNetworkEntryPoint(network, pos, getOutputFace());
+            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
         }
 
         @Override
@@ -190,14 +149,33 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         @Override
         public EnumFacing getCapabilityFace() {
-            if (world != null) {
-                IBlockState thisState = world.getBlockState(pos);
-                if (thisState.getBlock().equals(TeckleObjects.blockSortingMachine)) {
-                    return thisState.getValue(BlockSortingMachine.FACING);
-                }
-            }
+            return getOutputFace();
+        }
+    };
+    private IWorldNetworkTile endPointTile = new NetworkTileTransporter() {
+        @Override
+        public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
+            return side.equals(getCapabilityFace());
+        }
 
-            return EnumFacing.DOWN;
+        @Override
+        public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
+            return new SortingMachineEndpoint(network, pos, getCapabilityFace());
+        }
+
+        @Override
+        public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
+            return sortMode.canAcceptTraveller(TileSortingMachine.this, traveller, from);
+        }
+
+        @Override
+        public boolean canConnectTo(EnumFacing side) {
+            return side.equals(getCapabilityFace());
+        }
+
+        @Override
+        public EnumFacing getCapabilityFace() {
+            return TileSortingMachine.this.entryPointTile.getOutputFace().getOpposite();
         }
     };
 
@@ -244,38 +222,19 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         if (!returnedTravellers.isEmpty()) {
             WorldNetworkTraveller traveller = returnedTravellers.get(0);
-
-            if (getOutput() != null) {
-                ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
-
-                if (travellerStack.isEmpty()) {
-                    returnedTravellers.remove(0);
-                    return;
-                }
-
-                TileEntity outputTile = getOutput();
-                IItemHandler outputItemHandler = outputTile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, this.entryPointTile.getOutputFace().getOpposite());
-                if (outputItemHandler != null) {
-                    ItemStack remaining = travellerStack.copy();
-
-                    for (int i = 0; i < outputItemHandler.getSlots(); i++) {
-                        if (remaining.isEmpty()) {
-                            returnedTravellers.remove(0);
-                            return;
-                        }
-                        remaining = outputItemHandler.insertItem(i, remaining, false).copy();
-                    }
-                }
-            } else if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos.offset(entryPointTile.getOutputFace()), entryPointTile.getOutputFace().getOpposite())) {
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos.offset(entryPointTile.getOutputFace()), entryPointTile.getOutputFace().getOpposite())) {
                 BlockPos outputPos = pos.offset(entryPointTile.getOutputFace());
 
-                ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(traveller.data.getKeySet().stream().map(s -> new Tuple<>(s, traveller.data.getTag(s))).collect(Collectors.toMap(o -> o.getFirst(), n -> n.getSecond())));
+                ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(traveller.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> traveller.data.getTag(o))));
                 ItemStack result = (ItemStack) getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) entryPointTile.getNode(),
-                        outputPos, new ItemStack(traveller.data.getCompoundTag("stack")), collect);
-                if (result.isEmpty())
-                    returnedTravellers.remove(0);
-            }
+                        outputPos, new ItemStack(traveller.data.getCompoundTag("stack")), collect, false, false);
 
+                if (result.isEmpty()) {
+                    returnedTravellers.remove(0);
+                } else {
+                    returnedTravellers.get(0).data.setTag("stack", result.serializeNBT());
+                }
+            }
             return;
         }
 
@@ -402,42 +361,18 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public ItemStack addToNetwork(IItemHandler source, int slot, int quantity, ImmutableMap<String, NBTBase> additionalData) {
         TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(getFacing()));
         ItemStack remaining = source.extractItem(slot, quantity, false).copy();
+        IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
+        remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getEntryPointTile().getNode(), potentialInsertionTile.getPos(), remaining, additionalData, false, false).copy();
 
-        BlockPos posDiff = pos.subtract(potentialInsertionTile.getPos());
-        EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
-
-        if (CapabilityWorldNetworkTile.isTileNetworked(potentialInsertionTile, capabilityFace)) {
-            IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
-
-            remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getEntryPointTile().getNode(), potentialInsertionTile.getPos(), remaining, additionalData).copy();
-
-            if (remaining.isEmpty()) {
-                return ItemStack.EMPTY;
-            } else {
-                // Couldn't put the stuff in the network, shove it into the buffer to try again later.
-                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                    remaining = buffer.insertItem(i, remaining, false);
-                }
-
-                if (!remaining.isEmpty()) {
-                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
-                }
+        if (!remaining.isEmpty()) {
+            for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
+                remaining = buffer.insertItem(i, remaining, false);
             }
-        } else if (getOutput() != null) {
-            TileEntity outputTile = getOutput();
-            IItemHandler outputItemHandler = outputTile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, this.entryPointTile.getOutputFace().getOpposite());
-            if (outputItemHandler != null) {
-                ItemStack remainingInserted = remaining.copy();
 
-                for (int i = 0; i < outputItemHandler.getSlots(); i++) {
-                    if (remainingInserted.isEmpty()) {
-                        return remainingInserted;
-                    }
-                    remainingInserted = outputItemHandler.insertItem(i, remainingInserted, false).copy();
-                }
-                return remainingInserted;
+            if (!remaining.isEmpty()) {
+                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
             }
         }
 

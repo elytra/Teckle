@@ -160,7 +160,6 @@ public class SortModeFullMatchSelector extends SortMode {
      * @param traveller      the traveller entering the machine.
      * @return the modified traveller.
      */
-    @Override
     public WorldNetworkTraveller processExistingTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
         if (!traveller.data.hasKey("stack")) {
             return traveller;
@@ -317,13 +316,15 @@ public class SortModeFullMatchSelector extends SortMode {
     /**
      * Accept the given traveller if the machine is set to inline mode.
      *
+     *
+     * @param sortingMachine
      * @param traveller the traveller to accept.
      * @param from      the side the traveller is to be injected into.
      * @return true if the entire traveller is accepted, false otherwise.
      */
     @Override
-    public boolean acceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        return false;
+    public ItemStack acceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
+        return null;
     }
 
     @Override

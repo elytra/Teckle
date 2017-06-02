@@ -37,19 +37,20 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             World world = network.getWorld();
             if (world.getTileEntity(position) != null) {
                 TileEntity tileAtPos = world.getTileEntity(position);
-                if (tileAtPos.hasCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, null)
-                        && tileAtPos.getCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, null).getNode().isEntrypoint())
-                    tileAtPos.getCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, null).acceptReturn(traveller, from);
+                if (tileAtPos.hasCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, getCapabilityFace())
+                        && tileAtPos.getCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, getCapabilityFace()).getNode().isEntrypoint())
+                    tileAtPos.getCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, getCapabilityFace()).acceptReturn(traveller, from);
             }
             return true;
         }
     };
     private EnumFacing facing = EnumFacing.DOWN;
 
-    public WorldNetworkEntryPoint(IWorldNetwork network, BlockPos position, EnumFacing facing) {
+    public WorldNetworkEntryPoint(IWorldNetwork network, BlockPos position, EnumFacing facing, EnumFacing capabilityFace) {
         this.network = network;
         this.position = position;
         this.facing = facing;
+        this.capabilityFace = capabilityFace;
 
         this.endpoint.position = this.position;
         this.endpoint.network = this.network;

@@ -20,6 +20,7 @@ import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
@@ -27,9 +28,11 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SortModeAnyStack extends SortMode {
     public SortModeAnyStack(int id, String unlocalizedName, SortModeType type) {
@@ -100,58 +103,7 @@ public class SortModeAnyStack extends SortMode {
      */
     @Override
     public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
-        if (traveller.data.hasKey("stack")) {
-            ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
-
-            for (int compartmentNumber = 0; compartmentNumber < sortingMachine.getCompartmentHandlers().size(); compartmentNumber++) {
-                IItemHandler compartment = sortingMachine.getCompartmentHandlers().get(compartmentNumber);
-                for (int slot = 0; slot < compartment.getSlots(); slot++) {
-                    ItemStack stackInSlot = compartment.getStackInSlot(slot);
-                    if (ItemStack.areItemsEqual(travellerStack, stackInSlot)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Sort a traveller going through the network and change it if needed.
-     *
-     * @param sortingMachine the sorting machine.
-     * @param traveller      the traveller entering the machine.
-     * @return the modified traveller.
-     */
-    @Override
-    public WorldNetworkTraveller processExistingTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
-        if (traveller.data.hasKey("stack")) {
-            ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
-
-            for (int compartmentNumber = 0; compartmentNumber < sortingMachine.getCompartmentHandlers().size(); compartmentNumber++) {
-                IItemHandler compartment = sortingMachine.getCompartmentHandlers().get(compartmentNumber);
-                EnumDyeColor compartmentColour = sortingMachine.colours[compartmentNumber];
-
-                for (int slot = 0; slot < compartment.getSlots(); slot++) {
-                    ItemStack stackInSlot = compartment.getStackInSlot(slot);
-                    if (ItemStack.areItemsEqual(travellerStack, stackInSlot)) {
-                        traveller.data.setInteger("colour", compartmentColour.getMetadata());
-                        return traveller;
-                    }
-                }
-            }
-
-            if (!sortingMachine.defaultRoute.isBlocked()) {
-                if (sortingMachine.defaultRoute.isColoured()) {
-                    traveller.data.setInteger("colour", sortingMachine.defaultRoute.getColour().getMetadata());
-                } else {
-                    traveller.data.removeTag("colour");
-                }
-            }
-        }
-
-        return traveller;
+        return acceptTraveller(sortingMachine, traveller, true).isEmpty();
     }
 
     @Override
@@ -161,19 +113,69 @@ public class SortModeAnyStack extends SortMode {
 
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
-
     }
 
     /**
      * Accept the given traveller if the machine is set to inline mode.
      *
-     * @param traveller the traveller to accept.
-     * @param from      the side the traveller is to be injected into.
+     * @param sortingMachine
+     * @param traveller      the traveller to accept.
+     * @param from           the side the traveller is to be injected into.
      * @return true if the entire traveller is accepted, false otherwise.
      */
     @Override
-    public boolean acceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        return false;
+    public ItemStack acceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
+        return acceptTraveller(sortingMachine, traveller, false);
+    }
+
+    private ItemStack acceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, boolean simulate) {
+        if (traveller.data.hasKey("stack")) {
+            WorldNetworkTraveller travellerCopy = traveller.clone();
+            travellerCopy.data.removeTag("idLeast");
+            ItemStack travellerStack = new ItemStack(travellerCopy.data.getCompoundTag("stack"));
+
+            boolean setColour = false;
+            for (int compartmentNumber = 0; compartmentNumber < sortingMachine.getCompartmentHandlers().size(); compartmentNumber++) {
+                IItemHandler compartment = sortingMachine.getCompartmentHandlers().get(compartmentNumber);
+                EnumDyeColor compartmentColour = sortingMachine.colours[compartmentNumber];
+
+                for (int slot = 0; slot < compartment.getSlots(); slot++) {
+                    ItemStack stackInSlot = compartment.getStackInSlot(slot);
+                    if (ItemStack.areItemsEqual(travellerStack, stackInSlot)) {
+                        travellerCopy.data.setInteger("colour", compartmentColour.getMetadata());
+                        setColour = true;
+                        break;
+                    }
+                    if (setColour)
+                        break;
+                }
+            }
+
+            if (!setColour) {
+                if (!sortingMachine.defaultRoute.isBlocked()) {
+                    if (sortingMachine.defaultRoute.isColoured()) {
+                        travellerCopy.data.setInteger("colour", sortingMachine.defaultRoute.getColour().getMetadata());
+                    } else {
+                        travellerCopy.data.removeTag("colour");
+                    }
+                    setColour = true;
+                }
+            }
+
+            if (setColour) {
+                BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getEntryPointTile().getOutputFace());
+                ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
+                ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(),
+                        insertInto, travellerStack, collect, false, true);
+                if (!result.isEmpty() && !simulate) {
+                    traveller.data.setTag("stack", result.serializeNBT());
+                }
+
+                return result;
+            }
+        }
+
+        return null;
     }
 
     @Override

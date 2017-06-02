@@ -466,7 +466,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
     @Override
     public WorldNetworkTraveller clone() {
-        WorldNetworkTraveller traveller = new WorldNetworkTraveller(this.data);
+        WorldNetworkTraveller traveller = new WorldNetworkTraveller(this.data.copy());
         traveller.data.setUniqueId("id", UUID.randomUUID());
         traveller.network = network;
         traveller.currentNode = currentNode;
