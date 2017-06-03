@@ -23,6 +23,7 @@ import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullModeInline;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -32,6 +33,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.List;
@@ -125,79 +127,6 @@ public class SortModeFullMatchSelector extends SortMode {
     }
 
     /**
-     * Check if the traveller can enter the machine.
-     *
-     * @param sortingMachine the sorting machine.
-     * @param traveller
-     * @param from
-     * @return
-     */
-    @Override
-    public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
-        if (!traveller.data.hasKey("stack")) {
-            return false;
-        }
-
-        ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
-
-        if (stacksLeftToSatisfy.isEmpty())
-            stacksLeftToSatisfy = ItemStream.createItemStream(sortingMachine.getCompartmentHandlers().get(selectorPosition)).filter(s -> !s.isEmpty()).collect(Collectors.toList());
-
-        Optional<ItemStack> matchingStack = stacksLeftToSatisfy.stream().filter(stack -> stack.isItemEqual(travellerStack)
-                && travellerStack.getCount() >= stack.getCount()).findFirst();
-        if (matchingStack.isPresent()) {
-            return true;
-        }
-
-
-        return !sortingMachine.defaultRoute.isBlocked();
-    }
-
-    /**
-     * Sort a traveller going through the network and change it if needed.
-     *
-     * @param sortingMachine the sorting machine.
-     * @param traveller      the traveller entering the machine.
-     * @return the modified traveller.
-     */
-    public WorldNetworkTraveller processExistingTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller) {
-        if (!traveller.data.hasKey("stack")) {
-            return traveller;
-        }
-
-        ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
-
-        Optional<ItemStack> matchingStack = stacksLeftToSatisfy.stream().filter(stack -> stack.isItemEqual(travellerStack)
-                && travellerStack.getCount() >= stack.getCount()).findFirst();
-        if (matchingStack.isPresent()) {
-            EnumDyeColor compartmentColour = sortingMachine.colours[selectorPosition];
-            if (compartmentColour != null) {
-                traveller.data.setInteger("colour", compartmentColour.getMetadata());
-            } else {
-                traveller.data.removeTag("colour");
-            }
-
-            stacksLeftToSatisfy.remove(matchingStack.get());
-            if (stacksLeftToSatisfy.isEmpty()) {
-                if (selectorPosition == 8) {
-                    selectorPosition = 0;
-                } else {
-                    selectorPosition++;
-                }
-            }
-            return traveller;
-        }
-
-        if (sortingMachine.defaultRoute.isColoured()) {
-            traveller.data.setInteger("colour", sortingMachine.defaultRoute.getColour().getMetadata());
-        } else {
-            traveller.data.removeTag("colour");
-        }
-
-        return traveller;
-    }
-
-    /**
      * Get the position of the selector, if no selector is used in this mode return -1.
      *
      * @param sortingMachine the sorting machine.
@@ -211,7 +140,6 @@ public class SortModeFullMatchSelector extends SortMode {
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
         if (!(sortingMachine.getPullMode() instanceof PullModeInline)) {
-
             if (coolDown > 0) {
                 coolDown--;
                 return;
@@ -223,7 +151,7 @@ public class SortModeFullMatchSelector extends SortMode {
                 return;
 
             List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
-            if (stacksToPush.isEmpty()) {
+            if (stacksToPush.isEmpty() || stacksToPush.stream().allMatch(slotData -> slotData.getStack().isEmpty())) {
                 sortingMachine.getPullMode().unpause();
                 return;
             }
@@ -284,7 +212,8 @@ public class SortModeFullMatchSelector extends SortMode {
 
             Stream<ItemStack> bufferStream = ItemStream.createItemStream(sortingMachine.buffer);
             // If the buffer has been emptied move the selector.
-            if (bufferStream.allMatch(ItemStack::isEmpty)) {
+            if (bufferStream.allMatch(stack -> stack.isEmpty() ||
+                    ItemStream.createItemStream(compartmentHandler).noneMatch(tStack -> tStack.isItemEqual(stack)))) {
                 sortingMachine.getPullMode().unpause();
 
                 for (int i = selectorPosition + 1; i < 8; i++) {
@@ -314,16 +243,146 @@ public class SortModeFullMatchSelector extends SortMode {
     }
 
     /**
+     * Check if the traveller can enter the machine.
+     *
+     * @param sortingMachine the sorting machine.
+     * @param traveller
+     * @param from
+     * @return
+     */
+    @Override
+    public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
+        if (!traveller.data.hasKey("stack")) {
+            return false;
+        }
+
+        ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
+
+        if (stacksLeftToSatisfy.isEmpty()) {
+            stacksLeftToSatisfy = ItemStream.createItemStream(sortingMachine.getCompartmentHandlers().get(selectorPosition)).filter(s -> !s.isEmpty()).map(ItemStack::copy).collect(Collectors.toList());
+
+            // Don't satisfy things in the buffer. Duh.
+            AdvancedItemStackHandler buffer = sortingMachine.buffer;
+            if (!buffer.stream().allMatch(ItemStack::isEmpty)) {
+                for (int i = 0; i < buffer.getStacks().size(); i++) {
+                    if (buffer.getStackInSlot(i).isEmpty())
+                        continue;
+
+                    ItemStack clonedBufferStack = buffer.getStackInSlot(i).copy();
+                    for (ItemStack stackToSatisfy : stacksLeftToSatisfy) {
+                        if (stackToSatisfy.isEmpty())
+                            continue;
+
+                        if (stackToSatisfy.isItemEqual(clonedBufferStack)) {
+                            if (stackToSatisfy.getCount() >= clonedBufferStack.getCount()) {
+                                stackToSatisfy.shrink(clonedBufferStack.getCount());
+                                clonedBufferStack.shrink(clonedBufferStack.getCount());
+                            } else {
+                                clonedBufferStack.shrink(stackToSatisfy.getCount());
+                                stackToSatisfy.shrink(stackToSatisfy.getCount());
+                            }
+                        }
+
+                        if (clonedBufferStack.isEmpty())
+                            break;
+                    }
+                }
+                stacksLeftToSatisfy.removeIf(ItemStack::isEmpty);
+            }
+        }
+
+        Optional<ItemStack> matchingStack = stacksLeftToSatisfy.stream().filter(stack -> stack.isItemEqual(travellerStack)).findFirst();
+        if (matchingStack.isPresent()) {
+            return true;
+        }
+
+        return !sortingMachine.defaultRoute.isBlocked();
+    }
+
+    /**
      * Accept the given traveller if the machine is set to inline mode.
      *
-     *
      * @param sortingMachine
-     * @param traveller the traveller to accept.
-     * @param from      the side the traveller is to be injected into.
+     * @param traveller      the traveller to accept.
+     * @param from           the side the traveller is to be injected into.
      * @return true if the entire traveller is accepted, false otherwise.
      */
     @Override
     public ItemStack acceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
+        if (!traveller.data.hasKey("stack")) {
+            return null;
+        }
+
+        ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
+
+        if (stacksLeftToSatisfy.isEmpty()) {
+            stacksLeftToSatisfy = ItemStream.createItemStream(sortingMachine.getCompartmentHandlers().get(selectorPosition)).filter(s -> !s.isEmpty()).map(ItemStack::copy).collect(Collectors.toList());
+
+            AdvancedItemStackHandler buffer = sortingMachine.buffer;
+            if (!buffer.stream().allMatch(ItemStack::isEmpty)) {
+                for (int i = 0; i < buffer.getStacks().size(); i++) {
+                    if (buffer.getStackInSlot(i).isEmpty())
+                        continue;
+
+                    ItemStack clonedBufferStack = buffer.getStackInSlot(i).copy();
+                    for (ItemStack stackToSatisfy : stacksLeftToSatisfy) {
+                        if (stackToSatisfy.isEmpty())
+                            continue;
+
+                        if (stackToSatisfy.isItemEqual(clonedBufferStack)) {
+                            if (stackToSatisfy.getCount() >= clonedBufferStack.getCount()) {
+                                stackToSatisfy.shrink(clonedBufferStack.getCount());
+                                clonedBufferStack.shrink(clonedBufferStack.getCount());
+                            } else {
+                                clonedBufferStack.shrink(stackToSatisfy.getCount());
+                                stackToSatisfy.shrink(stackToSatisfy.getCount());
+                            }
+                        }
+
+                        if (clonedBufferStack.isEmpty())
+                            break;
+                    }
+                }
+                stacksLeftToSatisfy.removeIf(ItemStack::isEmpty);
+            }
+        }
+        Optional<ItemStack> matchingStack = stacksLeftToSatisfy.stream().filter(stack -> stack.isItemEqual(travellerStack)).findFirst();
+        if (matchingStack.isPresent()) {
+            ItemStack toInsert = travellerStack.copy();
+            toInsert.setCount(matchingStack.get().getCount());
+            ItemStack remainder = travellerStack.copy();
+            remainder.setCount(travellerStack.getCount() - matchingStack.get().getCount());
+            ItemStack leftover = sortingMachine.buffer.insertItem(toInsert, false);
+            remainder.grow(leftover.getCount());
+
+            matchingStack.get().shrink(toInsert.getCount() - leftover.getCount());
+            stacksLeftToSatisfy.removeIf(ItemStack::isEmpty);
+            if (stacksLeftToSatisfy.isEmpty())
+                sortingMachine.getPullMode().pause();
+
+            return remainder;
+        } else if (!sortingMachine.defaultRoute.isBlocked()) {
+            WorldNetworkTraveller travellerCopy = traveller.clone();
+            if (sortingMachine.defaultRoute.isColoured()) {
+                travellerCopy.data.setInteger("colour", sortingMachine.defaultRoute.getColour().getMetadata());
+            } else {
+                travellerCopy.data.removeTag("colour");
+            }
+            BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getEntryPointTile().getOutputFace());
+            ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
+            ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(),
+                    insertInto, travellerStack, collect, false, false);
+            if (!result.isEmpty()) {
+                traveller.data.setTag("stack", result.serializeNBT());
+            }
+
+            return result;
+        }
+
+        if (stacksLeftToSatisfy.isEmpty()) {
+            sortingMachine.getPullMode().pause();
+        }
+
         return null;
     }
 

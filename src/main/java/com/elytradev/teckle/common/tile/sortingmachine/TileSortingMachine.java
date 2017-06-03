@@ -16,6 +16,10 @@
 
 package com.elytradev.teckle.common.tile.sortingmachine;
 
+import com.elytradev.probe.api.IProbeData;
+import com.elytradev.probe.api.IProbeDataProvider;
+import com.elytradev.probe.api.UnitDictionary;
+import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
@@ -38,6 +42,7 @@ import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
@@ -55,6 +60,9 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
@@ -325,6 +333,10 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     @Override
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         if (capability == null) return null;
+        if (capability == TeckleMod.PROBE_CAPABILITY) {
+            if (probeCapability == null) probeCapability = new TileSortingMachine.ProbeCapability();
+            return (T) probeCapability;
+        }
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
             if (Objects.equals(facing, getFacing()))
                 return (T) entryPointTile;
@@ -337,6 +349,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     @Override
     public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
         if (capability == null) return false;
+        if (capability == TeckleMod.PROBE_CAPABILITY) return true;
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY
                 && (Objects.equals(facing, getFacing()) || Objects.equals(facing, getFacing().getOpposite())))
             return true;
@@ -502,6 +515,52 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         public boolean isColoured() {
             return this != BLOCKED && this != NONE;
+        }
+    }
+
+    private final class ProbeCapability implements IProbeDataProvider {
+        @Override
+        public void provideProbeData(List<IProbeData> data) {
+            List<WorldNetworkNode> nodes = Lists.newArrayList();
+            for (EnumFacing facing : EnumFacing.VALUES) {
+                if (!CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, facing))
+                    continue;
+                IWorldNetworkTile networkTileAtPosition = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
+                WorldNetworkNode node = networkTileAtPosition.getNode();
+                String faceName = networkTileAtPosition.getCapabilityFace() == null ? "" : networkTileAtPosition.getCapabilityFace().getName();
+                if (node == null || nodes.contains(node))
+                    continue;
+
+                nodes.add(node);
+                if (TeckleMod.INDEV)
+                    data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network",
+                            faceName, node.network.getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
+
+                if (!node.getTravellers().isEmpty()) {
+                    data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.traveller.data")));
+                }
+
+                for (WorldNetworkTraveller traveller : node.getTravellers()) {
+                    float distance = (Float.valueOf(traveller.activePath.getIndex()) / Float.valueOf(traveller.activePath.pathPositions().size())) * 10F;
+                    distance += traveller.travelledDistance;
+                    distance -= 0.1F;
+                    distance = MathHelper.clamp(distance, 0F, 10F);
+                    if (distance > 0) {
+                        ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
+                        data.add(new ProbeData(new TextComponentString(stack.getDisplayName()))
+                                .withInventory(ImmutableList.of(stack))
+                                .withBar(0, distance * 10, 100, UnitDictionary.PERCENT));
+                    }
+                }
+            }
+
+            List<ItemStack> stacks = new ArrayList<>();
+            for (int i = 0; i < buffer.getSlots(); i++) {
+                stacks.add(buffer.getStackInSlot(i));
+            }
+
+            ProbeData probeData = new ProbeData(new TextComponentTranslation("tooltip.teckle.filter.buffer")).withInventory(ImmutableList.copyOf(stacks));
+            data.add(probeData);
         }
     }
 

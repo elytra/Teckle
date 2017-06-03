@@ -77,7 +77,7 @@ public class AdvancedItemStackHandler extends ItemStackHandler {
         for (int i = 0; i < getSlots(); i++) {
             if (remaining.isEmpty())
                 break;
-            remaining = insertItem(i, stack, true);
+            remaining = insertItem(i, remaining, true);
         }
 
         if (remaining.isEmpty() && !simulate) {
@@ -85,7 +85,7 @@ public class AdvancedItemStackHandler extends ItemStackHandler {
             for (int i = 0; i < getSlots(); i++) {
                 if (remaining.isEmpty())
                     break;
-                remaining = insertItem(i, stack, simulate);
+                remaining = insertItem(i, remaining, simulate);
             }
         }
 
