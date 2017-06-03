@@ -429,8 +429,11 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
         tagCompound.setInteger("tried", triedEndpoints.size());
         for (int i = 0; i < triedEndpoints.size(); i++) {
-            tagCompound.setLong("triedp" + i, triedEndpoints.get(i).getFirst().position.toLong());
-            tagCompound.setInteger("triedf" + i, triedEndpoints.get(i).getSecond().getIndex());
+            Tuple<WorldNetworkNode, EnumFacing> triedEndpoint = triedEndpoints.get(i);
+            if (triedEndpoint.getFirst() == null)
+                continue;
+            tagCompound.setLong("triedp" + i, triedEndpoint.getFirst().position.toLong());
+            tagCompound.setInteger("triedf" + i, triedEndpoint.getSecond().getIndex());
         }
 
         tagCompound.setInteger("actions", dropActions.size());

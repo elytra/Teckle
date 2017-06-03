@@ -360,6 +360,7 @@ public class SortModeFullMatchSelector extends SortMode {
             if (stacksLeftToSatisfy.isEmpty())
                 sortingMachine.getPullMode().pause();
 
+            System.out.println("Sorting machine remainder " + remainder + " inserted " + (toInsert.getCount() - leftover.getCount()));
             return remainder;
         } else if (!sortingMachine.defaultRoute.isBlocked()) {
             WorldNetworkTraveller travellerCopy = traveller.clone();
@@ -372,9 +373,6 @@ public class SortModeFullMatchSelector extends SortMode {
             ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
             ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(),
                     insertInto, travellerStack, collect, false, false);
-            if (!result.isEmpty()) {
-                traveller.data.setTag("stack", result.serializeNBT());
-            }
 
             return result;
         }

@@ -25,6 +25,7 @@ public class SortingMachineEndpoint extends WorldNetworkEndpoint {
         if (remaining.isEmpty())
             return true;
 
+        traveller.data.setTag("stack", remaining.serializeNBT());
         return false;
     }
 

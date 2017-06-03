@@ -303,6 +303,8 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
 
         filterRows.deserializeNBT(compound.getCompoundTag("filterRows"));
+        buffer.deserializeNBT(compound.getCompoundTag("buffer"));
+        defaultRoute = DefaultRoute.byMetadata(compound.getInteger("defaultRoute"));
     }
 
     @Override
@@ -317,11 +319,14 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
         compound.setTag("colours", coloursTag);
         compound.setTag("filterRows", filterRows.serializeNBT());
+        compound.setTag("buffer", buffer.serializeNBT());
+
         compound.setTag("pullMode", getPullMode().serializeNBT());
         compound.setInteger("pullModeID", getPullMode().getID());
-
         compound.setTag("sortMode", getSortMode().serializeNBT());
         compound.setInteger("sortModeID", getSortMode().getID());
+
+        compound.setInteger("defaultRoute", defaultRoute.getMetadata());
 
         return super.writeToNBT(compound);
     }

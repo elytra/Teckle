@@ -311,11 +311,9 @@ public class SortModeFullMatch extends SortMode {
             }
             BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getEntryPointTile().getOutputFace());
             ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
-            ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(),
-                    insertInto, travellerStack, collect, false, false);
-            if (!result.isEmpty()) {
-                traveller.data.setTag("stack", result.serializeNBT());
-            }
+            ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class)
+                    .insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(), insertInto,
+                            travellerStack, collect, false, false);
 
             return result;
         }
