@@ -37,7 +37,10 @@ import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoi
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import net.minecraft.block.BlockSourceImpl;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
+import net.minecraft.dispenser.PositionImpl;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
@@ -242,26 +245,12 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
     }
 
     private boolean ejectExtractionData(EnumFacing facing, ItemStack extractionData) {
-        EnumFacing enumfacing = networkTile.getOutputFace();
-        double x = pos.getX() + 0.7D * (double) enumfacing.getFrontOffsetX();
-        double y = pos.getY() + 0.7D * (double) enumfacing.getFrontOffsetY();
-        double z = pos.getZ() + 0.7D * (double) enumfacing.getFrontOffsetZ();
+        BlockSourceImpl coords = new BlockSourceImpl(world, pos);
+        double d0 = coords.getX() + 0.7D * (double) networkTile.getOutputFace().getFrontOffsetX();
+        double d1 = coords.getY() + 0.7D * (double) networkTile.getOutputFace().getFrontOffsetY();
+        double d2 = coords.getZ() + 0.7D * (double) networkTile.getOutputFace().getFrontOffsetZ();
+        BehaviorDefaultDispenseItem.doDispense(world, extractionData, 6, facing, new PositionImpl(d0, d1, d2));
 
-        if (facing.getAxis() == EnumFacing.Axis.Y) {
-            y = y - 0.125D;
-        } else {
-            y = y - 0.15625D;
-        }
-
-        EntityItem entityitem = new EntityItem(world, x, y, z, extractionData);
-        double d3 = world.rand.nextDouble() * 0.1D + 0.2D;
-        entityitem.motionX = (double) facing.getFrontOffsetX() * d3;
-        entityitem.motionY = 0.20000000298023224D;
-        entityitem.motionZ = (double) facing.getFrontOffsetZ() * d3;
-        entityitem.motionX += world.rand.nextGaussian() * 0.007499999832361937D * 2.5D;
-        entityitem.motionY += world.rand.nextGaussian() * 0.007499999832361937D * 2.5D;
-        entityitem.motionZ += world.rand.nextGaussian() * 0.007499999832361937D * 2.5D;
-        world.spawnEntity(entityitem);
         return true;
     }
 

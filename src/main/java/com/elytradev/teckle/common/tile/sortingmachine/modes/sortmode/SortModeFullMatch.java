@@ -415,6 +415,11 @@ public class SortModeFullMatch extends SortMode {
         tagCompound.setInteger("selectorPosition", selectorPosition);
         tagCompound.setInteger("compartmentSlot", compartmentSlot);
 
+        tagCompound.setInteger("stacksLeftToSatisfy", stacksLeftToSatisfy.size());
+        for (int i = 0; i < stacksLeftToSatisfy.size(); i++) {
+            tagCompound.setTag("stacksLeftToSatisfy" + i, stacksLeftToSatisfy.get(i).serializeNBT());
+        }
+
         return new NBTTagCompound();
     }
 
@@ -426,5 +431,11 @@ public class SortModeFullMatch extends SortMode {
         NBTTagCompound tagCompound = (NBTTagCompound) nbt;
         selectorPosition = tagCompound.getInteger("selectorPosition");
         compartmentSlot = tagCompound.getInteger("compartmentSlot");
+
+        int stacksLeftToSatisfySize = tagCompound.getInteger("stacksLeftToSatisfy");
+        stacksLeftToSatisfy = Lists.newArrayListWithExpectedSize(stacksLeftToSatisfySize);
+        for (int i = 0; i < stacksLeftToSatisfySize; i++) {
+            stacksLeftToSatisfy.set(i, new ItemStack(tagCompound.getCompoundTag("stacksLeftToSatisfy" + i)));
+        }
     }
 }

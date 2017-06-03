@@ -81,12 +81,12 @@ public class SortModePartialMatchSelector extends SortMode {
             }
         }
         AdvancedItemStackHandler bufferClone = sortingMachine.buffer.copy();
-        // Confirm the buffer can fit everything before attempting actual insertion into the real thing.
+        // Confirm the buffer can fit everything before attempting actual insertion into the real thing. ( ͡° ͜ʖ ͡°)
         for (Map.Entry<SlotData, Integer> slotCountEntry : slotsToExtract.entrySet()) {
             SlotData slotData = slotCountEntry.getKey();
             Integer count = slotCountEntry.getValue();
 
-            // If it didn't fit, return false.
+            // If it didn't fit ( ͡° ͜ʖ ͡°), return false.
             if (!bufferClone.insertItem(slotData.extract(count, true), false).isEmpty()) {
                 return false;
             }
