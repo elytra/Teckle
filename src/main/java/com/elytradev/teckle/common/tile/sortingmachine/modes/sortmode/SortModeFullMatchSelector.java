@@ -237,7 +237,6 @@ public class SortModeFullMatchSelector extends SortMode {
 
                 // Nothing was found, resort to 0...
                 selectorPosition = 0;
-                return;
             }
         }
     }
@@ -360,7 +359,6 @@ public class SortModeFullMatchSelector extends SortMode {
             if (stacksLeftToSatisfy.isEmpty())
                 sortingMachine.getPullMode().pause();
 
-            System.out.println("Sorting machine remainder " + remainder + " inserted " + (toInsert.getCount() - leftover.getCount()));
             return remainder;
         } else if (!sortingMachine.defaultRoute.isBlocked()) {
             WorldNetworkTraveller travellerCopy = traveller.clone();

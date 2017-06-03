@@ -23,6 +23,7 @@ import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullModeInline;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import net.minecraft.item.EnumDyeColor;
@@ -31,6 +32,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.List;
@@ -46,6 +48,7 @@ public class SortModePartialMatchSelector extends SortMode {
 
     public int selectorPosition = 0;
     public int compartmentSlot = 0;
+
     public SortModePartialMatchSelector() {
         super(1, "sortmode.partialmatchselector", SortModeType.COMPARTMENT);
     }
@@ -244,14 +247,31 @@ public class SortModePartialMatchSelector extends SortMode {
 
             Stream<ItemStack> bufferStream = ItemStream.createItemStream(pushStackHandler);
             // If the buffer has been emptied move the selector.
-            if (bufferStream.allMatch(ItemStack::isEmpty)) {
+            if (bufferStream.allMatch(stack -> stack.isEmpty() ||
+                    ItemStream.createItemStream(compartmentHandler).noneMatch(tStack -> tStack.isItemEqual(stack)))) {
                 sortingMachine.getPullMode().unpause();
 
-                if (selectorPosition == 8) {
-                    selectorPosition = 0;
-                } else {
-                    selectorPosition++;
+                for (int i = selectorPosition + 1; i < 8; i++) {
+                    IItemHandler selectedCompartmentHandler = sortingMachine.getCompartmentHandlers().get(i);
+
+                    if (ItemStream.createItemStream(selectedCompartmentHandler).anyMatch(stack -> !stack.isEmpty())) {
+                        selectorPosition = i;
+                        return;
+                    }
                 }
+
+                // Try again from 0...
+                for (int i = 0; i < 8; i++) {
+                    IItemHandler selectedCompartmentHandler = sortingMachine.getCompartmentHandlers().get(i);
+
+                    if (ItemStream.createItemStream(selectedCompartmentHandler).anyMatch(stack -> !stack.isEmpty())) {
+                        selectorPosition = i;
+                        return;
+                    }
+                }
+
+                // Nothing was found, resort to 0...
+                selectorPosition = 0;
             }
         }
     }
@@ -259,14 +279,49 @@ public class SortModePartialMatchSelector extends SortMode {
     /**
      * Accept the given traveller if the machine is set to inline mode.
      *
-     *
      * @param sortingMachine
-     * @param traveller the traveller to accept.
-     * @param from      the side the traveller is to be injected into.
+     * @param traveller      the traveller to accept.
+     * @param from           the side the traveller is to be injected into.
      * @return true if the entire traveller is accepted, false otherwise.
      */
     @Override
     public ItemStack acceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
+        if (!traveller.data.hasKey("stack")) {
+            return null;
+        }
+
+        ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
+        List<ItemStack> stacksThatSatisfy = ItemStream.createItemStream(sortingMachine.getCompartmentHandlers().get(selectorPosition)).filter(s -> !s.isEmpty()).collect(Collectors.toList());
+
+        Optional<ItemStack> matchingStack = stacksThatSatisfy.stream().filter(stack -> stack.isItemEqual(travellerStack)
+                && travellerStack.getCount() >= stack.getCount()).findFirst();
+        if (matchingStack.isPresent()) {
+            ItemStack toInsert = travellerStack.copy();
+            toInsert.setCount(matchingStack.get().getCount());
+            ItemStack remainder = travellerStack.copy();
+            remainder.setCount(travellerStack.getCount() - matchingStack.get().getCount());
+            ItemStack leftover = sortingMachine.buffer.insertItem(toInsert, false);
+            remainder.grow(leftover.getCount());
+
+            matchingStack.get().shrink(toInsert.getCount() - leftover.getCount());
+            sortingMachine.getPullMode().pause();
+
+            return remainder;
+        } else if (!sortingMachine.defaultRoute.isBlocked()) {
+            WorldNetworkTraveller travellerCopy = traveller.clone();
+            if (sortingMachine.defaultRoute.isColoured()) {
+                travellerCopy.data.setInteger("colour", sortingMachine.defaultRoute.getColour().getMetadata());
+            } else {
+                travellerCopy.data.removeTag("colour");
+            }
+            BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getEntryPointTile().getOutputFace());
+            ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
+            ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(),
+                    insertInto, travellerStack, collect, false, false);
+
+            return result;
+        }
+
         return null;
     }
 
