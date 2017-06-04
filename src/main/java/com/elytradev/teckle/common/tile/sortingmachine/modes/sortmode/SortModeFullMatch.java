@@ -21,7 +21,6 @@ import com.elytradev.teckle.common.tile.inv.ItemStream;
 import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
-import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullModeInline;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.google.common.collect.ImmutableMap;
@@ -335,7 +334,6 @@ public class SortModeFullMatch extends SortMode {
 
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
-        if (!(sortingMachine.getPullMode() instanceof PullModeInline)) {
             if (!sortingMachine.getPullMode().isPaused())
                 return;
 
@@ -404,7 +402,7 @@ public class SortModeFullMatch extends SortMode {
                 compartmentSlot = 0;
                 sortingMachine.getPullMode().unpause();
             }
-        }
+
     }
 
 

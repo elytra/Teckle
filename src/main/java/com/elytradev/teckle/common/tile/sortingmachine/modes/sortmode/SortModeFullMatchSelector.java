@@ -292,10 +292,27 @@ public class SortModeFullMatchSelector extends SortMode {
 
         Optional<ItemStack> matchingStack = stacksLeftToSatisfy.stream().filter(stack -> stack.isItemEqual(travellerStack)).findFirst();
         if (matchingStack.isPresent()) {
-            return true;
+            return sortingMachine.buffer.canInsertItem(travellerStack);
+        } else if (!sortingMachine.defaultRoute.isBlocked()) {
+            WorldNetworkTraveller travellerCopy = traveller.clone();
+
+            if (!sortingMachine.defaultRoute.isBlocked()) {
+                if (sortingMachine.defaultRoute.isColoured()) {
+                    travellerCopy.data.setInteger("colour", sortingMachine.defaultRoute.getColour().getMetadata());
+                } else {
+                    travellerCopy.data.removeTag("colour");
+                }
+            }
+
+            BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getEntryPointTile().getOutputFace());
+            ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
+            ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(),
+                    insertInto, travellerStack, collect, false, true);
+
+            return result.isEmpty();
         }
 
-        return !sortingMachine.defaultRoute.isBlocked();
+        return false;
     }
 
     /**
