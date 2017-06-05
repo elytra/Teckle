@@ -47,6 +47,7 @@ public class SortModePartialMatchSelector extends SortMode {
 
     public int selectorPosition = 0;
     public int compartmentSlot = 0;
+    public int coolDown = 5;
 
     public SortModePartialMatchSelector() {
         super(1, "sortmode.partialmatchselector", SortModeType.COMPARTMENT);
@@ -203,6 +204,13 @@ public class SortModePartialMatchSelector extends SortMode {
 
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
+        if (coolDown > 0) {
+            coolDown--;
+            return;
+        }
+
+        coolDown = 5;
+
         if (!sortingMachine.getPullMode().isPaused())
             return;
 
@@ -375,6 +383,7 @@ public class SortModePartialMatchSelector extends SortMode {
 
         tagCompound.setInteger("selectorPosition", selectorPosition);
         tagCompound.setInteger("compartmentSlot", compartmentSlot);
+        tagCompound.setInteger("cooldown", coolDown);
 
         return new NBTTagCompound();
     }
@@ -387,5 +396,6 @@ public class SortModePartialMatchSelector extends SortMode {
         NBTTagCompound tagCompound = (NBTTagCompound) nbt;
         selectorPosition = tagCompound.getInteger("selectorPosition");
         compartmentSlot = tagCompound.getInteger("compartmentSlot");
+        coolDown = tagCompound.getInteger("cooldown");
     }
 }

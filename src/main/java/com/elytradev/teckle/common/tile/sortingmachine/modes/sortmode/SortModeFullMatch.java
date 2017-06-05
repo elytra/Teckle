@@ -49,6 +49,7 @@ public class SortModeFullMatch extends SortMode {
     public int selectorPosition = -1;
     public int compartmentSlot = 0;
     public List<ItemStack> stacksLeftToSatisfy = Lists.newArrayList();
+    public int coolDown = 5;
 
     public SortModeFullMatch() {
         super(2, "sortmode.fullmatch", SortModeType.COMPARTMENT);
@@ -334,76 +335,83 @@ public class SortModeFullMatch extends SortMode {
 
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
-            if (!sortingMachine.getPullMode().isPaused())
-                return;
+        if (coolDown > 0) {
+            coolDown--;
+            return;
+        }
 
-            List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
-            if (stacksToPush.isEmpty()) {
-                sortingMachine.getPullMode().unpause();
-                return;
-            }
+        coolDown = 5;
+        if (!sortingMachine.getPullMode().isPaused())
+            return;
 
-            IItemHandler pushStackHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
-            if (pushStackHandler != sortingMachine.buffer) {
-                return;
-            }
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        if (stacksToPush.isEmpty()) {
+            sortingMachine.getPullMode().unpause();
+            return;
+        }
 
-            IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
-            EnumDyeColor compartmentColour = sortingMachine.colours[selectorPosition];
-            ItemStack selectedStack = null;
-            SlotData selectedStackInSlot = null;
-            ItemStack selectedCompartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
+        IItemHandler pushStackHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
+        if (pushStackHandler != sortingMachine.buffer) {
+            return;
+        }
 
-            if (selectedCompartmentStack.isEmpty()) {
-                if (compartmentSlot < 7) {
-                    for (int currentCompartmentItem = 0; currentCompartmentItem < compartmentHandler.getSlots(); currentCompartmentItem++) {
-                        if (!compartmentHandler.getStackInSlot(currentCompartmentItem).isEmpty()) {
-                            selectedCompartmentStack = compartmentHandler.getStackInSlot(currentCompartmentItem);
-                            compartmentSlot = currentCompartmentItem;
-                            break;
-                        }
+        IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
+        EnumDyeColor compartmentColour = sortingMachine.colours[selectorPosition];
+        ItemStack selectedStack = null;
+        SlotData selectedStackInSlot = null;
+        ItemStack selectedCompartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
+
+        if (selectedCompartmentStack.isEmpty()) {
+            if (compartmentSlot < 7) {
+                for (int currentCompartmentItem = 0; currentCompartmentItem < compartmentHandler.getSlots(); currentCompartmentItem++) {
+                    if (!compartmentHandler.getStackInSlot(currentCompartmentItem).isEmpty()) {
+                        selectedCompartmentStack = compartmentHandler.getStackInSlot(currentCompartmentItem);
+                        compartmentSlot = currentCompartmentItem;
+                        break;
                     }
-                } else {
-                    sortingMachine.getPullMode().unpause();
-                    return;
                 }
-            }
-
-            if (selectedCompartmentStack.isEmpty()) {
-                compartmentSlot = 0;
+            } else {
                 sortingMachine.getPullMode().unpause();
-            }
-
-            for (int slot = 0; slot < pushStackHandler.getSlots(); slot++) {
-                ItemStack stackInSlot = pushStackHandler.getStackInSlot(slot);
-
-                if (stackInSlot.isEmpty())
-                    continue;
-
-                if (selectedCompartmentStack.isItemEqual(stackInSlot) && selectedCompartmentStack.getCount() <= stackInSlot.getCount()) {
-                    selectedStack = selectedCompartmentStack.copy();
-                    selectedStackInSlot = new SlotData(pushStackHandler, slot);
-                    compartmentSlot++;
-                    break;
-                } else {
-                    continue;
-                }
-            }
-
-            if (selectedStack == null)
                 return;
-
-            sortingMachine.addToNetwork(selectedStackInSlot.itemHandler, selectedStackInSlot.slot, selectedStack.getCount(),
-                    compartmentColour != null ? ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())) : ImmutableMap.of());
-
-            Stream<ItemStack> bufferStream = ItemStream.createItemStream(pushStackHandler);
-            // If the buffer has been emptied move the selector.
-            if (bufferStream.allMatch(ItemStack::isEmpty)) {
-                compartmentSlot = 0;
-                sortingMachine.getPullMode().unpause();
             }
+        }
+
+        if (selectedCompartmentStack.isEmpty()) {
+            compartmentSlot = 0;
+            sortingMachine.getPullMode().unpause();
+        }
+
+        for (int slot = 0; slot < pushStackHandler.getSlots(); slot++) {
+            ItemStack stackInSlot = pushStackHandler.getStackInSlot(slot);
+
+            if (stackInSlot.isEmpty())
+                continue;
+
+            if (selectedCompartmentStack.isItemEqual(stackInSlot) && selectedCompartmentStack.getCount() <= stackInSlot.getCount()) {
+                selectedStack = selectedCompartmentStack.copy();
+                selectedStackInSlot = new SlotData(pushStackHandler, slot);
+                compartmentSlot++;
+                break;
+            } else {
+                continue;
+            }
+        }
+
+        if (selectedStack == null)
+            return;
+
+        sortingMachine.addToNetwork(selectedStackInSlot.itemHandler, selectedStackInSlot.slot, selectedStack.getCount(),
+                compartmentColour != null ? ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())) : ImmutableMap.of());
+
+        Stream<ItemStack> bufferStream = ItemStream.createItemStream(pushStackHandler);
+        // If the buffer has been emptied move the selector.
+        if (bufferStream.allMatch(ItemStack::isEmpty)) {
+            compartmentSlot = 0;
+            sortingMachine.getPullMode().unpause();
+        }
 
     }
+
 
 
     @Override
@@ -412,6 +420,7 @@ public class SortModeFullMatch extends SortMode {
 
         tagCompound.setInteger("selectorPosition", selectorPosition);
         tagCompound.setInteger("compartmentSlot", compartmentSlot);
+        tagCompound.setInteger("cooldown", coolDown);
 
         tagCompound.setInteger("stacksLeftToSatisfy", stacksLeftToSatisfy.size());
         for (int i = 0; i < stacksLeftToSatisfy.size(); i++) {
@@ -429,6 +438,7 @@ public class SortModeFullMatch extends SortMode {
         NBTTagCompound tagCompound = (NBTTagCompound) nbt;
         selectorPosition = tagCompound.getInteger("selectorPosition");
         compartmentSlot = tagCompound.getInteger("compartmentSlot");
+        coolDown = tagCompound.getInteger("cooldown");
 
         int stacksLeftToSatisfySize = tagCompound.getInteger("stacksLeftToSatisfy");
         stacksLeftToSatisfy = Lists.newArrayListWithExpectedSize(stacksLeftToSatisfySize);

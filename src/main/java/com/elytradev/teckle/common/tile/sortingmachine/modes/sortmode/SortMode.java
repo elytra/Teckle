@@ -103,10 +103,9 @@ public abstract class SortMode implements INBTSerializable {
     /**
      * Accept the given traveller if the machine is set to inline mode.
      *
-     *
      * @param sortingMachine
-     * @param traveller the traveller to accept.
-     * @param from      the side the traveller is to be injected into.
+     * @param traveller      the traveller to accept.
+     * @param from           the side the traveller is to be injected into.
      * @return true if the entire traveller is accepted, false otherwise.
      */
     public abstract ItemStack acceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from);
