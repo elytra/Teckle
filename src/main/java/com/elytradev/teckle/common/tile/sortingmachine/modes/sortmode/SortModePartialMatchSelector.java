@@ -214,97 +214,112 @@ public class SortModePartialMatchSelector extends SortMode {
 
         IItemHandler bufferHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
         if (bufferHandler != sortingMachine.buffer) {
+            sortingMachine.getPullMode().unpause();
             return;
         }
 
         IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
         EnumDyeColor compartmentColour = sortingMachine.colours[selectorPosition];
         ItemStack selectedStack = ItemStack.EMPTY;
-        SlotData selectedStackInSlot = null;
+        SlotData selectedSlotData = null;
         ItemStack selectedCompartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
 
-        if (selectedCompartmentStack.isEmpty()) {
-            if (compartmentSlot < 7) {
-                for (int currentCompartmentItem = compartmentSlot; currentCompartmentItem < compartmentHandler.getSlots(); currentCompartmentItem++) {
-                    if (!compartmentHandler.getStackInSlot(currentCompartmentItem).isEmpty()) {
-                        selectedCompartmentStack = compartmentHandler.getStackInSlot(currentCompartmentItem);
-                        compartmentSlot = currentCompartmentItem;
-                        break;
-                    }
+        Stream<ItemStack> bufferStream = ItemStream.createItemStream(sortingMachine.buffer);
+
+        ItemStack selectedCompartmentStackClone = selectedCompartmentStack;
+        if (selectedCompartmentStack.isEmpty()
+                || sortingMachine.getStacksToPush().stream()
+                .noneMatch(slotData -> slotData.getStack().isItemEqual(selectedCompartmentStackClone)
+                        && slotData.getStack().getCount() >= selectedCompartmentStackClone.getCount())) {
+
+            // Choose a new compartment slot that will work.
+            boolean foundMatch = false;
+            for (int i = 0; i < compartmentHandler.getSlots(); i++) {
+                ItemStack compartmentStackInSlot = compartmentHandler.getStackInSlot(i);
+
+                if (compartmentStackInSlot.isEmpty())
+                    continue;
+
+                Optional<SlotData> matchingSlotData = sortingMachine.getStacksToPush().stream().filter(slotData -> !slotData.getStack().isEmpty())
+                        .filter(slotData -> slotData.getStack().isItemEqual(compartmentStackInSlot)
+                                && slotData.getStack().getCount() >= compartmentStackInSlot.getCount()).findFirst();
+
+                if (matchingSlotData.isPresent()) {
+                    compartmentSlot = i;
+                    selectedCompartmentStack = compartmentStackInSlot;
+                    selectedStack = selectedCompartmentStack.copy();
+                    selectedSlotData = matchingSlotData.get();
+                    foundMatch = true;
+                    break;
                 }
-            } else {
+            }
+
+            // If nothing was found then reset the compartment slot, unpause the pull mode, and choose a new selector position.
+            if (!foundMatch) {
+                compartmentSlot = 0;
                 sortingMachine.getPullMode().unpause();
+                chooseSelectorPosition(sortingMachine);
                 return;
             }
         }
 
-        Stream<ItemStack> bufferStream = ItemStream.createItemStream(sortingMachine.buffer);
+        bufferStream = ItemStream.createItemStream(sortingMachine.buffer);
         if (selectedCompartmentStack.isEmpty() && bufferStream.allMatch(stack -> stack.isEmpty() ||
                 ItemStream.createItemStream(compartmentHandler).noneMatch(tStack -> tStack.isItemEqual(stack)))) {
             compartmentSlot = 0;
             sortingMachine.getPullMode().unpause();
+            return;
         }
 
-        for (int slot = 0; slot < bufferHandler.getSlots(); slot++) {
-            ItemStack bufferStack = bufferHandler.getStackInSlot(slot);
+        if (selectedSlotData == null) {
+            Optional<SlotData> matchingSlotData = sortingMachine.getStacksToPush().stream().filter(slotData -> !slotData.getStack().isEmpty())
+                    .filter(slotData -> slotData.getStack().isItemEqual(compartmentHandler.getStackInSlot(compartmentSlot))
+                            && slotData.getStack().getCount() >= compartmentHandler.getStackInSlot(compartmentSlot).getCount()).findFirst();
 
-            if (bufferStack.isEmpty())
-                continue;
-
-            if (selectedCompartmentStack.isItemEqual(bufferStack) && selectedCompartmentStack.getCount() <= bufferStack.getCount()) {
+            if (matchingSlotData.isPresent()) {
+                selectedSlotData = matchingSlotData.get();
                 selectedStack = selectedCompartmentStack.copy();
-                selectedStackInSlot = new SlotData(bufferHandler, slot);
-                compartmentSlot++;
-                break;
             } else {
-                continue;
-            }
-        }
-
-        if (selectedStack.isEmpty()) {
-            if (compartmentSlot < 7) {
-                for (int currentCompartmentItem = compartmentSlot + 1; currentCompartmentItem < compartmentHandler.getSlots(); currentCompartmentItem++) {
-                    if (!compartmentHandler.getStackInSlot(currentCompartmentItem).isEmpty()) {
-                        compartmentSlot = currentCompartmentItem;
-                        return;
-                    }
-                }
-            } else {
+                compartmentSlot = 0;
                 sortingMachine.getPullMode().unpause();
                 return;
             }
         }
 
-        sortingMachine.addToNetwork(selectedStackInSlot.itemHandler, selectedStackInSlot.slot, selectedStack.getCount(),
+        sortingMachine.addToNetwork(selectedSlotData.itemHandler, selectedSlotData.slot, selectedStack.getCount(),
                 compartmentColour != null ? ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())) : ImmutableMap.of());
 
         // If the buffer has been emptied move the selector.
+        bufferStream = ItemStream.createItemStream(sortingMachine.buffer);
         if (bufferStream.allMatch(stack -> stack.isEmpty() ||
                 ItemStream.createItemStream(compartmentHandler).noneMatch(tStack -> tStack.isItemEqual(stack)))) {
+            chooseSelectorPosition(sortingMachine);
             sortingMachine.getPullMode().unpause();
-
-            for (int i = selectorPosition + 1; i < 8; i++) {
-                IItemHandler selectedCompartmentHandler = sortingMachine.getCompartmentHandlers().get(i);
-
-                if (ItemStream.createItemStream(selectedCompartmentHandler).anyMatch(stack -> !stack.isEmpty())) {
-                    selectorPosition = i;
-                    return;
-                }
-            }
-
-            // Try again from 0...
-            for (int i = 0; i < 8; i++) {
-                IItemHandler selectedCompartmentHandler = sortingMachine.getCompartmentHandlers().get(i);
-
-                if (ItemStream.createItemStream(selectedCompartmentHandler).anyMatch(stack -> !stack.isEmpty())) {
-                    selectorPosition = i;
-                    return;
-                }
-            }
-
-            // Nothing was found, resort to 0...
-            selectorPosition = 0;
         }
+    }
+
+    private void chooseSelectorPosition(TileSortingMachine sortingMachine) {
+        for (int i = selectorPosition + 1; i < 8; i++) {
+            IItemHandler selectedCompartmentHandler = sortingMachine.getCompartmentHandlers().get(i);
+
+            if (ItemStream.createItemStream(selectedCompartmentHandler).anyMatch(stack -> !stack.isEmpty())) {
+                selectorPosition = i;
+                return;
+            }
+        }
+
+        // Try again from 0...
+        for (int i = 0; i < 8; i++) {
+            IItemHandler selectedCompartmentHandler = sortingMachine.getCompartmentHandlers().get(i);
+
+            if (ItemStream.createItemStream(selectedCompartmentHandler).anyMatch(stack -> !stack.isEmpty())) {
+                selectorPosition = i;
+                return;
+            }
+        }
+
+        // Nothing was found, resort to 0...
+        selectorPosition = 0;
     }
 
     /**

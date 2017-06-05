@@ -165,7 +165,7 @@ public class SortModeFullMatchSelector extends SortMode {
             IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
             EnumDyeColor compartmentColour = sortingMachine.colours[selectorPosition];
             ItemStack selectedStack = ItemStack.EMPTY;
-            SlotData selectedStackInSlot = null;
+            SlotData selectedSlotData = null;
             ItemStack selectedCompartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
 
             if (selectedCompartmentStack.isEmpty()) {
@@ -196,7 +196,7 @@ public class SortModeFullMatchSelector extends SortMode {
 
                 if (selectedCompartmentStack.isItemEqual(bufferStack) && selectedCompartmentStack.getCount() <= bufferStack.getCount()) {
                     selectedStack = selectedCompartmentStack.copy();
-                    selectedStackInSlot = new SlotData(bufferHandler, slot);
+                    selectedSlotData = new SlotData(bufferHandler, slot);
                     compartmentSlot++;
                     break;
                 } else {
@@ -207,7 +207,7 @@ public class SortModeFullMatchSelector extends SortMode {
             if (selectedStack.isEmpty())
                 return;
 
-            sortingMachine.addToNetwork(selectedStackInSlot.itemHandler, selectedStackInSlot.slot, selectedStack.getCount(),
+            sortingMachine.addToNetwork(selectedSlotData.itemHandler, selectedSlotData.slot, selectedStack.getCount(),
                     compartmentColour != null ? ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())) : ImmutableMap.of());
 
             Stream<ItemStack> bufferStream = ItemStream.createItemStream(sortingMachine.buffer);
