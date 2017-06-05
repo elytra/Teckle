@@ -145,13 +145,35 @@ public class TeckleObjects {
 
         GameRegistry.addRecipe(new PaintbrushRecipe());
         GameRegistry.addRecipe(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockAlloyFurnace), "BBB", "B B", "BBB", 'B', Blocks.BRICK_BLOCK));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockItemTube, 8), "BGB", 'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()), 'G', Blocks.GLASS));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockTransposer), "CCC", "WPW", "CRC", 'C', Blocks.COBBLESTONE, 'W', Blocks.PLANKS, 'P', Blocks.PISTON, 'R', Items.REDSTONE));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockFilter), "CCC", "GPG", "CWC", 'C', Blocks.COBBLESTONE, 'G', Items.GOLD_INGOT, 'P', Blocks.PISTON, 'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata())));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockFabricator), "BBB", "WCW", "WRW", 'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()), 'W', Blocks.PLANKS, 'C', Blocks.CRAFTING_TABLE, 'R', Items.REDSTONE));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemBlade), "I  ", " S ", 'I', Items.IRON_INGOT, 'S', Items.STICK));
-
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockAlloyFurnace), "BBB", "B B", "BBB",
+                'B', Blocks.BRICK_BLOCK));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockItemTube, 8), "BGB",
+                'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()),
+                'G', Blocks.GLASS));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockTransposer), "CCC", "WPW", "CRC",
+                'C', Blocks.COBBLESTONE,
+                'W', Blocks.PLANKS,
+                'P', Blocks.PISTON,
+                'R', Items.REDSTONE));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockFilter), "CCC", "GPG", "CWC",
+                'C', Blocks.COBBLESTONE,
+                'G', Items.GOLD_INGOT,
+                'P', Blocks.PISTON,
+                'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata())));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockFabricator), "BBB", "WCW", "WRW",
+                'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()),
+                'W', Blocks.PLANKS,
+                'C', Blocks.CRAFTING_TABLE,
+                'R', Items.REDSTONE));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemBlade), "I  ", " S ",
+                'I', Items.IRON_INGOT,
+                'S', Items.STICK));
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockSortingMachine), "IWI", "BFB", "IRI",
+                'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.BLUE.getMetadata()),
+                'I', new ItemStack(Items.IRON_INGOT),
+                'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BLUE_ALLOY.getMetadata()),
+                'R', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()),
+                'F', new ItemStack(blockFilter)));
 
         // Forge doesn't use EnumDyeColor  for dye registration and also doesn't store this list anywhere public, so here we are copying forge colour arrays from OreDict.
         String[] dyes =
