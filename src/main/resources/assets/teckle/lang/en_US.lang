@@ -59,3 +59,29 @@ pullmode.singlesweep=Single Sweep
 pullmode.auto.tooltip=Automatically pulse when items are available.
 pullmode.singlestep.tooltip=Attempt to satisfy the current compartment on redstone pulse, if no compartment is selected then pull.
 pullmode.singlesweep.tooltip=Sweep through all compartments on redstone pulse.
+
+
+
+
+
+
+
+
+defaultroute.white=Default Route: White
+defaultroute.orange=Default Route: Orange
+defaultroute.magenta=Default Route: Magenta
+defaultroute.light_blue=Default Route: Light Blue
+defaultroute.yellow=Default Route: Yellow
+defaultroute.lime=Default Route: Lime
+defaultroute.pink=Default Route: Pink
+defaultroute.gray=Default Route: Gray
+defaultroute.silver=Default Route: Silver
+defaultroute.cyan=Default Route: Cyan
+defaultroute.purple=Default Route: Purple
+defaultroute.blue=Default Route: Blue
+defaultroute.brown=Default Route: Brown
+defaultroute.green=Default Route: Green
+defaultroute.red=Default Route: Red
+defaultroute.black=Default Route: Black
+defaultroute.none=Default Route: None
+defaultroute.blocked=Default Route: Blocked
