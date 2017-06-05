@@ -62,9 +62,9 @@ public interface IWorldNetworkAssistant<T extends INBTSerializable> {
     /**
      * Inserts the given data into the appropriate network.
      *
-     * @param entryPoint the entry point node this data is coming from.
-     * @param insertInto the position we're trying to insert into.
-     * @param insertData the data we're inserting.
+     * @param entryPoint            the entry point node this data is coming from.
+     * @param insertInto            the position we're trying to insert into.
+     * @param insertData            the data we're inserting.
      * @param networksInsertionOnly
      * @param simulate
      * @return the remaining data that was not inserted.

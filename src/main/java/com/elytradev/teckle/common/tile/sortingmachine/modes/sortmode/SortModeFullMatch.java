@@ -413,7 +413,6 @@ public class SortModeFullMatch extends SortMode {
     }
 
 
-
     @Override
     public NBTBase serializeNBT() {
         NBTTagCompound tagCompound = new NBTTagCompound();
