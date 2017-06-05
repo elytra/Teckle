@@ -28,7 +28,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.github.johnrengelman.shadow' version '1.2.3'
+    id "com.github.johnrengelman.shadow" version "1.2.3"
 }
 
 apply plugin: "net.minecraftforge.gradle.forge"
@@ -65,7 +65,7 @@ minecraft {
 repositories {
     mavenCentral()
     maven {
-        url = 'http://repo.elytradev.com'
+        url = "http://repo.elytradev.com"
     }
     maven {
         // location of the maven that hosts JEI files
@@ -103,9 +103,11 @@ processResources {
 }
 
 dependencies {
-    deobfCompile 'com.elytradev:probedataproviderapi:MC1.11.2_ver1.1.1'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-
+    deobfCompile "com.elytradev:probedataproviderapi:MC1.11.2_ver1.1.1"
+    testCompile group: "junit", name: "junit", version: "4.12"
+    // Add fruitphone to runtime for testing.
+    runtime "com.elytradev:fruitphone:1.11.2-0.1"
+    
     // JEI things.
     deobfCompile "mezz.jei:jei_${mc_version}:${jei_version}:api"
     runtime "mezz.jei:jei_${mc_version}:${jei_version}"
@@ -114,17 +116,17 @@ dependencies {
 }
 
 jar {
-    classifier = 'slim'
+    classifier = "slim"
 }
 
 shadowJar {
-    classifier = ''
-    relocate 'com.elytradev.concrete', 'com.elytradev.teckle.repack.concrete'
+    classifier = ""
+    relocate "com.elytradev.concrete", "com.elytradev.teckle.repack.concrete"
     configurations = [project.configurations.shadow]
 }
 
 reobf {
-    shadowJar { mappingType = 'SEARGE' }
+    shadowJar { mappingType = "SEARGE" }
 }
 
 tasks.build.dependsOn reobfShadowJar
@@ -135,6 +137,6 @@ artifacts {
 }
 
 dependencies {
-    deobfCompile 'com.elytradev:concrete:0.2.2:all'
-    shadow 'com.elytradev:concrete:0.2.2:all'
+    deobfCompile "com.elytradev:concrete:0.2.2:all"
+    shadow "com.elytradev:concrete:0.2.2:all"
 }
