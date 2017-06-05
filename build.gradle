@@ -33,10 +33,6 @@ plugins {
 
 apply plugin: "net.minecraftforge.gradle.forge"
 
-version = modVersion
-group = modGroup
-archivesBaseName = modBaseName
-
 def commitNumberStream = new ByteArrayOutputStream()
 def activeBranchStream = new ByteArrayOutputStream()
 exec {
@@ -50,7 +46,9 @@ exec {
 def activeBranch = activeBranchStream.toString().trim()
 def commitNumber = commitNumberStream.toString().trim()
 
-version += "-" + activeBranch + "-" + commitNumber
+version = activeBranch + "-" + modVersion + "." + commitNumber
+group = modGroup
+archivesBaseName = modBaseName
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
