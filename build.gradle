@@ -1,7 +1,7 @@
 /*
  *    Copyright 2017 Benjamin K (darkevilmac)
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    Licensed under the Apache License, Version 2.0 (the "License")
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
@@ -33,10 +33,18 @@ plugins {
 
 apply plugin: "net.minecraftforge.gradle.forge"
 
-def branch = 'git rev-parse --abbrev-ref HEAD'.execute().in.text.trim()
+def branch
+if (System.env.GIT_BRANCH) {
+    // Jenkins support
+    branch = System.env.GIT_BRANCH
+    branch = branch.substring(branch.lastIndexOf('/') + 1)
+} else {
+    branch = 'git rev-parse --abbrev-ref HEAD'.execute().in.text.trim()
+}
 def commits = 'git rev-list --count HEAD'.execute().in.text.trim()
 def dirty = !'git diff-index HEAD'.execute().in.text.trim().isEmpty()
-version = branch + '-' + modVersion + '.' + commits + (dirty ? '-dirty' : '')
+
+version = branch + '-' + project.ext.version + '.' + commits + (dirty ? '-dirty' : '')
 group = modGroup
 archivesBaseName = modBaseName
 
