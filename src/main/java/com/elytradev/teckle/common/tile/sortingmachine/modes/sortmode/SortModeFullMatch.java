@@ -315,6 +315,10 @@ public class SortModeFullMatch extends SortMode {
                     .insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(), insertInto,
                             travellerStack, collect, false, false);
 
+            if (result.isEmpty() || result.getCount() != travellerStack.getCount()) {
+                sortingMachine.setTriggered();
+            }
+
             return result;
         }
 

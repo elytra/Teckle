@@ -23,6 +23,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.INBTSerializable;
 
+import javax.annotation.Nonnull;
+
 /**
  * Primarily used to allow mods to interact with worldnetworks.
  * Whether that be hooks for node registration and detection or adding travellers to networks.
@@ -69,6 +71,7 @@ public interface IWorldNetworkAssistant<T extends INBTSerializable> {
      * @param simulate
      * @return the remaining data that was not inserted.
      */
+    @Nonnull
     T insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, T insertData, ImmutableMap<String, NBTBase> additionalData, boolean networksInsertionOnly, boolean simulate);
 
 }

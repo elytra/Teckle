@@ -173,7 +173,11 @@ public class SortModeAnyStack extends SortMode {
                 ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(),
                         insertInto, travellerStack, collect, false, simulate);
                 if (!result.isEmpty() && !simulate) {
+                    if (result.getCount() != travellerStack.getCount())
+                        sortingMachine.setTriggered();
                     traveller.data.setTag("stack", result.serializeNBT());
+                } else if (!simulate) {
+                    sortingMachine.setTriggered();
                 }
 
                 return result;

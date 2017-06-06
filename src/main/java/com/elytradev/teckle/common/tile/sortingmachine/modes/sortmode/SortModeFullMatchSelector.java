@@ -386,6 +386,10 @@ public class SortModeFullMatchSelector extends SortMode {
             ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(),
                     insertInto, travellerStack, collect, false, false);
 
+            if (result.isEmpty() || result.getCount() != travellerStack.getCount()) {
+                sortingMachine.setTriggered();
+            }
+
             return result;
         }
 

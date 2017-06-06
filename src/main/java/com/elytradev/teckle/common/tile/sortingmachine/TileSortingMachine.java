@@ -228,19 +228,30 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         if (world.isRemote)
             return;
 
+        if (world.getBlockState(pos).getValue(BlockSortingMachine.TRIGGERED)) {
+            if (!world.isBlockPowered(pos)) {
+                world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockSortingMachine.TRIGGERED, false));
+            }
+        }
+
         if (!returnedTravellers.isEmpty()) {
             WorldNetworkTraveller traveller = returnedTravellers.get(0);
             if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos.offset(entryPointTile.getOutputFace()), entryPointTile.getOutputFace().getOpposite())) {
                 BlockPos outputPos = pos.offset(entryPointTile.getOutputFace());
 
+                ItemStack stackToInsert = new ItemStack(traveller.data.getCompoundTag("stack"));
                 ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(traveller.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> traveller.data.getTag(o))));
                 ItemStack result = (ItemStack) getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) entryPointTile.getNode(),
-                        outputPos, new ItemStack(traveller.data.getCompoundTag("stack")), collect, false, false);
+                        outputPos, stackToInsert.copy(), collect, false, false);
 
                 if (result.isEmpty()) {
                     returnedTravellers.remove(0);
                 } else {
                     returnedTravellers.get(0).data.setTag("stack", result.serializeNBT());
+                }
+
+                if (result.getCount() != stackToInsert.getCount()) {
+                    world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockSortingMachine.TRIGGERED, true));
                 }
             }
             return;
@@ -278,6 +289,10 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
 
         return null;
+    }
+
+    public void setTriggered() {
+        world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockSortingMachine.TRIGGERED, true));
     }
 
     @Override
@@ -383,6 +398,10 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getEntryPointTile().getNode(), potentialInsertionTile.getPos(), remaining, additionalData, false, false).copy();
 
         if (!remaining.isEmpty()) {
+            if (remaining.getCount() != quantity) {
+                setTriggered();
+            }
+
             for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
                 remaining = buffer.insertItem(i, remaining, false);
             }
@@ -392,6 +411,8 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
                 remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
                 DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
             }
+        } else {
+            setTriggered();
         }
 
         return remaining;
