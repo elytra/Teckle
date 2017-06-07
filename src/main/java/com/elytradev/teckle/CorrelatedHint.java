@@ -34,7 +34,10 @@ public class CorrelatedHint {
             "switch to Geico?",
             "think about everything that could go wrong?",
             "pass out?",
-            "drown."
+            "drown.",
+            "install a rootkit.",
+            "fly away.",
+            "learn rocket science."
     };
 
     static {
