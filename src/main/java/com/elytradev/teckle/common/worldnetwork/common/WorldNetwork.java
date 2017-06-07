@@ -229,7 +229,7 @@ public class WorldNetwork implements IWorldNetwork {
             }
         }
 
-        TeckleMod.LOG.info("Finished validation, resulted in " + networks.size() + " networks.\n Network sizes follow.");
+        TeckleMod.LOG.debug("Finished validation, resulted in " + networks.size() + " networks.\n Network sizes follow.");
         for (List<WorldNetworkNode> n : networks) {
             TeckleMod.LOG.debug(n.size());
         }
