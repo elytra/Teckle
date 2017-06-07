@@ -392,10 +392,9 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     }
 
     public ItemStack addToNetwork(IItemHandler source, int slot, int quantity, ImmutableMap<String, NBTBase> additionalData) {
-        TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(getFacing()));
         ItemStack remaining = source.extractItem(slot, quantity, false).copy();
         IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
-        remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getEntryPointTile().getNode(), potentialInsertionTile.getPos(), remaining, additionalData, false, false).copy();
+            remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getEntryPointTile().getNode(), pos.offset(getFacing()), remaining, additionalData, false, false).copy();
 
         if (!remaining.isEmpty()) {
             if (remaining.getCount() != quantity) {
