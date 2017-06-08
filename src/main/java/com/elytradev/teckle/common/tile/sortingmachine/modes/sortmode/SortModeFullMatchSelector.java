@@ -170,8 +170,8 @@ public class SortModeFullMatchSelector extends SortMode {
         ItemStack selectedCompartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
 
         if (selectedCompartmentStack.isEmpty()) {
-            if (compartmentSlot < 7) {
-                for (int currentCompartmentItem = 0; currentCompartmentItem < compartmentHandler.getSlots(); currentCompartmentItem++) {
+            if (compartmentSlot < 6) {
+                for (int currentCompartmentItem = compartmentSlot; currentCompartmentItem < compartmentHandler.getSlots(); currentCompartmentItem++) {
                     if (!compartmentHandler.getStackInSlot(currentCompartmentItem).isEmpty()) {
                         selectedCompartmentStack = compartmentHandler.getStackInSlot(currentCompartmentItem);
                         compartmentSlot = currentCompartmentItem;
@@ -238,6 +238,12 @@ public class SortModeFullMatchSelector extends SortMode {
 
             // Nothing was found, resort to 0...
             selectorPosition = 0;
+        }
+    }
+
+    private void incrementCompartmentSlot(TileSortingMachine sortingMachine){
+        if(compartmentSlot < 7){
+
         }
     }
 

@@ -366,8 +366,8 @@ public class SortModeFullMatch extends SortMode {
         ItemStack selectedCompartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
 
         if (selectedCompartmentStack.isEmpty()) {
-            if (compartmentSlot < 7) {
-                for (int currentCompartmentItem = 0; currentCompartmentItem < compartmentHandler.getSlots(); currentCompartmentItem++) {
+            if (compartmentSlot < 6) {
+                for (int currentCompartmentItem = compartmentSlot; currentCompartmentItem < compartmentHandler.getSlots(); currentCompartmentItem++) {
                     if (!compartmentHandler.getStackInSlot(currentCompartmentItem).isEmpty()) {
                         selectedCompartmentStack = compartmentHandler.getStackInSlot(currentCompartmentItem);
                         compartmentSlot = currentCompartmentItem;
