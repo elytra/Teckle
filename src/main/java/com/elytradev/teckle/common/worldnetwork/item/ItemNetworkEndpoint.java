@@ -46,15 +46,18 @@ public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
             if (endPointCapabilityProvider.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from)) {
                 IItemHandler itemHandler = endPointCapabilityProvider.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from);
 
-                ItemStack dataStack = new ItemStack(traveller.data.getCompoundTag("stack"));
+                ItemStack dataStack = new ItemStack(traveller.data.getCompoundTag("stack")).copy();
                 for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
                     dataStack = itemHandler.insertItem(slot, dataStack, false);
 
                     if (dataStack.isEmpty())
-                        return true;
+                        break;
                 }
 
-                traveller.data.setTag("stack", dataStack.writeToNBT(new NBTTagCompound()));
+                if (!dataStack.isEmpty())
+                    traveller.data.setTag("stack", dataStack.writeToNBT(new NBTTagCompound()));
+
+                return dataStack.isEmpty();
             }
         }
 

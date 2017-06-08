@@ -81,7 +81,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(48);
     public EnumDyeColor[] colours = new EnumDyeColor[8];
-    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(18);
+    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(32);
     public List<WorldNetworkTraveller> returnedTravellers = Lists.newArrayList();
     public DefaultRoute defaultRoute = DefaultRoute.NONE;
     @SideOnly(Side.CLIENT)
@@ -151,7 +151,11 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             }
             if (!stack.isEmpty()) {
                 traveller.data.setTag("stack", stack.serializeNBT());
-                returnedTravellers.add(traveller);
+                if (returnedTravellers.size() <= 32) {
+                    returnedTravellers.add(traveller);
+                } else {
+                    DropActions.ITEMSTACK.getSecond().dropToWorld(traveller);
+                }
             }
         }
 
@@ -320,6 +324,14 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         filterRows.deserializeNBT(compound.getCompoundTag("filterRows"));
         buffer.deserializeNBT(compound.getCompoundTag("buffer"));
         defaultRoute = DefaultRoute.byMetadata(compound.getInteger("defaultRoute"));
+
+        int stacksLeftToSatisfySize = compound.getInteger("returnedTravellers");
+        returnedTravellers = Lists.newArrayListWithExpectedSize(stacksLeftToSatisfySize);
+        for (int i = 0; i < stacksLeftToSatisfySize; i++) {
+            WorldNetworkTraveller deserializedTraveller = new WorldNetworkTraveller(new NBTTagCompound());
+            deserializedTraveller.deserializeNBT(compound.getCompoundTag("returnedTravellers" + i));
+            returnedTravellers.set(i, deserializedTraveller);
+        }
     }
 
     @Override
@@ -342,6 +354,11 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         compound.setInteger("sortModeID", getSortMode().getID());
 
         compound.setInteger("defaultRoute", defaultRoute.getMetadata());
+
+        compound.setInteger("returnedTravellers", returnedTravellers.size());
+        for (int i = 0; i < returnedTravellers.size(); i++) {
+            compound.setTag("returnedTravellers" + i, returnedTravellers.get(i).serializeNBT());
+        }
 
         return super.writeToNBT(compound);
     }
@@ -394,7 +411,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public ItemStack addToNetwork(IItemHandler source, int slot, int quantity, ImmutableMap<String, NBTBase> additionalData) {
         ItemStack remaining = source.extractItem(slot, quantity, false).copy();
         IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
-            remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getEntryPointTile().getNode(), pos.offset(getFacing()), remaining, additionalData, false, false).copy();
+        remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getEntryPointTile().getNode(), pos.offset(getFacing()), remaining, additionalData, false, false).copy();
 
         if (!remaining.isEmpty()) {
             if (remaining.getCount() != quantity) {
@@ -584,8 +601,15 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
                 stacks.add(buffer.getStackInSlot(i));
             }
 
-            ProbeData probeData = new ProbeData(new TextComponentTranslation("tooltip.teckle.filter.buffer")).withInventory(ImmutableList.copyOf(stacks));
-            data.add(probeData);
+            ProbeData bufferData = new ProbeData(new TextComponentTranslation("tooltip.teckle.filter.buffer")).withInventory(ImmutableList.copyOf(stacks));
+            data.add(bufferData);
+
+            if (!returnedTravellers.isEmpty()) {
+                ProbeData returnedTravellerData = new ProbeData(new TextComponentTranslation("tooltip.teckle.sortingmachine.returns"))
+                        .withInventory(ImmutableList.copyOf(returnedTravellers.stream().map
+                                (traveller -> new ItemStack(traveller.data.getCompoundTag("stack"))).collect(Collectors.toList())));
+                data.add(returnedTravellerData);
+            }
         }
     }
 
