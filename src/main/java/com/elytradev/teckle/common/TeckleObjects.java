@@ -115,6 +115,7 @@ public class TeckleObjects {
         itemNikolite = new Item();
         registerItem("nikolite", itemNikolite);
         OreDictionary.registerOre("dustNikolite", new ItemStack(itemNikolite, 1));
+        OreDictionary.registerOre("dyeBlue", new ItemStack(itemNikolite, 1));
 
         itemSiliconBoule = new Item();
         registerItem("siliconboule", itemSiliconBoule);
