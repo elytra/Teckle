@@ -3,7 +3,9 @@
   "defaults": {
     "textures": {
       "side": "teckle:blocks/sortingmachinesideoff",
-      "particle": "teckle:blocks/sortingmachinesideoff"
+      "particle": "teckle:blocks/sortingmachinesideoff",
+      "out": "teckle:blocks/sortingmachineout",
+      "in":  "teckle:blocks/sortingmachinein"
     },
     "uvlock": false,
     "transform": "forge:default-block",

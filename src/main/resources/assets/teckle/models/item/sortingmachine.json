@@ -1,0 +1,6 @@
+{
+  "parent": "teckle:block/sortingmachine",
+  "textures": {
+    "side": "teckle:blocks/sortingmachinesideoff"
+  }
+}
