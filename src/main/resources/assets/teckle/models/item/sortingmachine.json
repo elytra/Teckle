@@ -1,6 +1,8 @@
 {
-  "parent": "teckle:block/sortingmachine",
+  "parent": "teckle:block/filter",
   "textures": {
-    "side": "teckle:blocks/sortingmachinesideoff"
+    "side": "teckle:blocks/sortingmachinesideoff",
+    "out": "teckle:blocks/sortingmachineout",
+    "in": "teckle:blocks/sortingmachinein"
   }
 }
