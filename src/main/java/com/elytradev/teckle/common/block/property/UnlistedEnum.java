@@ -41,7 +41,7 @@ public class UnlistedEnum<T extends Enum<T> & IStringSerializable> implements IU
             String s = t.getName();
 
             if (this.nameToValue.containsKey(s)) {
-                throw new IllegalArgumentException("Multiple values have the same name \'" + s + "\'");
+                throw new IllegalArgumentException("Multiple values have the same key \'" + s + "\'");
             }
 
             this.nameToValue.put(s, t);

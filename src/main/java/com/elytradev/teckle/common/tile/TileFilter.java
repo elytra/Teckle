@@ -92,7 +92,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
             if (traveller.getEntryPoint().position.equals(TileFilter.this.pos))
                 return true;
 
-            if (from.equals(getOutputFace().getOpposite())) {
+            if (from.equals(getOutputFace().getOpposite()) && !TileFilter.this.isPowered()) {
                 // Allows use of filters for filtering items already in tubes. Not really a good reason to do this but it was possible in RP2 so it's possible in Teckle.
                 ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
                 boolean foundNonEmptySlot = false;
@@ -433,6 +433,10 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
     @SideOnly(Side.CLIENT)
     public Object getClientElement(EntityPlayer player) {
         return new GuiFilter(this, player);
+    }
+
+    public boolean isPowered() {
+        return world.getBlockState(pos).getValue(BlockFilter.TRIGGERED);
     }
 
     private final class ProbeCapability implements IProbeDataProvider {

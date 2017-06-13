@@ -79,7 +79,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             if (traveller.getEntryPoint().position.equals(TileTransposer.this.pos))
                 return true;
 
-            return from.equals(getOutputFace().getOpposite());
+            return from.equals(getOutputFace().getOpposite()) && !TileTransposer.this.isPowered();
         }
 
         @Override
@@ -328,6 +328,10 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         if (capability == TeckleMod.PROBE_CAPABILITY) return true;
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) return true;
         return super.hasCapability(capability, facing);
+    }
+
+    public boolean isPowered() {
+        return world.getBlockState(pos).getValue(BlockTransposer.TRIGGERED);
     }
 
     private final class ProbeCapability implements IProbeDataProvider {
