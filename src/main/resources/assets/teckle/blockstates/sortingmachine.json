@@ -12,14 +12,6 @@
     "model": "teckle:filter"
   },
   "variants": {
-    "triggered": {
-      "true": {
-        "textures": {
-          "side": "teckle:blocks/sortingmachinesideon"
-        }
-      },
-      "false": {}
-    },
     "facing": {
       "down": {
         "x": 180,

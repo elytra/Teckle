@@ -17,6 +17,7 @@
 package com.elytradev.teckle.client.proxy;
 
 import com.elytradev.teckle.client.render.model.ModelItemTube;
+import com.elytradev.teckle.client.render.tile.TileSortingMachineRender;
 import com.elytradev.teckle.client.render.tile.TileTubeRenderer;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.common.TeckleMod;
@@ -26,6 +27,7 @@ import com.elytradev.teckle.common.item.ItemIngot;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.tile.TileItemTube;
+import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.repack.concrete.resgen.ConcreteResourcePack;
 import com.elytradev.teckle.repack.concrete.resgen.IResourceHolder;
 import net.minecraft.block.Block;
@@ -35,7 +37,9 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.property.IExtendedBlockState;
@@ -86,6 +90,7 @@ public class ClientProxy extends CommonProxy {
 
     public void registerTileEntitySpecialRenderers() {
         ClientRegistry.bindTileEntitySpecialRenderer(TileItemTube.class, new TileTubeRenderer());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileSortingMachine.class, new TileSortingMachineRender());
     }
 
     public void registerItemRenderers() {
@@ -139,6 +144,12 @@ public class ClientProxy extends CommonProxy {
         ModelItemTube tubeModel = new ModelItemTube();
         e.getModelRegistry().putObject(new ModelResourceLocation("teckle:tube.item", "normal"), tubeModel);
 
+    }
+
+    @SubscribeEvent
+    public void onStitch(TextureStitchEvent.Pre e) {
+        e.getMap().registerSprite(new ResourceLocation(TeckleMod.MOD_ID, "blocks/sortingmachineblinkenlights"));
+        e.getMap().registerSprite(new ResourceLocation(TeckleMod.MOD_ID, "blocks/sortingmachinemouth"));
     }
 
     @Override

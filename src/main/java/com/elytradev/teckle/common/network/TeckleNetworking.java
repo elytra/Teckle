@@ -35,11 +35,14 @@ public class TeckleNetworking {
 
         registerMessage(FilterColourChangeMessage.class);
         registerMessage(FabricatorTemplateMessage.class);
+
+        //TODO: Can we not have 6 packets for the sorting machine please?
         registerMessage(SortingMachineColourChangeMessage.class);
         registerMessage(SortingMachineSortModeChangeMessage.class);
         registerMessage(SortingMachinePullModeChangeMessage.class);
         registerMessage(SortingMachineDefaultRouteChangeMessage.class);
         registerMessage(SortingMachineSelectorMessage.class);
+        registerMessage(SortingMachineLitMessage.class);
     }
 
     private static void registerMessage(Class<? extends Message> clazz) {

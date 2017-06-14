@@ -30,6 +30,7 @@ import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
+import com.elytradev.teckle.common.network.messages.SortingMachineLitMessage;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
@@ -190,6 +191,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             return TileSortingMachine.this.entryPointTile.getOutputFace().getOpposite();
         }
     };
+    public boolean isLit;
 
     public List<IItemHandler> getCompartmentHandlers() {
         if (subHandlers == null || subHandlers.isEmpty()) {
@@ -200,6 +202,11 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
 
         return subHandlers;
+    }
+
+    @Override
+    public void onLoad() {
+        if (world.isRemote) new SortingMachineLitMessage(this).sendToAllWatching(this);
     }
 
     @Nullable
@@ -232,9 +239,10 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         if (world.isRemote)
             return;
 
-        if (world.getBlockState(pos).getValue(BlockSortingMachine.TRIGGERED)) {
+        if (isLit) {
             if (!world.isBlockPowered(pos)) {
-                world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockSortingMachine.TRIGGERED, false));
+                isLit = false;
+                new SortingMachineLitMessage(this).sendToAllWatching(this);
             }
         }
 
@@ -255,7 +263,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
                 }
 
                 if (result.getCount() != stackToInsert.getCount()) {
-                    world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockSortingMachine.TRIGGERED, true));
+                    setTriggered();
                 }
             }
             return;
@@ -296,7 +304,10 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     }
 
     public void setTriggered() {
-        world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockSortingMachine.TRIGGERED, true));
+        if (!isLit) {
+            isLit = true;
+            new SortingMachineLitMessage(this).sendToAllWatching(this);
+        }
     }
 
     @Override
@@ -332,6 +343,8 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             deserializedTraveller.deserializeNBT(compound.getCompoundTag("returnedTravellers" + i));
             returnedTravellers.set(i, deserializedTraveller);
         }
+
+        isLit = compound.getBoolean("isLit");
     }
 
     @Override
@@ -359,6 +372,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         for (int i = 0; i < returnedTravellers.size(); i++) {
             compound.setTag("returnedTravellers" + i, returnedTravellers.get(i).serializeNBT());
         }
+        compound.setBoolean("isLit", isLit);
 
         return super.writeToNBT(compound);
     }

@@ -17,16 +17,15 @@
 package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistantHolder;
-import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
+import com.elytradev.teckle.common.network.messages.SortingMachineLitMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockPistonBase;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -52,7 +51,6 @@ import javax.annotation.Nullable;
  */
 public class BlockSortingMachine extends BlockContainer {
     public static PropertyDirection FACING = PropertyDirection.create("facing");
-    public static PropertyBool TRIGGERED = PropertyBool.create("triggered");
 
     public BlockSortingMachine(Material materialIn) {
         super(materialIn);
@@ -64,17 +62,13 @@ public class BlockSortingMachine extends BlockContainer {
     @SuppressWarnings("deprecation")
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState().withProperty(FACING, BlockPistonBase.getFacing(meta)).withProperty(TRIGGERED, Boolean.valueOf((meta & 8) > 0));
+        return this.getDefaultState().withProperty(FACING, BlockPistonBase.getFacing(meta));
     }
 
     @Override
     public int getMetaFromState(IBlockState state) {
         int i = 0;
         i = i | state.getValue(FACING).getIndex();
-        if (state.getValue(TRIGGERED).booleanValue()) {
-            i |= 8;
-        }
-
         return i;
     }
 
@@ -97,7 +91,7 @@ public class BlockSortingMachine extends BlockContainer {
     public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
         EnumFacing direction = EnumFacing.getDirectionFromEntityLiving(pos, placer);
 
-        return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer, hand).withProperty(FACING, direction).withProperty(TRIGGERED, false);
+        return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer, hand).withProperty(FACING, direction);
     }
 
     @Override
@@ -105,23 +99,22 @@ public class BlockSortingMachine extends BlockContainer {
         if (worldIn.isRemote)
             return;
 
+        TileSortingMachine sortingMachine = (TileSortingMachine) worldIn.getTileEntity(pos);
         boolean powered = worldIn.isBlockPowered(pos);
-        boolean hadPower = state.getValue(TRIGGERED);
-        TileEntity tileentity = worldIn.getTileEntity(pos);
-        if (tileentity instanceof TileSortingMachine) {
-            if (powered) {
-                worldIn.setBlockState(pos, state.withProperty(TRIGGERED, true));
-                if (!hadPower)
-                    ((TileSortingMachine) tileentity).getPullMode().onPulse((TileSortingMachine) tileentity);
-            } else {
-                worldIn.setBlockState(pos, state.withProperty(TRIGGERED, false));
-            }
+        boolean hadPower = sortingMachine.isLit;
+        if (powered) {
+            sortingMachine.setTriggered();
+            if (!hadPower)
+                sortingMachine.getPullMode().onPulse(sortingMachine);
+        } else {
+            sortingMachine.isLit = false;
+            new SortingMachineLitMessage(sortingMachine).sendToAllWatching(sortingMachine);
         }
     }
 
     @Override
     public BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, FACING, TRIGGERED);
+        return new BlockStateContainer(this, FACING);
     }
 
     @Override
