@@ -33,6 +33,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.capabilities.Capability;
@@ -45,6 +46,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class TileFabricator extends TileEntity implements ITickable, IElementProvider {
@@ -108,9 +110,10 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
         }
 
         templateRecipe = null;
-        for (IRecipe iRecipe : CraftingManager.getInstance().getRecipeList()) {
-            if (iRecipe.matches(templateGrid, world)) {
-                templateRecipe = iRecipe;
+        for (ResourceLocation recipeName : CraftingManager.REGISTRY.getKeys()) {
+            IRecipe recipe = CraftingManager.REGISTRY.getObject(recipeName);
+            if (recipe.matches(templateGrid, world)) {
+                templateRecipe = recipe;
                 break;
             }
         }

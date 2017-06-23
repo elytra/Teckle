@@ -89,19 +89,20 @@ public class GuiFilter extends GuiContainer {
             super(buttonId, x, y, 9, 9, "");
         }
 
-        public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+        @Override
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
             if (this.visible) {
                 mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/filter.png"));
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
                 int yOffset = 0;
                 int xOffset = 176;
-                this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
+                this.drawTexturedModalRect(this.x, this.y, xOffset, yOffset, this.width, this.height);
 
                 if (GuiFilter.this.filter.colour != null) {
                     float[] sheepColour = EntitySheep.getDyeRgb(GuiFilter.this.filter.colour);
                     GlStateManager.pushMatrix();
                     GlStateManager.color(sheepColour[0], sheepColour[1], sheepColour[2]);
-                    this.drawTexturedModalRect(this.xPosition + 1, this.yPosition + 1, xOffset + 10, yOffset + 1, this.width - 2, this.height - 2);
+                    this.drawTexturedModalRect(this.x + 1, this.y + 1, xOffset + 10, yOffset + 1, this.width - 2, this.height - 2);
                     GlStateManager.popMatrix();
                 }
             }

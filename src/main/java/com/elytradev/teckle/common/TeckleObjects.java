@@ -30,17 +30,23 @@ import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.*;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
+import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 import java.util.*;
+
+import static com.elytradev.teckle.common.TeckleMod.MOD_ID;
 
 /**
  * Block registration is here, to keep the mod class nice and small.
@@ -63,8 +69,7 @@ public class TeckleObjects {
     public static ItemSiliconWafer itemSiliconWafer;
     public static ItemIngot itemIngot;
 
-
-    public static CreativeTabs creativeTab = new CreativeTabs(TeckleMod.MOD_ID) {
+    public static CreativeTabs creativeTab = new CreativeTabs(MOD_ID) {
         @Override
         public ItemStack getTabIconItem() {
             return new ItemStack(itemPaintBrush, 1, new Random().nextInt(15));
@@ -76,7 +81,7 @@ public class TeckleObjects {
 
     public static List<Object> skipItemMesh;
 
-    public static String REGISTRY_PREFIX = TeckleMod.MOD_ID.toLowerCase();
+    public static String REGISTRY_PREFIX = MOD_ID.toLowerCase();
 
     public void preInit(FMLPreInitializationEvent e) {
         registeredBlocks = new HashMap<>();
@@ -143,66 +148,63 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileSortingMachine.class, "teckleSortingMachine");
         GameRegistry.registerTileEntity(TileFabricator.class, "teckleFabricator");
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
+    }
 
-        GameRegistry.addRecipe(new PaintbrushRecipe());
-        GameRegistry.addRecipe(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockAlloyFurnace), "BBB", "B B", "BBB",
-                'B', Blocks.BRICK_BLOCK));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockItemTube, 8), "BGB",
+    public void postInit(FMLPostInitializationEvent e) {
+    }
+
+    @SubscribeEvent
+    public void onRecipeRegisterEvent(RegistryEvent.Register<IRecipe> recipeRegister) {
+        IForgeRegistry<IRecipe> registry = recipeRegister.getRegistry();
+        registry.register(new PaintbrushRecipe());
+        registry.register(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule));
+        registerShapedRecipe(registry, new ItemStack(blockAlloyFurnace), "BBB", "B B", "BBB",
+                'B', Blocks.BRICK_BLOCK);
+        registerShapedRecipe(registry, new ItemStack(blockItemTube, 8), "BGB",
                 'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()),
-                'G', Blocks.GLASS));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockTransposer), "CCC", "WPW", "CRC",
+                'G', Blocks.GLASS);
+        registerShapedRecipe(registry, new ItemStack(blockTransposer), "CCC", "WPW", "CRC",
                 'C', Blocks.COBBLESTONE,
                 'W', Blocks.PLANKS,
                 'P', Blocks.PISTON,
-                'R', Items.REDSTONE));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockFilter), "CCC", "GPG", "CWC",
+                'R', Items.REDSTONE);
+        registerShapedRecipe(registry, new ItemStack(blockFilter), "CCC", "GPG", "CWC",
                 'C', Blocks.COBBLESTONE,
                 'G', Items.GOLD_INGOT,
                 'P', Blocks.PISTON,
-                'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata())));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockFabricator), "BBB", "WCW", "WRW",
+                'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()));
+        registerShapedRecipe(registry, new ItemStack(blockFabricator), "BBB", "WCW", "WRW",
                 'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()),
                 'W', Blocks.PLANKS,
                 'C', Blocks.CRAFTING_TABLE,
-                'R', Items.REDSTONE));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemBlade), "I  ", " S ",
+                'R', Items.REDSTONE);
+        registerShapedRecipe(registry, new ItemStack(itemBlade), "I  ", " S ",
                 'I', Items.IRON_INGOT,
-                'S', Items.STICK));
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockSortingMachine), "IWI", "BFB", "IRI",
+                'S', Items.STICK);
+        registerShapedRecipe(registry, new ItemStack(blockSortingMachine), "IWI", "BFB", "IRI",
                 'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.BLUE.getMetadata()),
                 'I', new ItemStack(Items.IRON_INGOT),
                 'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BLUE_ALLOY.getMetadata()),
                 'R', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()),
-                'F', new ItemStack(blockFilter)));
+                'F', new ItemStack(blockFilter));
 
-        // Forge doesn't use EnumDyeColor  for dye registration and also doesn't store this list anywhere public, so here we are copying forge colour arrays from OreDict.
-        String[] dyes =
-                {
-                        "Black",
-                        "Red",
-                        "Green",
-                        "Brown",
-                        "Blue",
-                        "Purple",
-                        "Cyan",
-                        "LightGray",
-                        "Gray",
-                        "Pink",
-                        "Lime",
-                        "Yellow",
-                        "LightBlue",
-                        "Magenta",
-                        "Orange",
-                        "White"
-                };
-        for (int i = 0; i < dyes.length; i++) {
-            GameRegistry.addShapedRecipe(new ItemStack(itemPaintBrush, 1, i),
-                    "D  ", " W ", "  S", 'D', "dye" + dyes[i], 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
+        for (int i = 0; i < ItemDye.DYE_COLORS.length; i++) {
+            EnumDyeColor dyeColor = EnumDyeColor.byMetadata(i);
+            registerShapedRecipe(registry, new ItemStack(itemPaintBrush, 1, i),
+                    "D  ", " W ", "  S", 'D', "dye" + dyeColor.getUnlocalizedName().substring(0, 1).toUpperCase() + dyeColor.getUnlocalizedName().substring(1), 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
         }
     }
 
-    public void postInit(FMLPostInitializationEvent e) {
+    private int recipeID = 0;
+
+    private void registerShapedRecipe(IForgeRegistry<IRecipe> registry, ItemStack out, Object... input) {
+        ResourceLocation resourceLocation = new ResourceLocation(MOD_ID, out.getUnlocalizedName() + recipeID++);
+        registry.register(new ShapedOreRecipe(resourceLocation, out, input).setRegistryName(resourceLocation));
+    }
+
+    private void registerShapelessRecipe(IForgeRegistry<IRecipe> registry, ItemStack out, Object... input) {
+        ResourceLocation resourceLocation = new ResourceLocation(MOD_ID, out.getUnlocalizedName() + recipeID++);
+        registry.register(new ShapelessOreRecipe(resourceLocation, out, input).setRegistryName(resourceLocation));
     }
 
     private void registerBlock(String id, Block block) {

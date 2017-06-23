@@ -66,7 +66,7 @@ public class ClientProxy extends CommonProxy {
                 if (tintIndex == 1) {
                     IExtendedBlockState extendedBlockState = (IExtendedBlockState) blockState;
                     if (extendedBlockState.getValue(BlockItemTube.COLOUR) != null) {
-                        return extendedBlockState.getValue(BlockItemTube.COLOUR).getMapColor().colorValue;
+                        return extendedBlockState.getValue(BlockItemTube.COLOUR).getColorValue();
                     }
 
                     return 11696387;

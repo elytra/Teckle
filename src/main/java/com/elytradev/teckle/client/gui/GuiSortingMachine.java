@@ -233,19 +233,19 @@ public class GuiSortingMachine extends GuiContainer {
             this.colourIndex = colourIndex;
         }
 
-        public void drawButton(Minecraft mc, int mouseX, int mouseY) {
-            if (this.visible) {
+        @Override
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {            if (this.visible) {
                 mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
                 int yOffset = 5;
                 int xOffset = 176;
-                this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
+                this.drawTexturedModalRect(this.x, this.y, xOffset, yOffset, this.width, this.height);
 
                 if (GuiSortingMachine.this.sortingMachine.colours[colourIndex] != null) {
                     float[] sheepColour = EntitySheep.getDyeRgb(GuiSortingMachine.this.sortingMachine.colours[colourIndex]);
                     GlStateManager.pushMatrix();
                     GlStateManager.color(sheepColour[0], sheepColour[1], sheepColour[2]);
-                    this.drawTexturedModalRect(this.xPosition + 1, this.yPosition + 1, xOffset + 1, yOffset - 4, this.width - 2, this.height - 2);
+                    this.drawTexturedModalRect(this.x + 1, this.y + 1, xOffset + 1, yOffset - 4, this.width - 2, this.height - 2);
                     GlStateManager.popMatrix();
                 }
             }
@@ -258,9 +258,9 @@ public class GuiSortingMachine extends GuiContainer {
             super(buttonId, x, y, 9, 9, "");
         }
 
-        public void drawButton(Minecraft mc, int mouseX, int mouseY) {
-            if (this.visible) {
-                this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+        @Override
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {            if (this.visible) {
+                this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
 
                 mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -274,12 +274,12 @@ public class GuiSortingMachine extends GuiContainer {
                     }
                 }
 
-                this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
+                this.drawTexturedModalRect(this.x, this.y, xOffset, yOffset, this.width, this.height);
                 if (sortingMachine.defaultRoute.isColoured()) {
                     float[] sheepColour = EntitySheep.getDyeRgb(sortingMachine.defaultRoute.getColour());
                     GlStateManager.pushMatrix();
                     GlStateManager.color(sheepColour[0], sheepColour[1], sheepColour[2]);
-                    this.drawTexturedModalRect(this.xPosition + 1, this.yPosition + 1, xOffset + 1, yOffset + 1, this.width - 2, this.height - 2);
+                    this.drawTexturedModalRect(this.x + 1, this.y + 1, xOffset + 1, yOffset + 1, this.width - 2, this.height - 2);
                     GlStateManager.popMatrix();
                 }
             }
@@ -304,9 +304,9 @@ public class GuiSortingMachine extends GuiContainer {
             super(buttonId, x, y, 16, 16, "");
         }
 
-        public void drawButton(Minecraft mc, int mouseX, int mouseY) {
-            if (this.visible) {
-                this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+        @Override
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {            if (this.visible) {
+                this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
 
                 mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -316,11 +316,11 @@ public class GuiSortingMachine extends GuiContainer {
                     xOffset += 16;
                 }
 
-                this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
+                this.drawTexturedModalRect(this.x, this.y, xOffset, yOffset, this.width, this.height);
 
                 if (sortingMachine.getSortMode() != null) {
                     Point2i modeOffset = sortingMachine.getSortMode().getSortModeType().textureOffset();
-                    this.drawTexturedModalRect(this.xPosition, this.yPosition, modeOffset.x, modeOffset.y, this.width, this.height);
+                    this.drawTexturedModalRect(this.x, this.y, modeOffset.x, modeOffset.y, this.width, this.height);
                 }
             }
         }
@@ -344,9 +344,9 @@ public class GuiSortingMachine extends GuiContainer {
             super(buttonId, x, y, 16, 16, "");
         }
 
-        public void drawButton(Minecraft mc, int mouseX, int mouseY) {
-            if (this.visible) {
-                this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+        @Override
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {            if (this.visible) {
+                this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
 
                 mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -356,7 +356,7 @@ public class GuiSortingMachine extends GuiContainer {
                     xOffset += 16;
                 }
 
-                this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
+                this.drawTexturedModalRect(this.x, this.y, xOffset, yOffset, this.width, this.height);
 
                 if (sortingMachine.getSortMode() != null) {
                     Point2i modeOffset = sortingMachine.getSortMode().getSortModeType().textureOffset();
@@ -366,7 +366,7 @@ public class GuiSortingMachine extends GuiContainer {
                     } else {
                         additionalYOffset += 16;
                     }
-                    this.drawTexturedModalRect(this.xPosition, this.yPosition, modeOffset.x, modeOffset.y + additionalYOffset, this.width, this.height);
+                    this.drawTexturedModalRect(this.x, this.y, modeOffset.x, modeOffset.y + additionalYOffset, this.width, this.height);
                 }
             }
         }
@@ -391,9 +391,10 @@ public class GuiSortingMachine extends GuiContainer {
             super(buttonId, x, y, 16, 16, "");
         }
 
-        public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+        @Override
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
             if (this.visible) {
-                this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+                this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
 
                 mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -403,11 +404,11 @@ public class GuiSortingMachine extends GuiContainer {
                     xOffset += 16;
                 }
 
-                this.drawTexturedModalRect(this.xPosition, this.yPosition, xOffset, yOffset, this.width, this.height);
+                this.drawTexturedModalRect(this.x, this.y, xOffset, yOffset, this.width, this.height);
 
                 if (sortingMachine.getSortMode() != null) {
                     Point2i modeOffset = sortingMachine.getPullMode().textureOffset();
-                    this.drawTexturedModalRect(this.xPosition, this.yPosition, modeOffset.x, modeOffset.y, this.width, this.height);
+                    this.drawTexturedModalRect(this.x, this.y, modeOffset.x, modeOffset.y, this.width, this.height);
                 }
             }
         }

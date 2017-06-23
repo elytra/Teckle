@@ -53,7 +53,7 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
     public static IBakedModel itemColourModel;
 
     @Override
-    public void renderTileEntityAt(TileItemTube te, double x, double y, double z, float partialTicks, int destroyStage) {
+    public void render(TileItemTube te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         IWorldNetworkTile networkTile = te.getCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, null);
 
         HashMap<DummyNetworkTraveller, Vec3d> colourTravellers = new HashMap<>();
@@ -101,15 +101,15 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
         // Smooth the variables out.
         float dataTravelledOffset = traveller.travelledDistance - 0.5F;
         float lastTravelled = dataTravelledOffset - (1F / 10F);
-        double newX = (lastTravelled * offset.xCoord) + ((dataTravelledOffset * offset.xCoord) - (lastTravelled * offset.xCoord)) * partialTicks;
-        double newY = (lastTravelled * offset.yCoord) + ((dataTravelledOffset * offset.yCoord) - (lastTravelled * offset.yCoord)) * partialTicks;
-        double newZ = (lastTravelled * offset.zCoord) + ((dataTravelledOffset * offset.zCoord) - (lastTravelled * offset.zCoord)) * partialTicks;
+        double newX = (lastTravelled * offset.x) + ((dataTravelledOffset * offset.x) - (lastTravelled * offset.x)) * partialTicks;
+        double newY = (lastTravelled * offset.y) + ((dataTravelledOffset * offset.y) - (lastTravelled * offset.y)) * partialTicks;
+        double newZ = (lastTravelled * offset.z) + ((dataTravelledOffset * offset.z) - (lastTravelled * offset.z)) * partialTicks;
 
         offset = new Vec3d(newX, newY, newZ);
         if (traveller.data.hasKey("colour")) {
             colourTravellers.put(traveller, offset);
         }
-        GlStateManager.translate(offset.xCoord, offset.yCoord, offset.zCoord);
+        GlStateManager.translate(offset.x, offset.y, offset.z);
     }
 
     public void drawOutlines(HashMap<DummyNetworkTraveller, Vec3d> travellers, TileItemTube te, double x, double y, double z) {
@@ -141,10 +141,10 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
         IBakedModel model = getItemColourModel();
 
         GlStateManager.pushMatrix();
-        GlStateManager.translate(entry.getValue().xCoord, entry.getValue().yCoord, entry.getValue().zCoord);
+        GlStateManager.translate(entry.getValue().x, entry.getValue().y, entry.getValue().z);
         if (model != null) {
             EnumDyeColor dyeColour = EnumDyeColor.byMetadata(entry.getKey().data.getInteger("colour"));
-            Color jColor = new Color(dyeColour.getMapColor().colorValue);
+            Color jColor = new Color(dyeColour.getColorValue());
             float[] rgb = jColor.getRGBColorComponents(new float[5]);
             Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModelBrightnessColor(model, 1, rgb[0], rgb[1], rgb[2]);
         }

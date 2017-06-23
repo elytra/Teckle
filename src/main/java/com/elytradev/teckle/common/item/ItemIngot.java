@@ -17,6 +17,7 @@
 package com.elytradev.teckle.common.item;
 
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.repack.concrete.resgen.EnumResourceType;
 import com.elytradev.teckle.repack.concrete.resgen.IResourceHolder;
 import net.minecraft.creativetab.CreativeTabs;
@@ -25,6 +26,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+
+import java.util.Objects;
 
 /**
  * Created by darkevilmac on 5/23/17.
@@ -41,9 +44,11 @@ public class ItemIngot extends Item implements IResourceHolder {
     }
 
     @Override
-    public void getSubItems(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> subItems) {
-        for (ItemIngot.IngotType ingotType : ItemIngot.IngotType.values()) {
-            subItems.add(new ItemStack(itemIn, 1, ingotType.getMetadata()));
+    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> subItems) {
+        if (Objects.equals(tab, TeckleObjects.creativeTab)) {
+            for (ItemIngot.IngotType ingotType : ItemIngot.IngotType.values()) {
+                subItems.add(new ItemStack(this, 1, ingotType.getMetadata()));
+            }
         }
     }
 

@@ -24,6 +24,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import net.minecraftforge.oredict.OreDictionary;
@@ -36,7 +37,7 @@ import java.util.Random;
 /**
  * Created by darkevilmac on 4/20/2017.
  */
-public class RecipeSlice implements IRecipe {
+public class RecipeSlice extends IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
 
     public int damageToTool = 1;
     @Nonnull
@@ -66,14 +67,6 @@ public class RecipeSlice implements IRecipe {
         }
     }
 
-    /**
-     * Returns the size of the recipe area
-     */
-    @Override
-    public int getRecipeSize() {
-        return input.size() + 1;
-    }
-
     @Override
     @Nonnull
     public ItemStack getRecipeOutput() {
@@ -87,6 +80,17 @@ public class RecipeSlice implements IRecipe {
     @Nonnull
     public ItemStack getCraftingResult(@Nonnull InventoryCrafting var1) {
         return output.copy();
+    }
+
+    /**
+     * Used to determine if this recipe can fit in a grid of the given width/height
+     *
+     * @param width
+     * @param height
+     */
+    @Override
+    public boolean canFit(int width, int height) {
+        return (width * height >= (input.size() + 1));
     }
 
     /**
@@ -192,7 +196,7 @@ public class RecipeSlice implements IRecipe {
         for (int i = 0; i < remaining.size(); i++) {
             if (remaining.get(i).getItem().equals(TeckleObjects.itemBlade)) {
                 ItemStack remainingBlade = remaining.get(i).copy();
-                remainingBlade.attemptDamageItem(damageToTool, new Random());
+                remainingBlade.attemptDamageItem(damageToTool, new Random(), null);
                 if (remainingBlade.getItemDamage() >= remainingBlade.getMaxDamage())
                     remaining.set(i, ItemStack.EMPTY);
                 else

@@ -264,13 +264,13 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                         .add(networkTile.getOutputFace().getOpposite().getDirectionVec())));
 
             for (EntityItem entityItem : itemsToPickup) {
-                ItemStack entityStack = entityItem.getEntityItem().copy();
+                ItemStack entityStack = entityItem.getItem().copy();
 
                 for (int i = 0; i < buffer.getSlots() && !entityStack.isEmpty(); i++) {
                     entityStack = buffer.insertItem(i, entityStack, false);
                 }
 
-                entityItem.setEntityItemStack(entityStack);
+                entityItem.setItem(entityStack);
                 if (entityStack.isEmpty()) {
                     world.removeEntity(entityItem);
                 }

@@ -16,16 +16,14 @@
 
 package com.elytradev.teckle.compat.jei;
 
-import mezz.jei.api.BlankModPlugin;
+import mezz.jei.api.IModPlugin;
 import mezz.jei.api.IModRegistry;
 import mezz.jei.api.JEIPlugin;
 import mezz.jei.api.recipe.VanillaRecipeCategoryUid;
 
-/**
- * Created by darkevilmac on 5/13/17.
- */
+
 @JEIPlugin
-public class TeckleJEIPlugin extends BlankModPlugin {
+public class TeckleJEIPlugin implements IModPlugin {
 
     @Override
     public void register(IModRegistry registry) {

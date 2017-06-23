@@ -134,16 +134,16 @@ public class GuiFabricator extends GuiContainer {
         }
 
         @Override
-        public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
             if (this.visible && !getTemplateStack().isEmpty()) {
                 RenderHelper.enableGUIStandardItemLighting();
-                GuiFabricator.this.itemRender.renderItemIntoGUI(getTemplateStack(), this.xPosition + 1, this.yPosition + 1);
+                GuiFabricator.this.itemRender.renderItemIntoGUI(getTemplateStack(), this.x + 1, this.y + 1);
             }
 
             GlStateManager.pushMatrix();
             GlStateManager.color(1, 1, 1, 1F / 3F);
             Minecraft.getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
-            drawTexturedModalRect(xPosition, yPosition, 7, 16, this.width, this.height);
+            drawTexturedModalRect(x, y, 7, 16, this.width, this.height);
             GlStateManager.popMatrix();
         }
 

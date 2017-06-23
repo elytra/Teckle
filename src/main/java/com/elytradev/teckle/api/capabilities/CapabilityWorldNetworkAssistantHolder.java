@@ -22,6 +22,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -55,7 +56,7 @@ public class CapabilityWorldNetworkAssistantHolder {
 
     @SuppressWarnings({"deprecation", "unused"}) // forge docs specify using this instead...
     @SubscribeEvent
-    public static void attachWorldEvent(AttachCapabilitiesEvent.World e) {
+    public static void attachWorldEvent(AttachCapabilitiesEvent<World> e) {
         e.addCapability(CAPABILITY_PROVIDER_NAME, new ICapabilityProvider() {
             public IWorldNetworkAssistantHolder assistantHolder;
 

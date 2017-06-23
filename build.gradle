@@ -23,7 +23,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT"
+        classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
     }
 }
 
@@ -106,7 +106,7 @@ processResources {
 }
 
 dependencies {
-    deobfCompile "com.elytradev:probedataproviderapi:MC1.11.2_ver1.1.1"
+    deobfCompile "com.elytradev:probedataproviderapi:${pdp_version}"
     testCompile group: "junit", name: "junit", version: "4.12"
     // Add fruitphone to runtime for testing.
     //runtime "com.elytradev:fruitphone:1.11.2-0.1.7-80e4f38d"

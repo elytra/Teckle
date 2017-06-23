@@ -26,6 +26,7 @@ import com.elytradev.teckle.common.worldgen.NikoliteOreGenerator;
 import mcmultipart.api.multipart.IMultipartTile;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.Mod;
@@ -67,6 +68,7 @@ public class TeckleMod {
     public void onPreInit(FMLPreInitializationEvent e) {
         PROXY.registerHandlers();
         LOG = e.getModLog();
+        MinecraftForge.EVENT_BUS.register(OBJECTS);
         OBJECTS.preInit(e);
         CapabilityWorldNetworkTile.register();
         CapabilityWorldNetworkAssistantHolder.register();

@@ -22,6 +22,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.Arrays;
@@ -29,7 +30,7 @@ import java.util.Arrays;
 /**
  * Created by darkevilmac on 4/13/2017.
  */
-public class PaintbrushRecipe implements IRecipe {
+public class PaintbrushRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
     @Override
     public boolean matches(InventoryCrafting inv, World worldIn) {
         boolean hasPaintbrush = false;
@@ -85,9 +86,15 @@ public class PaintbrushRecipe implements IRecipe {
         return result;
     }
 
+    /**
+     * Used to determine if this recipe can fit in a grid of the given width/height
+     *
+     * @param width
+     * @param height
+     */
     @Override
-    public int getRecipeSize() {
-        return 4;
+    public boolean canFit(int width, int height) {
+        return width * height >= 4;
     }
 
     @Override
