@@ -24,19 +24,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * Created by darkevilmac on 4/20/2017.
- */
 public class RecipeSlice extends IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
 
     public int damageToTool = 1;

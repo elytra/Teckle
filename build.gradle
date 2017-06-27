@@ -140,6 +140,6 @@ artifacts {
 }
 
 dependencies {
-    deobfCompile "com.elytradev:concrete:0.2.2:all"
-    shadow "com.elytradev:concrete:0.2.2:all"
+    deobfCompile "com.elytradev:concrete:0.3.1:all"
+    shadow "com.elytradev:concrete:0.3.1:all"
 }

@@ -17,6 +17,7 @@
 package com.elytradev.teckle.common;
 
 import com.elytradev.teckle.common.block.*;
+import com.elytradev.teckle.common.crafting.AlloyRecipes;
 import com.elytradev.teckle.common.crafting.RecipeSlice;
 import com.elytradev.teckle.common.handlers.PaintbrushRecipe;
 import com.elytradev.teckle.common.item.ItemBlade;
@@ -36,13 +37,12 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
+import net.minecraftforge.registries.IForgeRegistry;
 
 import java.util.*;
 
@@ -80,64 +80,10 @@ public class TeckleObjects {
     public static HashMap<String, Item> registeredItems;
 
     public static List<Object> skipItemMesh;
+    private static List<Item> itemBlocksToRegister;
 
     public static String REGISTRY_PREFIX = MOD_ID.toLowerCase();
 
-    public void preInit(FMLPreInitializationEvent e) {
-        registeredBlocks = new HashMap<>();
-        registeredItems = new HashMap<>();
-        skipItemMesh = new ArrayList<>();
-
-        blockItemTube = new BlockItemTube(Material.CIRCUITS);
-        registerBlock("tube.item", blockItemTube);
-
-        blockFilter = new BlockFilter(Material.CIRCUITS);
-        registerBlock("filter", blockFilter);
-
-        blockTransposer = new BlockTransposer(Material.CIRCUITS);
-        registerBlock("transposer", blockTransposer);
-
-        blockSortingMachine = new BlockSortingMachine(Material.CIRCUITS);
-        registerBlock("sortingmachine", blockSortingMachine);
-
-        blockAlloyFurnace = new BlockAlloyFurnace(Material.ROCK);
-        registerBlock("alloyfurnace", blockAlloyFurnace);
-
-        blockFabricator = new BlockFabricator(Material.CIRCUITS);
-        registerBlock("fabricator", blockFabricator);
-
-        blockNikoliteOre = new BlockNikoliteOre();
-        registerBlock("nikolite_ore", blockNikoliteOre);
-        OreDictionary.registerOre("oreNikolite", new ItemStack(blockNikoliteOre, 1));
-
-        itemPaintBrush = new ItemPaintbrush();
-        registerItem("paintbrush", itemPaintBrush);
-        skipItemMesh.add(itemPaintBrush);
-
-        itemBlade = new ItemBlade();
-        registerItem("blade", itemBlade);
-
-        itemNikolite = new Item();
-        registerItem("nikolite", itemNikolite);
-        OreDictionary.registerOre("dustNikolite", new ItemStack(itemNikolite, 1));
-        OreDictionary.registerOre("dyeBlue", new ItemStack(itemNikolite, 1));
-
-        itemSiliconBoule = new Item();
-        registerItem("siliconboule", itemSiliconBoule);
-
-        itemSiliconWafer = new ItemSiliconWafer();
-        registerItem("siliconwafer", itemSiliconWafer);
-        skipItemMesh.add(itemSiliconWafer);
-
-        itemIngot = new ItemIngot();
-        registerItem("ingot", itemIngot);
-        Arrays.stream(ItemIngot.IngotType.values()).forEach(ingotType ->
-                OreDictionary.registerOre(ingotType.getOreName(),
-                        new ItemStack(itemIngot, 1, ingotType.getMetadata())));
-        skipItemMesh.add(itemIngot);
-
-
-    }
 
     public void init(FMLInitializationEvent e) {
         OreDictionary.registerOre("coal", Items.COAL); // Nothing to see here, move along.
@@ -154,8 +100,8 @@ public class TeckleObjects {
     }
 
     @SubscribeEvent
-    public void onRecipeRegisterEvent(RegistryEvent.Register<IRecipe> recipeRegister) {
-        IForgeRegistry<IRecipe> registry = recipeRegister.getRegistry();
+    public void onRecipeRegisterEvent(RegistryEvent.Register<IRecipe> event) {
+        IForgeRegistry<IRecipe> registry = event.getRegistry();
         registry.register(new PaintbrushRecipe());
         registry.register(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule));
         registerShapedRecipe(registry, new ItemStack(blockAlloyFurnace), "BBB", "B B", "BBB",
@@ -193,6 +139,81 @@ public class TeckleObjects {
             registerShapedRecipe(registry, new ItemStack(itemPaintBrush, 1, i),
                     "D  ", " W ", "  S", 'D', "dye" + dyeColor.getUnlocalizedName().substring(0, 1).toUpperCase() + dyeColor.getUnlocalizedName().substring(1), 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
         }
+
+        AlloyRecipes.getInstance().clear();
+        AlloyRecipes.getInstance().init();
+    }
+
+    @SubscribeEvent
+    public void onBlockRegisterEvent(RegistryEvent.Register<Block> event) {
+        IForgeRegistry<Block> registry = event.getRegistry();
+        registeredBlocks = new HashMap<>();
+        itemBlocksToRegister = new ArrayList<>();
+
+        blockItemTube = new BlockItemTube(Material.CIRCUITS);
+        registerBlock(registry, "tube.item", blockItemTube);
+
+        blockFilter = new BlockFilter(Material.CIRCUITS);
+        registerBlock(registry, "filter", blockFilter);
+
+        blockTransposer = new BlockTransposer(Material.CIRCUITS);
+        registerBlock(registry, "transposer", blockTransposer);
+
+        blockSortingMachine = new BlockSortingMachine(Material.CIRCUITS);
+        registerBlock(registry, "sortingmachine", blockSortingMachine);
+
+        blockAlloyFurnace = new BlockAlloyFurnace(Material.ROCK);
+        registerBlock(registry, "alloyfurnace", blockAlloyFurnace);
+
+        blockFabricator = new BlockFabricator(Material.CIRCUITS);
+        registerBlock(registry, "fabricator", blockFabricator);
+
+        blockNikoliteOre = new BlockNikoliteOre();
+        registerBlock(registry, "nikolite_ore", blockNikoliteOre);
+        OreDictionary.registerOre("oreNikolite", new ItemStack(blockNikoliteOre, 1));
+    }
+
+    @SubscribeEvent
+    public void onItemRegisterEvent(RegistryEvent.Register<Item> event) {
+        IForgeRegistry<Item> registry = event.getRegistry();
+        registeredItems = new HashMap<>();
+        skipItemMesh = new ArrayList<>();
+
+        itemPaintBrush = new ItemPaintbrush();
+        registerItem(registry, "paintbrush", itemPaintBrush);
+        skipItemMesh.add(itemPaintBrush);
+
+        itemBlade = new ItemBlade();
+        registerItem(registry, "blade", itemBlade);
+
+        itemNikolite = new Item();
+        registerItem(registry, "nikolite", itemNikolite);
+        OreDictionary.registerOre("dustNikolite", new ItemStack(itemNikolite, 1));
+        OreDictionary.registerOre("dyeBlue", new ItemStack(itemNikolite, 1));
+
+        itemSiliconBoule = new Item();
+        registerItem(registry, "siliconboule", itemSiliconBoule);
+
+        itemSiliconWafer = new ItemSiliconWafer();
+        registerItem(registry, "siliconwafer", itemSiliconWafer);
+        skipItemMesh.add(itemSiliconWafer);
+
+        itemIngot = new ItemIngot();
+        registerItem(registry, "ingot", itemIngot);
+        Arrays.stream(ItemIngot.IngotType.values()).forEach(ingotType ->
+                OreDictionary.registerOre(ingotType.getOreName(),
+                        new ItemStack(itemIngot, 1, ingotType.getMetadata())));
+        skipItemMesh.add(itemIngot);
+        itemBlocksToRegister.forEach(registry::register);
+    }
+
+    @SubscribeEvent
+    public void onMissingMappings(RegistryEvent.MissingMappings<Item> e) {
+        for (RegistryEvent.MissingMappings.Mapping<Item> itemMapping : e.getAllMappings()) {
+            if (itemMapping.key.equals(new ResourceLocation("teckle:brassingot"))) {
+                itemMapping.remap(TeckleObjects.itemIngot);
+            }
+        }
     }
 
     private int recipeID = 0;
@@ -207,41 +228,41 @@ public class TeckleObjects {
         registry.register(new ShapelessOreRecipe(resourceLocation, out, input).setRegistryName(resourceLocation));
     }
 
-    private void registerBlock(String id, Block block) {
-        registerBlock(id, block, true);
+    private void registerBlock(IForgeRegistry<Block> registry, String id, Block block) {
+        registerBlock(registry, id, block, true);
     }
 
-    private void registerBlock(String id, Block block, boolean withItemBlock) {
+    private void registerBlock(IForgeRegistry<Block> registry, String id, Block block, boolean withItemBlock) {
         block.setUnlocalizedName("teckle." + id);
         block.setRegistryName(REGISTRY_PREFIX, id);
         block.setCreativeTab(creativeTab);
-        GameRegistry.register(block);
+        registry.register(block);
         if (withItemBlock)
-            GameRegistry.register(new ItemBlock(block).setRegistryName(block.getRegistryName()));
+            itemBlocksToRegister.add(new ItemBlock(block).setRegistryName(block.getRegistryName()));
         TeckleObjects.registeredBlocks.put(id, block);
     }
 
-    private void registerBlock(String id, Block block, Class<? extends ItemBlock> itemBlockClass) {
+    private void registerBlock(IForgeRegistry<Block> registry, String id, Block block, Class<? extends ItemBlock> itemBlockClass) {
         try {
             block.setUnlocalizedName("teckle." + id);
             block.setRegistryName(REGISTRY_PREFIX, id);
-            GameRegistry.register(block);
+            registry.register(block);
 
             ItemBlock itemBlock = itemBlockClass.getDeclaredConstructor(Block.class).newInstance(block);
             itemBlock.setRegistryName(REGISTRY_PREFIX, id);
             itemBlock.setCreativeTab(creativeTab);
-            GameRegistry.register(itemBlock);
+            itemBlocksToRegister.add(itemBlock);
             TeckleObjects.registeredBlocks.put(id, block);
         } catch (Exception e) {
             TeckleMod.LOG.error("Caught exception while registering " + block, e);
         }
     }
 
-    private void registerItem(String id, Item item) {
+    private void registerItem(IForgeRegistry<Item> registry, String id, Item item) {
         item.setUnlocalizedName("teckle." + id);
         item.setRegistryName(REGISTRY_PREFIX, id);
         item.setCreativeTab(creativeTab);
-        GameRegistry.register(item);
+        registry.register(item);
         TeckleObjects.registeredItems.put(id, item);
     }
 

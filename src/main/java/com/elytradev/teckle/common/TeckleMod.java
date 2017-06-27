@@ -24,17 +24,19 @@ import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.worldgen.NikoliteOreGenerator;
 import mcmultipart.api.multipart.IMultipartTile;
+import net.minecraft.item.Item;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLMissingMappingsEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
 
@@ -69,7 +71,6 @@ public class TeckleMod {
         PROXY.registerHandlers();
         LOG = e.getModLog();
         MinecraftForge.EVENT_BUS.register(OBJECTS);
-        OBJECTS.preInit(e);
         CapabilityWorldNetworkTile.register();
         CapabilityWorldNetworkAssistantHolder.register();
         TeckleNetworking.setupNetwork();
@@ -88,16 +89,5 @@ public class TeckleMod {
     public void onPostInit(FMLPostInitializationEvent e) {
         OBJECTS.postInit(e);
         PROXY.registerRenderers(e.getModState());
-
-        AlloyRecipes.getInstance().init();
-    }
-
-    @Mod.EventHandler
-    public void onMissingMappings(FMLMissingMappingsEvent e) {
-        for (FMLMissingMappingsEvent.MissingMapping missingMapping : e.getAll()) {
-            if (missingMapping.resourceLocation.equals(new ResourceLocation("teckle:brassingot"))) {
-                missingMapping.remap(TeckleObjects.itemIngot);
-            }
-        }
     }
 }

@@ -16,6 +16,8 @@
 
 package com.elytradev.teckle.common.block;
 
+import com.elytradev.concrete.resgen.EnumResourceType;
+import com.elytradev.concrete.resgen.IResourceHolder;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistantHolder;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
@@ -23,8 +25,6 @@ import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.block.property.UnlistedBool;
 import com.elytradev.teckle.common.block.property.UnlistedEnum;
 import com.elytradev.teckle.common.tile.TileItemTube;
-import com.elytradev.teckle.repack.concrete.resgen.EnumResourceType;
-import com.elytradev.teckle.repack.concrete.resgen.IResourceHolder;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;

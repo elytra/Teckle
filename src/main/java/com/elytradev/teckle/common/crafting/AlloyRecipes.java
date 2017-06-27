@@ -77,4 +77,7 @@ public class AlloyRecipes {
     }
 
 
+    public void clear() {
+        recipes.clear();
+    }
 }

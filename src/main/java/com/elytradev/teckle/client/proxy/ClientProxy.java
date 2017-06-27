@@ -16,6 +16,8 @@
 
 package com.elytradev.teckle.client.proxy;
 
+import com.elytradev.concrete.resgen.ConcreteResourcePack;
+import com.elytradev.concrete.resgen.IResourceHolder;
 import com.elytradev.teckle.client.render.model.ModelItemTube;
 import com.elytradev.teckle.client.render.tile.TileSortingMachineRender;
 import com.elytradev.teckle.client.render.tile.TileTubeRenderer;
@@ -28,8 +30,6 @@ import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
-import com.elytradev.teckle.repack.concrete.resgen.ConcreteResourcePack;
-import com.elytradev.teckle.repack.concrete.resgen.IResourceHolder;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;
@@ -39,6 +39,7 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
@@ -54,8 +55,6 @@ public class ClientProxy extends CommonProxy {
     public void registerRenderers(LoaderState.ModState state) {
         if (state == LoaderState.ModState.PREINITIALIZED) {
             new ConcreteResourcePack(TeckleMod.MOD_ID);
-
-            registerSpecialItemRenderers();
         }
 
         if (state == LoaderState.ModState.INITIALIZED) {
@@ -115,7 +114,14 @@ public class ClientProxy extends CommonProxy {
         }
     }
 
-    public void registerSpecialItemRenderers() {
+    @SubscribeEvent
+    public void onModelBakeEvent(ModelBakeEvent e) {
+        ModelItemTube tubeModel = new ModelItemTube();
+        e.getModelRegistry().putObject(new ModelResourceLocation("teckle:tube.item", "normal"), tubeModel);
+    }
+
+    @SubscribeEvent
+    public void onModelRegistryEvent(ModelRegistryEvent event) {
         for (int i = 0; i < EnumDyeColor.values().length; i++) {
             EnumDyeColor color = EnumDyeColor.byDyeDamage(i);
             ModelLoader.setCustomModelResourceLocation(TeckleObjects.itemPaintBrush, i, new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "paintbrush_" + color.getName(), "inventory"));
@@ -137,13 +143,6 @@ public class ClientProxy extends CommonProxy {
             ModelLoader.setCustomModelResourceLocation(TeckleObjects.itemIngot, ingotType.getMetadata(), resourceLocation);
             TeckleMod.LOG.info("Registering ingot model variant: " + ingotType.getMetadata() + " " + resourceLocation);
         }
-    }
-
-    @SubscribeEvent
-    public void onModelBakeEvent(ModelBakeEvent e) {
-        ModelItemTube tubeModel = new ModelItemTube();
-        e.getModelRegistry().putObject(new ModelResourceLocation("teckle:tube.item", "normal"), tubeModel);
-
     }
 
     @SubscribeEvent
