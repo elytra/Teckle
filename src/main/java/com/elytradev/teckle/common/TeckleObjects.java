@@ -102,8 +102,9 @@ public class TeckleObjects {
     @SubscribeEvent
     public void onRecipeRegisterEvent(RegistryEvent.Register<IRecipe> event) {
         IForgeRegistry<IRecipe> registry = event.getRegistry();
-        registry.register(new PaintbrushRecipe());
-        registry.register(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule));
+        registry.register(new PaintbrushRecipe().setRegistryName(new ResourceLocation(TeckleMod.MOD_ID, "paintbrushrecipe")));
+        registry.register(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule).
+                setRegistryName(new ResourceLocation(TeckleMod.MOD_ID, "waferslicerecipe")));
         registerShapedRecipe(registry, new ItemStack(blockAlloyFurnace), "BBB", "B B", "BBB",
                 'B', Blocks.BRICK_BLOCK);
         registerShapedRecipe(registry, new ItemStack(blockItemTube, 8), "BGB",

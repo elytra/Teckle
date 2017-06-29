@@ -187,7 +187,7 @@ public class WorldNetwork implements IWorldNetwork {
 
     @Override
     public void validateNetwork() {
-        // Perform flood fill to validate all nodes are connected. Choose an arbitrary node to current from.
+        // Perform flood fill to validate all nodes are connected. Choose an arbitrary node to start from.
 
         TeckleMod.LOG.debug("Performing a network validation.");
         List<List<WorldNetworkNode>> networks = new ArrayList<>();
@@ -240,7 +240,7 @@ public class WorldNetwork implements IWorldNetwork {
         return this.id;
     }
 
-    private List<WorldNetworkNode> fillFromPos(BlockPos startAt, HashMap<BlockPos, WorldNetworkNode> knownNodes) {
+    private List<WorldNetworkNode> fillFromPos(BlockPos startAt, HashMap<BlockPos, WorldNetworkNode> remainingNodes) {
         List<BlockPos> posStack = new ArrayList<>();
         List<BlockPos> iteratedPositions = new ArrayList<>();
         List<WorldNetworkNode> out = new ArrayList<>();
@@ -249,15 +249,19 @@ public class WorldNetwork implements IWorldNetwork {
         iteratedPositions.add(startAt);
         while (!posStack.isEmpty()) {
             BlockPos pos = posStack.remove(0);
-            if (knownNodes.containsKey(pos)) {
-                TeckleMod.LOG.debug("Added " + pos + " to out.");
-                out.add(knownNodes.get(pos));
-            }
+            TeckleMod.LOG.debug("Added " + pos + " to out.");
+            out.add(remainingNodes.get(pos));
 
             for (EnumFacing direction : EnumFacing.VALUES) {
-                if (!iteratedPositions.contains(pos.add(direction.getDirectionVec())) && knownNodes.containsKey(pos.add(direction.getDirectionVec()))) {
-                    posStack.add(pos.add(direction.getDirectionVec()));
-                    iteratedPositions.add(pos.add(direction.getDirectionVec()));
+                BlockPos offsetPos = pos.offset(direction);
+                if (!iteratedPositions.contains(offsetPos)) {
+                    boolean addToStack = remainingNodes.containsKey(offsetPos);
+                    addToStack &= (CapabilityWorldNetworkTile.isPositionNetworkTile(world, offsetPos, direction.getOpposite())
+                            && CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, offsetPos, direction.getOpposite()).canConnectTo(direction));
+                    if (addToStack) {
+                        posStack.add(pos.add(direction.getDirectionVec()));
+                        iteratedPositions.add(pos.add(direction.getDirectionVec()));
+                    }
                 }
             }
         }
