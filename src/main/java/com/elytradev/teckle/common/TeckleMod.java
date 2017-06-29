@@ -42,13 +42,13 @@ import org.apache.logging.log4j.Logger;
 
 import static com.elytradev.teckle.common.TeckleMod.MOD_ID;
 import static com.elytradev.teckle.common.TeckleMod.MOD_NAME;
+import static com.elytradev.teckle.common.TeckleMod.MOD_VER;
 
-@Mod(modid = MOD_ID, name = MOD_NAME)
+@Mod(modid = MOD_ID, name = MOD_NAME, version = MOD_VER)
 public class TeckleMod {
-
     public static final String MOD_ID = "teckle";
     public static final String MOD_NAME = "Teckle";
-    public static final String MOD_VER = "";
+    public static final String MOD_VER = "%TVER%";
     public static final String RESOURCE_DOMAIN = "teckle:";
     public static final TeckleObjects OBJECTS = new TeckleObjects();
     public static final boolean INDEV = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
