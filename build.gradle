@@ -109,14 +109,15 @@ processResources {
 dependencies {
     deobfCompile "com.elytradev:probedataproviderapi:${pdp_version}"
     testCompile group: "junit", name: "junit", version: "4.12"
-    // Add fruitphone to runtime for testing.
-    //runtime "com.elytradev:fruitphone:1.11.2-0.1.7-80e4f38d"
 
     // JEI things.
     deobfCompile "mezz.jei:jei_${mc_version}:${jei_version}:api"
     runtime "mezz.jei:jei_${mc_version}:${jei_version}"
 
     deobfCompile "MCMultiPart2:MCMultiPart:${mcmp_version}"
+	
+	deobfCompile "com.elytradev:concrete:${concrete_version}:all"
+    shadow "com.elytradev:concrete:${concrete_version}:all"
 }
 
 jar {
@@ -138,9 +139,4 @@ tasks.build.dependsOn reobfShadowJar
 
 artifacts {
     archives shadowJar
-}
-
-dependencies {
-    deobfCompile "com.elytradev:concrete:0.3.1:all"
-    shadow "com.elytradev:concrete:0.3.1:all"
 }

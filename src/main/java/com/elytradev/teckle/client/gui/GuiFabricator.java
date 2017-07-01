@@ -122,7 +122,6 @@ public class GuiFabricator extends GuiContainer {
         GlStateManager.enableLighting();
     }
 
-
     public class Template extends GuiButton {
         public final int templateIndex;
 

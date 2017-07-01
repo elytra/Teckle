@@ -1,0 +1,19 @@
+[
+    {
+        "modid": "teckle",
+        "name": "Teckle",
+        "description": "A tech mod that actually updates. Maintained by darkevilmac",
+        "version": "${version}",
+        "mcversion": "${mcversion}",
+        "url": "",
+        "updateUrl": "",
+        "authorList": [
+            "darkevilmac",
+            "Elytra Team"
+        ],
+        "credits": "",
+        "logoFile": "assets/teckle/Logo.png",
+        "screenshots": [],
+        "dependencies": []
+    }
+]

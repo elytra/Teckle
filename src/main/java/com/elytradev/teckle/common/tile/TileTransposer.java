@@ -170,10 +170,6 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             }
         }
 
-        if (result) {
-            this.world.playEvent(1000, pos, 0);
-        }
-
         cooldown = 10;
         return result;
     }

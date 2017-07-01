@@ -3,6 +3,7 @@ itemGroup.teckle=Teckle
 tile.teckle.tube.item.name=Item Tube
 tile.teckle.filter.name=Item Filter
 tile.teckle.transposer.name=Transposer
+tile.teckle.sortingmachine.name=Sorting Machine
 tile.teckle.fabricator.name=Fabricator
 tile.teckle.alloyfurnace.name=Alloy Furnace
 tile.teckle.nikolite_ore.name=Nikolite Ore
@@ -60,13 +61,6 @@ pullmode.auto.tooltip=Automatically pulse when items are available.
 pullmode.singlestep.tooltip=Attempt to satisfy the current compartment on redstone pulse, if no compartment is selected then pull.
 pullmode.singlesweep.tooltip=Sweep through all compartments on redstone pulse.
 
-
-
-
-
-
-
-
 defaultroute.white=Default Route: White
 defaultroute.orange=Default Route: Orange
 defaultroute.magenta=Default Route: Magenta
@@ -85,3 +79,5 @@ defaultroute.red=Default Route: Red
 defaultroute.black=Default Route: Black
 defaultroute.none=Default Route: None
 defaultroute.blocked=Default Route: Blocked
+
+teckle.configgui.title=Teckle Configuration

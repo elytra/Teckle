@@ -19,38 +19,34 @@ package com.elytradev.teckle.common;
 import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistantHolder;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
-import com.elytradev.teckle.common.crafting.AlloyRecipes;
 import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.worldgen.NikoliteOreGenerator;
 import mcmultipart.api.multipart.IMultipartTile;
-import net.minecraft.item.Item;
 import net.minecraft.launchwrapper.Launch;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
 
-import static com.elytradev.teckle.common.TeckleMod.MOD_ID;
-import static com.elytradev.teckle.common.TeckleMod.MOD_NAME;
-import static com.elytradev.teckle.common.TeckleMod.MOD_VER;
+import static com.elytradev.teckle.common.TeckleMod.*;
 
-@Mod(modid = MOD_ID, name = MOD_NAME, version = MOD_VER)
+@Mod(modid = MOD_ID, name = MOD_NAME, version = MOD_VER, guiFactory = GUI_FACTORY)
 public class TeckleMod {
     public static final String MOD_ID = "teckle";
     public static final String MOD_NAME = "Teckle";
     public static final String MOD_VER = "%TVER%";
+    public static final String GUI_FACTORY = "com.elytradev.teckle.client.gui.TeckleGUIFactory";
     public static final String RESOURCE_DOMAIN = "teckle:";
+
     public static final TeckleObjects OBJECTS = new TeckleObjects();
+    public static TeckleConfiguration CONFIG;
     public static final boolean INDEV = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
     @Mod.Instance()
     public static TeckleMod INSTANCE;
@@ -70,6 +66,8 @@ public class TeckleMod {
     public void onPreInit(FMLPreInitializationEvent e) {
         PROXY.registerHandlers();
         LOG = e.getModLog();
+        CONFIG = new TeckleConfiguration(e.getSuggestedConfigurationFile(), MOD_ID);
+        CONFIG.loadConfig();
         MinecraftForge.EVENT_BUS.register(OBJECTS);
         CapabilityWorldNetworkTile.register();
         CapabilityWorldNetworkAssistantHolder.register();

@@ -26,6 +26,7 @@ import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModeType;
+import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -38,14 +39,16 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 
 import javax.vecmath.Point2i;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 public class GuiSortingMachine extends GuiContainer {
 
     public static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation("teckle", "textures/gui/sortingmachine.png");
     public EntityPlayer player;
     public TileSortingMachine sortingMachine;
-
+    protected int lastClick = -1;
 
     public GuiSortingMachine(TileSortingMachine tileSortingMachine, EntityPlayer player) {
         super(new ContainerSortingMachine(tileSortingMachine, player));
@@ -127,18 +130,58 @@ public class GuiSortingMachine extends GuiContainer {
     }
 
     @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        this.lastClick = mouseButton;
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+
+        //copied from guiscreen, used to detect right clicks on templates
+        if (mouseButton == 1) {
+            List<GuiButton> rightClickButtons = Lists.newArrayListWithExpectedSize(9);
+            for (int i = 0; i < 8; i++) {
+                rightClickButtons.add(buttonList.get(i));
+            }
+            if (buttonList.size() >= 11)
+                rightClickButtons.add(buttonList.get(10));
+            for (GuiButton guibutton : rightClickButtons) {
+                if (guibutton.mousePressed(this.mc, mouseX, mouseY)) {
+                    net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Pre event = new net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Pre(this, guibutton, this.buttonList);
+                    if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event))
+                        break;
+                    guibutton = event.getButton();
+                    guibutton.playPressSound(this.mc.getSoundHandler());
+                    this.actionPerformed(guibutton);
+                    if (this.equals(this.mc.currentScreen))
+                        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Post(this, event.getButton(), this.buttonList));
+                }
+            }
+        }
+    }
+
+    @Override
     protected void actionPerformed(GuiButton button) {
         if (button instanceof GuiColourPicker) {
             // Adjust the colour of a compartment.
             GuiColourPicker colourPicker = (GuiColourPicker) button;
             EnumDyeColor colour = sortingMachine.colours[colourPicker.colourIndex];
-            if (colour == null) {
-                colour = EnumDyeColor.byMetadata(0);
-            } else {
-                if (colour.getMetadata() == 15) {
-                    colour = null;
+            if (lastClick != 1) {
+                if (colour == null) {
+                    colour = EnumDyeColor.byMetadata(0);
                 } else {
-                    colour = EnumDyeColor.byMetadata(colour.getMetadata() + 1);
+                    if (colour.getMetadata() == 15) {
+                        colour = null;
+                    } else {
+                        colour = EnumDyeColor.byMetadata(colour.getMetadata() + 1);
+                    }
+                }
+            } else {
+                if (colour == null) {
+                    colour = EnumDyeColor.byMetadata(15);
+                } else {
+                    if (colour.getMetadata() == 0) {
+                        colour = null;
+                    } else {
+                        colour = EnumDyeColor.byMetadata(colour.getMetadata() - 1);
+                    }
                 }
             }
 
@@ -149,10 +192,18 @@ public class GuiSortingMachine extends GuiContainer {
             TileSortingMachine.DefaultRoute defaultRoute = sortingMachine.defaultRoute;
             int selectedMode = defaultRoute.getMetadata();
 
-            if (selectedMode < TileSortingMachine.DefaultRoute.values().length - 1) {
-                selectedMode++;
-            } else if (selectedMode == TileSortingMachine.DefaultRoute.values().length - 1) {
-                selectedMode = 0;
+            if (lastClick != 1) {
+                if (selectedMode < TileSortingMachine.DefaultRoute.values().length - 1) {
+                    selectedMode++;
+                } else if (selectedMode == TileSortingMachine.DefaultRoute.values().length - 1) {
+                    selectedMode = 0;
+                }
+            } else {
+                if (selectedMode > 0) {
+                    selectedMode--;
+                } else if (selectedMode == 0) {
+                    selectedMode = TileSortingMachine.DefaultRoute.values().length - 1;
+                }
             }
 
             sortingMachine.defaultRoute = TileSortingMachine.DefaultRoute.byMetadata(selectedMode);
@@ -234,7 +285,8 @@ public class GuiSortingMachine extends GuiContainer {
         }
 
         @Override
-        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {            if (this.visible) {
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+            if (this.visible) {
                 mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
                 int yOffset = 5;
@@ -259,7 +311,8 @@ public class GuiSortingMachine extends GuiContainer {
         }
 
         @Override
-        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {            if (this.visible) {
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+            if (this.visible) {
                 this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
 
                 mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
@@ -305,7 +358,8 @@ public class GuiSortingMachine extends GuiContainer {
         }
 
         @Override
-        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {            if (this.visible) {
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+            if (this.visible) {
                 this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
 
                 mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
@@ -345,7 +399,8 @@ public class GuiSortingMachine extends GuiContainer {
         }
 
         @Override
-        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {            if (this.visible) {
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+            if (this.visible) {
                 this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
 
                 mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));

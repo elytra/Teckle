@@ -16,6 +16,8 @@
 
 package com.elytradev.teckle.common.worldgen;
 
+import com.elytradev.teckle.common.TeckleConfiguration;
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -33,7 +35,6 @@ import java.util.Random;
  */
 public class NikoliteOreGenerator implements IWorldGenerator {
     private WorldGenMinable nikoliteGen;
-    private ChunkGeneratorSettings chunkGenSettings;
 
     protected void genOre(World worldIn, int chunkX, int chunkZ, Random random, int blockCount, WorldGenerator generator, int minHeight, int maxHeight) {
         if (maxHeight < minHeight) {
@@ -58,15 +59,13 @@ public class NikoliteOreGenerator implements IWorldGenerator {
 
     @Override
     public void generate(Random random, int chunkX, int chunkZ, World world, IChunkGenerator chunkGenerator, IChunkProvider chunkProvider) {
+        TeckleConfiguration configuration = TeckleMod.CONFIG;
         if (world.provider.getDimension() == 0) {
-            if (chunkGenSettings == null) {
-                chunkGenSettings = ChunkGeneratorSettings.Factory.jsonToFactory(world.getWorldInfo().getGeneratorOptions()).build();
-            }
             if (nikoliteGen == null) {
-                this.nikoliteGen = new WorldGenMinable(TeckleObjects.blockNikoliteOre.getDefaultState(), chunkGenSettings.redstoneSize);
+                this.nikoliteGen = new WorldGenMinable(TeckleObjects.blockNikoliteOre.getDefaultState(), configuration.nikoliteSize);
             }
 
-            this.genOre(world, chunkX, chunkZ, random, this.chunkGenSettings.redstoneCount, this.nikoliteGen, this.chunkGenSettings.redstoneMinHeight, this.chunkGenSettings.redstoneMaxHeight);
+            this.genOre(world, chunkX, chunkZ, random, configuration.nikoliteCount, this.nikoliteGen, configuration.nikoliteMinHeight, configuration.nikoliteMaxHeight);
         }
     }
 }

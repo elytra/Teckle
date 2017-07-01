@@ -87,6 +87,9 @@ public class TeckleObjects {
 
     public void init(FMLInitializationEvent e) {
         OreDictionary.registerOre("coal", Items.COAL); // Nothing to see here, move along.
+        OreDictionary.registerOre("dustNikolite", new ItemStack(itemNikolite, 1));
+        OreDictionary.registerOre("dyeBlue", new ItemStack(itemNikolite, 1));
+        OreDictionary.registerOre("oreNikolite", new ItemStack(blockNikoliteOre, 1));
 
         GameRegistry.registerTileEntity(TileItemTube.class, "teckleItemTube");
         GameRegistry.registerTileEntity(TileFilter.class, "teckleFilter");
@@ -171,7 +174,6 @@ public class TeckleObjects {
 
         blockNikoliteOre = new BlockNikoliteOre();
         registerBlock(registry, "nikolite_ore", blockNikoliteOre);
-        OreDictionary.registerOre("oreNikolite", new ItemStack(blockNikoliteOre, 1));
     }
 
     @SubscribeEvent
@@ -189,8 +191,6 @@ public class TeckleObjects {
 
         itemNikolite = new Item();
         registerItem(registry, "nikolite", itemNikolite);
-        OreDictionary.registerOre("dustNikolite", new ItemStack(itemNikolite, 1));
-        OreDictionary.registerOre("dyeBlue", new ItemStack(itemNikolite, 1));
 
         itemSiliconBoule = new Item();
         registerItem(registry, "siliconboule", itemSiliconBoule);
