@@ -1,0 +1,62 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "side": "teckle:blocks/sortingmachinemouth"
+  },
+  "elements": [
+    {
+      "from": [
+        -0.08,
+        -0.08,
+        -0.08
+      ],
+      "to": [
+        16.08,
+        16.08,
+        16.08
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "rotation": 180
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "rotation": 180
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "rotation": 180
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "rotation": 180
+        }
+      }
+    }
+  ]
+}

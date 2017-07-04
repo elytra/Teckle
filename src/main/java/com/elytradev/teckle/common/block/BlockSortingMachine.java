@@ -170,4 +170,9 @@ public class BlockSortingMachine extends BlockContainer {
     public TileEntity createNewTileEntity(World worldIn, int meta) {
         return new TileSortingMachine();
     }
+
+    @Override
+    public boolean getUseNeighborBrightness(IBlockState state) {
+        return true;
+    }
 }

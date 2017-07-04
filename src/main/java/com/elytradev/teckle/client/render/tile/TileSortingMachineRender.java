@@ -6,10 +6,7 @@ import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -39,7 +36,6 @@ public class TileSortingMachineRender extends TileEntitySpecialRenderer<TileSort
             GlStateManager.popMatrix();
         }
     }
-
 
     public void drawDeco(EnumFacing facing, EnumFacing pointTo, TileSortingMachine te) {
         switch (facing) {
@@ -123,10 +119,6 @@ public class TileSortingMachineRender extends TileEntitySpecialRenderer<TileSort
         }
 
         GlStateManager.pushMatrix();
-        drawMouth(te, facing);
-        GlStateManager.popMatrix();
-
-        GlStateManager.pushMatrix();
         drawBlinkenLights(te, facing);
         GlStateManager.popMatrix();
     }
@@ -155,40 +147,14 @@ public class TileSortingMachineRender extends TileEntitySpecialRenderer<TileSort
         tess.draw();
 
         GlStateManager.enableLighting();
-        int light = te.getWorld().getCombinedLight(te.getPos().offset(facing), 0);
+        int light = te.getWorld().getLight(te.getPos().offset(facing), true);
         int j = light % 65536;
         int k = light / 65536;
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, j, k);
     }
 
     public void drawMouth(TileSortingMachine te, EnumFacing facing) {
-        GlStateManager.translate(0, 0, -0.005f);
-        GlStateManager.color(1, 1, 1);
 
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tess.getBuffer();
-        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
-        GlStateManager.disableLighting();
-        TextureAtlasSprite tas = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(
-                new ResourceLocation(TeckleMod.MOD_ID, "blocks/sortingmachinemouth").toString());
-        float minU = tas.getMinU();
-        float maxU = tas.getMaxU();
-        float minV = tas.getMinV();
-        float maxV = tas.getMaxV();
-
-        bufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        bufferBuilder.pos(0, 0, 0).tex(maxU, maxV).endVertex();
-        bufferBuilder.pos(0, 1, 0).tex(maxU, minV).endVertex();
-        bufferBuilder.pos(1, 1, 0).tex(minU, minV).endVertex();
-        bufferBuilder.pos(1, 0, 0).tex(minU, maxV).endVertex();
-        tess.draw();
-
-        GlStateManager.enableLighting();
-        int light = te.getWorld().getCombinedLight(te.getPos().offset(facing), 0);
-        int j = light % 65536;
-        int k = light / 65536;
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, j, k);
     }
 
 }

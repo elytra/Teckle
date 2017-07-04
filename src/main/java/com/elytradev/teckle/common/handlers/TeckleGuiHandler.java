@@ -23,9 +23,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 
-/**
- * Created by darkevilmac on 4/12/2017.
- */
 public class TeckleGuiHandler implements IGuiHandler {
     @Override
     public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {

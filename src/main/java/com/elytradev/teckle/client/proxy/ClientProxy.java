@@ -18,7 +18,7 @@ package com.elytradev.teckle.client.proxy;
 
 import com.elytradev.concrete.resgen.ConcreteResourcePack;
 import com.elytradev.concrete.resgen.IResourceHolder;
-import com.elytradev.teckle.client.render.model.ModelItemTube;
+import com.elytradev.teckle.client.render.model.TubeModelLoader;
 import com.elytradev.teckle.client.render.tile.TileSortingMachineRender;
 import com.elytradev.teckle.client.render.tile.TileTubeRenderer;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
@@ -33,7 +33,9 @@ import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;
+import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
@@ -41,8 +43,11 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.LoaderState;
@@ -54,6 +59,7 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void registerRenderers(LoaderState.ModState state) {
         if (state == LoaderState.ModState.PREINITIALIZED) {
+            ModelLoaderRegistry.registerLoader(new TubeModelLoader());
             new ConcreteResourcePack(TeckleMod.MOD_ID);
         }
 
@@ -75,15 +81,6 @@ public class ClientProxy extends CommonProxy {
             }, TeckleObjects.blockItemTube);
 
             Minecraft.getMinecraft().getItemColors().registerItemColorHandler((stack, tintIndex) -> 11696387, TeckleObjects.blockItemTube);
-        }
-
-        if (state == LoaderState.ModState.POSTINITIALIZED) {
-            if (Minecraft.getMinecraft().getResourceManager() instanceof IReloadableResourceManager) {
-                ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(ModelItemTube.reloadListener);
-            }
-            if (Minecraft.getMinecraft().getResourceManager() instanceof IReloadableResourceManager) {
-                ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(resourceManager -> TileTubeRenderer.itemColourModel = null);
-            }
         }
     }
 
@@ -116,8 +113,16 @@ public class ClientProxy extends CommonProxy {
 
     @SubscribeEvent
     public void onModelBakeEvent(ModelBakeEvent e) {
-        ModelItemTube tubeModel = new ModelItemTube();
-        e.getModelRegistry().putObject(new ModelResourceLocation("teckle:tube.item", "normal"), tubeModel);
+        if (Minecraft.getMinecraft().getResourceManager() instanceof IReloadableResourceManager) {
+            ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(resourceManager -> TileTubeRenderer.itemColourModel = null);
+        }
+        try {
+            IModel nodeModel = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_node"));
+            IBakedModel bakedModel = nodeModel.bake(TRSRTransformation.identity(), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter());
+            e.getModelRegistry().putObject(new ModelResourceLocation("teckle:tube.item", "inventory"), bakedModel);
+        } catch (Exception exception) {
+            TeckleMod.LOG.error("Failed to load node model for item tube item.", exception);
+        }
     }
 
     @SubscribeEvent
