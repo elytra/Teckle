@@ -80,10 +80,9 @@ public class TeckleObjects {
     public static HashMap<String, Item> registeredItems;
 
     public static List<Object> skipItemMesh;
-    private static List<Item> itemBlocksToRegister;
-
     public static String REGISTRY_PREFIX = MOD_ID.toLowerCase();
-
+    private static List<Item> itemBlocksToRegister;
+    private int recipeID = 0;
 
     public void init(FMLInitializationEvent e) {
         OreDictionary.registerOre("coal", Items.COAL); // Nothing to see here, move along.
@@ -216,8 +215,6 @@ public class TeckleObjects {
             }
         }
     }
-
-    private int recipeID = 0;
 
     private void registerShapedRecipe(IForgeRegistry<IRecipe> registry, ItemStack out, Object... input) {
         ResourceLocation resourceLocation = new ResourceLocation(MOD_ID, out.getUnlocalizedName() + recipeID++);

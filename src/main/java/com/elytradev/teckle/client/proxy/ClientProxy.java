@@ -18,6 +18,7 @@ package com.elytradev.teckle.client.proxy;
 
 import com.elytradev.concrete.resgen.ConcreteResourcePack;
 import com.elytradev.concrete.resgen.IResourceHolder;
+import com.elytradev.teckle.client.render.model.ModelMachineOverlay;
 import com.elytradev.teckle.client.render.model.TubeModelLoader;
 import com.elytradev.teckle.client.render.tile.TileSortingMachineRender;
 import com.elytradev.teckle.client.render.tile.TileTubeRenderer;
@@ -115,6 +116,7 @@ public class ClientProxy extends CommonProxy {
     public void onModelBakeEvent(ModelBakeEvent e) {
         if (Minecraft.getMinecraft().getResourceManager() instanceof IReloadableResourceManager) {
             ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(resourceManager -> TileTubeRenderer.itemColourModel = null);
+            ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(ModelMachineOverlay.reloadListener);
         }
         try {
             IModel nodeModel = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_node"));

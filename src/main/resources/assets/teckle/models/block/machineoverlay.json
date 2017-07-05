@@ -1,20 +1,19 @@
 {
     "parent": "block/block",
     "textures": {
-        "out": "teckle:blocks/filterout",
-        "in": "teckle:blocks/filterin"
+        "side": "teckle:blocks/sortingmachinemouth"
     },
     "elements": [
         {
             "from": [
-                0.0,
-                0.0,
-                0.0
+                -0.008,
+                -0.008,
+                -0.008
             ],
             "to": [
-                16.0,
-                16.0,
-                16.0
+                16.008,
+                16.008,
+                16.008
             ],
             "faces": {
                 "north": {
@@ -56,24 +55,6 @@
                         16.0
                     ],
                     "rotation": 180
-                },
-                "up": {
-                    "texture": "#out",
-                    "uv": [
-                        0.0,
-                        0.0,
-                        16.0,
-                        16.0
-                    ]
-                },
-                "down": {
-                    "texture": "#in",
-                    "uv": [
-                        0.0,
-                        0.0,
-                        16.0,
-                        16.0
-                    ]
                 }
             }
         }

@@ -1,22 +1,29 @@
 package com.elytradev.teckle.client.render.tile;
 
+import com.elytradev.teckle.client.render.model.ModelMachineOverlay;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 
 
 public class TileSortingMachineRender extends TileEntitySpecialRenderer<TileSortingMachine> {
+
+    private ModelMachineOverlay overlay;
 
     @Override
     public void render(TileSortingMachine te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
@@ -25,6 +32,11 @@ public class TileSortingMachineRender extends TileEntitySpecialRenderer<TileSort
             return;
 
         EnumFacing pointTo = blockState.getValue(BlockSortingMachine.FACING);
+        if (overlay == null) {
+            overlay = new ModelMachineOverlay(this.getClass(), new ResourceLocation("teckle", "block/machineoverlay"));
+        }
+        overlay.render(getWorld(), new Vec3d(x, y, z), te.getPos(), blockState, pointTo);
+
         for (EnumFacing facing : EnumFacing.VALUES) {
             if (facing.equals(pointTo) || facing.equals(pointTo.getOpposite()))
                 continue;
@@ -124,7 +136,7 @@ public class TileSortingMachineRender extends TileEntitySpecialRenderer<TileSort
     }
 
     public void drawBlinkenLights(TileSortingMachine te, EnumFacing facing) {
-        GlStateManager.translate(0, 0, -0.005f);
+        GlStateManager.translate(0, 0, -0.0005f);
         GlStateManager.color(1, 1, 1);
 
         Tessellator tess = Tessellator.getInstance();
@@ -152,9 +164,4 @@ public class TileSortingMachineRender extends TileEntitySpecialRenderer<TileSort
         int k = light / 65536;
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, j, k);
     }
-
-    public void drawMouth(TileSortingMachine te, EnumFacing facing) {
-
-    }
-
 }

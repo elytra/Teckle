@@ -1,76 +1,76 @@
 {
-  "ambientocclusion": false,
-  "textures": {
-    "0": "teckle:blocks/itemtube.full"
-  },
-  "elements": [
-    {
-      "from": [
-        4,
-        8,
-        12
-      ],
-      "to": [
-        12,
-        16,
-        12
-      ],
-      "faces": {
-        "north": {
-          "texture": "#0"
-        }
-      }
+    "ambientocclusion": false,
+    "textures": {
+        "0": "teckle:blocks/itemtube.full"
     },
-    {
-      "from": [
-        4,
-        8,
-        4
-      ],
-      "to": [
-        12,
-        16,
-        4
-      ],
-      "faces": {
-        "south": {
-          "texture": "#0"
+    "elements": [
+        {
+            "from": [
+                4,
+                8,
+                12
+            ],
+            "to": [
+                12,
+                16,
+                12
+            ],
+            "faces": {
+                "north": {
+                    "texture": "#0"
+                }
+            }
+        },
+        {
+            "from": [
+                4,
+                8,
+                4
+            ],
+            "to": [
+                12,
+                16,
+                4
+            ],
+            "faces": {
+                "south": {
+                    "texture": "#0"
+                }
+            }
+        },
+        {
+            "from": [
+                4,
+                8,
+                4
+            ],
+            "to": [
+                4,
+                16,
+                12
+            ],
+            "faces": {
+                "east": {
+                    "texture": "#0"
+                }
+            }
+        },
+        {
+            "from": [
+                12,
+                8,
+                4
+            ],
+            "to": [
+                12,
+                16,
+                12
+            ],
+            "faces": {
+                "west": {
+                    "texture": "#0"
+                }
+            }
         }
-      }
-    },
-    {
-      "from": [
-        4,
-        8,
-        4
-      ],
-      "to": [
-        4,
-        16,
-        12
-      ],
-      "faces": {
-        "east": {
-          "texture": "#0"
-        }
-      }
-    },
-    {
-      "from": [
-        12,
-        8,
-        4
-      ],
-      "to": [
-        12,
-        16,
-        12
-      ],
-      "faces": {
-        "west": {
-          "texture": "#0"
-        }
-      }
-    }
-  ]
+    ]
 }

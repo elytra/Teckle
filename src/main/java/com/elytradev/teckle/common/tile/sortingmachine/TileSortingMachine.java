@@ -85,6 +85,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(32);
     public List<WorldNetworkTraveller> returnedTravellers = Lists.newArrayList();
     public DefaultRoute defaultRoute = DefaultRoute.NONE;
+    public boolean isLit;
     @SideOnly(Side.CLIENT)
     private int selectorPos = -1;
     private PullMode pullMode = new PullModeSingleStep();
@@ -191,7 +192,6 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             return TileSortingMachine.this.entryPointTile.getOutputFace().getOpposite();
         }
     };
-    public boolean isLit;
 
     public List<IItemHandler> getCompartmentHandlers() {
         if (subHandlers == null || subHandlers.isEmpty()) {

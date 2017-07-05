@@ -241,8 +241,8 @@ public class SortModeFullMatchSelector extends SortMode {
         }
     }
 
-    private void incrementCompartmentSlot(TileSortingMachine sortingMachine){
-        if(compartmentSlot < 7){
+    private void incrementCompartmentSlot(TileSortingMachine sortingMachine) {
+        if (compartmentSlot < 7) {
 
         }
     }

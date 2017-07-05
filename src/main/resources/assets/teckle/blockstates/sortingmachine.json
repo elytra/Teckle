@@ -1,42 +1,42 @@
 {
-  "forge_marker": 1,
-  "defaults": {
-    "textures": {
-      "side": "teckle:blocks/sortingmachinesideoff",
-      "particle": "teckle:blocks/sortingmachinesideoff",
-      "out": "teckle:blocks/sortingmachineout",
-      "in":  "teckle:blocks/sortingmachinein"
+    "forge_marker": 1,
+    "defaults": {
+        "textures": {
+            "side": "teckle:blocks/sortingmachinesideoff",
+            "particle": "teckle:blocks/sortingmachinesideoff",
+            "out": "teckle:blocks/sortingmachineout",
+            "in": "teckle:blocks/sortingmachinein"
+        },
+        "uvlock": false,
+        "transform": "forge:default-block",
+        "model": "teckle:filter"
     },
-    "uvlock": false,
-    "transform": "forge:default-block",
-    "model": "teckle:filter"
-  },
-  "variants": {
-    "facing": {
-      "down": {
-        "x": 180,
-        "y": 0
-      },
-      "up": {
-        "x": 0,
-        "y": 0
-      },
-      "north": {
-        "x": 90,
-        "y": 0
-      },
-      "south": {
-        "x": 90,
-        "y": 180
-      },
-      "west": {
-        "x": 90,
-        "y": 270
-      },
-      "east": {
-        "x": 90,
-        "y": 90
-      }
+    "variants": {
+        "facing": {
+            "down": {
+                "x": 180,
+                "y": 0
+            },
+            "up": {
+                "x": 0,
+                "y": 0
+            },
+            "north": {
+                "x": 90,
+                "y": 0
+            },
+            "south": {
+                "x": 90,
+                "y": 180
+            },
+            "west": {
+                "x": 90,
+                "y": 270
+            },
+            "east": {
+                "x": 90,
+                "y": 90
+            }
+        }
     }
-  }
 }
