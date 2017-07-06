@@ -94,7 +94,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     private NetworkTileTransporter entryPointTile = new NetworkTileTransporter() {
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
+            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), Lists.newArrayList(getCapabilityFace()));
         }
 
         @Override

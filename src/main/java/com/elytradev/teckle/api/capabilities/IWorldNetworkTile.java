@@ -122,6 +122,31 @@ public interface IWorldNetworkTile {
     }
 
     /**
+     * Determines if the network tile will be notified of nodes being added and removed from the network.
+     *
+     * @return true to listen for changes, false if no changes are received.
+     */
+    default boolean listenToNetworkChange() {
+        return false;
+    }
+
+    /**
+     * Called when a node is added from the worldnetwork, only called if listenToNetworkChange is true.
+     *
+     * @param addedNode the node that was added.
+     */
+    default void onNodeAdded(WorldNetworkNode addedNode) {
+    }
+
+    /**
+     * Called when a node is removed from the worldnetwork, only called if listenToNetworkChange is true.
+     *
+     * @param removedNode the node that was removed.
+     */
+    default void onNodeRemoved(WorldNetworkNode removedNode) {
+    }
+
+    /**
      * The output face of the tile, only applies to tiles that add things to networks.
      *
      * @return the output face of the tile, null if this doesn't output.

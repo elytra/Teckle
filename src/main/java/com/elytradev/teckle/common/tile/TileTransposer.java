@@ -34,6 +34,7 @@ import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoi
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import net.minecraft.block.BlockSourceImpl;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
@@ -71,7 +72,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
+            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), Lists.newArrayList(getCapabilityFace()));
         }
 
         @Override

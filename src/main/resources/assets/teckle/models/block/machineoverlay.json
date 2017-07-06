@@ -1,7 +1,7 @@
 {
     "parent": "block/block",
     "textures": {
-        "side": "teckle:blocks/sortingmachinemouth"
+        "side": ""
     },
     "elements": [
         {

@@ -24,26 +24,26 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.List;
+
 /**
  * A node used to add travellers to a network, handles initial endpoint finding, as well as finding new endpoints when one fails.
  */
 public class WorldNetworkEntryPoint extends WorldNetworkNode {
 
-    public WorldNetworkEndpoint endpoint = new WorldNetworkEndpoint(network, position, getCapabilityFace()) {
+    public WorldNetworkEndpoint endpoint = new WorldNetworkEndpoint(network, position, getCapabilityFaces()) {
         @Override
         public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {
-            IWorldNetworkTile networkTile = WorldNetworkEntryPoint.this.getNetworkTile();
+            IWorldNetworkTile networkTile = WorldNetworkEntryPoint.this.getNetworkTile(from.getOpposite());
             networkTile.acceptReturn(traveller, from);
             return true;
         }
     };
     private EnumFacing facing = EnumFacing.DOWN;
 
-    public WorldNetworkEntryPoint(IWorldNetwork network, BlockPos position, EnumFacing facing, EnumFacing capabilityFace) {
-        this.network = network;
-        this.position = position;
+    public WorldNetworkEntryPoint(IWorldNetwork network, BlockPos position, EnumFacing facing, List<EnumFacing> capabilityFaces) {
+        super(network, position, capabilityFaces);
         this.facing = facing;
-        this.capabilityFace = capabilityFace;
 
         this.endpoint.position = this.position;
         this.endpoint.network = this.network;

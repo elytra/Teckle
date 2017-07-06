@@ -40,6 +40,7 @@ public class WorldNetwork implements IWorldNetwork {
 
     protected HashMap<BlockPos, WorldNetworkNode> networkNodes = new HashMap<>();
     protected HashBiMap<NBTTagCompound, WorldNetworkTraveller> travellers = HashBiMap.create();
+    private HashMap<BlockPos, WorldNetworkNode> networkNodesWithListeners = new HashMap<>();
     private List<WorldNetworkTraveller> travellersToUnregister = new ArrayList<>();
 
     public WorldNetwork(World world, UUID id, boolean skipRegistration) {
@@ -60,11 +61,27 @@ public class WorldNetwork implements IWorldNetwork {
     @Override
     public void registerNode(WorldNetworkNode node) {
         TeckleMod.LOG.debug(this + "/Registering a node, " + node);
-        if (!networkNodes.containsKey(node.position))
+        if (!networkNodes.containsKey(node.position)) {
             networkNodes.put(node.position, node);
-        else
+            node.network = this;
+            networkNodesWithListeners.values().forEach(n -> n.getNetworkTiles().stream()
+                    .filter(IWorldNetworkTile::listenToNetworkChange)
+                    .forEach(iWorldNetworkTile -> iWorldNetworkTile.onNodeAdded(node)));
+        } else {
             networkNodes.replace(node.position, node);
-        node.network = this;
+            node.network = this;
+            networkNodesWithListeners.values().forEach(n -> n.getNetworkTiles().stream()
+                    .filter(IWorldNetworkTile::listenToNetworkChange)
+                    .forEach(iWorldNetworkTile -> iWorldNetworkTile.onNodeAdded(node)));
+        }
+
+        if (node.getNetworkTiles().stream().anyMatch(IWorldNetworkTile::listenToNetworkChange)) {
+            if (!networkNodesWithListeners.containsKey(node.position)) {
+                networkNodesWithListeners.put(node.position, node);
+            } else {
+                networkNodesWithListeners.replace(node.position, node);
+            }
+        }
         TeckleMod.LOG.debug(this + "/Registered node, " + node);
     }
 
@@ -76,8 +93,16 @@ public class WorldNetwork implements IWorldNetwork {
     @Override
     public void unregisterNodeAtPosition(BlockPos nodePosition) {
         TeckleMod.LOG.debug(this + "/Unregistering a node at, " + nodePosition);
-        if (networkNodes.containsKey(nodePosition))
-            networkNodes.remove(nodePosition);
+        if (networkNodes.containsKey(nodePosition)) {
+            WorldNetworkNode removed = networkNodes.remove(nodePosition);
+            networkNodesWithListeners.values().forEach(n -> n.getNetworkTiles().stream()
+                    .filter(IWorldNetworkTile::listenToNetworkChange)
+                    .forEach(iWorldNetworkTile -> iWorldNetworkTile.onNodeRemoved(removed)));
+
+            if (networkNodesWithListeners.containsKey(nodePosition)) {
+                networkNodesWithListeners.remove(nodePosition);
+            }
+        }
         TeckleMod.LOG.debug(this + "/Unregistered node at, " + nodePosition);
     }
 
@@ -321,8 +346,9 @@ public class WorldNetwork implements IWorldNetwork {
         List<WorldNetworkNode> nodes = getNodes();
         for (int i = 0; i < nodes.size(); i++) {
             compound.setLong("n" + i, nodes.get(i).position.toLong());
-            if (nodes.get(i).getCapabilityFace() != null)
-                compound.setInteger("f" + i, nodes.get(i).getCapabilityFace().getIndex());
+            for (int fi = 0; fi < nodes.get(i).capabilityFaces.size(); fi++) {
+                compound.setInteger("n" + i + "F" + fi, nodes.get(i).getCapabilityFaces().get(fi).getIndex());
+            }
         }
 
         // Serialize travellers.
@@ -345,16 +371,25 @@ public class WorldNetwork implements IWorldNetwork {
 
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             BlockPos pos = BlockPos.fromLong(compound.getLong("n" + i));
-            EnumFacing face = null;
-            if (compound.hasKey("f" + i)) {
-                face = EnumFacing.values()[compound.getInteger("f" + i)];
-            }
-
-            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, face)) {
-                IWorldNetworkTile networkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, face);
-                WorldNetworkNode node = networkTile.createNode(this, pos);
-                networkTile.setNode(node);
-                registerNode(node);
+            if (compound.hasKey("n" + i + "F" + 0)) {
+                int fi = 0;
+                while (compound.hasKey("n" + i + "F" + fi)) {
+                    EnumFacing face = EnumFacing.values()[compound.getInteger("n" + i + "F" + fi)];
+                    if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, face)) {
+                        IWorldNetworkTile networkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, face);
+                        WorldNetworkNode node = networkTile.createNode(this, pos);
+                        networkTile.setNode(node);
+                        registerNode(node);
+                    }
+                    fi++;
+                }
+            } else {
+                if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos)) {
+                    IWorldNetworkTile networkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos);
+                    WorldNetworkNode node = networkTile.createNode(this, pos);
+                    networkTile.setNode(node);
+                    registerNode(node);
+                }
             }
         }
 
@@ -367,8 +402,13 @@ public class WorldNetwork implements IWorldNetwork {
         }
 
         for (WorldNetworkNode networkNode : Lists.newArrayList(networkNodes.values())) {
-            if (networkNode.getNetworkTile() != null)
-                networkNode.getNetworkTile().networkReloaded(this);
+            if (networkNode.useFace) {
+                networkNode.capabilityFaces.stream().filter(f -> networkNode.getNetworkTile(f) != null)
+                        .forEach(f -> networkNode.getNetworkTile(f).networkReloaded(WorldNetwork.this));
+            } else {
+                if (networkNode.getNetworkTile(null) != null)
+                    networkNode.getNetworkTile(null).networkReloaded(this);
+            }
         }
 
         for (WorldNetworkTraveller traveller : deserializedTravellers) {

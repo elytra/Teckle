@@ -25,6 +25,7 @@ import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
+import com.google.common.collect.Lists;
 import mcmultipart.api.container.IMultipartContainer;
 import mcmultipart.api.multipart.IMultipartTile;
 import mcmultipart.api.multipart.MultipartHelper;
@@ -115,7 +116,7 @@ public class TileItemTube extends TileNetworkMember {
                     }
                 } else {
                     if (!getNode().network.isNodePresent(neighbourTile.getPos())) {
-                        getNode().network.registerNode(new ItemNetworkEndpoint(getNode().network, neighbourTile.getPos(), capabilityFace));
+                        getNode().network.registerNode(new ItemNetworkEndpoint(getNode().network, neighbourTile.getPos(), Lists.newArrayList(capabilityFace)));
                     }
                 }
             }

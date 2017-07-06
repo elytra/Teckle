@@ -17,6 +17,7 @@
 package com.elytradev.teckle.common.worldnetwork.common.pathing;
 
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
+import net.minecraft.util.EnumFacing;
 
 /**
  * Used to store tagCompound about the usefulness of a node for making a path.
@@ -24,12 +25,14 @@ import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 public class PathNode {
     public int cost;
     public PathNode from;
+    public EnumFacing faceFrom;
     public WorldNetworkNode realNode;
 
-    public PathNode(PathNode from, WorldNetworkNode realNode) {
+    public PathNode(PathNode from, WorldNetworkNode realNode, EnumFacing faceFrom) {
         this.from = from;
         this.realNode = realNode;
         this.cost = from != null ? from.cost + 1 : 0;
+        this.faceFrom = faceFrom;
     }
 
 }

@@ -1,12 +1,10 @@
 package com.elytradev.teckle.client.render.model;
 
 import com.elytradev.teckle.common.TeckleMod;
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -22,20 +20,24 @@ import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ModelMachineOverlay {
 
-    public static Map<Class<? extends TileEntitySpecialRenderer>, ModelMachineOverlay> overlays = new HashMap<>();
-    public static IResourceManagerReloadListener reloadListener = resourceManager -> overlays.values().forEach(ModelMachineOverlay::load);
-
-    private final ResourceLocation modelLocation;
+    private static final ResourceLocation modelLocation = new ResourceLocation("teckle", "block/machineoverlay");
+    public static Map<Class<? extends TileEntitySpecialRenderer>, List<ModelMachineOverlay>> overlays = new HashMap<>();
+    public static IResourceManagerReloadListener reloadListener = resourceManager -> overlays.values().forEach(l -> l.forEach(ModelMachineOverlay::load));
+    private final String textureLocation;
+    private final boolean glow;
     private Map<EnumFacing, IBakedModel> models = new HashMap<>();
 
-    public ModelMachineOverlay(Class<? extends TileEntitySpecialRenderer> clazz, ResourceLocation modelLocation) {
-        this.modelLocation = modelLocation;
-        overlays.put(clazz, this);
+    public ModelMachineOverlay(Class<? extends TileEntitySpecialRenderer> clazz, String textureLocation, boolean glow) {
+        this.textureLocation = textureLocation;
+        this.glow = glow;
+        overlays.getOrDefault(clazz, new ArrayList<>()).add(this);
         load();
     }
 
@@ -51,7 +53,11 @@ public class ModelMachineOverlay {
             rotations.put(EnumFacing.WEST, ModelRotation.X90_Y270);
             rotations.put(EnumFacing.EAST, ModelRotation.X90_Y90);
 
-            IModel unbakedModel = ModelLoaderRegistry.getModel(modelLocation);
+            IModel unbakedModel = ModelLoaderRegistry.getModel(modelLocation).retexture(ImmutableMap.of("side", textureLocation));
+            //if (glow) {
+            //    models.put(EnumFacing.UP, unbakedModel.bake(TRSRTransformation.identity(),
+            //            DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()));
+            //}
             for (EnumFacing facing : EnumFacing.VALUES) {
                 models.put(facing, unbakedModel.bake(rotations.get(facing),
                         DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()));
@@ -63,28 +69,50 @@ public class ModelMachineOverlay {
 
     public void render(World world, Vec3d vecPos, BlockPos pos, IBlockState state, EnumFacing machineFacing) {
         IBakedModel model = models.get(machineFacing);
-        RenderHelper.disableStandardItemLighting();
-        GlStateManager.pushMatrix();
-        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        GlStateManager.enableBlend();
-        GlStateManager.disableCull();
-        GlStateManager.enableRescaleNormal();
-        GlStateManager.shadeModel(Minecraft.isAmbientOcclusionEnabled() ? 7425 : 7424);
-
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
-        buffer.setTranslation(vecPos.x, vecPos.y, vecPos.z);
-        buffer.begin(7, DefaultVertexFormats.BLOCK);
         getMC().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-        getMC().getBlockRendererDispatcher().getBlockModelRenderer().renderModelSmooth(world, model, state, BlockPos.ORIGIN, buffer, false, 0);
-        buffer.setTranslation(0, 0, 0);
-        tessellator.draw();
 
-        GlStateManager.disableBlend();
-        GlStateManager.enableCull();
-        GlStateManager.disableRescaleNormal();
-        GlStateManager.popMatrix();
-        RenderHelper.enableStandardItemLighting();
+        if (glow) {
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(vecPos.x, vecPos.y, vecPos.z);
+            GlStateManager.pushMatrix();
+            // Compensate for a weird bug with renderModelBrightness that results in incorrect transforms.
+            GlStateManager.rotate(-90, 0, 1, 0);
+            GlStateManager.color(1, 1, 1);
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
+            GlStateManager.disableLighting();
+
+            getMC().getBlockRendererDispatcher().getBlockModelRenderer().renderModelBrightness(model, state, 1, false);
+            GlStateManager.popMatrix();
+
+            GlStateManager.enableLighting();
+            int light = world.getLight(pos, true);
+            int j = light % 65536;
+            int k = light / 65536;
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, j, k);
+            GlStateManager.popMatrix();
+        } else {
+            RenderHelper.disableStandardItemLighting();
+            GlStateManager.pushMatrix();
+            GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+            GlStateManager.enableBlend();
+            GlStateManager.disableCull();
+            GlStateManager.enableRescaleNormal();
+            GlStateManager.shadeModel(Minecraft.isAmbientOcclusionEnabled() ? 7425 : 7424);
+
+            Tessellator tessellator = Tessellator.getInstance();
+            BufferBuilder buffer = tessellator.getBuffer();
+            buffer.setTranslation(vecPos.x, vecPos.y, vecPos.z);
+            buffer.begin(7, DefaultVertexFormats.BLOCK);
+            getMC().getBlockRendererDispatcher().getBlockModelRenderer().renderModelSmooth(world, model, state, BlockPos.ORIGIN, buffer, false, 0);
+            buffer.setTranslation(0, 0, 0);
+            tessellator.draw();
+
+            GlStateManager.disableBlend();
+            GlStateManager.enableCull();
+            GlStateManager.disableRescaleNormal();
+            GlStateManager.popMatrix();
+            RenderHelper.enableStandardItemLighting();
+        }
     }
 
     public Minecraft getMC() {

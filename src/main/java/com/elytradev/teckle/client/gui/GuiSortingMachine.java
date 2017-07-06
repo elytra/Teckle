@@ -71,9 +71,9 @@ public class GuiSortingMachine extends GuiContainer {
             buttonList.add(new GuiColourPicker(i, i, guiLeft + xS, guiTop + yS));
         }
 
-        buttonList.add(new GuiSortTypeSelector(8, guiLeft + 10, guiTop + 130));
-        buttonList.add(new GuiSortModeSelector(9, guiLeft + 40, guiTop + 130));
-        buttonList.add(new GuiDefaultRouteSelector(10, guiLeft + 64, guiTop + 133));
+        buttonList.add(new GuiSortTypeSelector(8, guiLeft + 10, guiTop + 134));
+        buttonList.add(new GuiSortModeSelector(9, guiLeft + 40, guiTop + 134));
+        buttonList.add(new GuiDefaultRouteSelector(10, guiLeft + 64, guiTop + 137));
 
         if (sortingMachine.getSource() != null) {
             buttonList.add(new GuiPullModeSelector(11, guiLeft + 150, guiTop + 130));

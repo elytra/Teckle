@@ -93,7 +93,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         List<BlockPos> iteratedPositions = new ArrayList<>();
         HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();
 
-        nodeStack.add(new PathNode(null, currentNode));
+        nodeStack.add(new PathNode(null, currentNode, null));
         while (!nodeStack.isEmpty()) {
             PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
             for (EnumFacing direction : EnumFacing.VALUES) {
@@ -109,14 +109,16 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         endpoints.put(neighbourPos, new HashMap<>());
                     }
                     if (isValidEndpoint(this, pathNode.realNode.position, neighbourPos)) {
-                        endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos)), direction.getOpposite()));
+                        endpoints.get(neighbourPos).put(direction.getOpposite(),
+                                new EndpointData(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos), direction.getOpposite()),
+                                        direction.getOpposite()));
                     } else if (entryPoint.position.equals(neighbourPos) && entryPoint.network.equals(network)) {
-                        PathNode nextNode = new PathNode(pathNode, entryPoint.endpoint);
+                        PathNode nextNode = new PathNode(pathNode, entryPoint.endpoint, direction.getOpposite());
                         nextNode.cost = Integer.MAX_VALUE;
                         endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(nextNode, direction.getOpposite()));
                     } else {
-                        if (network.getNodeFromPosition(neighbourPos).getNetworkTile().canConnectTo(direction.getOpposite())) {
-                            nodeStack.add(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos)));
+                        if (network.getNodeFromPosition(neighbourPos).getNetworkTile(direction).canConnectTo(direction.getOpposite())) {
+                            nodeStack.add(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos), direction.getOpposite()));
                             iteratedPositions.add(neighbourPos);
                         }
                     }
@@ -139,7 +141,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                 iteratedPositions = new ArrayList<>();
                 endpoints = new HashMap<>();
 
-                nodeStack.add(new PathNode(null, currentNode));
+                nodeStack.add(new PathNode(null, currentNode, null));
                 while (!nodeStack.isEmpty()) {
                     PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
                     for (EnumFacing direction : EnumFacing.VALUES) {
@@ -151,14 +153,14 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         }
 
                         WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
-                        PathNode neighbourPathNode = new PathNode(pathNode, neighbourNode);
+                        PathNode neighbourPathNode = new PathNode(pathNode, neighbourNode, direction.getOpposite());
                         if (neighbourNode.canAcceptTraveller(this, direction.getOpposite())) {
                             if (!endpoints.containsKey(neighbourPos)) {
                                 endpoints.put(neighbourPos, new HashMap<>());
                             }
 
                             if (!isValidEndpoint(this, pathNode.realNode.position, neighbourPos)) {
-                                nodeStack.add(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos)));
+                                nodeStack.add(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos), direction.getOpposite()));
                                 endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(neighbourPathNode, direction.getOpposite()));
                             }
 
@@ -203,7 +205,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         List<BlockPos> iteratedPositions = new ArrayList<>();
         HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();
 
-        nodeStack.add(new PathNode(null, network.getNodeFromPosition(startPos)));
+        nodeStack.add(new PathNode(null, network.getNodeFromPosition(startPos), null));
         while (!nodeStack.isEmpty()) {
             PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
             for (EnumFacing direction : EnumFacing.VALUES) {
@@ -220,10 +222,12 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         if (!endpoints.containsKey(neighbourPos)) {
                             endpoints.put(neighbourPos, new HashMap<>());
                         }
-                        endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos)), direction.getOpposite()));
+                        endpoints.get(neighbourPos).put(direction.getOpposite(),
+                                new EndpointData(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos), direction.getOpposite()),
+                                        direction.getOpposite()));
                     } else {
-                        if (network.getNodeFromPosition(neighbourPos).getNetworkTile().canConnectTo(direction.getOpposite())) {
-                            nodeStack.add(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos)));
+                        if (network.getNodeFromPosition(neighbourPos).getNetworkTile(direction.getOpposite()).canConnectTo(direction.getOpposite())) {
+                            nodeStack.add(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos), direction.getOpposite()));
                             iteratedPositions.add(neighbourPos);
                         }
                     }
@@ -309,7 +313,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                 node = node.from;
             }
 
-            node.from = new PathNode(null, entryPoint);
+            node.from = new PathNode(null, entryPoint, null);
             path = WorldNetworkPath.createPath(this, sortedEndpointData.get(0));
         }
 

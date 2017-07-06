@@ -2,8 +2,8 @@
     "forge_marker": 1,
     "defaults": {
         "textures": {
-            "side": "teckle:blocks/sortingmachinesideoff",
-            "particle": "teckle:blocks/sortingmachinesideoff",
+            "side": "teckle:blocks/sortingmachineside",
+            "particle": "teckle:blocks/sortingmachineside",
             "out": "teckle:blocks/sortingmachineout",
             "in": "teckle:blocks/sortingmachinein"
         },

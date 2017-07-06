@@ -24,10 +24,10 @@ import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Framework to build on for network tiles, doesn't implement everything you will need to make adjustments.
@@ -109,7 +109,7 @@ public abstract class NetworkTileTransporter implements IWorldNetworkTile {
     @Override
     public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
         try {
-            return nodeClazz.getConstructor(IWorldNetwork.class, BlockPos.class, EnumFacing.class).newInstance(network, pos, getCapabilityFace());
+            return nodeClazz.getConstructor(IWorldNetwork.class, BlockPos.class, List.class).newInstance(network, pos, getCapabilityFace());
         } catch (Exception e) {
             TeckleMod.LOG.error("Failed to instantiate a WorldNetworkNode for class {}", nodeClazz, e);
         }

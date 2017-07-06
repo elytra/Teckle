@@ -21,6 +21,7 @@ import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.worldnetwork.common.DummyWorldNetworkEndpoint;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
+import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -137,7 +138,7 @@ public class WorldNetworkPath implements Marshallable {
 
         for (PathNode pathNode : path) {
             buf.writeLong(pathNode.realNode.position.toLong());
-            buf.writeInt(pathNode.realNode.getCapabilityFace() == null ? -1 : pathNode.realNode.getCapabilityFace().getIndex());
+            buf.writeInt(pathNode.faceFrom != null ? pathNode.faceFrom.getIndex() : -1);
         }
     }
 
@@ -152,7 +153,7 @@ public class WorldNetworkPath implements Marshallable {
             if (faceIndex != -1) {
                 capFace = EnumFacing.VALUES[faceIndex];
             }
-            WorldNetworkNode networkNode = new WorldNetworkNode(null, pos, capFace);
+            WorldNetworkNode networkNode = new WorldNetworkNode(null, pos, Lists.newArrayList(capFace));
             if (i == size - 1) {
                 networkNode = new DummyWorldNetworkEndpoint(null, pos);
             }
@@ -161,7 +162,7 @@ public class WorldNetworkPath implements Marshallable {
                 from = path.get(i - 1);
             }
 
-            path.add(new PathNode(from, networkNode));
+            path.add(new PathNode(from, networkNode, capFace));
         }
     }
 
