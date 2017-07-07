@@ -30,9 +30,9 @@ import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
-import com.elytradev.teckle.common.network.messages.SortingMachineLitMessage;
+import com.elytradev.teckle.common.network.messages.TileLitMessage;
+import com.elytradev.teckle.common.tile.TileLitNetworkMemeber;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
-import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
@@ -59,7 +59,6 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
@@ -78,14 +77,13 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 
-public class TileSortingMachine extends TileNetworkMember implements ITickable, IElementProvider {
+public class TileSortingMachine extends TileLitNetworkMemeber implements IElementProvider {
 
     public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(48);
     public EnumDyeColor[] colours = new EnumDyeColor[8];
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(32);
     public List<WorldNetworkTraveller> returnedTravellers = Lists.newArrayList();
     public DefaultRoute defaultRoute = DefaultRoute.NONE;
-    public boolean isLit;
     @SideOnly(Side.CLIENT)
     private int selectorPos = -1;
     private PullMode pullMode = new PullModeSingleStep();
@@ -206,7 +204,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     @Override
     public void onLoad() {
-        if (world.isRemote) new SortingMachineLitMessage(this).sendToAllWatching(this);
+        if (world.isRemote) new TileLitMessage(this).sendToAllWatching(this);
     }
 
     @Nullable
@@ -236,15 +234,10 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     @Override
     public void update() {
+        super.update();
+
         if (world.isRemote)
             return;
-
-        if (isLit) {
-            if (!world.isBlockPowered(pos)) {
-                isLit = false;
-                new SortingMachineLitMessage(this).sendToAllWatching(this);
-            }
-        }
 
         if (!returnedTravellers.isEmpty()) {
             WorldNetworkTraveller traveller = returnedTravellers.get(0);
@@ -303,13 +296,6 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         return null;
     }
 
-    public void setTriggered() {
-        if (!isLit) {
-            isLit = true;
-            new SortingMachineLitMessage(this).sendToAllWatching(this);
-        }
-    }
-
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
@@ -343,8 +329,6 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             deserializedTraveller.deserializeNBT(compound.getCompoundTag("returnedTravellers" + i));
             returnedTravellers.set(i, deserializedTraveller);
         }
-
-        isLit = compound.getBoolean("isLit");
     }
 
     @Override
@@ -372,7 +356,6 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         for (int i = 0; i < returnedTravellers.size(); i++) {
             compound.setTag("returnedTravellers" + i, returnedTravellers.get(i).serializeNBT());
         }
-        compound.setBoolean("isLit", isLit);
 
         return super.writeToNBT(compound);
     }

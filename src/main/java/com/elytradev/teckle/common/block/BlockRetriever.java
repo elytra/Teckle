@@ -1,19 +1,3 @@
-/*
- *    Copyright 2017 Benjamin K (darkevilmac)
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistantHolder;
@@ -21,6 +5,7 @@ import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
 import com.elytradev.teckle.common.network.messages.TileLitMessage;
+import com.elytradev.teckle.common.tile.TileRetriever;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -31,7 +16,6 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
@@ -46,13 +30,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 
-/**
- * Created by darkevilmac on 4/25/2017.
- */
-public class BlockSortingMachine extends BlockContainer {
+public class BlockRetriever extends BlockContainer {
     public static PropertyDirection FACING = PropertyDirection.create("facing");
 
-    public BlockSortingMachine(Material materialIn) {
+    public BlockRetriever(Material materialIn) {
         super(materialIn);
 
         this.setHarvestLevel("pickaxe", 0);
@@ -99,16 +80,14 @@ public class BlockSortingMachine extends BlockContainer {
         if (worldIn.isRemote)
             return;
 
-        TileSortingMachine sortingMachine = (TileSortingMachine) worldIn.getTileEntity(pos);
+        TileRetriever retriever = (TileRetriever) worldIn.getTileEntity(pos);
         boolean powered = worldIn.isBlockPowered(pos);
-        boolean hadPower = sortingMachine.isLit;
+        boolean hadPower = retriever.isLit;
         if (powered) {
-            sortingMachine.setTriggered();
-            if (!hadPower)
-                sortingMachine.getPullMode().onPulse(sortingMachine);
+            retriever.setTriggered();
         } else {
-            sortingMachine.isLit = false;
-            new TileLitMessage(sortingMachine).sendToAllWatching(sortingMachine);
+            retriever.isLit = false;
+            new TileLitMessage(retriever).sendToAllWatching(retriever);
         }
     }
 
@@ -123,13 +102,8 @@ public class BlockSortingMachine extends BlockContainer {
         if (tileAtPos != null) {
             getNetworkHelper(worldIn).onNodeBroken(worldIn, pos);
 
-            if (tileAtPos instanceof TileSortingMachine) {
-                TileSortingMachine sortingMachine = (TileSortingMachine) worldIn.getTileEntity(pos);
-
-                // Vomit the sorting data.
-                sortingMachine.filterRows.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
-                sortingMachine.buffer.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
-                sortingMachine.returnedTravellers.forEach(traveller -> traveller.dropActions.forEach((s, iDropAction) -> iDropAction.dropToWorld(traveller)));
+            if (tileAtPos instanceof TileRetriever) {
+                TileRetriever retriever = (TileRetriever) worldIn.getTileEntity(pos);
             }
         }
 

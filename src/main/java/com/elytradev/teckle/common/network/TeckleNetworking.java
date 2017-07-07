@@ -42,7 +42,7 @@ public class TeckleNetworking {
         registerMessage(SortingMachinePullModeChangeMessage.class);
         registerMessage(SortingMachineDefaultRouteChangeMessage.class);
         registerMessage(SortingMachineSelectorMessage.class);
-        registerMessage(SortingMachineLitMessage.class);
+        registerMessage(TileLitMessage.class);
     }
 
     private static void registerMessage(Class<? extends Message> clazz) {

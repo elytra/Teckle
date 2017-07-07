@@ -44,9 +44,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 
-/**
- * Created by darkevilmac on 3/30/2017.
- */
 public class BlockTransposer extends BlockContainer {
 
     public static PropertyDirection FACING = PropertyDirection.create("facing");
