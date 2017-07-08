@@ -4,7 +4,7 @@ import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
 import com.elytradev.teckle.common.network.TeckleNetworking;
-import com.elytradev.teckle.common.tile.TileLitNetworkMemeber;
+import com.elytradev.teckle.common.tile.TileLitNetworkMember;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
@@ -19,7 +19,7 @@ public class TileLitMessage extends Message {
         super(ctx);
     }
 
-    public TileLitMessage(TileLitNetworkMemeber networkMember) {
+    public TileLitMessage(TileLitNetworkMember networkMember) {
         super(TeckleNetworking.NETWORK);
         networkMember.isLit = networkMember.isLit || networkMember.getWorld().isBlockPowered(networkMember.getPos());
         this.isLit = networkMember.isLit;
@@ -29,7 +29,7 @@ public class TileLitMessage extends Message {
     @Override
     protected void handle(EntityPlayer sender) {
         if (sender != null && sender.world != null) {
-            TileLitNetworkMemeber networkMember = (TileLitNetworkMemeber) sender.world.getTileEntity(networkMemberPos);
+            TileLitNetworkMember networkMember = (TileLitNetworkMember) sender.world.getTileEntity(networkMemberPos);
             networkMember.isLit = isLit;
         }
     }

@@ -5,7 +5,7 @@ import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
 
-public class TileLitNetworkMemeber extends TileNetworkMember implements ITickable {
+public class TileLitNetworkMember extends TileNetworkMember implements ITickable {
 
     public boolean isLit;
 

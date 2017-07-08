@@ -31,7 +31,7 @@ import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
 import com.elytradev.teckle.common.network.messages.TileLitMessage;
-import com.elytradev.teckle.common.tile.TileLitNetworkMemeber;
+import com.elytradev.teckle.common.tile.TileLitNetworkMember;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.SlotData;
@@ -77,7 +77,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 
-public class TileSortingMachine extends TileLitNetworkMemeber implements IElementProvider {
+public class TileSortingMachine extends TileLitNetworkMember implements IElementProvider {
 
     public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(48);
     public EnumDyeColor[] colours = new EnumDyeColor[8];
