@@ -159,7 +159,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
         EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
         IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, capabilityFace.getOpposite());
 
-        if (thisNetworkTile == null)
+        if (thisNetworkTile == null || thisNetworkTile.getNode().network == null)
             return;
 
         if (thisNetworkTile != null && thisNetworkTile.getNode() != null && thisNetworkTile.getNode().network != null
@@ -182,7 +182,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
                 }
             }
         } else {
-            if (world.getTileEntity(neighbourPos) == null) {
+            if (world.getTileEntity(neighbourPos) == null && thisNetworkTile.getNode().network.isNodePresent(neighbourPos)) {
                 thisNetworkTile.getNode().network.unregisterNodeAtPosition(neighbourPos);
             } else {
                 TileEntity neighbourTile = world.getTileEntity(neighbourPos);
