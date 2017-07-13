@@ -35,6 +35,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 /**
@@ -54,6 +55,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     public List<Tuple<WorldNetworkNode, EnumFacing>> triedEndpoints = new ArrayList<>();
     public HashMap<String, IDropAction> dropActions = new HashMap<>();
     protected WorldNetworkEntryPoint entryPoint;
+    private BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate = (o0, o1) -> true;
 
     public WorldNetworkTraveller(NBTTagCompound data) {
         this.entryPoint = null;
@@ -78,6 +80,14 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                 return facing;
 
         return EnumFacing.DOWN;
+    }
+
+    public BiPredicate<WorldNetworkNode, EnumFacing> getEndpointPredicate() {
+        return endpointPredicate;
+    }
+
+    public void setEndpointPredicate(BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate) {
+        this.endpointPredicate = endpointPredicate;
     }
 
     public WorldNetworkEntryPoint getEntryPoint() {
@@ -108,7 +118,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                     if (!endpoints.containsKey(neighbourPos)) {
                         endpoints.put(neighbourPos, new HashMap<>());
                     }
-                    if (isValidEndpoint(this, pathNode.realNode.position, neighbourPos)) {
+                    if (isValidEndpoint(this, pathNode.realNode.position, neighbourPos) && endpointPredicate.test(neighbourNode, direction.getOpposite())) {
                         endpoints.get(neighbourPos).put(direction.getOpposite(),
                                 new EndpointData(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos), direction.getOpposite()),
                                         direction.getOpposite()));
@@ -159,7 +169,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                                 endpoints.put(neighbourPos, new HashMap<>());
                             }
 
-                            if (!isValidEndpoint(this, pathNode.realNode.position, neighbourPos)) {
+                            if (!isValidEndpoint(this, pathNode.realNode.position, neighbourPos) || !endpointPredicate.test(neighbourNode, direction.getOpposite())) {
                                 nodeStack.add(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos), direction.getOpposite()));
                                 endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(neighbourPathNode, direction.getOpposite()));
                             }
@@ -218,7 +228,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
                 WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
                 if (neighbourNode.canAcceptTraveller(this, direction.getOpposite())) {
-                    if (isValidEndpoint(this, pathNode.realNode.position, neighbourPos)) {
+                    if (isValidEndpoint(this, pathNode.realNode.position, neighbourPos) && endpointPredicate.test(neighbourNode, direction.getOpposite())) {
                         if (!endpoints.containsKey(neighbourPos)) {
                             endpoints.put(neighbourPos, new HashMap<>());
                         }

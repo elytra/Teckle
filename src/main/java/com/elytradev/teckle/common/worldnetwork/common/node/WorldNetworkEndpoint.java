@@ -23,9 +23,6 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
 
-/**
- * Created by darkevilmac on 3/26/2017.
- */
 public abstract class WorldNetworkEndpoint extends WorldNetworkNode {
 
     public WorldNetworkEndpoint(IWorldNetwork network, BlockPos position, List<EnumFacing> capabilityFaces) {

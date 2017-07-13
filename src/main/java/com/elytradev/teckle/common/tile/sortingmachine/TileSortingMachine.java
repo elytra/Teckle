@@ -30,7 +30,6 @@ import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
-import com.elytradev.teckle.common.network.messages.TileLitMessage;
 import com.elytradev.teckle.common.tile.TileLitNetworkMember;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
@@ -54,8 +53,6 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IStringSerializable;
@@ -63,14 +60,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -89,7 +84,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     private PullMode pullMode = new PullModeSingleStep();
     private SortMode sortMode = new SortModeAnyStack();
     private List<IItemHandler> subHandlers;
-    private NetworkTileTransporter entryPointTile = new NetworkTileTransporter() {
+    private NetworkTileTransporter ejectionTile = new NetworkTileTransporter() {
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
             return new WorldNetworkEntryPoint(network, pos, getOutputFace(), Lists.newArrayList(getCapabilityFace()));
@@ -164,7 +159,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             return getOutputFace();
         }
     };
-    private IWorldNetworkTile endPointTile = new NetworkTileTransporter() {
+    private IWorldNetworkTile insertionTile = new NetworkTileTransporter() {
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
             return side.equals(getCapabilityFace());
@@ -187,7 +182,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
         @Override
         public EnumFacing getCapabilityFace() {
-            return TileSortingMachine.this.entryPointTile.getOutputFace().getOpposite();
+            return TileSortingMachine.this.ejectionTile.getOutputFace().getOpposite();
         }
     };
 
@@ -203,36 +198,6 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     }
 
     @Override
-    public void onLoad() {
-        if (world.isRemote) new TileLitMessage(this).sendToAllWatching(this);
-    }
-
-    @Nullable
-    @Override
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        return new SPacketUpdateTileEntity(this.pos, 0, getUpdateTag());
-    }
-
-    @Override
-    public NBTTagCompound getUpdateTag() {
-        return this.writeToNBT(new NBTTagCompound());
-    }
-
-    @Override
-    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-        this.readFromNBT(pkt.getNbtCompound());
-    }
-
-    @Override
-    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
-        if (oldState.getBlock() == newSate.getBlock()) {
-            return false;
-        }
-
-        return super.shouldRefresh(world, pos, oldState, newSate);
-    }
-
-    @Override
     public void update() {
         super.update();
 
@@ -241,12 +206,12 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
         if (!returnedTravellers.isEmpty()) {
             WorldNetworkTraveller traveller = returnedTravellers.get(0);
-            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos.offset(entryPointTile.getOutputFace()), entryPointTile.getOutputFace().getOpposite())) {
-                BlockPos outputPos = pos.offset(entryPointTile.getOutputFace());
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos.offset(ejectionTile.getOutputFace()), ejectionTile.getOutputFace().getOpposite())) {
+                BlockPos outputPos = pos.offset(ejectionTile.getOutputFace());
 
                 ItemStack stackToInsert = new ItemStack(traveller.data.getCompoundTag("stack"));
                 ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(traveller.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> traveller.data.getTag(o))));
-                ItemStack result = (ItemStack) getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) entryPointTile.getNode(),
+                ItemStack result = (ItemStack) getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) ejectionTile.getNode(),
                         outputPos, stackToInsert.copy(), collect, false, false);
 
                 if (result.isEmpty()) {
@@ -270,7 +235,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
     public TileEntity getSource() {
         if (world != null) {
-            EnumFacing facing = entryPointTile.getOutputFace();
+            EnumFacing facing = ejectionTile.getOutputFace();
             BlockPos sourcePos = pos.offset(facing.getOpposite());
 
             TileEntity sourceTile = world.getTileEntity(sourcePos);
@@ -284,7 +249,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
     public TileEntity getOutput() {
         if (world != null) {
-            EnumFacing facing = entryPointTile.getOutputFace();
+            EnumFacing facing = ejectionTile.getOutputFace();
             BlockPos sourcePos = pos.offset(facing);
 
             TileEntity sourceTile = world.getTileEntity(sourcePos);
@@ -373,9 +338,9 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         }
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
             if (Objects.equals(facing, getFacing()))
-                return (T) entryPointTile;
+                return (T) ejectionTile;
             else if (Objects.equals(facing, getFacing().getOpposite()))
-                return (T) endPointTile;
+                return (T) insertionTile;
         }
         return super.getCapability(capability, facing);
     }
@@ -402,13 +367,13 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     }
 
     public EnumFacing getFacing() {
-        return entryPointTile.getOutputFace();
+        return ejectionTile.getOutputFace();
     }
 
     public ItemStack addToNetwork(IItemHandler source, int slot, int quantity, ImmutableMap<String, NBTBase> additionalData) {
         ItemStack remaining = source.extractItem(slot, quantity, false).copy();
         IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
-        remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getEntryPointTile().getNode(), pos.offset(getFacing()), remaining, additionalData, false, false).copy();
+        remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getEjectionTile().getNode(), pos.offset(getFacing()), remaining, additionalData, false, false).copy();
 
         if (!remaining.isEmpty()) {
             if (remaining.getCount() != quantity) {
@@ -456,8 +421,8 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         return stacks;
     }
 
-    public IWorldNetworkTile getEntryPointTile() {
-        return entryPointTile;
+    public IWorldNetworkTile getEjectionTile() {
+        return ejectionTile;
     }
 
     public PullMode getPullMode() {

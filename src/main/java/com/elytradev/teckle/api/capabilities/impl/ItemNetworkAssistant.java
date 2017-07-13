@@ -39,9 +39,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiPredicate;
 
 /**
  * The network assistant for the teckle item worldnetwork.
@@ -217,9 +219,9 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
         }
     }
 
+    @Nonnull
     @Override
-    public ItemStack insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, ItemStack insertData,
-                                ImmutableMap<String, NBTBase> additionalData, boolean networksInsertionOnly, boolean simulate) {
+    public ItemStack insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, ItemStack insertData, ImmutableMap<String, NBTBase> additionalData, BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate, boolean networksInsertionOnly, boolean simulate) {
         ItemStack remaining = insertData.copy();
         EnumFacing determinedCapFace = WorldNetworkTraveller.getFacingFromVector(insertInto.subtract(entryPoint.position));
         IWorldNetworkTile networkTile = entryPoint.getNetworkTile(determinedCapFace);
@@ -230,6 +232,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
             tagCompound.setTag("stack", insertData.serializeNBT());
             additionalData.forEach(tagCompound::setTag);
             WorldNetworkTraveller traveller = entryPoint.addTraveller(tagCompound, !simulate);
+            traveller.setEndpointPredicate(endpointPredicate);
             if (simulate)
                 entryPoint.network.unregisterTraveller(traveller, true, false);
             if (Objects.equals(traveller, WorldNetworkTraveller.NONE) || traveller == null) {
@@ -257,7 +260,6 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
                 }
             }
         }
-
         return remaining;
     }
 }

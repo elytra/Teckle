@@ -219,9 +219,9 @@ public class SortModeFullMatch extends SortMode {
                 }
             }
 
-            BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getEntryPointTile().getOutputFace());
+            BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getEjectionTile().getOutputFace());
             ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
-            ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(),
+            ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getEjectionTile().getNode(),
                     insertInto, travellerStack, collect, false, true);
 
             return result.isEmpty();
@@ -309,10 +309,10 @@ public class SortModeFullMatch extends SortMode {
             } else {
                 travellerCopy.data.removeTag("colour");
             }
-            BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getEntryPointTile().getOutputFace());
+            BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getEjectionTile().getOutputFace());
             ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
             ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class)
-                    .insertData((WorldNetworkEntryPoint) sortingMachine.getEntryPointTile().getNode(), insertInto,
+                    .insertData((WorldNetworkEntryPoint) sortingMachine.getEjectionTile().getNode(), insertInto,
                             travellerStack, collect, false, false);
 
             if (result.isEmpty() || result.getCount() != travellerStack.getCount()) {

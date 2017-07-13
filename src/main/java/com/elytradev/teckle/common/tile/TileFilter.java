@@ -69,9 +69,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Created by darkevilmac on 3/30/2017.
- */
 public class TileFilter extends TileNetworkMember implements ITickable, IElementProvider {
 
     public EnumDyeColor colour = null;

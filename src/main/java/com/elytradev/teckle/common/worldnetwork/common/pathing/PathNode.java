@@ -34,5 +34,4 @@ public class PathNode {
         this.cost = from != null ? from.cost + 1 : 0;
         this.faceFrom = faceFrom;
     }
-
 }

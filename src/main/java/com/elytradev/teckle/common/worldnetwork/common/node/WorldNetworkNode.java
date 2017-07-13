@@ -37,10 +37,9 @@ public class WorldNetworkNode {
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
     public BlockPos position;
     public IWorldNetwork network;
-    public boolean useFace = false;
-    public List<EnumFacing> capabilityFaces = new ArrayList<>();
+    private boolean useFace = false;
+    private List<EnumFacing> capabilityFaces = new ArrayList<>();
     private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
-
 
     public WorldNetworkNode() {
         this.position = new BlockPos(0, -1, 0);
@@ -128,5 +127,9 @@ public class WorldNetworkNode {
 
     public Collection<WorldNetworkTraveller> getTravellers() {
         return (travellers.values());
+    }
+
+    public boolean useFace() {
+        return useFace;
     }
 }

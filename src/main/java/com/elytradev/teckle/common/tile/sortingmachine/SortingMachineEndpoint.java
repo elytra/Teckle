@@ -15,7 +15,7 @@ public class SortingMachineEndpoint extends WorldNetworkEndpoint {
 
     @Override
     public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {
-        TileSortingMachine sortingMachine = (TileSortingMachine) this.getNetworkTile(capabilityFaces.get(0)).getTileEntity();
+        TileSortingMachine sortingMachine = (TileSortingMachine) this.getNetworkTile(getCapabilityFaces().get(0)).getTileEntity();
         if (sortingMachine == null)
             return false;
         ItemStack remaining = sortingMachine.getSortMode().acceptTraveller(sortingMachine, traveller, from);

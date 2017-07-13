@@ -85,6 +85,8 @@ public class BlockRetriever extends BlockContainer {
         boolean hadPower = retriever.isLit;
         if (powered) {
             retriever.setTriggered();
+            if (!hadPower)
+                retriever.onPulse();
         } else {
             retriever.isLit = false;
             new TileLitMessage(retriever).sendToAllWatching(retriever);

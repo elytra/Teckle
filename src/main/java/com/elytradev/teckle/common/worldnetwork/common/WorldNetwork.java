@@ -346,7 +346,7 @@ public class WorldNetwork implements IWorldNetwork {
         List<WorldNetworkNode> nodes = getNodes();
         for (int i = 0; i < nodes.size(); i++) {
             compound.setLong("n" + i, nodes.get(i).position.toLong());
-            for (int fi = 0; fi < nodes.get(i).capabilityFaces.size(); fi++) {
+            for (int fi = 0; fi < nodes.get(i).getCapabilityFaces().size(); fi++) {
                 compound.setInteger("n" + i + "F" + fi, nodes.get(i).getCapabilityFaces().get(fi).getIndex());
             }
         }
@@ -402,8 +402,8 @@ public class WorldNetwork implements IWorldNetwork {
         }
 
         for (WorldNetworkNode networkNode : Lists.newArrayList(networkNodes.values())) {
-            if (networkNode.useFace) {
-                networkNode.capabilityFaces.stream().filter(f -> networkNode.getNetworkTile(f) != null)
+            if (networkNode.useFace()) {
+                networkNode.getCapabilityFaces().stream().filter(f -> networkNode.getNetworkTile(f) != null)
                         .forEach(f -> networkNode.getNetworkTile(f).networkReloaded(WorldNetwork.this));
             } else {
                 if (networkNode.getNetworkTile(null) != null)

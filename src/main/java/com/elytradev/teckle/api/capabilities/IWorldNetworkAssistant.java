@@ -17,13 +17,17 @@
 package com.elytradev.teckle.api.capabilities;
 
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 /**
  * Primarily used to allow mods to interact with worldnetworks.
@@ -72,6 +76,21 @@ public interface IWorldNetworkAssistant<T extends INBTSerializable> {
      * @return the remaining data that was not inserted.
      */
     @Nonnull
-    T insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, T insertData, ImmutableMap<String, NBTBase> additionalData, boolean networksInsertionOnly, boolean simulate);
+    default T insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, T insertData, ImmutableMap<String, NBTBase> additionalData, boolean networksInsertionOnly, boolean simulate){
+        return insertData(entryPoint, insertInto, insertData, additionalData, (node, enumFacing) -> true, networksInsertionOnly, simulate);
+    }
+
+    /**
+     * Inserts the given data into the appropriate network.
+     *
+     * @param entryPoint            the entry point node this data is coming from.
+     * @param insertInto            the position we're trying to insert into.
+     * @param insertData            the data we're inserting.
+     * @param networksInsertionOnly
+     * @param simulate
+     * @return the remaining data that was not inserted.
+     */
+    @Nonnull
+    T insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, T insertData, ImmutableMap<String, NBTBase> additionalData, BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate, boolean networksInsertionOnly, boolean simulate);
 
 }
