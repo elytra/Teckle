@@ -40,15 +40,16 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.Random;
 
-/**
- * Created by darkevilmac on 4/18/2017.
- */
 public class BlockAlloyFurnace extends BlockContainer {
     public static final PropertyDirection FACING = BlockHorizontal.FACING;
     public static final PropertyBool LIT = PropertyBool.create("lit");
 
     public BlockAlloyFurnace(Material material) {
         super(material);
+
+        this.setHarvestLevel("pickaxe", 0);
+        this.setHardness(2.0F);
+        this.setResistance(10.0F);
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(LIT, false));
     }
 

@@ -44,9 +44,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 
-/**
- * Created by darkevilmac on 3/30/2017.
- */
 public class BlockTransposer extends BlockContainer {
 
     public static PropertyDirection FACING = PropertyDirection.create("facing");
@@ -56,6 +53,8 @@ public class BlockTransposer extends BlockContainer {
         super(materialIn);
 
         this.setHarvestLevel("pickaxe", 0);
+        this.setHardness(2.0F);
+        this.setResistance(10.0F);
         this.setDefaultState(blockState.getBaseState());
     }
 

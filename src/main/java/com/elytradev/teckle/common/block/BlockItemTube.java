@@ -70,6 +70,8 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
         super(materialIn);
 
         this.setHarvestLevel("pickaxe", 0);
+        this.setHardness(0.25F);
+        this.setResistance(10.0F);
         this.setLightOpacity(0);
         this.setDefaultState(blockState.getBaseState());
     }

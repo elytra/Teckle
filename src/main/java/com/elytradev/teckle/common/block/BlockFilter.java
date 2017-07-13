@@ -59,6 +59,8 @@ public class BlockFilter extends BlockContainer {
         super(materialIn);
 
         this.setHarvestLevel("pickaxe", 0);
+        this.setHardness(2.0F);
+        this.setResistance(10.0F);
         this.setDefaultState(blockState.getBaseState());
     }
 
