@@ -212,17 +212,15 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
      */
     public boolean tryPush() {
         boolean result = false;
-
         if (cooldown > 0)
             return result;
+        try {
+            TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(networkTile.getOutputFace()));
+            boolean destinationIsAir = world.isAirBlock(pos.offset(networkTile.getOutputFace()));
+            boolean hasInsertionDestination = potentialInsertionTile != null && ((networkTile.getNode() != null && networkTile.getNode().network != null)
+                    || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getOutputFace().getOpposite())));
 
-        TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(networkTile.getOutputFace()));
-        boolean destinationIsAir = world.isAirBlock(pos.offset(networkTile.getOutputFace()));
-        boolean hasInsertionDestination = potentialInsertionTile != null && ((networkTile.getNode() != null && networkTile.getNode().network != null)
-                || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getOutputFace().getOpposite())));
-
-        if (!world.isRemote && (hasInsertionDestination || destinationIsAir)) {
-            try {
+            if (!world.isRemote && (hasInsertionDestination || destinationIsAir)) {
                 WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().network.getNodeFromPosition(pos);
                 EnumFacing facing = networkTile.getOutputFace();
 
@@ -235,18 +233,18 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                         result = ejectExtractionData(facing, extractionData);
                     }
                 }
-            } catch (NullPointerException e) {
-                String debugInfo = "NTile " + networkTile == null ? "null" : networkTile.toString();
-                debugInfo += " node " + networkTile.getNode() == null ? "null" : networkTile.getNode().toString();
-                debugInfo += " network " + networkTile.getNode().network == null ? "null" :  networkTile.getNode().network.toString();
-                TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
-                TeckleMod.LOG.error("Caught NPE in tryPush!, {}", this);
-                TeckleMod.LOG.error("Exception follows, {}", e);
-                TeckleMod.LOG.error("Here's some useful debug info, {}", debugInfo);
-                TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
-            }
-        }
 
+            }
+        } catch (NullPointerException e) {
+            String debugInfo = "NTile " + networkTile == null ? "null" : networkTile.toString();
+            debugInfo += " node " + networkTile.getNode() == null ? "null" : networkTile.getNode().toString();
+            debugInfo += " network " + networkTile.getNode().network == null ? "null" : networkTile.getNode().network.toString();
+            TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
+            TeckleMod.LOG.error("Caught NPE in tryPush!, {}", this);
+            TeckleMod.LOG.error("Exception follows, {}", e);
+            TeckleMod.LOG.error("Here's some useful debug info, {}", debugInfo);
+            TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
+        }
         cooldown = 10;
         return result;
     }
