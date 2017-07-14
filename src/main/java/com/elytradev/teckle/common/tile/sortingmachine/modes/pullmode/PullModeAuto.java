@@ -16,6 +16,7 @@
 
 package com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode;
 
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -37,14 +38,14 @@ public class PullModeAuto extends PullMode {
         if (isPaused())
             return;
 
+        if (coolDown > 0)
+            coolDown--;
+
         if (coolDown <= 0) {
             sortingMachine.getSortMode().pulse(sortingMachine, this);
 
-            coolDown = 6;
+            coolDown = TeckleMod.CONFIG.sortingMachineCooldown;
         }
-
-        if (coolDown > 0)
-            coolDown--;
     }
 
     @Override

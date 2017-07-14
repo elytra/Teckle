@@ -173,7 +173,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             }
         }
 
-        cooldown = 10;
+        cooldown = TeckleMod.CONFIG.transposerCooldown;
         return result;
     }
 

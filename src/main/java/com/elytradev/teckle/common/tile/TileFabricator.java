@@ -17,6 +17,7 @@
 package com.elytradev.teckle.common.tile;
 
 import com.elytradev.teckle.client.gui.GuiFabricator;
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.container.ContainerFabricator;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
@@ -75,7 +76,7 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
         if (cooldown <= 0) {
             pullFromNeighbours();
             craft();
-            cooldown = 5;
+            cooldown = TeckleMod.CONFIG.fabricatorCooldown;
         }
 
         cooldown--;

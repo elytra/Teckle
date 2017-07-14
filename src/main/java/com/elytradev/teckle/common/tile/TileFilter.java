@@ -234,7 +234,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
             }
         }
 
-        cooldown = 10;
+        cooldown = TeckleMod.CONFIG.filterCooldown;
         return result;
     }
 
