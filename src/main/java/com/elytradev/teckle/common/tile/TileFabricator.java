@@ -29,6 +29,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -54,6 +56,22 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
     public InventoryCrafting craftingGrid = new InventoryCrafting((Container) getServerElement(null), 3, 3);
     public int cooldown = 5;
     private NonNullList<ItemStack> templates = NonNullList.withSize(9, ItemStack.EMPTY);
+
+    @Nullable
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(this.pos, 0, getUpdateTag());
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        return this.writeToNBT(new NBTTagCompound());
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        this.readFromNBT(pkt.getNbtCompound());
+    }
 
     @Nonnull
     public ItemStack getTemplateSlot(int index) {

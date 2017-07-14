@@ -40,6 +40,7 @@ import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullModeSi
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModeAnyStack;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -75,6 +76,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 
@@ -85,6 +87,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(32);
     public List<WorldNetworkTraveller> returnedTravellers = Lists.newArrayList();
     public DefaultRoute defaultRoute = DefaultRoute.NONE;
+    public boolean isLit;
     @SideOnly(Side.CLIENT)
     private int selectorPos = -1;
     private PullMode pullMode = new PullModeSingleStep();
@@ -191,7 +194,6 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             return TileSortingMachine.this.entryPointTile.getOutputFace().getOpposite();
         }
     };
-    public boolean isLit;
 
     public List<IItemHandler> getCompartmentHandlers() {
         if (subHandlers == null || subHandlers.isEmpty()) {
@@ -345,6 +347,18 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
 
         isLit = compound.getBoolean("isLit");
+
+        UUID networkID = compound.getUniqueId("networkIDEntryPoint");
+        IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(world).get(networkID);
+        WorldNetworkNode node = entryPointTile.createNode(network, pos);
+        network.registerNode(node);
+        entryPointTile.setNode(node);
+
+        networkID = compound.getUniqueId("networkIDEndPoint");
+        network = WorldNetworkDatabase.getNetworkDB(world).get(networkID);
+        node = endPointTile.createNode(network, pos);
+        network.registerNode(node);
+        endPointTile.setNode(node);
     }
 
     @Override
@@ -373,6 +387,11 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             compound.setTag("returnedTravellers" + i, returnedTravellers.get(i).serializeNBT());
         }
         compound.setBoolean("isLit", isLit);
+
+        if (entryPointTile.getNode() == null || endPointTile.getNode() == null)
+            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+        compound.setUniqueId("networkIDEntryPoint", entryPointTile.getNode().network.getNetworkID());
+        compound.setUniqueId("networkIDEndPoint", endPointTile.getNode().network.getNetworkID());
 
         return super.writeToNBT(compound);
     }

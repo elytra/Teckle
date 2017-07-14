@@ -30,6 +30,7 @@ import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.MathHelper;
@@ -72,7 +73,15 @@ public abstract class TileNetworkMember extends TileEntity {
         return super.hasCapability(capability, facing);
     }
 
+    @Override
+    public void readFromNBT(NBTTagCompound compound) {
+        super.readFromNBT(compound);
+    }
 
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        return super.writeToNBT(compound);
+    }
 
     private final class ProbeCapability implements IProbeDataProvider {
         @Override

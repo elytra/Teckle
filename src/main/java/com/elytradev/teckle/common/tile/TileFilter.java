@@ -32,6 +32,7 @@ import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -67,6 +68,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Created by darkevilmac on 3/30/2017.
@@ -215,6 +217,8 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         if (cooldown > 0)
             return result;
         try {
+            System.out.println("Attempting a push...");
+
             TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(networkTile.getOutputFace()));
             boolean destinationIsAir = world.isAirBlock(pos.offset(networkTile.getOutputFace()));
             boolean hasInsertionDestination = potentialInsertionTile != null && ((networkTile.getNode() != null && networkTile.getNode().network != null)
@@ -389,6 +393,12 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
         filterData.deserializeNBT(compound.getCompoundTag("filterData"));
         buffer.deserializeNBT(compound.getCompoundTag("buffer"));
+
+        UUID networkID = compound.getUniqueId("networkID");
+        IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(world).get(networkID);
+        WorldNetworkNode node = networkTile.createNode(network, pos);
+        network.registerNode(node);
+        networkTile.setNode(node);
     }
 
     @Override
@@ -400,6 +410,10 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         }
         compound.setTag("filterData", filterData.serializeNBT());
         compound.setTag("buffer", buffer.serializeNBT());
+
+        if (networkTile.getNode() == null)
+            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+        compound.setUniqueId("networkID", networkTile.getNode().network.getNetworkID());
 
         return super.writeToNBT(compound);
     }

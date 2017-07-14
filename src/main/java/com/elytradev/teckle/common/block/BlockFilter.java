@@ -119,8 +119,9 @@ public class BlockFilter extends BlockContainer {
         if (tileentity instanceof TileFilter) {
             if (powered) {
                 worldIn.setBlockState(pos, state.withProperty(TRIGGERED, true));
-                if (!hadPower)
+                if (!hadPower){
                     ((TileFilter) tileentity).tryPush();
+                }
             } else {
                 worldIn.setBlockState(pos, state.withProperty(TRIGGERED, false));
             }

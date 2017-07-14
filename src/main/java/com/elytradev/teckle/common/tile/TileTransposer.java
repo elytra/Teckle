@@ -29,6 +29,7 @@ import com.elytradev.teckle.common.block.BlockTransposer;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -54,6 +55,7 @@ import net.minecraftforge.items.IItemHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by darkevilmac on 4/21/2017.
@@ -306,11 +308,21 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         super.readFromNBT(compound);
 
         buffer.deserializeNBT(compound.getCompoundTag("buffer"));
+
+        UUID networkID = compound.getUniqueId("networkID");
+        IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(world).get(networkID);
+        WorldNetworkNode node = networkTile.createNode(network, pos);
+        network.registerNode(node);
+        networkTile.setNode(node);
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound.setTag("buffer", buffer.serializeNBT());
+
+        if (networkTile.getNode() == null)
+            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+        compound.setUniqueId("networkID", networkTile.getNode().network.getNetworkID());
 
         return super.writeToNBT(compound);
     }
