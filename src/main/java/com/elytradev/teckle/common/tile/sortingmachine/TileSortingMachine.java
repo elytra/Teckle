@@ -349,16 +349,21 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         isLit = compound.getBoolean("isLit");
 
         UUID networkID = compound.getUniqueId("networkIDEntryPoint");
-        IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(world).get(networkID);
-        WorldNetworkNode node = entryPointTile.createNode(network, pos);
-        network.registerNode(node);
-        entryPointTile.setNode(node);
+        int dimID = compound.getInteger("databaseID");
+        if (networkID == null) {
+            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+        } else {
+            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+            WorldNetworkNode node = entryPointTile.createNode(network, pos);
+            network.registerNode(node);
+            entryPointTile.setNode(node);
 
-        networkID = compound.getUniqueId("networkIDEndPoint");
-        network = WorldNetworkDatabase.getNetworkDB(world).get(networkID);
-        node = endPointTile.createNode(network, pos);
-        network.registerNode(node);
-        endPointTile.setNode(node);
+            networkID = compound.getUniqueId("networkIDEndPoint");
+            network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+            node = endPointTile.createNode(network, pos);
+            network.registerNode(node);
+            endPointTile.setNode(node);
+        }
     }
 
     @Override
@@ -388,6 +393,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
         compound.setBoolean("isLit", isLit);
 
+        compound.setInteger("databaseID", getWorld().provider.getDimension());
         if (entryPointTile.getNode() == null || endPointTile.getNode() == null)
             getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
         compound.setUniqueId("networkIDEntryPoint", entryPointTile.getNode().network.getNetworkID());

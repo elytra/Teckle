@@ -310,16 +310,22 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         buffer.deserializeNBT(compound.getCompoundTag("buffer"));
 
         UUID networkID = compound.getUniqueId("networkID");
-        IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(world).get(networkID);
-        WorldNetworkNode node = networkTile.createNode(network, pos);
-        network.registerNode(node);
-        networkTile.setNode(node);
+        int dimID = compound.getInteger("databaseID");
+        if (networkID == null) {
+            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+        } else {
+            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+            WorldNetworkNode node = networkTile.createNode(network, pos);
+            network.registerNode(node);
+            networkTile.setNode(node);
+        }
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound.setTag("buffer", buffer.serializeNBT());
 
+        compound.setInteger("databaseID", getWorld().provider.getDimension());
         if (networkTile.getNode() == null)
             getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
         compound.setUniqueId("networkID", networkTile.getNode().network.getNetworkID());

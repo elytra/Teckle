@@ -34,7 +34,6 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
@@ -77,7 +76,7 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
                 GlStateManager.pushMatrix();
 
                 translateForMovement(traveller, partialTicks, colourTravellers);
-                GlStateManager.rotate((((float)getWorld().getTotalWorldTime() + partialTicks) / 40F) * (180F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+                GlStateManager.rotate((((float) getWorld().getTotalWorldTime() + partialTicks) / 40F) * (180F / (float) Math.PI), 0.0F, 1.0F, 0.0F);
                 GlStateManager.scale(0.25, 0.25, 0.25);
                 itemRenderer.renderItem(stack, ibakedmodel);
 

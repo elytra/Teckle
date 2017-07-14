@@ -217,8 +217,6 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         if (cooldown > 0)
             return result;
         try {
-            System.out.println("Attempting a push...");
-
             TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(networkTile.getOutputFace()));
             boolean destinationIsAir = world.isAirBlock(pos.offset(networkTile.getOutputFace()));
             boolean hasInsertionDestination = potentialInsertionTile != null && ((networkTile.getNode() != null && networkTile.getNode().network != null)
@@ -395,10 +393,15 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         buffer.deserializeNBT(compound.getCompoundTag("buffer"));
 
         UUID networkID = compound.getUniqueId("networkID");
-        IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(world).get(networkID);
-        WorldNetworkNode node = networkTile.createNode(network, pos);
-        network.registerNode(node);
-        networkTile.setNode(node);
+        int dimID = compound.getInteger("databaseID");
+        if (networkID == null) {
+            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+        } else {
+            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+            WorldNetworkNode node = networkTile.createNode(network, pos);
+            network.registerNode(node);
+            networkTile.setNode(node);
+        }
     }
 
     @Override
@@ -411,6 +414,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         compound.setTag("filterData", filterData.serializeNBT());
         compound.setTag("buffer", buffer.serializeNBT());
 
+        compound.setInteger("databaseID", getWorld().provider.getDimension());
         if (networkTile.getNode() == null)
             getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
         compound.setUniqueId("networkID", networkTile.getNode().network.getNetworkID());
