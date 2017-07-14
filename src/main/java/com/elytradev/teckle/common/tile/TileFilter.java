@@ -222,17 +222,28 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                 || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getOutputFace().getOpposite())));
 
         if (!world.isRemote && (hasInsertionDestination || destinationIsAir)) {
-            WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().network.getNodeFromPosition(pos);
-            EnumFacing facing = networkTile.getOutputFace();
+            try {
+                WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().network.getNodeFromPosition(pos);
+                EnumFacing facing = networkTile.getOutputFace();
 
-            ItemStack extractionData = getExtractionData(facing);
+                ItemStack extractionData = getExtractionData(facing);
 
-            if (!extractionData.isEmpty()) {
-                if (hasInsertionDestination) {
-                    result = attemptInsertion(potentialInsertionTile, thisNode, extractionData);
-                } else {
-                    result = ejectExtractionData(facing, extractionData);
+                if (!extractionData.isEmpty()) {
+                    if (hasInsertionDestination) {
+                        result = attemptInsertion(potentialInsertionTile, thisNode, extractionData);
+                    } else {
+                        result = ejectExtractionData(facing, extractionData);
+                    }
                 }
+            } catch (NullPointerException e) {
+                String debugInfo = "NTile " + networkTile == null ? "null" : networkTile.toString();
+                debugInfo += " node " + networkTile.getNode() == null ? "null" : networkTile.getNode().toString();
+                debugInfo += " network " + networkTile.getNode().network == null ? "null" :  networkTile.getNode().network.toString();
+                TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
+                TeckleMod.LOG.error("Caught NPE in tryPush!, {}", this);
+                TeckleMod.LOG.error("Exception follows, {}", e);
+                TeckleMod.LOG.error("Here's some useful debug info, {}", debugInfo);
+                TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
             }
         }
 
