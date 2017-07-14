@@ -162,8 +162,10 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
         EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
         IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, capabilityFace.getOpposite());
 
-        if (thisNetworkTile == null)
+        if (thisNetworkTile == null || thisNetworkTile.getNode() == null) {
+            onNodePlaced(world, pos);
             return;
+        }
 
         if (thisNetworkTile != null && thisNetworkTile.getNode() != null && thisNetworkTile.getNode().network != null
                 && !thisNetworkTile.getNode().network.isNodePresent(neighbourPos)) {

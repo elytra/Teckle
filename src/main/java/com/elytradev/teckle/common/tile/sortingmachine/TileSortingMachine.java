@@ -39,6 +39,7 @@ import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullModeSi
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModeAnyStack;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -69,6 +70,7 @@ import net.minecraftforge.items.IItemHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 
@@ -294,6 +296,23 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             deserializedTraveller.deserializeNBT(compound.getCompoundTag("returnedTravellers" + i));
             returnedTravellers.set(i, deserializedTraveller);
         }
+
+        UUID networkID = compound.getUniqueId("networkIDEntryPoint");
+        int dimID = compound.getInteger("databaseID");
+        if (networkID == null) {
+            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+        } else {
+            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+            WorldNetworkNode node = insertionTile.createNode(network, pos);
+            network.registerNode(node);
+            insertionTile.setNode(node);
+
+            networkID = compound.getUniqueId("networkIDEndPoint");
+            network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+            node = ejectionTile.createNode(network, pos);
+            network.registerNode(node);
+            ejectionTile.setNode(node);
+        }
     }
 
     @Override
@@ -321,6 +340,12 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         for (int i = 0; i < returnedTravellers.size(); i++) {
             compound.setTag("returnedTravellers" + i, returnedTravellers.get(i).serializeNBT());
         }
+
+        compound.setInteger("databaseID", getWorld().provider.getDimension());
+        if (insertionTile.getNode() == null || ejectionTile.getNode() == null)
+            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+        compound.setUniqueId("networkIDEntryPoint", insertionTile.getNode().network.getNetworkID());
+        compound.setUniqueId("networkIDEndPoint", ejectionTile.getNode().network.getNetworkID());
 
         return super.writeToNBT(compound);
     }

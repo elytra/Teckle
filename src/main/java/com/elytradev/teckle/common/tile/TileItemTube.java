@@ -22,6 +22,7 @@ import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.impl.ItemNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
@@ -32,6 +33,7 @@ import mcmultipart.api.multipart.MultipartHelper;
 import mcmultipart.api.slot.EnumSlotAccess;
 import mcmultipart.api.slot.IPartSlot;
 import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -43,6 +45,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.elytradev.teckle.common.TeckleMod.MULTIPART_CAPABILITY;
 
@@ -169,6 +172,17 @@ public class TileItemTube extends TileNetworkMember {
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
+        UUID networkID = compound.getUniqueId("networkID");
+        int dimID = compound.getInteger("databaseID");
+        if (networkID == null) {
+            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+        } else {
+            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+            WorldNetworkNode node = networkTile.createNode(network, pos);
+            network.registerNode(node);
+            networkTile.setNode(node);
+        }
+
         super.readFromNBT(compound);
     }
 
@@ -179,6 +193,11 @@ public class TileItemTube extends TileNetworkMember {
         } else {
             compound.removeTag("colour");
         }
+
+        compound.setInteger("databaseID", getWorld().provider.getDimension());
+        if (networkTile.getNode() == null)
+            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+        compound.setUniqueId("networkID", networkTile.getNode().network.getNetworkID());
         return super.writeToNBT(compound);
     }
 
