@@ -171,9 +171,12 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             }
 
         } catch (NullPointerException e) {
-            String debugInfo = "NTile " + networkTile == null ? "null" : networkTile.toString();
-            debugInfo += " node " + networkTile.getNode() == null ? "null" : networkTile.getNode().toString();
-            debugInfo += " network " + networkTile.getNode().network == null ? "null" : networkTile.getNode().network.toString();
+            boolean bool = networkTile == null;
+            String debugInfo = "NTile " + (bool ? "null" : networkTile.toString());
+            bool = bool || networkTile.getNode() == null;
+            debugInfo += " node " + (bool ? "null" : networkTile.getNode().toString());
+            bool = bool || networkTile.getNode().network == null;
+            debugInfo += " network " + (bool ? "null" : networkTile.getNode().network.toString());
             TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
             TeckleMod.LOG.error("Caught NPE in tryPush!, {}", this);
             TeckleMod.LOG.error("Exception follows, {}", e);

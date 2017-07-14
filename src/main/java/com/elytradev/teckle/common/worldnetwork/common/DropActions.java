@@ -37,11 +37,14 @@ public class DropActions {
                     nodePos.getZ(), new ItemStack(traveller.data.getCompoundTag("stack"))));
             traveller.data.setTag("stack", new NBTTagCompound());
         } catch (NullPointerException npe) {
-            String debugInfo = "Traveller " + traveller == null ? "null" : traveller.toString();
-            debugInfo += " network " + traveller.network == null ? "null" : traveller.network.toString();
-            debugInfo += " world " + traveller.network.getWorld() == null ? "null" : traveller.network.getWorld().toString();
+            boolean bool = traveller == null;
+            String debugInfo = "traveller " + (bool ? "null" : traveller.toString());
+            bool = bool || traveller.network == null;
+            debugInfo += " network " + (bool ? "null" : traveller.network.toString());
+            bool = bool || traveller.network.getWorld() == null;
+            debugInfo += " world " + (bool ? "null" : traveller.network.getWorld().toString());
             TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
-            TeckleMod.LOG.error("Caught NPE in DropActions, {}", traveller);
+            TeckleMod.LOG.error("Caught NPE in DropActions!, {}", traveller);
             TeckleMod.LOG.error("Exception follows, {}", npe);
             TeckleMod.LOG.error("Here's some useful debug info, {}", debugInfo);
             TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
