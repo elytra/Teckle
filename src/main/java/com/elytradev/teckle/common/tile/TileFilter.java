@@ -201,11 +201,14 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-        super.onDataPacket(net, pkt);
-
-        this.colour = !pkt.getNbtCompound().hasKey("colour") ? null : EnumDyeColor.byMetadata(pkt.getNbtCompound().getInteger("colour"));
+        handleUpdateTag(pkt.getNbtCompound());
     }
 
+    @Override
+    public void handleUpdateTag(NBTTagCompound tag) {
+        this.colour = !tag.hasKey("colour") ? null : EnumDyeColor.byMetadata(tag.getInteger("colour"));
+        super.readFromNBT(tag);
+    }
 
     /**
      * Attempt to push to our network, by pulling from our input position.
@@ -389,18 +392,20 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         super.readFromNBT(compound);
 
         this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
-        filterData.deserializeNBT(compound.getCompoundTag("filterData"));
-        buffer.deserializeNBT(compound.getCompoundTag("buffer"));
 
-        UUID networkID = compound.getUniqueId("networkID");
-        int dimID = compound.getInteger("databaseID");
-        if (networkID == null) {
-            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-        } else {
-            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-            WorldNetworkNode node = networkTile.createNode(network, pos);
-            network.registerNode(node);
-            networkTile.setNode(node);
+        if (!world.isRemote) {
+            filterData.deserializeNBT(compound.getCompoundTag("filterData"));
+            buffer.deserializeNBT(compound.getCompoundTag("buffer"));
+            UUID networkID = compound.getUniqueId("networkID");
+            int dimID = compound.getInteger("databaseID");
+            if (networkID == null) {
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            } else {
+                IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+                WorldNetworkNode node = networkTile.createNode(network, pos);
+                network.registerNode(node);
+                networkTile.setNode(node);
+            }
         }
     }
 

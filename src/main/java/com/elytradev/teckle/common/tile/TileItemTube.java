@@ -157,9 +157,13 @@ public class TileItemTube extends TileNetworkMember {
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-        super.onDataPacket(net, pkt);
+        handleUpdateTag(pkt.getNbtCompound());
+    }
 
-        this.colour = !pkt.getNbtCompound().hasKey("colour") ? null : EnumDyeColor.byMetadata(pkt.getNbtCompound().getInteger("colour"));
+    @Override
+    public void handleUpdateTag(NBTTagCompound tag) {
+        this.colour = !tag.hasKey("colour") ? null : EnumDyeColor.byMetadata(tag.getInteger("colour"));
+        super.readFromNBT(tag);
     }
 
     @Override

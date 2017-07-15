@@ -42,6 +42,8 @@ import net.minecraft.dispenser.PositionImpl;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -53,23 +55,19 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Created by darkevilmac on 4/21/2017.
- */
 public class TileTransposer extends TileNetworkMember implements ITickable {
 
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
     private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
-
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
             return side.equals(getOutputFace());
         }
-
 
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
@@ -139,7 +137,6 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
     };
 
     private int cooldown = 0;
-
 
     /**
      * Attempt to push to our network, by pulling from our input position.
@@ -248,6 +245,22 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         return extractionData;
     }
 
+    @Nullable
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(this.pos, 0, getUpdateTag());
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        handleUpdateTag(pkt.getNbtCompound());
+    }
+
+    @Override
+    public void handleUpdateTag(NBTTagCompound tag) {
+        super.readFromNBT(tag);
+    }
+
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
         if (oldState.getBlock() == newSate.getBlock()) {
@@ -309,15 +322,17 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
         buffer.deserializeNBT(compound.getCompoundTag("buffer"));
 
-        UUID networkID = compound.getUniqueId("networkID");
-        int dimID = compound.getInteger("databaseID");
-        if (networkID == null) {
-            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-        } else {
-            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-            WorldNetworkNode node = networkTile.createNode(network, pos);
-            network.registerNode(node);
-            networkTile.setNode(node);
+        if (!world.isRemote) {
+            UUID networkID = compound.getUniqueId("networkID");
+            int dimID = compound.getInteger("databaseID");
+            if (networkID == null) {
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            } else {
+                IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+                WorldNetworkNode node = networkTile.createNode(network, pos);
+                network.registerNode(node);
+                networkTile.setNode(node);
+            }
         }
     }
 

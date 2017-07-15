@@ -224,7 +224,12 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-        this.readFromNBT(pkt.getNbtCompound());
+        this.handleUpdateTag(pkt.getNbtCompound());
+    }
+
+    @Override
+    public void handleUpdateTag(NBTTagCompound tag) {
+        this.readFromNBT(tag);
     }
 
     @Override
@@ -316,6 +321,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
 
+        defaultRoute = DefaultRoute.byMetadata(compound.getInteger("defaultRoute"));
         NBTTagList coloursTag = compound.getTagList("colours", 3);
         for (int i = 0; i < 8; i++) {
             if (coloursTag.getIntAt(i) > -1) {
@@ -324,6 +330,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
                 colours[i] = null;
             }
         }
+
         try {
             setPullMode(PullMode.PULL_MODES.get(compound.getInteger("pullModeID")).newInstance());
             getPullMode().deserializeNBT(compound.getCompoundTag("pullMode"));
@@ -334,35 +341,35 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             TeckleMod.LOG.error("Failed to read sorting machine modes from nbt.", e);
         }
 
-        filterRows.deserializeNBT(compound.getCompoundTag("filterRows"));
-        buffer.deserializeNBT(compound.getCompoundTag("buffer"));
-        defaultRoute = DefaultRoute.byMetadata(compound.getInteger("defaultRoute"));
-
-        int stacksLeftToSatisfySize = compound.getInteger("returnedTravellers");
-        returnedTravellers = Lists.newArrayListWithExpectedSize(stacksLeftToSatisfySize);
-        for (int i = 0; i < stacksLeftToSatisfySize; i++) {
-            WorldNetworkTraveller deserializedTraveller = new WorldNetworkTraveller(new NBTTagCompound());
-            deserializedTraveller.deserializeNBT(compound.getCompoundTag("returnedTravellers" + i));
-            returnedTravellers.set(i, deserializedTraveller);
-        }
-
         isLit = compound.getBoolean("isLit");
 
-        UUID networkID = compound.getUniqueId("networkIDEntryPoint");
-        int dimID = compound.getInteger("databaseID");
-        if (networkID == null) {
-            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-        } else {
-            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-            WorldNetworkNode node = entryPointTile.createNode(network, pos);
-            network.registerNode(node);
-            entryPointTile.setNode(node);
+        if (!world.isRemote) {
+            filterRows.deserializeNBT(compound.getCompoundTag("filterRows"));
+            buffer.deserializeNBT(compound.getCompoundTag("buffer"));
+            int stacksLeftToSatisfySize = compound.getInteger("returnedTravellers");
+            returnedTravellers = Lists.newArrayListWithExpectedSize(stacksLeftToSatisfySize);
+            for (int i = 0; i < stacksLeftToSatisfySize; i++) {
+                WorldNetworkTraveller deserializedTraveller = new WorldNetworkTraveller(new NBTTagCompound());
+                deserializedTraveller.deserializeNBT(compound.getCompoundTag("returnedTravellers" + i));
+                returnedTravellers.set(i, deserializedTraveller);
+            }
 
-            networkID = compound.getUniqueId("networkIDEndPoint");
-            network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-            node = endPointTile.createNode(network, pos);
-            network.registerNode(node);
-            endPointTile.setNode(node);
+            UUID networkID = compound.getUniqueId("networkIDEntryPoint");
+            int dimID = compound.getInteger("databaseID");
+            if (networkID == null) {
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            } else {
+                IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+                WorldNetworkNode node = entryPointTile.createNode(network, pos);
+                network.registerNode(node);
+                entryPointTile.setNode(node);
+
+                networkID = compound.getUniqueId("networkIDEndPoint");
+                network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+                node = endPointTile.createNode(network, pos);
+                network.registerNode(node);
+                endPointTile.setNode(node);
+            }
         }
     }
 
