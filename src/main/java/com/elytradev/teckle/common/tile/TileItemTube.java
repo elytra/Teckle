@@ -40,6 +40,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -175,15 +176,17 @@ public class TileItemTube extends TileNetworkMember {
     public void readFromNBT(NBTTagCompound compound) {
         this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
 
-        UUID networkID = compound.getUniqueId("networkID");
-        int dimID = compound.getInteger("databaseID");
-        if (networkID == null) {
-            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-        } else {
-            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-            WorldNetworkNode node = networkTile.createNode(network, pos);
-            network.registerNode(node);
-            networkTile.setNode(node);
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            UUID networkID = compound.getUniqueId("networkID");
+            int dimID = compound.getInteger("databaseID");
+            if (networkID == null) {
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            } else {
+                IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+                WorldNetworkNode node = networkTile.createNode(network, pos);
+                network.registerNode(node);
+                networkTile.setNode(node);
+            }
         }
         super.readFromNBT(compound);
     }

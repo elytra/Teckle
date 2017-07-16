@@ -59,6 +59,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -393,7 +394,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
 
         this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
 
-        if (!world.isRemote) {
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             filterData.deserializeNBT(compound.getCompoundTag("filterData"));
             buffer.deserializeNBT(compound.getCompoundTag("buffer"));
             UUID networkID = compound.getUniqueId("networkID");

@@ -52,6 +52,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -322,7 +323,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
         buffer.deserializeNBT(compound.getCompoundTag("buffer"));
 
-        if (!world.isRemote) {
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             UUID networkID = compound.getUniqueId("networkID");
             int dimID = compound.getInteger("databaseID");
             if (networkID == null) {

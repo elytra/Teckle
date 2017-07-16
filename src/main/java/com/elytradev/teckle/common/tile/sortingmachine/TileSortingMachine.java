@@ -67,6 +67,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -343,7 +344,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         isLit = compound.getBoolean("isLit");
 
-        if (!world.isRemote) {
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             filterRows.deserializeNBT(compound.getCompoundTag("filterRows"));
             buffer.deserializeNBT(compound.getCompoundTag("buffer"));
             int stacksLeftToSatisfySize = compound.getInteger("returnedTravellers");
