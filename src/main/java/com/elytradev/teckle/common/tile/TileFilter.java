@@ -71,11 +71,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Created by darkevilmac on 3/30/2017.
- */
+
 public class TileFilter extends TileNetworkMember implements ITickable, IElementProvider {
 
+    public EnumFacing cachedFace = EnumFacing.DOWN;
     public EnumDyeColor colour = null;
     public AdvancedItemStackHandler filterData = new AdvancedItemStackHandler(9);
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
@@ -140,7 +139,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                 }
             }
 
-            return EnumFacing.DOWN;
+            return cachedFace;
         }
 
         @Override
@@ -393,6 +392,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         super.readFromNBT(compound);
 
         this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
+        this.cachedFace = EnumFacing.values()[compound.getInteger("cachedFace")];
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             filterData.deserializeNBT(compound.getCompoundTag("filterData"));
@@ -419,6 +419,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         }
         compound.setTag("filterData", filterData.serializeNBT());
         compound.setTag("buffer", buffer.serializeNBT());
+        compound.setInteger("cachedFace", networkTile.getOutputFace().getIndex());
 
         compound.setInteger("databaseID", getWorld().provider.getDimension());
         if (networkTile.getNode() == null)

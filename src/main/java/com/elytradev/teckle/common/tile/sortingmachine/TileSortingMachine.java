@@ -83,6 +83,7 @@ import java.util.stream.Collectors;
 
 public class TileSortingMachine extends TileNetworkMember implements ITickable, IElementProvider {
 
+    public EnumFacing cachedFace = EnumFacing.DOWN;
     public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(48);
     public EnumDyeColor[] colours = new EnumDyeColor[8];
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(32);
@@ -131,7 +132,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
                 }
             }
 
-            return EnumFacing.DOWN;
+            return cachedFace;
         }
 
         @Override
@@ -343,6 +344,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         }
 
         isLit = compound.getBoolean("isLit");
+        cachedFace = EnumFacing.values()[compound.getInteger("cachedFace")];
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             filterRows.deserializeNBT(compound.getCompoundTag("filterRows"));
@@ -394,6 +396,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
         compound.setInteger("sortModeID", getSortMode().getID());
 
         compound.setInteger("defaultRoute", defaultRoute.getMetadata());
+        compound.setInteger("cachedFace", entryPointTile.getOutputFace().getIndex());
 
         compound.setInteger("returnedTravellers", returnedTravellers.size());
         for (int i = 0; i < returnedTravellers.size(); i++) {

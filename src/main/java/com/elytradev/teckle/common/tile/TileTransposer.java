@@ -63,6 +63,7 @@ import java.util.UUID;
 
 public class TileTransposer extends TileNetworkMember implements ITickable {
 
+    public EnumFacing cachedFace = EnumFacing.DOWN;
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
     private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
         @Override
@@ -98,7 +99,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                 }
             }
 
-            return EnumFacing.DOWN;
+            return cachedFace;
         }
 
         @Override
@@ -322,6 +323,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         super.readFromNBT(compound);
 
         buffer.deserializeNBT(compound.getCompoundTag("buffer"));
+        cachedFace = EnumFacing.values()[compound.getInteger("cachedFace")];
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             UUID networkID = compound.getUniqueId("networkID");
@@ -340,6 +342,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound.setTag("buffer", buffer.serializeNBT());
+        compound.setInteger("cachedFace", networkTile.getOutputFace().getIndex());
 
         compound.setInteger("databaseID", getWorld().provider.getDimension());
         if (networkTile.getNode() == null)

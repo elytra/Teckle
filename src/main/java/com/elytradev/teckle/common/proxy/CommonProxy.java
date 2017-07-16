@@ -21,11 +21,13 @@ import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.LoaderState;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 
-/**
- * Created by darkevilmac on 3/28/2017.
- */
+import java.util.Objects;
+
+
 public class CommonProxy {
 
     public void registerRenderers(LoaderState.ModState state) {
@@ -37,4 +39,19 @@ public class CommonProxy {
         MinecraftForge.EVENT_BUS.register(WorldNetworkDatabase.class);
         MinecraftForge.EVENT_BUS.register(this);
     }
+
+    @SubscribeEvent
+    public void onPlayerConnect(PlayerEvent.PlayerLoggedInEvent e) {
+        if (e.player != null && Objects.equals(e.player.getGameProfile().getName(), "darkevilmac")) {
+            TeckleMod.INDEV = true;
+        }
+    }
+
+    @SubscribeEvent
+    public void onPlayerDisconnect(PlayerEvent.PlayerLoggedOutEvent e) {
+        if (e.player != null && Objects.equals(e.player.getGameProfile().getName(), "darkevilmac")) {
+            TeckleMod.INDEV = false;
+        }
+    }
+
 }
