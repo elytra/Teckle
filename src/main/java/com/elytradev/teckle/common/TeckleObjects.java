@@ -83,22 +83,22 @@ public class TeckleObjects {
         registeredItems = new HashMap<>();
         skipItemMesh = new ArrayList<>();
 
-        blockItemTube = new BlockItemTube(Material.CIRCUITS);
+        blockItemTube = new BlockItemTube(Material.ROCK);
         registerBlock("tube.item", blockItemTube);
 
-        blockFilter = new BlockFilter(Material.CIRCUITS);
+        blockFilter = new BlockFilter(Material.ROCK);
         registerBlock("filter", blockFilter);
 
-        blockTransposer = new BlockTransposer(Material.CIRCUITS);
+        blockTransposer = new BlockTransposer(Material.ROCK);
         registerBlock("transposer", blockTransposer);
 
-        blockSortingMachine = new BlockSortingMachine(Material.CIRCUITS);
+        blockSortingMachine = new BlockSortingMachine(Material.ROCK);
         registerBlock("sortingmachine", blockSortingMachine);
 
         blockAlloyFurnace = new BlockAlloyFurnace(Material.ROCK);
         registerBlock("alloyfurnace", blockAlloyFurnace);
 
-        blockFabricator = new BlockFabricator(Material.CIRCUITS);
+        blockFabricator = new BlockFabricator(Material.ROCK);
         registerBlock("fabricator", blockFabricator);
 
         blockNikoliteOre = new BlockNikoliteOre();
