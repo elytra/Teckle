@@ -26,6 +26,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.function.BiPredicate;
 
 /**
  * A node in a worldnetwork, contains the position and the current travellers.
@@ -37,6 +38,8 @@ public class WorldNetworkNode {
     public BlockPos position;
     public IWorldNetwork network;
     public EnumFacing capabilityFace = null;
+    // Used when a tile isn't loaded.
+    public BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate = (t, f) -> false;
     private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
 
     public WorldNetworkNode() {
@@ -60,6 +63,8 @@ public class WorldNetworkNode {
         if (isLoaded()) {
             if (getNetworkTile() != null)
                 return getNetworkTile().canAcceptTraveller(traveller, from);
+        } else {
+            return canAcceptTravellerPredicate.test(traveller, from);
         }
         return isLoaded();
     }

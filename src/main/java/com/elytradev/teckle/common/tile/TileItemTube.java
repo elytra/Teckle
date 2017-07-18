@@ -46,6 +46,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiPredicate;
 
 import static com.elytradev.teckle.common.TeckleMod.MULTIPART_CAPABILITY;
 
@@ -123,6 +124,11 @@ public class TileItemTube extends TileNetworkMember {
                     }
                 }
             }
+        }
+
+        @Override
+        public BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate() {
+            return (t, f) -> !t.data.hasKey("colour") || EnumDyeColor.byMetadata(t.data.getInteger("colour")).equals(colour);
         }
     };
 

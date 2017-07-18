@@ -109,7 +109,9 @@ public abstract class NetworkTileTransporter implements IWorldNetworkTile {
     @Override
     public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
         try {
-            return nodeClazz.getConstructor(IWorldNetwork.class, BlockPos.class, EnumFacing.class).newInstance(network, pos, getCapabilityFace());
+            WorldNetworkNode worldNetworkNode = nodeClazz.getConstructor(IWorldNetwork.class, BlockPos.class, EnumFacing.class).newInstance(network, pos, getCapabilityFace());
+            worldNetworkNode.canAcceptTravellerPredicate = canAcceptTravellerPredicate();
+            return worldNetworkNode;
         } catch (Exception e) {
             TeckleMod.LOG.error("Failed to instantiate a WorldNetworkNode for class {}", nodeClazz, e);
         }

@@ -27,6 +27,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
+import java.util.function.BiPredicate;
 
 /**
  * Used to store node data on tiles.
@@ -110,6 +111,14 @@ public interface IWorldNetworkTile {
      * @return true if connections are possible, false otherwise.
      */
     boolean canConnectTo(EnumFacing side);
+
+    /**
+     * Use to determine if a traveller can enter from the specified face when the tile is not loaded.
+     * Set on node creation.
+     */
+    default BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate() {
+        return (t, t2) -> false;
+    }
 
     /**
      * Handles a traveller being returned to this tile after all destinations have been attempted.
