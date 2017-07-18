@@ -30,7 +30,6 @@ import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.MathHelper;
@@ -71,6 +70,30 @@ public abstract class TileNetworkMember extends TileEntity {
             return true;
         }
         return super.hasCapability(capability, facing);
+    }
+
+    @Override
+    public void validate() {
+        super.validate();
+
+        //System.out.println("Validated a tile, calling networkassistant.");
+        //IWorldNetworkAssistant networkAssistant = getNetworkAssistant(ItemStack.class);
+        //if ((pos.getX() & 15) == 0) {
+        //    int offsetX = (((pos.getX() + 1) % 16) == 0 ? 1 : -1);
+        //    networkAssistant.onNodeNeighbourChange(world, pos, pos.add(new BlockPos(offsetX, 0, 0)));
+        //}
+        //if ((pos.getZ() & 15) == 0) {
+        //    int offsetZ = (((pos.getZ() + 1) % 16) == 0 ? 1 : -1);
+        //    networkAssistant.onNodeNeighbourChange(world, pos, pos.add(new BlockPos(0, 0, offsetZ)));
+        //}
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+
+        IWorldNetworkAssistant networkAssistant = getNetworkAssistant(ItemStack.class);
+        networkAssistant.onNodePlaced(world, pos);
     }
 
     private final class ProbeCapability implements IProbeDataProvider {

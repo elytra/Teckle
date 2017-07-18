@@ -194,6 +194,7 @@ public class TileItemTube extends TileNetworkMember {
                 networkTile.setNode(node);
             }
         }
+
         super.readFromNBT(compound);
     }
 
@@ -205,10 +206,12 @@ public class TileItemTube extends TileNetworkMember {
             compound.removeTag("colour");
         }
 
-        compound.setInteger("databaseID", getWorld().provider.getDimension());
-        if (networkTile.getNode() == null)
-            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-        compound.setUniqueId("networkID", networkTile.getNode().network.getNetworkID());
+        if(FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            compound.setInteger("databaseID", getWorld().provider.getDimension());
+            if (networkTile.getNode() == null)
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            compound.setUniqueId("networkID", networkTile.getNode().network.getNetworkID());
+        }
 
         return super.writeToNBT(compound);
     }

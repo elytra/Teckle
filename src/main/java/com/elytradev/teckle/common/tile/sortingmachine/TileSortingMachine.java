@@ -387,8 +387,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             }
         }
         compound.setTag("colours", coloursTag);
-        compound.setTag("filterRows", filterRows.serializeNBT());
-        compound.setTag("buffer", buffer.serializeNBT());
+
 
         compound.setTag("pullMode", getPullMode().serializeNBT());
         compound.setInteger("pullModeID", getPullMode().getID());
@@ -397,19 +396,22 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         compound.setInteger("defaultRoute", defaultRoute.getMetadata());
         compound.setInteger("cachedFace", entryPointTile.getOutputFace().getIndex());
-
-        compound.setInteger("returnedTravellers", returnedTravellers.size());
-        for (int i = 0; i < returnedTravellers.size(); i++) {
-            compound.setTag("returnedTravellers" + i, returnedTravellers.get(i).serializeNBT());
-        }
         compound.setBoolean("isLit", isLit);
 
-        compound.setInteger("databaseID", getWorld().provider.getDimension());
-        if (entryPointTile.getNode() == null || endPointTile.getNode() == null)
-            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-        compound.setUniqueId("networkIDEntryPoint", entryPointTile.getNode().network.getNetworkID());
-        compound.setUniqueId("networkIDEndPoint", endPointTile.getNode().network.getNetworkID());
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            compound.setTag("filterRows", filterRows.serializeNBT());
+            compound.setTag("buffer", buffer.serializeNBT());
+            compound.setInteger("returnedTravellers", returnedTravellers.size());
+            for (int i = 0; i < returnedTravellers.size(); i++) {
+                compound.setTag("returnedTravellers" + i, returnedTravellers.get(i).serializeNBT());
+            }
 
+            compound.setInteger("databaseID", getWorld().provider.getDimension());
+            if (entryPointTile.getNode() == null || endPointTile.getNode() == null)
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            compound.setUniqueId("networkIDEntryPoint", entryPointTile.getNode().network.getNetworkID());
+            compound.setUniqueId("networkIDEndPoint", endPointTile.getNode().network.getNetworkID());
+        }
         return super.writeToNBT(compound);
     }
 

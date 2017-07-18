@@ -344,11 +344,12 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         compound.setTag("buffer", buffer.serializeNBT());
         compound.setInteger("cachedFace", networkTile.getOutputFace().getIndex());
 
-        compound.setInteger("databaseID", getWorld().provider.getDimension());
-        if (networkTile.getNode() == null)
-            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-        compound.setUniqueId("networkID", networkTile.getNode().network.getNetworkID());
-
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            compound.setInteger("databaseID", getWorld().provider.getDimension());
+            if (networkTile.getNode() == null)
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            compound.setUniqueId("networkID", networkTile.getNode().network.getNetworkID());
+        }
         return super.writeToNBT(compound);
     }
 
