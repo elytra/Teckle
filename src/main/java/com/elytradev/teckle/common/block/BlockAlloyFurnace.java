@@ -151,7 +151,11 @@ public class BlockAlloyFurnace extends BlockContainer {
     }
 
     public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(meta & 7)).withProperty(LIT, Boolean.valueOf((meta & 8) > 0));
+        EnumFacing front = EnumFacing.getFront(meta & 7);
+        if (front.getAxis() == EnumFacing.Axis.Y) {
+            front = EnumFacing.NORTH;
+        }
+        return this.getDefaultState().withProperty(FACING, front).withProperty(LIT, Boolean.valueOf((meta & 8) > 0));
     }
 
     public int getMetaFromState(IBlockState state) {
