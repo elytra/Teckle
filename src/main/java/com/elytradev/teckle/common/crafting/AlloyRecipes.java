@@ -69,7 +69,7 @@ public class AlloyRecipes {
         recipes.put(blueDopedWaferRecipe.getCraftingResult(), blueDopedWaferRecipe);
 
         AlloyRecipe brassIngotRecipe = new AlloyRecipe(
-                new ItemStack(TeckleObjects.itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()),
+                new ItemStack(TeckleObjects.itemIngot, 4, ItemIngot.IngotType.BRASS.getMetadata()),
                 new Tuple<>("ingotTin", 1),
                 new Tuple<>("ingotCopper", 3)
         );
