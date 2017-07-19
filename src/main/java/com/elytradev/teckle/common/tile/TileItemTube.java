@@ -41,6 +41,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import org.apache.commons.lang3.tuple.MutablePair;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -180,6 +181,7 @@ public class TileItemTube extends TileNetworkMember {
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
+        super.readFromNBT(compound);
         this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
@@ -188,14 +190,16 @@ public class TileItemTube extends TileNetworkMember {
             if (networkID == null) {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
             } else {
+                WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
+                if (networkDB.getRemappedNodes().containsKey(new MutablePair<>(pos, null))) {
+                    networkID = networkDB.getRemappedNodes().remove(new MutablePair<>(pos, null));
+                }
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
                 WorldNetworkNode node = networkTile.createNode(network, pos);
                 network.registerNode(node);
                 networkTile.setNode(node);
             }
         }
-
-        super.readFromNBT(compound);
     }
 
     @Override
@@ -206,7 +210,7 @@ public class TileItemTube extends TileNetworkMember {
             compound.removeTag("colour");
         }
 
-        if(FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             compound.setInteger("databaseID", getWorld().provider.getDimension());
             if (networkTile.getNode() == null)
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);

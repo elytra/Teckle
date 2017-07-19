@@ -28,6 +28,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -176,6 +177,15 @@ public class WorldNetwork implements IWorldNetwork {
         nodesToMove.addAll(this.networkNodes.values());
 
         for (WorldNetworkNode node : nodesToMove) {
+            MutablePair<BlockPos, EnumFacing> pair = new MutablePair<>(node.position, node.getCapabilityFace());
+            WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(world);
+            if (networkDB.getRemappedNodes().containsKey(pair)) {
+                networkDB.getRemappedNodes().remove(pair);
+            }
+            if (!node.isLoaded()) {
+                WorldNetworkDatabase.getNetworkDB(world).getRemappedNodes().put(pair, to.getNetworkID());
+            }
+
             this.unregisterNode(node);
             to.registerNode(node);
         }
@@ -218,6 +228,14 @@ public class WorldNetwork implements IWorldNetwork {
                 WorldNetwork newNetwork = new WorldNetwork(this.world, null);
 
                 for (WorldNetworkNode node : newNetworkData) {
+                    WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(world);
+                    if (networkDB.getRemappedNodes().containsKey(new MutablePair<>(node.position, node.getCapabilityFace()))) {
+                        networkDB.getRemappedNodes().remove(new MutablePair<>(node.position, node.getCapabilityFace()));
+                    }
+                    if (!node.isLoaded()) {
+                        networkDB.getRemappedNodes().put(new MutablePair<>(node.position, node.getCapabilityFace()), newNetwork.getNetworkID());
+                    }
+
                     this.unregisterNode(node);
                     newNetwork.registerNode(node);
                 }

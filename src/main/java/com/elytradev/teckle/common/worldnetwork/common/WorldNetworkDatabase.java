@@ -20,18 +20,20 @@ import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.TeckleMod;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Tuple;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSavedData;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +45,8 @@ public class WorldNetworkDatabase extends WorldSavedData {
     private static HashMap<Integer, WorldNetworkDatabase> DIMENSION_DATABASES = Maps.newHashMap();
 
     private HashMap<UUID, IWorldNetwork> networks = Maps.newHashMap();
+    private HashMap<Pair<BlockPos, EnumFacing>, UUID> remappedNodes = Maps.newHashMap();
+
     private World world;
 
     public WorldNetworkDatabase(World world) {
@@ -149,6 +153,15 @@ public class WorldNetworkDatabase extends WorldSavedData {
             databaseCompound.setTag("n" + i, iWorldNetworks.get(i).serializeNBT());
         }
 
+        databaseCompound.setInteger("rnCount", remappedNodes.size());
+        List<Map.Entry<Pair<BlockPos, EnumFacing>, UUID>> remappedNodes = this.remappedNodes.entrySet().stream().collect(Collectors.toList());
+        for (int i = 0; i < remappedNodes.size(); i++) {
+            EnumFacing nodeFace = remappedNodes.get(i).getKey().getRight();
+            databaseCompound.setLong("rNBP" + i, remappedNodes.get(i).getKey().getLeft().toLong());
+            databaseCompound.setInteger("rNF" + i, nodeFace != null ? nodeFace.getIndex() : -1);
+            databaseCompound.setUniqueId("rNN" + i, remappedNodes.get(i).getValue());
+        }
+
         return databaseCompound;
     }
 
@@ -163,6 +176,17 @@ public class WorldNetworkDatabase extends WorldSavedData {
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             WorldNetwork network = new WorldNetwork(world, null, true);
             network.deserializeNBT(compound.getCompoundTag("n" + i));
+        }
+
+        if (!compound.hasKey("rnCount"))
+            return;
+
+        for (int i = 0; i < compound.getInteger("rnCount"); i++) {
+            BlockPos nodePos = BlockPos.fromLong(compound.getLong("rNBP" + i));
+            int nodeFaceIndex = compound.getInteger("rNF" + i);
+            UUID newNetworkID = compound.getUniqueId("rNN" + i);
+            EnumFacing nodeFace = nodeFaceIndex < 0 ? null : EnumFacing.values()[nodeFaceIndex];
+            remappedNodes.put(new ImmutablePair<>(nodePos, nodeFace), newNetworkID);
         }
     }
 
@@ -206,6 +230,10 @@ public class WorldNetworkDatabase extends WorldSavedData {
 
     public World getWorld() {
         return world;
+    }
+
+    public HashMap<Pair<BlockPos, EnumFacing>, UUID> getRemappedNodes() {
+        return remappedNodes;
     }
 
     @Override

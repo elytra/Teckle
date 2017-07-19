@@ -72,6 +72,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import org.apache.commons.lang3.tuple.MutablePair;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -362,12 +363,18 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             if (networkID == null) {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
             } else {
+                WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
+                if (networkDB.getRemappedNodes().containsKey(new MutablePair<>(pos, entryPointTile.getCapabilityFace())))
+                    networkID = networkDB.getRemappedNodes().remove(new MutablePair<>(pos, entryPointTile.getCapabilityFace()));
+
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
                 WorldNetworkNode node = entryPointTile.createNode(network, pos);
                 network.registerNode(node);
                 entryPointTile.setNode(node);
 
                 networkID = compound.getUniqueId("networkIDEndPoint");
+                if (networkDB.getRemappedNodes().containsKey(new MutablePair<>(pos, endPointTile.getCapabilityFace())))
+                    networkID = networkDB.getRemappedNodes().remove(new MutablePair<>(pos, endPointTile.getCapabilityFace()));
                 network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
                 node = endPointTile.createNode(network, pos);
                 network.registerNode(node);

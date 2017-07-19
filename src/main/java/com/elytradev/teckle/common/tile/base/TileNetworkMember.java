@@ -72,30 +72,6 @@ public abstract class TileNetworkMember extends TileEntity {
         return super.hasCapability(capability, facing);
     }
 
-    @Override
-    public void validate() {
-        super.validate();
-
-        //System.out.println("Validated a tile, calling networkassistant.");
-        //IWorldNetworkAssistant networkAssistant = getNetworkAssistant(ItemStack.class);
-        //if ((pos.getX() & 15) == 0) {
-        //    int offsetX = (((pos.getX() + 1) % 16) == 0 ? 1 : -1);
-        //    networkAssistant.onNodeNeighbourChange(world, pos, pos.add(new BlockPos(offsetX, 0, 0)));
-        //}
-        //if ((pos.getZ() & 15) == 0) {
-        //    int offsetZ = (((pos.getZ() + 1) % 16) == 0 ? 1 : -1);
-        //    networkAssistant.onNodeNeighbourChange(world, pos, pos.add(new BlockPos(0, 0, offsetZ)));
-        //}
-    }
-
-    @Override
-    public void onLoad() {
-        super.onLoad();
-
-        IWorldNetworkAssistant networkAssistant = getNetworkAssistant(ItemStack.class);
-        networkAssistant.onNodePlaced(world, pos);
-    }
-
     private final class ProbeCapability implements IProbeDataProvider {
         @Override
         public void provideProbeData(List<IProbeData> data) {

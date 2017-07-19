@@ -54,6 +54,7 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.Tuple;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -64,6 +65,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import org.apache.commons.lang3.tuple.MutablePair;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -402,6 +404,10 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
             if (networkID == null) {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
             } else {
+                WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
+                if (networkDB.getRemappedNodes().containsKey(new MutablePair<>(pos, null)))
+                    networkID = networkDB.getRemappedNodes().get(new MutablePair<>(pos, null));
+
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
                 WorldNetworkNode node = networkTile.createNode(network, pos);
                 network.registerNode(node);

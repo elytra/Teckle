@@ -58,7 +58,7 @@ public class TeckleMod {
     @CapabilityInject(IMultipartTile.class)
     public static Capability<?> MULTIPART_CAPABILITY;
 
-    public static Logger LOG;
+    public static TeckleLog LOG;
 
     @SidedProxy(serverSide = "com.elytradev.teckle.common.proxy.CommonProxy", clientSide = "com.elytradev.teckle.client.proxy.ClientProxy")
     public static CommonProxy PROXY;
@@ -66,7 +66,7 @@ public class TeckleMod {
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent e) {
         PROXY.registerHandlers();
-        LOG = e.getModLog();
+        LOG = new TeckleLog(e.getModLog());
         OBJECTS.preInit(e);
         CapabilityWorldNetworkTile.register();
         CapabilityWorldNetworkAssistantHolder.register();
