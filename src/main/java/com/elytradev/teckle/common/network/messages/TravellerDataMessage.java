@@ -31,6 +31,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
+import java.util.Objects;
+
 /**
  * Created by darkevilmac on 3/31/2017.
  */
@@ -81,10 +83,10 @@ public class TravellerDataMessage extends Message {
 
     @Override
     protected void handle(EntityPlayer sender) {
-        if (action.equals(Action.REGISTER)) {
+        if (Objects.equals(action, Action.REGISTER)) {
             DummyNetworkTraveller traveller = new DummyNetworkTraveller(data, path);
             traveller.activePath = path;
-            if (!prev.equals(IMPOSSIBLEPOS)) {
+            if (!Objects.equals(prev, IMPOSSIBLEPOS)) {
                 traveller.previousNode = path.next();
                 traveller.currentNode = path.next();
                 traveller.nextNode = path.next();
@@ -97,7 +99,7 @@ public class TravellerDataMessage extends Message {
             traveller.travelledDistance = this.travelledDistance;
 
             ClientTravellerManager.put(data, traveller);
-        } else if (action.equals(Action.UNREGISTER)) {
+        } else if (Objects.equals(action, Action.UNREGISTER)) {
             ClientTravellerManager.removeTraveller(data, true);
         }
     }

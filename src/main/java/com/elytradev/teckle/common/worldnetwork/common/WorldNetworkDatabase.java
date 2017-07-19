@@ -203,7 +203,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
     }
 
     private void onTick(TickEvent.WorldTickEvent e) {
-        if (networks.isEmpty() || !world.equals(e.world))
+        if (networks.isEmpty() || !Objects.equals(world, e.world))
             return;
 
         List<IWorldNetwork> emptyNetworks = new ArrayList<>();
@@ -215,7 +215,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
                 TeckleMod.LOG.debug("Found empty network " + network);
                 continue;
             }
-            if (e.world.equals(network.getWorld()))
+            if (Objects.equals(e.world, network.getWorld()))
                 network.update();
         }
 

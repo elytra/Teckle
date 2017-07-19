@@ -72,13 +72,10 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -104,15 +101,15 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return side.equals(getOutputFace());
+            return Objects.equals(side, getOutputFace());
         }
 
         @Override
         public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-            if (traveller.getEntryPoint().position.equals(TileSortingMachine.this.pos))
+            if (Objects.equals(traveller.getEntryPoint().position, TileSortingMachine.this.pos))
                 return true;
 
-            if (from.equals(getOutputFace().getOpposite())) {
+            if (Objects.equals(from, getOutputFace().getOpposite())) {
                 // Allows use of filters for filtering items already in tubes. Not really a good reason to do this but it was possible in RP2 so it's possible in Teckle.
                 return getSortMode().canAcceptTraveller(TileSortingMachine.this, traveller, from);
             }
@@ -121,14 +118,14 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         @Override
         public boolean canConnectTo(EnumFacing side) {
-            return side.equals(getOutputFace());
+            return Objects.equals(side, getOutputFace());
         }
 
         @Override
         public EnumFacing getOutputFace() {
             if (world != null) {
                 IBlockState thisState = world.getBlockState(pos);
-                if (thisState.getBlock().equals(TeckleObjects.blockSortingMachine)) {
+                if (Objects.equals(thisState.getBlock(), TeckleObjects.blockSortingMachine)) {
                     return thisState.getValue(BlockSortingMachine.FACING);
                 }
             }
@@ -145,7 +142,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             EnumFacing facing = getOutputFace();
 
             // Try and put it back where we found it.
-            if (side.equals(getOutputFace())) {
+            if (Objects.equals(side, getOutputFace())) {
                 if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
                     TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
                     if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
@@ -174,7 +171,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
     private IWorldNetworkTile endPointTile = new NetworkTileTransporter() {
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return side.equals(getCapabilityFace());
+            return Objects.equals(side, getCapabilityFace());
         }
 
         @Override
@@ -189,7 +186,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
 
         @Override
         public boolean canConnectTo(EnumFacing side) {
-            return side.equals(getCapabilityFace());
+            return Objects.equals(side, getCapabilityFace());
         }
 
         @Override
@@ -364,8 +361,12 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
             } else {
                 WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
-                if (networkDB.getRemappedNodes().containsKey(new MutablePair<>(pos, entryPointTile.getCapabilityFace())))
-                    networkID = networkDB.getRemappedNodes().remove(new MutablePair<>(pos, entryPointTile.getCapabilityFace()));
+                Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
+                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), entryPointTile.getCapabilityFace())).findAny();
+                if (any.isPresent()) {
+                    networkID = networkDB.getRemappedNodes().remove(any.get());
+                    TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+                }
 
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
                 WorldNetworkNode node = entryPointTile.createNode(network, pos);
@@ -373,8 +374,12 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
                 entryPointTile.setNode(node);
 
                 networkID = compound.getUniqueId("networkIDEndPoint");
-                if (networkDB.getRemappedNodes().containsKey(new MutablePair<>(pos, endPointTile.getCapabilityFace())))
-                    networkID = networkDB.getRemappedNodes().remove(new MutablePair<>(pos, endPointTile.getCapabilityFace()));
+                any = networkDB.getRemappedNodes().keySet().stream()
+                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), endPointTile.getCapabilityFace())).findAny();
+                if (any.isPresent()) {
+                    networkID = networkDB.getRemappedNodes().remove(any.get());
+                    TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+                }
                 network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
                 node = endPointTile.createNode(network, pos);
                 network.registerNode(node);

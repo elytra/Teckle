@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 /**
  * A node in a worldnetwork, contains the position and the current travellers.
@@ -40,6 +41,7 @@ public class WorldNetworkNode {
     public EnumFacing capabilityFace = null;
     // Used when a tile isn't loaded.
     public BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate = (t, f) -> false;
+    public Predicate<EnumFacing> canConnectToSidePredicate = (f) -> true;
     private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
 
     public WorldNetworkNode() {
@@ -67,6 +69,19 @@ public class WorldNetworkNode {
             return canAcceptTravellerPredicate.test(traveller, from);
         }
         return isLoaded();
+    }
+
+    /**
+     * Forward method for network tiles, uses a predicate as fallback if the tile isn't loaded.
+     * <p>
+     * Used to determine if this node can be connected to from the given side.
+     */
+    public boolean canConnectTo(EnumFacing side) {
+        if (isLoaded()) {
+            return getNetworkTile().canConnectTo(side);
+        } else {
+            return canConnectToSidePredicate.test(side);
+        }
     }
 
     public IWorldNetworkTile getNetworkTile() {
@@ -101,5 +116,13 @@ public class WorldNetworkNode {
 
     public Collection<WorldNetworkTraveller> getTravellers() {
         return (travellers.values());
+    }
+
+    @Override
+    public String toString() {
+        return "WorldNetworkNode{" +
+                "position=" + position +
+                ", capabilityFace=" + capabilityFace +
+                '}';
     }
 }

@@ -66,12 +66,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 
 public class TileFilter extends TileNetworkMember implements ITickable, IElementProvider {
@@ -88,15 +86,15 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
 
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return side.equals(getOutputFace());
+            return Objects.equals(side, getOutputFace());
         }
 
         @Override
         public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-            if (traveller.getEntryPoint().position.equals(TileFilter.this.pos))
+            if (Objects.equals(traveller.getEntryPoint().position, TileFilter.this.pos))
                 return true;
 
-            if (from.equals(getOutputFace().getOpposite()) && !TileFilter.this.isPowered()) {
+            if (Objects.equals(from, getOutputFace().getOpposite()) && !TileFilter.this.isPowered()) {
                 // Allows use of filters for filtering items already in tubes. Not really a good reason to do this but it was possible in RP2 so it's possible in Teckle.
                 ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
                 boolean foundNonEmptySlot = false;
@@ -105,7 +103,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                     if (TileFilter.this.colour == null) {
                         colourMatches = true;
                     } else {
-                        colourMatches = TileFilter.this.colour.equals(EnumDyeColor.byMetadata(traveller.data.getInteger("colour")));
+                        colourMatches = Objects.equals(TileFilter.this.colour, EnumDyeColor.byMetadata(traveller.data.getInteger("colour")));
                     }
                 }
 
@@ -136,7 +134,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         public EnumFacing getOutputFace() {
             if (world != null) {
                 IBlockState thisState = world.getBlockState(pos);
-                if (thisState.getBlock().equals(TeckleObjects.blockFilter)) {
+                if (Objects.equals(thisState.getBlock(), TeckleObjects.blockFilter)) {
                     return thisState.getValue(BlockFilter.FACING);
                 }
             }
@@ -154,7 +152,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
             BlockPos sourcePos = pos.offset(facing);
 
             // Try and put it back where we found it.
-            if (side.equals(getOutputFace())) {
+            if (Objects.equals(side, getOutputFace())) {
                 if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
                     TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
                     if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
@@ -405,8 +403,12 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
             } else {
                 WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
-                if (networkDB.getRemappedNodes().containsKey(new MutablePair<>(pos, null)))
-                    networkID = networkDB.getRemappedNodes().get(new MutablePair<>(pos, null));
+                Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
+                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), networkTile.getCapabilityFace())).findAny();
+                if (any.isPresent()) {
+                    networkID = networkDB.getRemappedNodes().remove(any.get());
+                    TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+                }
 
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
                 WorldNetworkNode node = networkTile.createNode(network, pos);

@@ -21,6 +21,7 @@ import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.impl.ItemNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
@@ -42,9 +43,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiPredicate;
@@ -63,7 +66,7 @@ public class TileItemTube extends TileNetworkMember {
         @Override
         public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
             if (TileItemTube.this.colour != null && traveller.data.hasKey("colour")) {
-                return TileItemTube.this.colour.equals(EnumDyeColor.byMetadata(traveller.data.getInteger("colour")));
+                return Objects.equals(TileItemTube.this.colour, EnumDyeColor.byMetadata(traveller.data.getInteger("colour")));
             }
 
             return true;
@@ -191,8 +194,11 @@ public class TileItemTube extends TileNetworkMember {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
             } else {
                 WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
-                if (networkDB.getRemappedNodes().containsKey(new MutablePair<>(pos, null))) {
-                    networkID = networkDB.getRemappedNodes().remove(new MutablePair<>(pos, null));
+                Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
+                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), networkTile.getCapabilityFace())).findAny();
+                if (any.isPresent()) {
+                    networkID = networkDB.getRemappedNodes().remove(any.get());
+                    TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
                 }
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
                 WorldNetworkNode node = networkTile.createNode(network, pos);

@@ -57,11 +57,10 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class TileTransposer extends TileNetworkMember implements ITickable {
 
@@ -70,7 +69,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
     private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return side.equals(getOutputFace());
+            return Objects.equals(side, getOutputFace());
         }
 
         @Override
@@ -80,10 +79,10 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
         @Override
         public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-            if (traveller.getEntryPoint().position.equals(TileTransposer.this.pos))
+            if (Objects.equals(traveller.getEntryPoint().position, TileTransposer.this.pos))
                 return true;
 
-            return from.equals(getOutputFace().getOpposite()) && !TileTransposer.this.isPowered();
+            return Objects.equals(from, getOutputFace().getOpposite()) && !TileTransposer.this.isPowered();
         }
 
         @Override
@@ -96,7 +95,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         public EnumFacing getOutputFace() {
             if (world != null) {
                 IBlockState thisState = world.getBlockState(pos);
-                if (thisState.getBlock().equals(TeckleObjects.blockTransposer)) {
+                if (Objects.equals(thisState.getBlock(), TeckleObjects.blockTransposer)) {
                     return thisState.getValue(BlockTransposer.FACING);
                 }
             }
@@ -113,7 +112,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             EnumFacing facing = getOutputFace();
 
             // Try and put it back where we found it.
-            if (side.equals(getOutputFace())) {
+            if (Objects.equals(side, getOutputFace())) {
                 if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
                     TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
                     if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
@@ -334,8 +333,12 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
             } else {
                 WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
-                if (networkDB.getRemappedNodes().containsKey(new MutablePair<>(pos, null)))
-                    networkID = networkDB.getRemappedNodes().get(new MutablePair<>(pos, null));
+                Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
+                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), networkTile.getCapabilityFace())).findAny();
+                if (any.isPresent()) {
+                    networkID = networkDB.getRemappedNodes().remove(any.get());
+                    TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+                }
 
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
                 WorldNetworkNode node = networkTile.createNode(network, pos);

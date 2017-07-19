@@ -44,10 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Custom resource pack that auto overwrites the default one FML generates,
@@ -234,7 +231,7 @@ public class ConcreteResourcePack extends AbstractResourcePack implements IResou
 
         // Return a block model file if this is an ItemBlock.
         if (Block.getBlockFromItem(itemFromLocation) != Blocks.AIR) {
-            if (itemFromLocation.getRegistryName().getResourcePath().equals(itemID)) {
+            if (Objects.equals(itemFromLocation.getRegistryName().getResourcePath(), itemID)) {
                 try {
                     String blockName = name.replace("/item/", "/block/");
 

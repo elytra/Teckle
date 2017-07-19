@@ -16,6 +16,7 @@
 
 package com.elytradev.teckle.common.proxy;
 
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
@@ -44,6 +45,7 @@ public class CommonProxy {
     public void onPlayerConnect(PlayerEvent.PlayerLoggedInEvent e) {
         if (e.player != null && Objects.equals(e.player.getGameProfile().getName(), "darkevilmac")) {
             TeckleMod.INDEV = true;
+            TeckleLog.developerPlayer = e.player;
         }
     }
 
@@ -51,6 +53,7 @@ public class CommonProxy {
     public void onPlayerDisconnect(PlayerEvent.PlayerLoggedOutEvent e) {
         if (e.player != null && Objects.equals(e.player.getGameProfile().getName(), "darkevilmac")) {
             TeckleMod.INDEV = false;
+            TeckleLog.developerPlayer = null;
         }
     }
 

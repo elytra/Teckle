@@ -37,6 +37,8 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Objects;
+
 import static com.elytradev.teckle.common.TeckleMod.MOD_ID;
 import static com.elytradev.teckle.common.TeckleMod.MOD_NAME;
 
@@ -93,7 +95,7 @@ public class TeckleMod {
     @Mod.EventHandler
     public void onMissingMappings(FMLMissingMappingsEvent e) {
         for (FMLMissingMappingsEvent.MissingMapping missingMapping : e.getAll()) {
-            if (missingMapping.resourceLocation.equals(new ResourceLocation("teckle:brassingot"))) {
+            if (Objects.equals(missingMapping.resourceLocation, new ResourceLocation("teckle:brassingot"))) {
                 missingMapping.remap(TeckleObjects.itemIngot);
             }
         }

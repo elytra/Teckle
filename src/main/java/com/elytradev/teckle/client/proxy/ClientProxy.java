@@ -25,19 +25,23 @@ import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockItemTube;
 import com.elytradev.teckle.common.item.ItemIngot;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
+import com.elytradev.teckle.common.network.messages.DebugReceiverMessage;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.repack.concrete.resgen.ConcreteResourcePack;
 import com.elytradev.teckle.repack.concrete.resgen.IResourceHolder;
+import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.IReloadableResourceManager;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoader;
@@ -46,9 +50,14 @@ import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.LoaderState;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
+import org.apache.commons.lang3.ArrayUtils;
+import org.lwjgl.input.Keyboard;
 
 
 public class ClientProxy extends CommonProxy {
+
+    public static KeyBinding showDebugBind;
 
     @Override
     public void registerRenderers(LoaderState.ModState state) {
@@ -139,6 +148,17 @@ public class ClientProxy extends CommonProxy {
         }
     }
 
+    public void registerBinds() {
+        try {
+            if (Minecraft.getMinecraft().getSession().getProfile().getName().equals("darkevilmac")) {
+                showDebugBind = new KeyBinding("Toggle Debug Receiving", Keyboard.KEY_END, "Teckle");
+                Minecraft.getMinecraft().gameSettings.keyBindings = ArrayUtils.addAll(Minecraft.getMinecraft().gameSettings.keyBindings, showDebugBind);
+            }
+        } catch (Exception e) {
+            //nom
+        }
+    }
+
     @SubscribeEvent
     public void onModelBakeEvent(ModelBakeEvent e) {
         ModelItemTube tubeModel = new ModelItemTube();
@@ -152,9 +172,22 @@ public class ClientProxy extends CommonProxy {
         e.getMap().registerSprite(new ResourceLocation(TeckleMod.MOD_ID, "blocks/sortingmachinemouth"));
     }
 
+    @SubscribeEvent
+    public void onKeyPress(InputEvent.KeyInputEvent event) {
+        if (Minecraft.getMinecraft().player == null || showDebugBind == null)
+            return;
+
+        if (Minecraft.getMinecraft().getSession().getProfile().getName().equals("darkevilmac") && showDebugBind.isKeyDown()) {
+            DebugReceiverMessage.active = !DebugReceiverMessage.active;
+            Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new TextComponentString(ChatFormatting.BOLD + "Toggled debug message receiving to " + DebugReceiverMessage.active));
+        }
+    }
+
     @Override
     public void registerHandlers() {
         super.registerHandlers();
         MinecraftForge.EVENT_BUS.register(ClientTravellerManager.class);
+
+        registerBinds();
     }
 }
