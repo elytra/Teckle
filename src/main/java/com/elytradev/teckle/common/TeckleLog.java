@@ -1,7 +1,6 @@
 package com.elytradev.teckle.common;
 
 import com.elytradev.teckle.common.network.messages.DebugReceiverMessage;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.launchwrapper.Launch;
 import org.apache.logging.log4j.Logger;
@@ -25,7 +24,7 @@ public class TeckleLog {
         }
 
         if (developerPlayer != null) {
-            new DebugReceiverMessage(ChatFormatting.AQUA + (String.format(s, o))).sendTo(developerPlayer);
+            new DebugReceiverMessage("§b" + (String.format(s, o))).sendTo(developerPlayer);
         }
     }
 
@@ -37,7 +36,7 @@ public class TeckleLog {
         LOG.error(s, o);
 
         if (developerPlayer != null) {
-            new DebugReceiverMessage(ChatFormatting.RED + (String.format(s, o))).sendTo(developerPlayer);
+            new DebugReceiverMessage("§c" + (String.format(s, o))).sendTo(developerPlayer);
         }
     }
 
