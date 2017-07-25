@@ -88,7 +88,7 @@ public abstract class TileNetworkMember extends TileEntity {
                 nodes.add(node);
                 if (TeckleMod.INDEV)
                     data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network",
-                            faceName, node.network.getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
+                            faceName, node.getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
 
                 if (!node.getTravellers().isEmpty()) {
                     data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.traveller.data")));

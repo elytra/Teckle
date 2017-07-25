@@ -28,6 +28,7 @@ import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import mcmultipart.api.container.IMultipartContainer;
+import mcmultipart.api.container.IPartInfo;
 import mcmultipart.api.multipart.IMultipartTile;
 import mcmultipart.api.multipart.MultipartHelper;
 import mcmultipart.api.slot.EnumSlotAccess;
@@ -42,14 +43,10 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiPredicate;
 
 import static com.elytradev.teckle.common.TeckleMod.MULTIPART_CAPABILITY;
@@ -97,7 +94,12 @@ public class TileItemTube extends TileNetworkMember {
                     if (optionalContainer.isPresent()) {
                         IMultipartContainer container = optionalContainer.get();
 
-                        for (IPartSlot slot : container.getParts().keySet()) {
+                        for (Map.Entry<IPartSlot, ? extends IPartInfo> iPartSlotEntry : container.getParts().entrySet()) {
+                            IPartSlot slot = iPartSlotEntry.getKey();
+                            IPartInfo info = iPartSlotEntry.getValue();
+                            if (slot.getRegistryName().getResourceDomain() == "chiselsandbits") {
+                            }
+
                             if (slot.getFaceAccess(side) == EnumSlotAccess.NONE)
                                 return false;
                         }
@@ -117,14 +119,14 @@ public class TileItemTube extends TileNetworkMember {
                 EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
 
                 if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos(), capabilityFace)) {
-                    if (!getNode().network.isNodePresent(neighbourTile.getPos())) {
+                    if (!getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
                         IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
-                        getNode().network.registerNode(neighbourNetworkTile.createNode(getNode().network, neighbourTile.getPos()));
-                        neighbourNetworkTile.setNode(getNode().network.getNodeFromPosition(neighbourTile.getPos()));
+                        getNode().getNetwork().registerNode(neighbourNetworkTile.createNode(getNode().getNetwork(), neighbourTile.getPos()));
+                        neighbourNetworkTile.setNode(getNode().getNetwork().getNodeFromPosition(neighbourTile.getPos()));
                     }
                 } else {
-                    if (!getNode().network.isNodePresent(neighbourTile.getPos())) {
-                        getNode().network.registerNode(new ItemNetworkEndpoint(getNode().network, neighbourTile.getPos(), capabilityFace));
+                    if (!getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
+                        getNode().getNetwork().registerNode(new ItemNetworkEndpoint(getNode().getNetwork(), neighbourTile.getPos(), capabilityFace));
                     }
                 }
             }
@@ -220,7 +222,7 @@ public class TileItemTube extends TileNetworkMember {
             compound.setInteger("databaseID", getWorld().provider.getDimension());
             if (networkTile.getNode() == null)
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-            compound.setUniqueId("networkID", networkTile.getNode().network.getNetworkID());
+            compound.setUniqueId("networkID", networkTile.getNode().getNetwork().getNetworkID());
         }
 
         return super.writeToNBT(compound);

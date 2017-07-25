@@ -23,16 +23,14 @@ import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Tuple;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by darkevilmac on 4/19/2017.
- */
+
 public class AlloyRecipes {
 
     private static final AlloyRecipes INSTANCE = new AlloyRecipes();
-    private HashMap<ItemStack, AlloyRecipe> recipes = new HashMap<>();
+    private List<AlloyRecipe> recipes = new ArrayList<>();
 
     public AlloyRecipes() {
     }
@@ -42,11 +40,7 @@ public class AlloyRecipes {
     }
 
     public List<AlloyRecipe> getRecipes() {
-        return Lists.newArrayList(recipes.values());
-    }
-
-    public AlloyRecipe getRecipeByResult(ItemStack result) {
-        return recipes.get(result);
+        return Lists.newArrayList(recipes);
     }
 
     public void init() {
@@ -54,26 +48,47 @@ public class AlloyRecipes {
                 new ItemStack(TeckleObjects.itemSiliconBoule),
                 new Tuple<>("sand", 8),
                 new Tuple<>("coal", 8));
-        recipes.put(siliconBouleRecipe.getCraftingResult(), siliconBouleRecipe);
+        recipes.add(siliconBouleRecipe);
 
         AlloyRecipe redDopedWaferRecipe = new AlloyRecipe(
                 new ItemStack(TeckleObjects.itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()),
                 new Tuple<>("dustRedstone", 4),
                 new Tuple<>(new ItemStack(TeckleObjects.itemSiliconWafer, 1, 0), null));
-        recipes.put(redDopedWaferRecipe.getCraftingResult(), redDopedWaferRecipe);
+        recipes.add(redDopedWaferRecipe);
 
         AlloyRecipe blueDopedWaferRecipe = new AlloyRecipe(
                 new ItemStack(TeckleObjects.itemSiliconWafer, 1, ItemSiliconWafer.WaferType.BLUE.getMetadata()),
                 new Tuple<>("dustNikolite", 4),
                 new Tuple<>(new ItemStack(TeckleObjects.itemSiliconWafer, 1, 0), null));
-        recipes.put(blueDopedWaferRecipe.getCraftingResult(), blueDopedWaferRecipe);
+        recipes.add(blueDopedWaferRecipe);
 
         AlloyRecipe brassIngotRecipe = new AlloyRecipe(
                 new ItemStack(TeckleObjects.itemIngot, 4, ItemIngot.IngotType.BRASS.getMetadata()),
                 new Tuple<>("ingotTin", 1),
                 new Tuple<>("ingotCopper", 3)
         );
-        recipes.put(new ItemStack(TeckleObjects.itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()), brassIngotRecipe);
+        recipes.add(brassIngotRecipe);
+
+        AlloyRecipe redAlloyIngotRecipe = new AlloyRecipe(
+                new ItemStack(TeckleObjects.itemIngot, 4, ItemIngot.IngotType.RED_ALLOY.getMetadata()),
+                new Tuple<>("ingotCopper", 1),
+                new Tuple<>("dustRedstone", 4)
+        );
+        recipes.add(redAlloyIngotRecipe);
+
+        AlloyRecipe redAlloyIngotRecipeAlt = new AlloyRecipe(
+                new ItemStack(TeckleObjects.itemIngot, 4, ItemIngot.IngotType.RED_ALLOY.getMetadata()),
+                new Tuple<>("ingotIron", 1),
+                new Tuple<>("dustRedstone", 4)
+        );
+        recipes.add(redAlloyIngotRecipeAlt);
+
+        AlloyRecipe blueAlloyIngotRecipe = new AlloyRecipe(
+                new ItemStack(TeckleObjects.itemIngot, 4, ItemIngot.IngotType.BLUE_ALLOY.getMetadata()),
+                new Tuple<>("ingotSilver", 1),
+                new Tuple<>("dustNikolite", 4)
+        );
+        recipes.add(blueAlloyIngotRecipe);
     }
 
 

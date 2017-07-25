@@ -66,7 +66,7 @@ public class WorldNetwork implements IWorldNetwork {
             networkNodes.put(node.position, node);
         else
             networkNodes.replace(node.position, node);
-        node.network = this;
+        node.setNetwork(this);
         TeckleMod.LOG.debug(this + "/Registered node, " + node);
     }
 

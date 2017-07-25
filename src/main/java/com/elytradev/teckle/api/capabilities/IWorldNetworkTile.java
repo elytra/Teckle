@@ -155,6 +155,6 @@ public interface IWorldNetworkTile {
      * @return the tile entity at this position.
      */
     default TileEntity getTileEntity() {
-        return this.getNode().network.getWorld().getTileEntity(getNode().position);
+        return this.getNode().getNetwork().getWorld().getTileEntity(getNode().position);
     }
 }

@@ -54,7 +54,6 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -65,7 +64,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
@@ -222,11 +220,11 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         try {
             TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(networkTile.getOutputFace()));
             boolean destinationIsAir = world.isAirBlock(pos.offset(networkTile.getOutputFace()));
-            boolean hasInsertionDestination = potentialInsertionTile != null && ((networkTile.getNode() != null && networkTile.getNode().network != null)
+            boolean hasInsertionDestination = potentialInsertionTile != null && ((networkTile.getNode() != null && networkTile.getNode().getNetwork() != null)
                     || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getOutputFace().getOpposite())));
 
             if (!world.isRemote && (hasInsertionDestination || destinationIsAir)) {
-                WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().network.getNodeFromPosition(pos);
+                WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().getNetwork().getNodeFromPosition(pos);
                 EnumFacing facing = networkTile.getOutputFace();
 
                 ItemStack extractionData = getExtractionData(facing);
@@ -245,8 +243,8 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
             String debugInfo = "NTile " + (bool ? "null" : networkTile.toString());
             bool = bool || networkTile.getNode() == null;
             debugInfo += " node " + (bool ? "null" : networkTile.getNode().toString());
-            bool = bool || networkTile.getNode().network == null;
-            debugInfo += " network " + (bool ? "null" : networkTile.getNode().network.toString());
+            bool = bool || networkTile.getNode().getNetwork() == null;
+            debugInfo += " network " + (bool ? "null" : networkTile.getNode().getNetwork().toString());
             TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
             TeckleMod.LOG.error("Caught NPE in tryPush!, {}", this);
             TeckleMod.LOG.error("Exception follows, {}", e);
@@ -343,7 +341,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
 
     @Override
     public void update() {
-        if (world.isRemote || networkTile.getNode() == null || networkTile.getNode().network == null)
+        if (world.isRemote || networkTile.getNode() == null || networkTile.getNode().getNetwork() == null)
             return;
 
         if (cooldown > 0) {
@@ -433,7 +431,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
             compound.setInteger("databaseID", getWorld().provider.getDimension());
             if (networkTile.getNode() == null)
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-            compound.setUniqueId("networkID", networkTile.getNode().network.getNetworkID());
+            compound.setUniqueId("networkID", networkTile.getNode().getNetwork().getNetworkID());
         }
         return super.writeToNBT(compound);
     }
@@ -488,7 +486,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                 return;
 
             if (TeckleMod.INDEV)
-                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", networkTile.getNode().network.getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", networkTile.getNode().getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
 
             List<ItemStack> stacks = new ArrayList<>();
             for (int i = 0; i < buffer.getSlots(); i++) {

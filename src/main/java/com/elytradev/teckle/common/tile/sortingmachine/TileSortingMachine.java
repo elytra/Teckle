@@ -421,8 +421,8 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
             compound.setInteger("databaseID", getWorld().provider.getDimension());
             if (entryPointTile.getNode() == null || endPointTile.getNode() == null)
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-            compound.setUniqueId("networkIDEntryPoint", entryPointTile.getNode().network.getNetworkID());
-            compound.setUniqueId("networkIDEndPoint", endPointTile.getNode().network.getNetworkID());
+            compound.setUniqueId("networkIDEntryPoint", entryPointTile.getNode().getNetwork().getNetworkID());
+            compound.setUniqueId("networkIDEndPoint", endPointTile.getNode().getNetwork().getNetworkID());
         }
         return super.writeToNBT(compound);
     }
@@ -640,7 +640,7 @@ public class TileSortingMachine extends TileNetworkMember implements ITickable, 
                 nodes.add(node);
                 if (TeckleMod.INDEV)
                     data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network",
-                            faceName, node.network.getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
+                            faceName, node.getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
 
                 if (!node.getTravellers().isEmpty()) {
                     data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.traveller.data")));

@@ -37,7 +37,7 @@ public class WorldNetworkNode {
     // Empty node, used instead of null because fuck NPEs.
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
     public BlockPos position;
-    public IWorldNetwork network;
+    private IWorldNetwork network;
     public EnumFacing capabilityFace = null;
     // Used when a tile isn't loaded.
     public BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate = (t, f) -> false;
@@ -46,19 +46,19 @@ public class WorldNetworkNode {
 
     public WorldNetworkNode() {
         this.position = new BlockPos(0, -1, 0);
-        this.network = null;
+        this.setNetwork(null);
     }
 
     public WorldNetworkNode(IWorldNetwork network, BlockPos position, EnumFacing capabilityFace) {
         this.position = position;
-        this.network = network;
+        this.setNetwork(network);
         this.capabilityFace = capabilityFace;
     }
 
     public boolean isLoaded() {
-        if (network == null || network.getWorld() == null)
+        if (getNetwork() == null || getNetwork().getWorld() == null)
             return false;
-        return network.getWorld().isBlockLoaded(position);
+        return getNetwork().getWorld().isBlockLoaded(position);
     }
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
@@ -85,8 +85,8 @@ public class WorldNetworkNode {
     }
 
     public IWorldNetworkTile getNetworkTile() {
-        if (CapabilityWorldNetworkTile.isPositionNetworkTile(network.getWorld(), position, capabilityFace))
-            return CapabilityWorldNetworkTile.getNetworkTileAtPosition(network.getWorld(), position, capabilityFace);
+        if (CapabilityWorldNetworkTile.isPositionNetworkTile(getNetwork().getWorld(), position, capabilityFace))
+            return CapabilityWorldNetworkTile.getNetworkTileAtPosition(getNetwork().getWorld(), position, capabilityFace);
         else return null;
     }
 
@@ -124,5 +124,13 @@ public class WorldNetworkNode {
                 "position=" + position +
                 ", capabilityFace=" + capabilityFace +
                 '}';
+    }
+
+    public IWorldNetwork getNetwork() {
+        return network;
+    }
+
+    public void setNetwork(IWorldNetwork network) {
+        this.network = network;
     }
 }

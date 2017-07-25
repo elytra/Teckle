@@ -29,7 +29,7 @@ import net.minecraft.util.math.BlockPos;
  */
 public class WorldNetworkEntryPoint extends WorldNetworkNode {
 
-    public WorldNetworkEndpoint endpoint = new WorldNetworkEndpoint(network, position, getCapabilityFace()) {
+    public WorldNetworkEndpoint endpoint = new WorldNetworkEndpoint(getNetwork(), position, getCapabilityFace()) {
         @Override
         public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {
             IWorldNetworkTile networkTile = WorldNetworkEntryPoint.this.getNetworkTile();
@@ -40,22 +40,22 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
     private EnumFacing facing = EnumFacing.DOWN;
 
     public WorldNetworkEntryPoint(IWorldNetwork network, BlockPos position, EnumFacing facing, EnumFacing capabilityFace) {
-        this.network = network;
+        this.setNetwork(network);
         this.position = position;
         this.facing = facing;
         this.capabilityFace = capabilityFace;
 
         this.endpoint.position = this.position;
-        this.endpoint.network = this.network;
+        this.endpoint.setNetwork(this.getNetwork());
     }
 
     public WorldNetworkTraveller addTraveller(NBTTagCompound data, boolean send) {
         WorldNetworkTraveller traveller = new WorldNetworkTraveller(this, data);
         if (traveller.genInitialPath()) {
-            network.registerTraveller(traveller, false);
+            getNetwork().registerTraveller(traveller, false);
             if (send) {
                 new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller, traveller.currentNode.position,
-                        traveller.previousNode.position).sendToAllWatching(network.getWorld(), position);
+                        traveller.previousNode.position).sendToAllWatching(getNetwork().getWorld(), position);
             }
             return traveller;
         }
