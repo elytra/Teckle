@@ -97,10 +97,6 @@ public abstract class NetworkTileTransporter implements IWorldNetworkTile {
      */
     @Override
     public void setNode(WorldNetworkNode node) {
-        if(node.position.equals(new BlockPos(529 ,93, -81))){
-            System.out.println("SADOWNADUN");
-        }
-
         this.node = node;
     }
 
