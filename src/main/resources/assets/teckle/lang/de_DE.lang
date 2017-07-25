@@ -1,0 +1,83 @@
+itemGroup.teckle=Teckle
+
+tile.teckle.tube.item.name=Item-Rohr
+tile.teckle.filter.name=Item-Filter
+tile.teckle.transposer.name=Transponierer
+tile.teckle.sortingmachine.name=Sortiermaschine
+tile.teckle.fabricator.name=Fabrikator
+tile.teckle.alloyfurnace.name=Legierungsofen
+tile.teckle.nikolite_ore.name=Nikoliterz
+
+item.teckle.paintbrush.white.name=Weißer Farbpinsel
+item.teckle.paintbrush.orange.name=Oranger Farbpinsel
+item.teckle.paintbrush.magenta.name=Magenta Farbpinsel
+item.teckle.paintbrush.lightBlue.name=Hellblauer Farbpinsel
+item.teckle.paintbrush.yellow.name=Gelber Farbpinsel
+item.teckle.paintbrush.lime.name=Hellgrüner Farbpinsel
+item.teckle.paintbrush.pink.name=Rosa Farbpinsel
+item.teckle.paintbrush.gray.name=Grauer Farbpinsel
+item.teckle.paintbrush.silver.name=Hellgrauer Farbpinsel
+item.teckle.paintbrush.cyan.name=Türkiser Farbpinsel
+item.teckle.paintbrush.purple.name=Violetter Farbpinsel
+item.teckle.paintbrush.blue.name=Blauer Farbpinsel
+item.teckle.paintbrush.brown.name=Brauner Farbpinsel
+item.teckle.paintbrush.green.name=Grüner Farbpinsel
+item.teckle.paintbrush.red.name=Roter Farbpinsel
+item.teckle.paintbrush.black.name=Schwarzer Farbpinsel
+item.teckle.siliconboule.name=Siliziumstab
+item.teckle.blade.name=Präziso™-Klinge
+item.teckle.nikolite.name=Nikolit
+item.teckle.ingot.brass.name=Messingbarren
+item.teckle.ingot.redalloy.name=Roter Legierungsbarren
+item.teckle.ingot.bluealloy.name=Blauer Legierungsbarren
+item.teckle.siliconwafer.plain.name=Silizium-Wafer
+item.teckle.siliconwafer.red.name=Rot dotierter Wafer
+item.teckle.siliconwafer.blue.name=Blau dotierter Wafer
+
+tooltip.teckle.node.network=Netzwerk %s %s
+tooltip.teckle.traveller.data=Travellers
+tooltip.teckle.filter.buffer=Puffer
+
+sortmodetype.compartment=Fach
+sortmodetype.slot=Platz
+
+sortmode.partialmatchselector=Teil-Übereinstimmung mit Selektor
+sortmode.fullmatchselector=Voll-Übereinstimmung mit Selektor
+sortmode.fullmatch=Voll-Übereinstimmung
+sortmode.anystack=Beliebiger Stapel
+sortmode.fullstack=Beliebiger voller Stapel
+
+sortmode.partialmatchselector.tooltip=Sortieren, wenn ein beliebiges Element im aktuellen Fach vorhanden ist.
+sortmode.fullmatchselector.tooltip=Sortieren, wenn jedes im aktuellen Fach eingestellte Element verfügbar ist.
+sortmode.fullmatch.tooltip=Sortieren, wenn jedes Element in einem Fach verfügbar ist.
+sortmode.anystack.tooltip=Sortieren, wenn ein Gegenstand in einem Fach vorhanden ist.
+sortmode.fullstack.tooltip=Sortieren, wenn die angegebene Menge eines Elements in einem Fach verfügbar ist.
+
+pullmode.auto=Automatisch
+pullmode.singlestep=Einzelner Schritt
+pullmode.singlesweep=Einzelnes Räumen
+
+pullmode.auto.tooltip=Automatisches Signal, wenn Elemente verfügbar sind.
+pullmode.singlestep.tooltip=Versucht, das aktuelle Fach bei ankommendem Signal abzuarbeiten; falls kein Fach ausgewählt, herausziehen.
+pullmode.singlesweep.tooltip=Alle Fächer bei ankommendem Signal räumen.
+
+defaultroute.white=Standardroute: Weiß
+defaultroute.orange=Standardroute: Orange
+defaultroute.magenta=Standardroute: Magenta
+defaultroute.light_blue=Standardroute: Hellblau
+defaultroute.yellow=Standardroute: Gelb
+defaultroute.lime=Standardroute: Hellgrün
+defaultroute.pink=Standardroute: Rosa
+defaultroute.gray=Standardroute: Grau
+defaultroute.silver=Standardroute: Hellgrau
+defaultroute.cyan=Standardroute: Türkis
+defaultroute.purple=Standardroute: Violett
+defaultroute.blue=Standardroute: Blau
+defaultroute.brown=Standardroute: Braun
+defaultroute.green=Standardroute: Grün
+defaultroute.red=Standardroute: Rot
+defaultroute.black=Standardroute: Schwarz
+defaultroute.none=Standardroute: Keine
+defaultroute.blocked=Standardroute: Blockiert
+
+teckle.configgui.title=Teckle Einstellungen
