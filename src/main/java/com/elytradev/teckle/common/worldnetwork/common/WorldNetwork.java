@@ -28,6 +28,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -63,13 +65,13 @@ public class WorldNetwork implements IWorldNetwork {
         TeckleMod.LOG.debug(this + "/Registering a node, " + node);
         if (!networkNodes.containsKey(node.position)) {
             networkNodes.put(node.position, node);
-            node.network = this;
+            node.setNetwork(this);
             networkNodesWithListeners.values().forEach(n -> n.getNetworkTiles().stream()
                     .filter(IWorldNetworkTile::listenToNetworkChange)
                     .forEach(iWorldNetworkTile -> iWorldNetworkTile.onNodeAdded(node)));
         } else {
             networkNodes.replace(node.position, node);
-            node.network = this;
+            node.setNetwork(this);
             networkNodesWithListeners.values().forEach(n -> n.getNetworkTiles().stream()
                     .filter(IWorldNetworkTile::listenToNetworkChange)
                     .forEach(iWorldNetworkTile -> iWorldNetworkTile.onNodeAdded(node)));
@@ -201,6 +203,17 @@ public class WorldNetwork implements IWorldNetwork {
         nodesToMove.addAll(this.networkNodes.values());
 
         for (WorldNetworkNode node : nodesToMove) {
+            WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(world);
+            Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
+                    .filter(pair -> Objects.equals(pair.getLeft(), node.position) && Objects.equals(pair.getValue(), node.getCapabilityFace())).findAny();
+            if (any.isPresent()) {
+                networkDB.getRemappedNodes().remove(any.get());
+            }
+            if (!node.isLoaded()) {
+                networkDB.getRemappedNodes().put(new MutablePair<>(node.position, node.getCapabilityFace()), to.getNetworkID());
+                TeckleMod.LOG.debug("marking node as remapped " + node.position);
+            }
+
             this.unregisterNode(node);
             to.registerNode(node);
         }
@@ -243,6 +256,16 @@ public class WorldNetwork implements IWorldNetwork {
                 WorldNetwork newNetwork = new WorldNetwork(this.world, null);
 
                 for (WorldNetworkNode node : newNetworkData) {
+                    WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(world);
+                    Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
+                            .filter(pair -> Objects.equals(pair.getLeft(), node.position) && Objects.equals(pair.getValue(), node.getCapabilityFace())).findAny();
+                    if (any.isPresent()) {
+                        networkDB.getRemappedNodes().remove(any.get());
+                    }
+                    if (!node.isLoaded()) {
+                        networkDB.getRemappedNodes().put(new MutablePair<>(node.position, node.getCapabilityFace()), newNetwork.getNetworkID());
+                    }
+
                     this.unregisterNode(node);
                     newNetwork.registerNode(node);
                 }

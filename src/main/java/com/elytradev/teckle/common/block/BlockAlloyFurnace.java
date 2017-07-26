@@ -40,15 +40,16 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.Random;
 
-/**
- * Created by darkevilmac on 4/18/2017.
- */
 public class BlockAlloyFurnace extends BlockContainer {
     public static final PropertyDirection FACING = BlockHorizontal.FACING;
     public static final PropertyBool LIT = PropertyBool.create("lit");
 
     public BlockAlloyFurnace(Material material) {
         super(material);
+
+        this.setHarvestLevel("pickaxe", 0);
+        this.setHardness(2.0F);
+        this.setResistance(10.0F);
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(LIT, false));
     }
 
@@ -150,7 +151,11 @@ public class BlockAlloyFurnace extends BlockContainer {
     }
 
     public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(meta & 7)).withProperty(LIT, Boolean.valueOf((meta & 8) > 0));
+        EnumFacing front = EnumFacing.getFront(meta & 7);
+        if (front.getAxis() == EnumFacing.Axis.Y) {
+            front = EnumFacing.NORTH;
+        }
+        return this.getDefaultState().withProperty(FACING, front).withProperty(LIT, Boolean.valueOf((meta & 8) > 0));
     }
 
     public int getMetaFromState(IBlockState state) {

@@ -100,11 +100,9 @@ public class TileAlloyFurnace extends TileEntity implements ITickable, IElementP
         currentFuelWorth = compound.getInteger("currentFuelWorth");
         cookTime = compound.getInteger("cookTime");
 
-        if (compound.hasKey("alloyRecipeKey")) {
-            this.activeRecipe = AlloyRecipes.getInstance().getRecipeByResult(new ItemStack(compound.getCompoundTag("alloyRecipeKey")));
-        } else {
-            this.activeRecipe = null;
-        }
+        Optional<AlloyRecipe> recipe = AlloyRecipes.getInstance().getRecipes().stream().filter(alloyRecipe -> !alloyRecipe.matches(topInputHandler).isEmpty())
+                .findFirst();
+        this.activeRecipe = recipe.isPresent() ? recipe.get() : null;
     }
 
     @Override
@@ -113,12 +111,6 @@ public class TileAlloyFurnace extends TileEntity implements ITickable, IElementP
         compound.setInteger("fuelBurnTime", fuelBurnTime);
         compound.setInteger("currentFuelWorth", currentFuelWorth);
         compound.setInteger("cookTime", cookTime);
-
-        if (activeRecipe != null) {
-            compound.setTag("alloyRecipeKey", activeRecipe.getCraftingResult().serializeNBT());
-        } else {
-            compound.removeTag("alloyRecipeKey");
-        }
 
         return super.writeToNBT(compound);
     }

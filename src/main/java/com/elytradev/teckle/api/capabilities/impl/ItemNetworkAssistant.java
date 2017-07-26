@@ -63,8 +63,8 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
 
             if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourPos, facing.getOpposite()) && networkTile.canConnectTo(facing)) {
                 IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourPos, facing.getOpposite());
-                if (!neighbourNetworks.contains(neighbourNetworkTile.getNode().network))
-                    neighbourNetworks.add(neighbourNetworkTile.getNode().network);
+                if (!neighbourNetworks.contains(neighbourNetworkTile.getNode().getNetwork()))
+                    neighbourNetworks.add(neighbourNetworkTile.getNode().getNetwork());
             }
         }
 
@@ -136,14 +136,14 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
                 EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
 
                 if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos(), capabilityFace)) {
-                    if (!thisNetworkTile.getNode().network.isNodePresent(neighbourTile.getPos())) {
+                    if (!thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
                         IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
-                        thisNetworkTile.getNode().network.registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().network, neighbourTile.getPos()));
-                        neighbourNetworkTile.setNode(thisNetworkTile.getNode().network.getNodeFromPosition(neighbourTile.getPos()));
+                        thisNetworkTile.getNode().getNetwork().registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().getNetwork(), neighbourTile.getPos()));
+                        neighbourNetworkTile.setNode(thisNetworkTile.getNode().getNetwork().getNodeFromPosition(neighbourTile.getPos()));
                     }
                 } else {
-                    if (!thisNetworkTile.getNode().network.isNodePresent(neighbourTile.getPos())) {
-                        thisNetworkTile.getNode().network.registerNode(new ItemNetworkEndpoint(thisNetworkTile.getNode().network, neighbourTile.getPos(), Lists.newArrayList(capabilityFace)));
+                    if (!thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
+                        thisNetworkTile.getNode().getNetwork().registerNode(new ItemNetworkEndpoint(thisNetworkTile.getNode().getNetwork(), neighbourTile.getPos(), Lists.newArrayList(capabilityFace)));
                     }
                 }
             }
@@ -167,8 +167,8 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
             return;
         }
 
-        if (thisNetworkTile != null && thisNetworkTile.getNode() != null && thisNetworkTile.getNode().network != null
-                && !thisNetworkTile.getNode().network.isNodePresent(neighbourPos)) {
+        if (thisNetworkTile != null && thisNetworkTile.getNode() != null && thisNetworkTile.getNode().getNetwork() != null
+                && !thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourPos)) {
             // Node not already present, check if we can add to network.
             if (world.getTileEntity(neighbourPos) != null) {
                 TileEntity neighbourTile = world.getTileEntity(neighbourPos);
@@ -176,31 +176,31 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
                     if (neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
                             WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
                         // Create endpoint and put it in the network.
-                        ItemNetworkEndpoint nodeEndpoint = new ItemNetworkEndpoint(thisNetworkTile.getNode().network, neighbourPos, Lists.newArrayList(capabilityFace));
-                        thisNetworkTile.getNode().network.registerNode(nodeEndpoint);
+                        ItemNetworkEndpoint nodeEndpoint = new ItemNetworkEndpoint(thisNetworkTile.getNode().getNetwork(), neighbourPos, Lists.newArrayList(capabilityFace));
+                        thisNetworkTile.getNode().getNetwork().registerNode(nodeEndpoint);
                     } else if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos(), capabilityFace)) {
                         IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
-                        if (neighbourNetworkTile.isValidNetworkMember(thisNetworkTile.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
-                            thisNetworkTile.getNode().network.registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().network, neighbourTile.getPos()));
+                        if (neighbourNetworkTile.isValidNetworkMember(thisNetworkTile.getNode().getNetwork(), WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
+                            thisNetworkTile.getNode().getNetwork().registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().getNetwork(), neighbourTile.getPos()));
                         }
                     }
                 }
             }
         } else {
             if (world.getTileEntity(neighbourPos) == null) {
-                thisNetworkTile.getNode().network.unregisterNodeAtPosition(neighbourPos);
+                thisNetworkTile.getNode().getNetwork().unregisterNodeAtPosition(neighbourPos);
             } else {
                 TileEntity neighbourTile = world.getTileEntity(neighbourPos);
                 if (!neighbourTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY,
                         WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
                     if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos(), capabilityFace)) {
                         IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
-                        if (neighbourNetworkTile.isValidNetworkMember(thisNetworkTile.getNode().network, WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
+                        if (neighbourNetworkTile.isValidNetworkMember(thisNetworkTile.getNode().getNetwork(), WorldNetworkTraveller.getFacingFromVector(pos.subtract(neighbourPos)))) {
                             return;
                         }
                     }
 
-                    thisNetworkTile.getNode().network.unregisterNodeAtPosition(neighbourPos);
+                    thisNetworkTile.getNode().getNetwork().unregisterNodeAtPosition(neighbourPos);
                 }
             }
         }
@@ -214,8 +214,8 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
         if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos)) {
             IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos);
             if (thisNetworkTile.getNode() != null) {
-                thisNetworkTile.getNode().network.unregisterNodeAtPosition(pos);
-                thisNetworkTile.getNode().network.validateNetwork();
+                thisNetworkTile.getNode().getNetwork().unregisterNodeAtPosition(pos);
+                thisNetworkTile.getNode().getNetwork().validateNetwork();
                 thisNetworkTile.setNode(null);
             }
         }
@@ -227,8 +227,8 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
         ItemStack remaining = insertData.copy();
         EnumFacing determinedCapFace = WorldNetworkTraveller.getFacingFromVector(insertInto.subtract(entryPoint.position));
         IWorldNetworkTile networkTile = entryPoint.getNetworkTile(determinedCapFace);
-        World world = entryPoint.network.getWorld();
-        if (networkTile.getNode() != null && networkTile.getNode().network != null
+        World world = entryPoint.getNetwork().getWorld();
+        if (networkTile.getNode() != null && networkTile.getNode().getNetwork() != null
                 && CapabilityWorldNetworkTile.isPositionNetworkTile(world, insertInto)) {
             NBTTagCompound tagCompound = new NBTTagCompound();
             tagCompound.setTag("stack", insertData.serializeNBT());
@@ -236,7 +236,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
             WorldNetworkTraveller traveller = entryPoint.addTraveller(tagCompound, !simulate);
             traveller.setEndpointPredicate(endpointPredicate);
             if (simulate)
-                entryPoint.network.unregisterTraveller(traveller, true, false);
+                entryPoint.getNetwork().unregisterTraveller(traveller, true, false);
             if (Objects.equals(traveller, WorldNetworkTraveller.NONE) || traveller == null) {
                 return remaining.copy();
             } else {

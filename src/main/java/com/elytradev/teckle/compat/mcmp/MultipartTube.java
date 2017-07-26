@@ -55,8 +55,8 @@ public class MultipartTube implements IMultipart {
         if (part.getTile() != null && part.getTile().getTileEntity() instanceof TileItemTube) {
             TileItemTube tube = (TileItemTube) part.getTile().getTileEntity();
 
-            if (tube.getNetworkTile() != null && tube.getNetworkTile().getNode() != null && tube.getNetworkTile().getNode().network != null) {
-                tube.getNetworkTile().getNode().network.validateNetwork();
+            if (tube.getNetworkTile() != null && tube.getNetworkTile().getNode() != null && tube.getNetworkTile().getNode().getNetwork() != null) {
+                tube.getNetworkTile().getNode().getNetwork().validateNetwork();
             }
         }
     }

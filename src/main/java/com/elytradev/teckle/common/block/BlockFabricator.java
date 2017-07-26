@@ -44,6 +44,8 @@ public class BlockFabricator extends BlockContainer {
     public BlockFabricator(Material materialIn) {
         super(materialIn);
 
+        this.setHardness(2.0F);
+        this.setResistance(10.0F);
         this.setHarvestLevel("pickaxe", 0);
     }
 

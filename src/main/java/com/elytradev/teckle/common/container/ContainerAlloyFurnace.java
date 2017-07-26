@@ -92,12 +92,16 @@ public class ContainerAlloyFurnace extends Container {
             ItemStack itemstack1 = slot.getStack();
             itemstack = itemstack1.copy();
 
-            if (index < 9) {
-                if (!this.mergeItemStack(itemstack1, 9, 45, true)) {
+            if (index < 11) {
+                if (!this.mergeItemStack(itemstack1, 11, 46, true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.mergeItemStack(itemstack1, 0, 9, false)) {
-                return ItemStack.EMPTY;
+            } else {
+                if (!this.mergeItemStack(itemstack1, 9, 10, false)) {
+                    if (!this.mergeItemStack(itemstack1, 0, 9, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                }
             }
 
             if (itemstack1.isEmpty()) {
