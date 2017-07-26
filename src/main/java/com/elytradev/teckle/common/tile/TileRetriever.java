@@ -143,7 +143,7 @@ public class TileRetriever extends TileLitNetworkMember {
         public void onNodeAdded(WorldNetworkNode addedNode) {
             // Only add if it's not already present, and has IO for transfer of items.
             if (addedNode.isEndpoint() && sourceNodes.stream().noneMatch(pN -> pN.realNode.equals(addedNode))) {
-                IWorldNetwork network = this.getNode().network;
+                IWorldNetwork network = this.getNode().getNetwork();
                 List<PathNode> nodeStack = new ArrayList<>();
                 List<BlockPos> iteratedPositions = new ArrayList<>();
                 HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();

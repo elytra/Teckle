@@ -349,7 +349,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             } else {
                 WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
                 Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
-                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), entryPointTile.getCapabilityFace())).findAny();
+                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), ejectionTile.getCapabilityFace())).findAny();
                 if (any.isPresent()) {
                     networkID = networkDB.getRemappedNodes().remove(any.get());
                     TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
@@ -362,7 +362,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
                 networkID = compound.getUniqueId("networkIDEndPoint");
                 any = networkDB.getRemappedNodes().keySet().stream()
-                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), endPointTile.getCapabilityFace())).findAny();
+                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), insertionTile.getCapabilityFace())).findAny();
                 if (any.isPresent()) {
                     networkID = networkDB.getRemappedNodes().remove(any.get());
                     TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
