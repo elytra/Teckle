@@ -43,6 +43,8 @@ import net.minecraft.dispenser.PositionImpl;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -51,26 +53,23 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
 
-/**
- * Created by darkevilmac on 4/21/2017.
- */
 public class TileTransposer extends TileNetworkMember implements ITickable {
 
+    public EnumFacing cachedFace = EnumFacing.DOWN;
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
     private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
-
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return side.equals(getOutputFace());
+            return Objects.equals(side, getOutputFace());
         }
-
 
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
@@ -79,10 +78,10 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
         @Override
         public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-            if (traveller.getEntryPoint().position.equals(TileTransposer.this.pos))
+            if (Objects.equals(traveller.getEntryPoint().position, TileTransposer.this.pos))
                 return true;
 
-            return from.equals(getOutputFace().getOpposite()) && !TileTransposer.this.isPowered();
+            return Objects.equals(from, getOutputFace().getOpposite()) && !TileTransposer.this.isPowered();
         }
 
         @Override
@@ -95,12 +94,12 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         public EnumFacing getOutputFace() {
             if (world != null) {
                 IBlockState thisState = world.getBlockState(pos);
-                if (thisState.getBlock().equals(TeckleObjects.blockTransposer)) {
+                if (Objects.equals(thisState.getBlock(), TeckleObjects.blockTransposer)) {
                     return thisState.getValue(BlockTransposer.FACING);
                 }
             }
 
-            return EnumFacing.DOWN;
+            return cachedFace;
         }
 
         @Override
@@ -112,7 +111,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             EnumFacing facing = getOutputFace();
 
             // Try and put it back where we found it.
-            if (side.equals(getOutputFace())) {
+            if (Objects.equals(side, getOutputFace())) {
                 if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
                     TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
                     if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
@@ -141,7 +140,6 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
     private int cooldown = 0;
 
-
     /**
      * Attempt to push to our network, by pulling from our input position.
      *
@@ -152,27 +150,41 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
         if (cooldown > 0)
             return result;
+        try {
+            TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(networkTile.getOutputFace()));
+            boolean destinationIsAir = world.isAirBlock(pos.offset(networkTile.getOutputFace()));
+            boolean hasInsertionDestination = potentialInsertionTile != null && ((networkTile.getNode() != null && networkTile.getNode().getNetwork() != null)
+                    || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getOutputFace().getOpposite())));
 
-        TileEntity potentialInsertionTile = world.getTileEntity(pos.offset(networkTile.getOutputFace()));
-        boolean destinationIsAir = world.isAirBlock(pos.offset(networkTile.getOutputFace()));
-        boolean hasInsertionDestination = potentialInsertionTile != null && ((networkTile.getNode() != null && networkTile.getNode().network != null)
-                || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getOutputFace().getOpposite())));
+            if (!world.isRemote && (hasInsertionDestination || destinationIsAir)) {
+                WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().getNetwork().getNodeFromPosition(pos);
+                EnumFacing facing = networkTile.getOutputFace();
 
-        if (!world.isRemote && (hasInsertionDestination || destinationIsAir)) {
-            WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().network.getNodeFromPosition(pos);
-            EnumFacing facing = networkTile.getOutputFace();
+                ItemStack extractionData = getExtractionData(facing);
 
-            ItemStack extractionData = getExtractionData(facing);
-
-            if (!extractionData.isEmpty()) {
-                if (hasInsertionDestination) {
-                    result = attemptInsertion(potentialInsertionTile, thisNode, extractionData);
-                } else {
-                    result = ejectExtractionData(facing, extractionData);
+                if (!extractionData.isEmpty()) {
+                    if (hasInsertionDestination) {
+                        result = attemptInsertion(potentialInsertionTile, thisNode, extractionData);
+                    } else {
+                        result = ejectExtractionData(facing, extractionData);
+                    }
                 }
-            }
-        }
 
+            }
+
+        } catch (NullPointerException e) {
+            boolean bool = networkTile == null;
+            String debugInfo = "NTile " + (bool ? "null" : networkTile.toString());
+            bool = bool || networkTile.getNode() == null;
+            debugInfo += " node " + (bool ? "null" : networkTile.getNode().toString());
+            bool = bool || networkTile.getNode().getNetwork() == null;
+            debugInfo += " network " + (bool ? "null" : networkTile.getNode().getNetwork().toString());
+            TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
+            TeckleMod.LOG.error("Caught NPE in tryPush!, {}", this);
+            TeckleMod.LOG.error("Exception follows, {}", e);
+            TeckleMod.LOG.error("Here's some useful debug info, {}", debugInfo);
+            TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
+        }
         cooldown = TeckleMod.CONFIG.transposerCooldown;
         return result;
     }
@@ -236,6 +248,22 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         return extractionData;
     }
 
+    @Nullable
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(this.pos, 0, getUpdateTag());
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        handleUpdateTag(pkt.getNbtCompound());
+    }
+
+    @Override
+    public void handleUpdateTag(NBTTagCompound tag) {
+        super.readFromNBT(tag);
+    }
+
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
         if (oldState.getBlock() == newSate.getBlock()) {
@@ -247,7 +275,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
     @Override
     public void update() {
-        if (world.isRemote || networkTile.getNode() == null || networkTile.getNode().network == null)
+        if (world.isRemote || networkTile.getNode() == null || networkTile.getNode().getNetwork() == null)
             return;
 
         if (cooldown > 0) {
@@ -296,28 +324,41 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         super.readFromNBT(compound);
 
         buffer.deserializeNBT(compound.getCompoundTag("buffer"));
+        cachedFace = EnumFacing.values()[compound.getInteger("cachedFace")];
 
-        UUID networkID = compound.getUniqueId("networkID");
-        int dimID = compound.getInteger("databaseID");
-        if (networkID == null) {
-            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-        } else {
-            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-            WorldNetworkNode node = networkTile.createNode(network, pos);
-            network.registerNode(node);
-            networkTile.setNode(node);
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            UUID networkID = compound.getUniqueId("networkID");
+            int dimID = compound.getInteger("databaseID");
+            if (networkID == null) {
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            } else {
+                WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
+                Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
+                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), networkTile.getCapabilityFace())).findAny();
+                if (any.isPresent()) {
+                    networkID = networkDB.getRemappedNodes().remove(any.get());
+                    TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+                }
+
+                IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+                WorldNetworkNode node = networkTile.createNode(network, pos);
+                network.registerNode(node);
+                networkTile.setNode(node);
+            }
         }
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound.setTag("buffer", buffer.serializeNBT());
+        compound.setInteger("cachedFace", networkTile.getOutputFace().getIndex());
 
-        compound.setInteger("databaseID", getWorld().provider.getDimension());
-        if (networkTile.getNode() == null)
-            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-        compound.setUniqueId("networkID", networkTile.getNode().network.getNetworkID());
-
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            compound.setInteger("databaseID", getWorld().provider.getDimension());
+            if (networkTile.getNode() == null)
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            compound.setUniqueId("networkID", networkTile.getNode().getNetwork().getNetworkID());
+        }
         return super.writeToNBT(compound);
     }
 
@@ -356,7 +397,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                 return;
 
             if (TeckleMod.INDEV)
-                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", networkTile.node.network.getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", networkTile.node.getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
 
             List<ItemStack> stacks = new ArrayList<>();
             for (int i = 0; i < buffer.getSlots(); i++) {

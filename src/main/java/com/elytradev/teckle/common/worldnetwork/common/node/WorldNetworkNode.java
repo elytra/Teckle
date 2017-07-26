@@ -26,6 +26,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -36,14 +38,17 @@ public class WorldNetworkNode {
     // Empty node, used instead of null because fuck NPEs.
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
     public BlockPos position;
-    public IWorldNetwork network;
+    // Used when a tile isn't loaded.
+    public BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate = (t, f) -> false;
+    public Predicate<EnumFacing> canConnectToSidePredicate = (f) -> true;
+    private IWorldNetwork network;
     private boolean useFace = false;
     private List<EnumFacing> capabilityFaces = new ArrayList<>();
     private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
 
     public WorldNetworkNode() {
         this.position = new BlockPos(0, -1, 0);
-        this.network = null;
+        this.setNetwork(null);
     }
 
     public WorldNetworkNode(IWorldNetwork network, BlockPos position, List<EnumFacing> capabilityFaces) {
@@ -58,22 +63,37 @@ public class WorldNetworkNode {
     }
 
     public boolean isLoaded() {
-        if (network == null || network.getWorld() == null)
+        if (getNetwork() == null || getNetwork().getWorld() == null)
             return false;
-        return network.getWorld().isBlockLoaded(position);
+        return getNetwork().getWorld().isBlockLoaded(position);
     }
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
         if (isLoaded()) {
-            if (getNetworkTile(from.getOpposite()) != null)
-                return getNetworkTile(from.getOpposite()).canAcceptTraveller(traveller, from);
+            if (getNetworkTile(from) != null)
+                return getNetworkTile(from).canAcceptTraveller(traveller, from);
+        } else {
+            return canAcceptTravellerPredicate.test(traveller, from);
         }
         return isLoaded();
     }
 
-    public IWorldNetworkTile getNetworkTile(EnumFacing capabilityFace) {
-        if (CapabilityWorldNetworkTile.isPositionNetworkTile(network.getWorld(), position, capabilityFace))
-            return CapabilityWorldNetworkTile.getNetworkTileAtPosition(network.getWorld(), position, capabilityFace);
+    /**
+     * Forward method for network tiles, uses a predicate as fallback if the tile isn't loaded.
+     * <p>
+     * Used to determine if this node can be connected to from the given side.
+     */
+    public boolean canConnectTo(EnumFacing side) {
+        if (isLoaded()) {
+            return getNetworkTile(side).canConnectTo(side);
+        } else {
+            return canConnectToSidePredicate.test(side);
+        }
+    }
+
+    public IWorldNetworkTile getNetworkTile(EnumFacing facing) {
+        if (CapabilityWorldNetworkTile.isPositionNetworkTile(getNetwork().getWorld(), position, facing))
+            return CapabilityWorldNetworkTile.getNetworkTileAtPosition(getNetwork().getWorld(), position, facing);
         else return null;
     }
 
@@ -131,5 +151,13 @@ public class WorldNetworkNode {
 
     public boolean useFace() {
         return useFace;
+    }
+
+    public IWorldNetwork getNetwork() {
+        return network;
+    }
+
+    public void setNetwork(IWorldNetwork network) {
+        this.network = network;
     }
 }

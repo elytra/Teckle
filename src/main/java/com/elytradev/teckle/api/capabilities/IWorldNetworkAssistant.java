@@ -27,7 +27,6 @@ import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 /**
  * Primarily used to allow mods to interact with worldnetworks.
@@ -76,7 +75,7 @@ public interface IWorldNetworkAssistant<T extends INBTSerializable> {
      * @return the remaining data that was not inserted.
      */
     @Nonnull
-    default T insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, T insertData, ImmutableMap<String, NBTBase> additionalData, boolean networksInsertionOnly, boolean simulate){
+    default T insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, T insertData, ImmutableMap<String, NBTBase> additionalData, boolean networksInsertionOnly, boolean simulate) {
         return insertData(entryPoint, insertInto, insertData, additionalData, (node, enumFacing) -> true, networksInsertionOnly, simulate);
     }
 

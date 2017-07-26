@@ -56,6 +56,7 @@ public class FabricatorTemplateMessage extends Message {
             if (!fabricator.isUsableByPlayer(sender))
                 return;
             fabricator.setTemplateSlot(templateIndex, stack);
+            fabricator.markDirty();
         }
     }
 }

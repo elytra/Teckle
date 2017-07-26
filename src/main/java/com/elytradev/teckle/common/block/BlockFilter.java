@@ -59,6 +59,8 @@ public class BlockFilter extends BlockContainer {
         super(materialIn);
 
         this.setHarvestLevel("pickaxe", 0);
+        this.setHardness(2.0F);
+        this.setResistance(10.0F);
         this.setDefaultState(blockState.getBaseState());
     }
 
@@ -117,8 +119,9 @@ public class BlockFilter extends BlockContainer {
         if (tileentity instanceof TileFilter) {
             if (powered) {
                 worldIn.setBlockState(pos, state.withProperty(TRIGGERED, true));
-                if (!hadPower)
+                if (!hadPower) {
                     ((TileFilter) tileentity).tryPush();
+                }
             } else {
                 worldIn.setBlockState(pos, state.withProperty(TRIGGERED, false));
             }

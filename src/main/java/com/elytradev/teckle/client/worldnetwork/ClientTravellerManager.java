@@ -26,10 +26,7 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Manages all travellers on this client, mostly for visuals.
@@ -41,7 +38,7 @@ public class ClientTravellerManager {
 
     @SubscribeEvent
     public static void onTickEvent(TickEvent.ClientTickEvent e) {
-        if (e.phase.equals(TickEvent.Phase.END) || Minecraft.getMinecraft().world == null || Minecraft.getMinecraft().isGamePaused())
+        if (Objects.equals(e.phase, TickEvent.Phase.END) || Minecraft.getMinecraft().world == null || Minecraft.getMinecraft().isGamePaused())
             return;
 
         for (DummyNetworkTraveller traveller : travellers.values()) {

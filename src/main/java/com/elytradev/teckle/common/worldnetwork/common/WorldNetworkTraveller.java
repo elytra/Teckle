@@ -66,7 +66,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     }
 
     public WorldNetworkTraveller(WorldNetworkEntryPoint entryPoint, NBTTagCompound data) {
-        this.network = entryPoint.network;
+        this.network = entryPoint.getNetwork();
         this.entryPoint = entryPoint;
 
         this.data = data;
@@ -122,7 +122,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                         endpoints.get(neighbourPos).put(direction.getOpposite(),
                                 new EndpointData(new PathNode(pathNode, network.getNodeFromPosition(neighbourPos), direction.getOpposite()),
                                         direction.getOpposite()));
-                    } else if (entryPoint.position.equals(neighbourPos) && entryPoint.network.equals(network)) {
+                    } else if (entryPoint.position.equals(neighbourPos) && entryPoint.getNetwork().equals(network)) {
                         PathNode nextNode = new PathNode(pathNode, entryPoint.endpoint, direction.getOpposite());
                         nextNode.cost = Integer.MAX_VALUE;
                         endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(nextNode, direction.getOpposite()));
@@ -198,7 +198,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         this.nextNode = path.next();
         this.activePath = path;
         this.travelledDistance = -0.10F;
-        this.network = currentNode.network;
+        this.network = currentNode.getNetwork();
     }
 
     /**
@@ -274,7 +274,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                     roundRobinMap.put(entryPoint, roundRobinData);
                 }
                 // Quick clean of the data, remove any dormant nodes.
-                roundRobinData.removeIf(endpointDataBooleanTuple -> !endpointDataBooleanTuple.getFirst().node.realNode.network.isNodePresent(endpointDataBooleanTuple.getFirst().pos));
+                roundRobinData.removeIf(endpointDataBooleanTuple -> !endpointDataBooleanTuple.getFirst().node.realNode.getNetwork().isNodePresent(endpointDataBooleanTuple.getFirst().pos));
 
                 for (Tuple<EndpointData, Boolean> roundRobinDatum : roundRobinData) {
                     if (lowestCostingEndpoints.contains(roundRobinDatum.getFirst()) && roundRobinDatum.getSecond()) {
@@ -314,7 +314,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
         WorldNetworkPath path = null;
         if (sortedEndpointData.isEmpty()) {
-            if (this.network.equals(entryPoint.network)) {
+            if (this.network.equals(entryPoint.getNetwork())) {
                 return false;
             }
         } else {

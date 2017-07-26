@@ -30,6 +30,7 @@ import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
+import com.elytradev.teckle.common.network.messages.TileLitMessage;
 import com.elytradev.teckle.common.tile.TileLitNetworkMember;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
@@ -54,6 +55,8 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IStringSerializable;
@@ -61,26 +64,29 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
 public class TileSortingMachine extends TileLitNetworkMember implements IElementProvider {
 
+    public EnumFacing cachedFace = EnumFacing.DOWN;
     public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(48);
     public EnumDyeColor[] colours = new EnumDyeColor[8];
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(32);
     public List<WorldNetworkTraveller> returnedTravellers = Lists.newArrayList();
     public DefaultRoute defaultRoute = DefaultRoute.NONE;
+    public boolean isLit;
     @SideOnly(Side.CLIENT)
     private int selectorPos = -1;
     private PullMode pullMode = new PullModeSingleStep();
@@ -94,15 +100,15 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return side.equals(getOutputFace());
+            return Objects.equals(side, getOutputFace());
         }
 
         @Override
         public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-            if (traveller.getEntryPoint().position.equals(TileSortingMachine.this.pos))
+            if (Objects.equals(traveller.getEntryPoint().position, TileSortingMachine.this.pos))
                 return true;
 
-            if (from.equals(getOutputFace().getOpposite())) {
+            if (Objects.equals(from, getOutputFace().getOpposite())) {
                 // Allows use of filters for filtering items already in tubes. Not really a good reason to do this but it was possible in RP2 so it's possible in Teckle.
                 return getSortMode().canAcceptTraveller(TileSortingMachine.this, traveller, from);
             }
@@ -111,19 +117,19 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
         @Override
         public boolean canConnectTo(EnumFacing side) {
-            return side.equals(getOutputFace());
+            return Objects.equals(side, getOutputFace());
         }
 
         @Override
         public EnumFacing getOutputFace() {
             if (world != null) {
                 IBlockState thisState = world.getBlockState(pos);
-                if (thisState.getBlock().equals(TeckleObjects.blockSortingMachine)) {
+                if (Objects.equals(thisState.getBlock(), TeckleObjects.blockSortingMachine)) {
                     return thisState.getValue(BlockSortingMachine.FACING);
                 }
             }
 
-            return EnumFacing.DOWN;
+            return cachedFace;
         }
 
         @Override
@@ -135,7 +141,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             EnumFacing facing = getOutputFace();
 
             // Try and put it back where we found it.
-            if (side.equals(getOutputFace())) {
+            if (Objects.equals(side, getOutputFace())) {
                 if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
                     TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
                     if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
@@ -164,7 +170,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     private IWorldNetworkTile insertionTile = new NetworkTileTransporter() {
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return side.equals(getCapabilityFace());
+            return Objects.equals(side, getCapabilityFace());
         }
 
         @Override
@@ -179,7 +185,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
         @Override
         public boolean canConnectTo(EnumFacing side) {
-            return side.equals(getCapabilityFace());
+            return Objects.equals(side, getCapabilityFace());
         }
 
         @Override
@@ -197,6 +203,41 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         }
 
         return subHandlers;
+    }
+
+    @Override
+    public void onLoad() {
+        if (world.isRemote) new TileLitMessage(this).sendToAllWatching(this);
+    }
+
+    @Nullable
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(this.pos, 0, getUpdateTag());
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        return this.writeToNBT(new NBTTagCompound());
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        this.handleUpdateTag(pkt.getNbtCompound());
+    }
+
+    @Override
+    public void handleUpdateTag(NBTTagCompound tag) {
+        this.readFromNBT(tag);
+    }
+
+    @Override
+    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
+        if (oldState.getBlock() == newSate.getBlock()) {
+            return false;
+        }
+
+        return super.shouldRefresh(world, pos, oldState, newSate);
     }
 
     @Override
@@ -267,6 +308,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
 
+        defaultRoute = DefaultRoute.byMetadata(compound.getInteger("defaultRoute"));
         NBTTagList coloursTag = compound.getTagList("colours", 3);
         for (int i = 0; i < 8; i++) {
             if (coloursTag.getIntAt(i) > -1) {
@@ -275,6 +317,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
                 colours[i] = null;
             }
         }
+
         try {
             setPullMode(PullMode.PULL_MODES.get(compound.getInteger("pullModeID")).newInstance());
             getPullMode().deserializeNBT(compound.getCompoundTag("pullMode"));
@@ -285,33 +328,50 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             TeckleMod.LOG.error("Failed to read sorting machine modes from nbt.", e);
         }
 
-        filterRows.deserializeNBT(compound.getCompoundTag("filterRows"));
-        buffer.deserializeNBT(compound.getCompoundTag("buffer"));
-        defaultRoute = DefaultRoute.byMetadata(compound.getInteger("defaultRoute"));
+        isLit = compound.getBoolean("isLit");
+        cachedFace = EnumFacing.values()[compound.getInteger("cachedFace")];
 
-        int stacksLeftToSatisfySize = compound.getInteger("returnedTravellers");
-        returnedTravellers = Lists.newArrayListWithExpectedSize(stacksLeftToSatisfySize);
-        for (int i = 0; i < stacksLeftToSatisfySize; i++) {
-            WorldNetworkTraveller deserializedTraveller = new WorldNetworkTraveller(new NBTTagCompound());
-            deserializedTraveller.deserializeNBT(compound.getCompoundTag("returnedTravellers" + i));
-            returnedTravellers.set(i, deserializedTraveller);
-        }
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            filterRows.deserializeNBT(compound.getCompoundTag("filterRows"));
+            buffer.deserializeNBT(compound.getCompoundTag("buffer"));
+            int stacksLeftToSatisfySize = compound.getInteger("returnedTravellers");
+            returnedTravellers = Lists.newArrayListWithExpectedSize(stacksLeftToSatisfySize);
+            for (int i = 0; i < stacksLeftToSatisfySize; i++) {
+                WorldNetworkTraveller deserializedTraveller = new WorldNetworkTraveller(new NBTTagCompound());
+                deserializedTraveller.deserializeNBT(compound.getCompoundTag("returnedTravellers" + i));
+                returnedTravellers.set(i, deserializedTraveller);
+            }
 
-        UUID networkID = compound.getUniqueId("networkIDEntryPoint");
-        int dimID = compound.getInteger("databaseID");
-        if (networkID == null) {
-            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-        } else {
-            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-            WorldNetworkNode node = insertionTile.createNode(network, pos);
-            network.registerNode(node);
-            insertionTile.setNode(node);
+            UUID networkID = compound.getUniqueId("networkIDEntryPoint");
+            int dimID = compound.getInteger("databaseID");
+            if (networkID == null) {
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            } else {
+                WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
+                Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
+                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), entryPointTile.getCapabilityFace())).findAny();
+                if (any.isPresent()) {
+                    networkID = networkDB.getRemappedNodes().remove(any.get());
+                    TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+                }
 
-            networkID = compound.getUniqueId("networkIDEndPoint");
-            network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-            node = ejectionTile.createNode(network, pos);
-            network.registerNode(node);
-            ejectionTile.setNode(node);
+                IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+                WorldNetworkNode node = ejectionTile.createNode(network, pos);
+                network.registerNode(node);
+                ejectionTile.setNode(node);
+
+                networkID = compound.getUniqueId("networkIDEndPoint");
+                any = networkDB.getRemappedNodes().keySet().stream()
+                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), endPointTile.getCapabilityFace())).findAny();
+                if (any.isPresent()) {
+                    networkID = networkDB.getRemappedNodes().remove(any.get());
+                    TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+                }
+                network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+                node = insertionTile.createNode(network, pos);
+                network.registerNode(node);
+                insertionTile.setNode(node);
+            }
         }
     }
 
@@ -326,8 +386,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             }
         }
         compound.setTag("colours", coloursTag);
-        compound.setTag("filterRows", filterRows.serializeNBT());
-        compound.setTag("buffer", buffer.serializeNBT());
+
 
         compound.setTag("pullMode", getPullMode().serializeNBT());
         compound.setInteger("pullModeID", getPullMode().getID());
@@ -335,18 +394,23 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         compound.setInteger("sortModeID", getSortMode().getID());
 
         compound.setInteger("defaultRoute", defaultRoute.getMetadata());
+        compound.setInteger("cachedFace", ejectionTile.getOutputFace().getIndex());
+        compound.setBoolean("isLit", isLit);
 
-        compound.setInteger("returnedTravellers", returnedTravellers.size());
-        for (int i = 0; i < returnedTravellers.size(); i++) {
-            compound.setTag("returnedTravellers" + i, returnedTravellers.get(i).serializeNBT());
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            compound.setTag("filterRows", filterRows.serializeNBT());
+            compound.setTag("buffer", buffer.serializeNBT());
+            compound.setInteger("returnedTravellers", returnedTravellers.size());
+            for (int i = 0; i < returnedTravellers.size(); i++) {
+                compound.setTag("returnedTravellers" + i, returnedTravellers.get(i).serializeNBT());
+            }
+
+            compound.setInteger("databaseID", getWorld().provider.getDimension());
+            if (ejectionTile.getNode() == null || insertionTile.getNode() == null)
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            compound.setUniqueId("networkIDEntryPoint", ejectionTile.getNode().getNetwork().getNetworkID());
+            compound.setUniqueId("networkIDEndPoint", insertionTile.getNode().getNetwork().getNetworkID());
         }
-
-        compound.setInteger("databaseID", getWorld().provider.getDimension());
-        if (insertionTile.getNode() == null || ejectionTile.getNode() == null)
-            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-        compound.setUniqueId("networkIDEntryPoint", insertionTile.getNode().network.getNetworkID());
-        compound.setUniqueId("networkIDEndPoint", ejectionTile.getNode().network.getNetworkID());
-
         return super.writeToNBT(compound);
     }
 
@@ -563,7 +627,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
                 nodes.add(node);
                 if (TeckleMod.INDEV)
                     data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network",
-                            faceName, node.network.getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
+                            faceName, node.getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
 
                 if (!node.getTravellers().isEmpty()) {
                     data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.traveller.data")));

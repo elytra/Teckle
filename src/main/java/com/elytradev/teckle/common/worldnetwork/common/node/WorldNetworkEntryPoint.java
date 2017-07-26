@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class WorldNetworkEntryPoint extends WorldNetworkNode {
 
-    public WorldNetworkEndpoint endpoint = new WorldNetworkEndpoint(network, position, getCapabilityFaces()) {
+    public WorldNetworkEndpoint endpoint = new WorldNetworkEndpoint(getNetwork(), position, getCapabilityFaces()) {
         @Override
         public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {
             IWorldNetworkTile networkTile = WorldNetworkEntryPoint.this.getNetworkTile(from.getOpposite());
@@ -46,16 +46,16 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         this.facing = facing;
 
         this.endpoint.position = this.position;
-        this.endpoint.network = this.network;
+        this.endpoint.setNetwork(this.getNetwork());
     }
 
     public WorldNetworkTraveller addTraveller(NBTTagCompound data, boolean send) {
         WorldNetworkTraveller traveller = new WorldNetworkTraveller(this, data);
         if (traveller.genInitialPath()) {
-            network.registerTraveller(traveller, false);
+            getNetwork().registerTraveller(traveller, false);
             if (send) {
                 new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller, traveller.currentNode.position,
-                        traveller.previousNode.position).sendToAllWatching(network.getWorld(), position);
+                        traveller.previousNode.position).sendToAllWatching(getNetwork().getWorld(), position);
             }
             return traveller;
         }

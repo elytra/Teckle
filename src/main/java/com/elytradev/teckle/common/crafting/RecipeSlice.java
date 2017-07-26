@@ -32,6 +32,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 import javax.annotation.Nonnull;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 public class RecipeSlice extends IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
@@ -111,7 +112,7 @@ public class RecipeSlice extends IForgeRegistryEntry.Impl<IRecipe> implements IR
             if (!slot.isEmpty()) {
                 boolean inRecipe = false;
 
-                if (slot.getItem().equals(TeckleObjects.itemBlade)) {
+                if (Objects.equals(slot.getItem(), TeckleObjects.itemBlade)) {
                     if (hasSlicer) {
                         return NonNullList.create();
                     }
@@ -191,7 +192,7 @@ public class RecipeSlice extends IForgeRegistryEntry.Impl<IRecipe> implements IR
         }
 
         for (int i = 0; i < remaining.size(); i++) {
-            if (remaining.get(i).getItem().equals(TeckleObjects.itemBlade)) {
+            if (Objects.equals(remaining.get(i).getItem(), TeckleObjects.itemBlade)) {
                 ItemStack remainingBlade = remaining.get(i).copy();
                 remainingBlade.attemptDamageItem(damageToTool, new Random(), null);
                 if (remainingBlade.getItemDamage() >= remainingBlade.getMaxDamage())
