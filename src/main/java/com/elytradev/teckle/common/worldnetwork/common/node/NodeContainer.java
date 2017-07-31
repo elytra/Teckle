@@ -4,6 +4,8 @@ import com.elytradev.teckle.api.IWorldNetwork;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
@@ -11,7 +13,9 @@ import java.util.Objects;
  */
 public class NodeContainer {
 
-    private BlockPos pos;
+    @Nonnull
+    private BlockPos pos = new BlockPos(0, -1, 0);
+    @Nullable
     private EnumFacing facing;
     private IWorldNetwork network;
     private WorldNetworkNode node;
@@ -30,19 +34,21 @@ public class NodeContainer {
         return Objects.hash(getPos(), getFacing());
     }
 
+    @Nonnull
     public BlockPos getPos() {
         return pos;
     }
 
-    public void setPos(BlockPos pos) {
+    public void setPos(@Nonnull BlockPos pos) {
         this.pos = pos;
     }
 
+    @Nullable
     public EnumFacing getFacing() {
         return facing;
     }
 
-    public void setFacing(EnumFacing facing) {
+    public void setFacing(@Nullable EnumFacing facing) {
         this.facing = facing;
     }
 
@@ -60,6 +66,15 @@ public class NodeContainer {
 
     public void setNode(WorldNetworkNode node) {
         this.node = node;
+    }
+
+    /**
+     * Determines if the container is valid, checks if the position is a negative y.
+     *
+     * @return true if the container is valid, or false if the data stores is not valid.
+     */
+    public boolean isValid() {
+        return pos.getY() >= 0;
     }
 
     @Override
