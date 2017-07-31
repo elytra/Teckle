@@ -91,6 +91,7 @@ public class PositionData {
         container.setPos(pos);
         container.setFacing(node.getCapabilityFace());
 
+        nodeContainers.removeIf(oldContainer -> oldContainer.equals(container));
         nodeContainers.add(container);
         return container;
     }

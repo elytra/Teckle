@@ -66,21 +66,13 @@ public class WorldNetwork implements IWorldNetwork {
     @Override
     public void registerNode(WorldNetworkNode node) {
         TeckleMod.LOG.debug(this + "/Registering a node, " + node);
-        if (!networkNodes.containsKey(node.position)) {
-            PositionData positionData = PositionData.getPositionData(getWorld().provider.getDimension(), node.position);
-            positionData.add(this, node);
-            networkNodes.putIfAbsent(node.position, positionData);
-            node.setNetwork(this);
-            networkNodesWithListeners.values().forEach(n -> n.getNetworkTile()
-                    .filter(IWorldNetworkTile::listenToNetworkChange)
-                    .forEach(iWorldNetworkTile -> iWorldNetworkTile.onNodeAdded(node)));
-        } else {
-            networkNodes.replace(node.position, node);
-            node.setNetwork(this);
-            networkNodesWithListeners.values().forEach(n -> n.getNetworkTiles().stream()
-                    .filter(IWorldNetworkTile::listenToNetworkChange)
-                    .forEach(iWorldNetworkTile -> iWorldNetworkTile.onNodeAdded(node)));
-        }
+        PositionData positionData = PositionData.getPositionData(getWorld().provider.getDimension(), node.position);
+        positionData.add(this, node);
+        networkNodes.putIfAbsent(node.position, positionData);
+        node.setNetwork(this);
+        networkNodesWithListeners.values().stream().map(WorldNetworkNode::getNetworkTile)
+                .filter(IWorldNetworkTile::listenToNetworkChange)
+                .forEach(iWorldNetworkTile -> iWorldNetworkTile.onNodeAdded(node));
 
         if (node.getNetworkTiles().stream().anyMatch(IWorldNetworkTile::listenToNetworkChange)) {
             if (!networkNodesWithListeners.containsKey(node.position)) {
@@ -161,8 +153,9 @@ public class WorldNetwork implements IWorldNetwork {
         } else {
             travellers.remove(traveller.data);
 
-            if (traveller.currentNode != null && getNodeContainersAtPosition(traveller.currentNode.position) != null)
-                getNodeContainersAtPosition(traveller.currentNode.position).unregisterTraveller(traveller);
+            if (traveller.currentNode != null && !getNodeContainersAtPosition(traveller.currentNode.position).isEmpty())
+                getNodeContainersAtPosition(traveller.currentNode.position).stream()
+                        .map(NodeContainer::getNode).forEach(n -> n.unregisterTraveller(traveller));
         }
 
         if (send) {
