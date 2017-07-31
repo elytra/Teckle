@@ -18,13 +18,16 @@ package com.elytradev.teckle.api;
 
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.INBTSerializable;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -48,11 +51,12 @@ public interface IWorldNetwork extends INBTSerializable<NBTTagCompound>, ITickab
     void unregisterNode(WorldNetworkNode node);
 
     /**
-     * Unregisters the node at the given position.
+     * Unregisters the node at the given position for the given side.
      *
      * @param nodePosition the position of the node to unregister.
+     * @param face the capability face of the node, can be null.
      */
-    void unregisterNodeAtPosition(BlockPos nodePosition);
+    void unregisterNodeAtPosition(BlockPos nodePosition, @Nullable EnumFacing face);
 
     /**
      * Gets the node at the given position.
@@ -60,7 +64,7 @@ public interface IWorldNetwork extends INBTSerializable<NBTTagCompound>, ITickab
      * @param pos the position of the node.
      * @return the node found.
      */
-    WorldNetworkNode getNodeFromPosition(BlockPos pos);
+    List<NodeContainer> getNodeContainersAtPosition(BlockPos pos);
 
     /**
      * Checks if there's a node present at the given position.
@@ -75,14 +79,14 @@ public interface IWorldNetwork extends INBTSerializable<NBTTagCompound>, ITickab
      *
      * @return the stream of all nodes in this network.
      */
-    Stream<WorldNetworkNode> nodeStream();
+    Stream<NodeContainer> nodeStream();
 
     /**
      * Creates a list of all the nodes in the network.
      *
      * @return the list of all nodes in the network.
      */
-    List<WorldNetworkNode> getNodes();
+    List<NodeContainer> getNodes();
 
     /**
      * Creates a list of all the positions that nodes occupy in the network.

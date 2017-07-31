@@ -139,7 +139,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
                     if (!thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
                         IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
                         thisNetworkTile.getNode().getNetwork().registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().getNetwork(), neighbourTile.getPos()));
-                        neighbourNetworkTile.setNode(thisNetworkTile.getNode().getNetwork().getNodeFromPosition(neighbourTile.getPos()));
+                        neighbourNetworkTile.setNode(thisNetworkTile.getNode().getNetwork().getNodeContainersAtPosition(neighbourTile.getPos()));
                     }
                 } else {
                     if (!thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {

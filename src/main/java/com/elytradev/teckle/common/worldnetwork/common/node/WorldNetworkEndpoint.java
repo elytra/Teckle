@@ -21,12 +21,13 @@ import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.List;
-
+/**
+ * Created by darkevilmac on 3/26/2017.
+ */
 public abstract class WorldNetworkEndpoint extends WorldNetworkNode {
 
-    public WorldNetworkEndpoint(IWorldNetwork network, BlockPos position, List<EnumFacing> capabilityFaces) {
-        super(network, position, capabilityFaces);
+    public WorldNetworkEndpoint(IWorldNetwork network, BlockPos position, EnumFacing capabilityFace) {
+        super(network, position, capabilityFace);
     }
 
     /**

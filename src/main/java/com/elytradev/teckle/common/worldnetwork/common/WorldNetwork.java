@@ -21,6 +21,8 @@ import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.network.messages.TravellerDataMessage;
+import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
+import com.elytradev.teckle.common.worldnetwork.common.node.PositionData;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
@@ -31,6 +33,7 @@ import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,7 +43,7 @@ public class WorldNetwork implements IWorldNetwork {
     public UUID id;
     public World world;
 
-    protected HashMap<BlockPos, WorldNetworkNode> networkNodes = new HashMap<>();
+    protected HashMap<BlockPos, PositionData> networkNodes = new HashMap<>();
     protected HashBiMap<NBTTagCompound, WorldNetworkTraveller> travellers = HashBiMap.create();
     private HashMap<BlockPos, WorldNetworkNode> networkNodesWithListeners = new HashMap<>();
     private List<WorldNetworkTraveller> travellersToUnregister = new ArrayList<>();
@@ -64,9 +67,11 @@ public class WorldNetwork implements IWorldNetwork {
     public void registerNode(WorldNetworkNode node) {
         TeckleMod.LOG.debug(this + "/Registering a node, " + node);
         if (!networkNodes.containsKey(node.position)) {
-            networkNodes.put(node.position, node);
+            PositionData positionData = PositionData.getPositionData(getWorld().provider.getDimension(), node.position);
+            positionData.add(this, node);
+            networkNodes.putIfAbsent(node.position, positionData);
             node.setNetwork(this);
-            networkNodesWithListeners.values().forEach(n -> n.getNetworkTiles().stream()
+            networkNodesWithListeners.values().forEach(n -> n.getNetworkTile()
                     .filter(IWorldNetworkTile::listenToNetworkChange)
                     .forEach(iWorldNetworkTile -> iWorldNetworkTile.onNodeAdded(node)));
         } else {
@@ -89,17 +94,21 @@ public class WorldNetwork implements IWorldNetwork {
 
     @Override
     public void unregisterNode(WorldNetworkNode node) {
-        unregisterNodeAtPosition(node.position);
+        unregisterNodeAtPosition(node.position, node.getCapabilityFace());
     }
 
     @Override
-    public void unregisterNodeAtPosition(BlockPos nodePosition) {
+    public void unregisterNodeAtPosition(BlockPos nodePosition, EnumFacing face) {
         TeckleMod.LOG.debug(this + "/Unregistering a node at, " + nodePosition);
         if (networkNodes.containsKey(nodePosition)) {
-            WorldNetworkNode removed = networkNodes.remove(nodePosition);
-            networkNodesWithListeners.values().forEach(n -> n.getNetworkTiles().stream()
-                    .filter(IWorldNetworkTile::listenToNetworkChange)
-                    .forEach(iWorldNetworkTile -> iWorldNetworkTile.onNodeRemoved(removed)));
+            PositionData positionData = networkNodes.get(nodePosition);
+            List<NodeContainer> nodeContainers = positionData.getNodeContainers(this.getNetworkID());
+            List<NodeContainer> removedNodeContainers = nodeContainers.stream()
+                    .filter(nodeContainer -> Objects.equals(nodeContainer.getFacing(), face) && nodeContainer.getPos().equals(nodePosition))
+                    .collect(Collectors.toList());
+            nodeContainers.removeIf(nodeContainer -> Objects.equals(nodeContainer.getFacing(), face) && nodeContainer.getPos().equals(nodePosition));
+            removedNodeContainers.forEach(nodeContainer -> networkNodesWithListeners.values().forEach(listener -> listener.getNetworkTile().onNodeRemoved(nodeContainer.getNode())));
+
 
             if (networkNodesWithListeners.containsKey(nodePosition)) {
                 networkNodesWithListeners.remove(nodePosition);
@@ -109,8 +118,11 @@ public class WorldNetwork implements IWorldNetwork {
     }
 
     @Override
-    public WorldNetworkNode getNodeFromPosition(BlockPos pos) {
-        return networkNodes.get(pos);
+    @Nonnull
+    public List<NodeContainer> getNodeContainersAtPosition(BlockPos pos) {
+        if (!isNodePresent(pos))
+            return Collections.emptyList();
+        return networkNodes.get(pos).getNodeContainers(this.getNetworkID());
     }
 
     @Override
@@ -119,13 +131,13 @@ public class WorldNetwork implements IWorldNetwork {
     }
 
     @Override
-    public Stream<WorldNetworkNode> nodeStream() {
-        return networkNodes.values().stream();
+    public Stream<NodeContainer> nodeStream() {
+        return networkNodes.values().stream().flatMap(positionData -> positionData.getNodeContainers(getNetworkID()).stream());
     }
 
     @Override
-    public List<WorldNetworkNode> getNodes() {
-        return networkNodes.values().stream().collect(Collectors.toList());
+    public List<NodeContainer> getNodes() {
+        return nodeStream().collect(Collectors.toList());
     }
 
     @Override
@@ -149,8 +161,8 @@ public class WorldNetwork implements IWorldNetwork {
         } else {
             travellers.remove(traveller.data);
 
-            if (traveller.currentNode != null && getNodeFromPosition(traveller.currentNode.position) != null)
-                getNodeFromPosition(traveller.currentNode.position).unregisterTraveller(traveller);
+            if (traveller.currentNode != null && getNodeContainersAtPosition(traveller.currentNode.position) != null)
+                getNodeContainersAtPosition(traveller.currentNode.position).unregisterTraveller(traveller);
         }
 
         if (send) {
@@ -168,8 +180,9 @@ public class WorldNetwork implements IWorldNetwork {
             travellersToUnregister.add(travellers.get(data));
         } else {
             travellers.remove(data);
-            if (traveller.currentNode != null && getNodeFromPosition(traveller.currentNode.position) != null)
-                getNodeFromPosition(traveller.currentNode.position).unregisterTraveller(traveller);
+            if (traveller.currentNode != null && !getNodeContainersAtPosition(traveller.currentNode.position).isEmpty())
+                getNodeContainersAtPosition(traveller.currentNode.position).stream().filter(nContainer -> nContainer.getNode().equals(traveller.currentNode))
+                        .forEach(nodeContainer -> nodeContainer.getNode().unregisterTraveller(traveller));
         }
 
         if (send) {
@@ -200,15 +213,13 @@ public class WorldNetwork implements IWorldNetwork {
         travellersToMove.addAll(this.travellers.values());
         this.travellers.clear();
         List<WorldNetworkNode> nodesToMove = new ArrayList<>();
-        nodesToMove.addAll(this.networkNodes.values());
+        nodesToMove.addAll(this.nodeStream().map(NodeContainer::getNode).collect(Collectors.toList()));
 
         for (WorldNetworkNode node : nodesToMove) {
             WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(world);
             Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
                     .filter(pair -> Objects.equals(pair.getLeft(), node.position) && Objects.equals(pair.getValue(), node.getCapabilityFace())).findAny();
-            if (any.isPresent()) {
-                networkDB.getRemappedNodes().remove(any.get());
-            }
+            any.ifPresent(blockPosEnumFacingPair -> networkDB.getRemappedNodes().remove(blockPosEnumFacingPair));
             if (!node.isLoaded()) {
                 networkDB.getRemappedNodes().put(new MutablePair<>(node.position, node.getCapabilityFace()), to.getNetworkID());
                 TeckleMod.LOG.debug("marking node as remapped " + node.position);
@@ -245,7 +256,7 @@ public class WorldNetwork implements IWorldNetwork {
             // Confirm all travellers that need to go are gone.
             for (WorldNetworkTraveller traveller : travellersToUnregister) {
                 travellers.remove(traveller);
-                getNodeFromPosition(traveller.currentNode.position).unregisterTraveller(traveller);
+                getNodeContainersAtPosition(traveller.currentNode.position).unregisterTraveller(traveller);
             }
             travellersToUnregister.clear();
 
@@ -259,9 +270,7 @@ public class WorldNetwork implements IWorldNetwork {
                     WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(world);
                     Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
                             .filter(pair -> Objects.equals(pair.getLeft(), node.position) && Objects.equals(pair.getValue(), node.getCapabilityFace())).findAny();
-                    if (any.isPresent()) {
-                        networkDB.getRemappedNodes().remove(any.get());
-                    }
+                    any.ifPresent(blockPosEnumFacingPair -> networkDB.getRemappedNodes().remove(blockPosEnumFacingPair));
                     if (!node.isLoaded()) {
                         networkDB.getRemappedNodes().put(new MutablePair<>(node.position, node.getCapabilityFace()), newNetwork.getNetworkID());
                     }
@@ -327,7 +336,7 @@ public class WorldNetwork implements IWorldNetwork {
                 continue;
 
             if (traveller.currentNode != WorldNetworkNode.NONE && isNodePresent(traveller.currentNode.position))
-                getNodeFromPosition(traveller.currentNode.position).unregisterTraveller(traveller);
+                getNodeContainersAtPosition(traveller.currentNode.position).unregisterTraveller(traveller);
             travellers.inverse().remove(traveller);
         }
 

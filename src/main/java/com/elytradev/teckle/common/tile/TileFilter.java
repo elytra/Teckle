@@ -225,7 +225,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                     || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getOutputFace().getOpposite())));
 
             if (!world.isRemote && (hasInsertionDestination || destinationIsAir)) {
-                WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().getNetwork().getNodeFromPosition(pos);
+                WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().getNetwork().getNodeContainersAtPosition(pos);
                 EnumFacing facing = networkTile.getOutputFace();
 
                 ItemStack extractionData = getExtractionData(facing);

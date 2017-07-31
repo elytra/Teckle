@@ -159,7 +159,7 @@ public class TileRetriever extends TileLitNetworkMember {
                             continue;
                         }
 
-                        WorldNetworkNode neighbourNode = network.getNodeFromPosition(neighbourPos);
+                        WorldNetworkNode neighbourNode = network.getNodeContainersAtPosition(neighbourPos);
                         if (isValidSourceNode(neighbourPos, direction)) {
                             if (!endpoints.containsKey(neighbourPos)) {
                                 endpoints.put(neighbourPos, new HashMap<>());

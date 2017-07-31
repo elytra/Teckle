@@ -20,15 +20,14 @@ import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.UUID;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * A node in a worldnetwork, contains the position and the current travellers.
@@ -38,12 +37,11 @@ public class WorldNetworkNode {
     // Empty node, used instead of null because fuck NPEs.
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
     public BlockPos position;
+    private IWorldNetwork network;
+    public EnumFacing capabilityFace = null;
     // Used when a tile isn't loaded.
     public BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate = (t, f) -> false;
     public Predicate<EnumFacing> canConnectToSidePredicate = (f) -> true;
-    private IWorldNetwork network;
-    private boolean useFace = false;
-    private List<EnumFacing> capabilityFaces = new ArrayList<>();
     private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
 
     public WorldNetworkNode() {
@@ -51,15 +49,10 @@ public class WorldNetworkNode {
         this.setNetwork(null);
     }
 
-    public WorldNetworkNode(IWorldNetwork network, BlockPos position, List<EnumFacing> capabilityFaces) {
+    public WorldNetworkNode(IWorldNetwork network, BlockPos position, EnumFacing capabilityFace) {
         this.position = position;
-        this.network = network;
-        if (capabilityFaces != null && capabilityFaces.stream().allMatch(Objects::nonNull)) {
-            this.capabilityFaces = capabilityFaces;
-            this.useFace = true;
-        } else {
-            this.useFace = false;
-        }
+        this.setNetwork(network);
+        this.capabilityFace = capabilityFace;
     }
 
     public boolean isLoaded() {
@@ -70,8 +63,8 @@ public class WorldNetworkNode {
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
         if (isLoaded()) {
-            if (getNetworkTile(from) != null)
-                return getNetworkTile(from).canAcceptTraveller(traveller, from);
+            if (getNetworkTile() != null)
+                return getNetworkTile().canAcceptTraveller(traveller, from);
         } else {
             return canAcceptTravellerPredicate.test(traveller, from);
         }
@@ -85,15 +78,15 @@ public class WorldNetworkNode {
      */
     public boolean canConnectTo(EnumFacing side) {
         if (isLoaded()) {
-            return getNetworkTile(side).canConnectTo(side);
+            return getNetworkTile().canConnectTo(side);
         } else {
             return canConnectToSidePredicate.test(side);
         }
     }
 
-    public IWorldNetworkTile getNetworkTile(EnumFacing facing) {
-        if (CapabilityWorldNetworkTile.isPositionNetworkTile(getNetwork().getWorld(), position, facing))
-            return CapabilityWorldNetworkTile.getNetworkTileAtPosition(getNetwork().getWorld(), position, facing);
+    public IWorldNetworkTile getNetworkTile() {
+        if (CapabilityWorldNetworkTile.isPositionNetworkTile(getNetwork().getWorld(), position, capabilityFace))
+            return CapabilityWorldNetworkTile.getNetworkTileAtPosition(getNetwork().getWorld(), position, capabilityFace);
         else return null;
     }
 
@@ -105,36 +98,12 @@ public class WorldNetworkNode {
         travellers.remove(traveller.data.getUniqueId("id"));
     }
 
-    public ImmutableList<EnumFacing> getCapabilityFaces() {
-        if (useFace) {
-            return ImmutableList.copyOf(capabilityFaces);
-        } else {
-            return ImmutableList.of();
-        }
+    public EnumFacing getCapabilityFace() {
+        return capabilityFace;
     }
 
-    public void addCapabilityFace(EnumFacing capabilityFace) {
-        if (!capabilityFaces.contains(capabilityFace)) {
-            capabilityFaces.add(capabilityFace);
-            this.useFace = true;
-        }
-    }
-
-    public void removeCapabilityFace(EnumFacing capabilityFace) {
-        if (capabilityFaces.contains(capabilityFace)) {
-            capabilityFaces.remove(capabilityFace);
-            if (capabilityFaces.isEmpty()) {
-                this.useFace = false;
-            }
-        }
-    }
-
-    public List<IWorldNetworkTile> getNetworkTiles() {
-        if (useFace) {
-            return getCapabilityFaces().stream().map(this::getNetworkTile).collect(Collectors.toList());
-        } else {
-            return Lists.newArrayList(getNetworkTile(null));
-        }
+    public void setCapabilityFace(EnumFacing capabilityFace) {
+        this.capabilityFace = capabilityFace;
     }
 
     public boolean isEndpoint() {
@@ -149,8 +118,12 @@ public class WorldNetworkNode {
         return (travellers.values());
     }
 
-    public boolean useFace() {
-        return useFace;
+    @Override
+    public String toString() {
+        return "WorldNetworkNode{" +
+                "position=" + position +
+                ", capabilityFace=" + capabilityFace +
+                '}';
     }
 
     public IWorldNetwork getNetwork() {
