@@ -30,13 +30,10 @@ import net.minecraftforge.items.IItemHandler;
 
 import java.util.List;
 
-/**
- * Created by darkevilmac on 3/27/2017.
- */
 public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
 
-    public ItemNetworkEndpoint(IWorldNetwork network, BlockPos pos, List<EnumFacing> capabilityFaces) {
-        super(network, pos, capabilityFaces);
+    public ItemNetworkEndpoint(IWorldNetwork network, BlockPos pos, EnumFacing capabilityFace) {
+        super(network, pos, capabilityFace);
     }
 
     @Override
