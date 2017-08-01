@@ -45,7 +45,7 @@ public class WorldNetwork implements IWorldNetwork {
 
     protected HashMap<BlockPos, PositionData> networkNodes = new HashMap<>();
     protected HashBiMap<NBTTagCompound, WorldNetworkTraveller> travellers = HashBiMap.create();
-    private HashMap<BlockPos, WorldNetworkNode> networkNodesWithListeners = new HashMap<>();
+    private List<BlockPos> listenerNodePositions = new ArrayList<>();
     private List<WorldNetworkTraveller> travellersToUnregister = new ArrayList<>();
 
     public WorldNetwork(World world, UUID id, boolean skipRegistration) {
@@ -70,18 +70,31 @@ public class WorldNetwork implements IWorldNetwork {
         positionData.add(this, node);
         networkNodes.putIfAbsent(node.position, positionData);
         node.setNetwork(this);
-        networkNodesWithListeners.values().stream().map(WorldNetworkNode::getNetworkTile)
-                .filter(IWorldNetworkTile::listenToNetworkChange)
-                .forEach(iWorldNetworkTile -> iWorldNetworkTile.onNodeAdded(node));
+        checkListeners();
+        listenerNodePositions.stream().map(networkNodes::get).flatMap(pD -> pD.getNodeContainers(getNetworkID()).stream())
+                .filter(nodeContainer -> nodeContainer.getNode() != null && nodeContainer.getNode().getNetworkTile().listenToNetworkChange())
+                .forEach(nodeContainer -> nodeContainer.getNode().getNetworkTile().onNodeAdded(node));
 
-        if (node.getNetworkTiles().stream().anyMatch(IWorldNetworkTile::listenToNetworkChange)) {
-            if (!networkNodesWithListeners.containsKey(node.position)) {
-                networkNodesWithListeners.put(node.position, node);
-            } else {
-                networkNodesWithListeners.replace(node.position, node);
-            }
+        if (node.getNetworkTile().listenToNetworkChange() && !listenerNodePositions.contains(node.position)) {
+            listenerNodePositions.add(node.position);
         }
         TeckleMod.LOG.debug(this + "/Registered node, " + node);
+    }
+
+    /**
+     * Validates all of the node positions marked as a listener are valid.
+     */
+    private void checkListeners() {
+        listenerNodePositions.removeIf(pos -> !networkNodes.containsKey(pos));
+
+        listenerNodePositions.removeIf(pos -> {
+            PositionData positionData = networkNodes.get(pos);
+            return positionData.getNodeContainers(getNetworkID()).stream().noneMatch
+                    (nodeContainer -> nodeContainer != null
+                            && nodeContainer.getNode() != null
+                            && nodeContainer.getNode().getNetworkTile() != null
+                            && nodeContainer.getNode().getNetworkTile().listenToNetworkChange());
+        });
     }
 
     @Override
@@ -99,12 +112,10 @@ public class WorldNetwork implements IWorldNetwork {
                     .filter(nodeContainer -> Objects.equals(nodeContainer.getFacing(), face) && nodeContainer.getPos().equals(nodePosition))
                     .collect(Collectors.toList());
             nodeContainers.removeIf(nodeContainer -> Objects.equals(nodeContainer.getFacing(), face) && nodeContainer.getPos().equals(nodePosition));
-            removedNodeContainers.forEach(nodeContainer -> networkNodesWithListeners.values().forEach(listener -> listener.getNetworkTile().onNodeRemoved(nodeContainer.getNode())));
-
-
-            if (networkNodesWithListeners.containsKey(nodePosition)) {
-                networkNodesWithListeners.remove(nodePosition);
-            }
+            removedNodeContainers.forEach(removedContainer -> listenerNodePositions.stream().map(networkNodes::get).flatMap(pD -> pD.getNodeContainers(getNetworkID()).stream())
+                    .filter(nodeContainer -> nodeContainer.getNode() != null && nodeContainer.getNode().getNetworkTile().listenToNetworkChange())
+                    .forEach(nodeContainer -> nodeContainer.getNode().getNetworkTile().onNodeRemoved(removedContainer.getNode())));
+            checkListeners();
         }
         TeckleMod.LOG.debug(this + "/Unregistered node at, " + nodePosition);
     }
