@@ -121,12 +121,11 @@ public class WorldNetwork implements IWorldNetwork {
         TeckleMod.LOG.debug(this + "/Unregistered node at, " + nodePosition);
     }
 
+    /**
+     * Compares a face with another, used for unregistering nodes, will default to true if primary is null.
+     */
     public boolean faceMatches(EnumFacing primary, EnumFacing compareTo) {
-        if (primary == null) {
-            return true;
-        } else {
-            return Objects.equals(primary, compareTo);
-        }
+        return primary == null || Objects.equals(primary, compareTo);
     }
 
     @Override
