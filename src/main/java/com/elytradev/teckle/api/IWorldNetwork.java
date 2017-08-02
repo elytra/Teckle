@@ -27,6 +27,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.INBTSerializable;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
@@ -54,17 +55,27 @@ public interface IWorldNetwork extends INBTSerializable<NBTTagCompound>, ITickab
      * Unregisters the node at the given position for the given side.
      *
      * @param nodePosition the position of the node to unregister.
-     * @param face the capability face of the node, can be null.
+     * @param face         the capability face of the node, can be null.
      */
     void unregisterNodeAtPosition(BlockPos nodePosition, @Nullable EnumFacing face);
 
     /**
-     * Gets the node at the given position.
+     * Gets the nodes at the given position.
      *
      * @param pos the position of the node.
-     * @return the node found.
+     * @return the nodes found.
      */
-    List<NodeContainer> getNodeContainersAtPosition(BlockPos pos);
+    List<NodeContainer> getNodeContainersAtPosition(@Nonnull BlockPos pos);
+
+    /**
+     * Gets the node at the given position, on the given side.
+     *
+     * @param pos     the position of the node
+     * @param capFace the face the node is on, or null for an all block node.
+     * @return the node if available, null otherwise.
+     */
+    @Nullable
+    WorldNetworkNode getNode(@Nonnull BlockPos pos, @Nullable EnumFacing capFace);
 
     /**
      * Checks if there's a node present at the given position.

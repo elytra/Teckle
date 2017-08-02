@@ -123,13 +123,12 @@ public class TileItemTube extends TileNetworkMember {
                     if (!getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
                         IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
                         getNode().getNetwork().registerNode(neighbourNetworkTile.createNode(getNode().getNetwork(), neighbourTile.getPos()));
-                        neighbourNetworkTile.setNode(getNode().getNetwork().getNodeContainersAtPosition(neighbourTile.getPos()));
+                        neighbourNetworkTile.setNode(getNode().getNetwork().getNode(neighbourTile.getPos(), neighbourNetworkTile.getCapabilityFace()));
                     }
                 } else {
 
-                    if (!getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
-                        getNode().getNetwork().registerNode(new ItemNetworkEndpoint(getNode().getNetwork(), neighbourTile.getPos(), Lists.newArrayList(capabilityFace)));
-                    }
+                    if (!getNode().getNetwork().isNodePresent(neighbourTile.getPos()))
+                        getNode().getNetwork().registerNode(new ItemNetworkEndpoint(getNode().getNetwork(), neighbourTile.getPos(), (capabilityFace)));
                 }
             }
         }

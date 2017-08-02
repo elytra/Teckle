@@ -153,7 +153,7 @@ public class WorldNetworkPath implements Marshallable {
             if (faceIndex != -1) {
                 capFace = EnumFacing.VALUES[faceIndex];
             }
-            WorldNetworkNode networkNode = new WorldNetworkNode(null, pos, Lists.newArrayList(capFace));
+            WorldNetworkNode networkNode = new WorldNetworkNode(null, pos, capFace);
             if (i == size - 1) {
                 networkNode = new DummyWorldNetworkEndpoint(null, pos);
             }
