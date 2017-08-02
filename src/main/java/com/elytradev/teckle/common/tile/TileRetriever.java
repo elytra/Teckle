@@ -42,7 +42,7 @@ public class TileRetriever extends TileLitNetworkMember {
     private NetworkTileTransporter ejectionTile = new NetworkTileTransporter() {
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), Lists.newArrayList(getCapabilityFace()));
+            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
         }
 
         @Override
@@ -159,7 +159,7 @@ public class TileRetriever extends TileLitNetworkMember {
                             continue;
                         }
 
-                        WorldNetworkNode neighbourNode = network.getNodeContainersAtPosition(neighbourPos);
+                        WorldNetworkNode neighbourNode = network.getNode(neighbourPos, direction.getOpposite());
                         if (isValidSourceNode(neighbourPos, direction)) {
                             if (!endpoints.containsKey(neighbourPos)) {
                                 endpoints.put(neighbourPos, new HashMap<>());
@@ -168,7 +168,7 @@ public class TileRetriever extends TileLitNetworkMember {
                                     new EndpointData(new PathNode(pathNode, neighbourNode, direction.getOpposite()),
                                             direction.getOpposite()));
                         } else {
-                            if (neighbourNode.getNetworkTile(direction.getOpposite()).canConnectTo(direction.getOpposite())) {
+                            if (neighbourNode.getNetworkTile().canConnectTo(direction.getOpposite())) {
                                 nodeStack.add(new PathNode(pathNode, neighbourNode, direction.getOpposite()));
                                 iteratedPositions.add(neighbourPos);
                             }
@@ -261,7 +261,7 @@ public class TileRetriever extends TileLitNetworkMember {
             for (int i = roundRobinTicker; i < nodes.length; i++) {
                 PathNode node = nodes[i];
                 IItemHandler nodeItemHandler;
-                TileEntity tile = node.realNode.getNetworkTile(node.faceFrom).getTileEntity();
+                TileEntity tile = node.realNode.getNetworkTile().getTileEntity();
                 if (tile == null || !tile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, node.faceFrom))
                     continue;
 
