@@ -95,7 +95,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     private NetworkTileTransporter ejectionTile = new NetworkTileTransporter() {
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), Lists.newArrayList(getCapabilityFace()));
+            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), (getCapabilityFace()));
         }
 
         @Override

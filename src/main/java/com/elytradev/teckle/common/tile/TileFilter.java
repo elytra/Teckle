@@ -80,7 +80,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
     private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), Lists.newArrayList(getCapabilityFace()));
+            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
         }
 
         @Override
