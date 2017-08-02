@@ -110,15 +110,23 @@ public class WorldNetwork implements IWorldNetwork {
             PositionData positionData = networkNodes.get(nodePosition);
             List<NodeContainer> nodeContainers = positionData.getNodeContainers(this.getNetworkID());
             List<NodeContainer> removedNodeContainers = nodeContainers.stream()
-                    .filter(nodeContainer -> Objects.equals(nodeContainer.getFacing(), face) && nodeContainer.getPos().equals(nodePosition))
+                    .filter(nodeContainer -> faceMatches(face, nodeContainer.getFacing()) && nodeContainer.getPos().equals(nodePosition))
                     .collect(Collectors.toList());
-            nodeContainers.removeIf(nodeContainer -> Objects.equals(nodeContainer.getFacing(), face) && nodeContainer.getPos().equals(nodePosition));
+            nodeContainers.removeIf(nodeContainer -> faceMatches(face, nodeContainer.getFacing()) && nodeContainer.getPos().equals(nodePosition));
             removedNodeContainers.forEach(removedContainer -> listenerNodePositions.stream().map(networkNodes::get).flatMap(pD -> pD.getNodeContainers(getNetworkID()).stream())
                     .filter(nodeContainer -> nodeContainer.getNode() != null && nodeContainer.getNode().getNetworkTile().listenToNetworkChange())
                     .forEach(nodeContainer -> nodeContainer.getNode().getNetworkTile().onNodeRemoved(removedContainer.getNode())));
             checkListeners();
         }
         TeckleMod.LOG.debug(this + "/Unregistered node at, " + nodePosition);
+    }
+
+    public boolean faceMatches(EnumFacing primary, EnumFacing compareTo) {
+        if (primary == null) {
+            return true;
+        } else {
+            return Objects.equals(primary, compareTo);
+        }
     }
 
     @Override
