@@ -138,7 +138,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
                     if (!thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
                         IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
                         thisNetworkTile.getNode().getNetwork().registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().getNetwork(), neighbourTile.getPos()));
-                        neighbourNetworkTile.setNode(thisNetworkTile.getNode().getNetwork().getNodeContainersAtPosition(neighbourTile.getPos()));
+                        neighbourNetworkTile.setNode(thisNetworkTile.getNode().getNetwork().getNode(neighbourTile.getPos(), capabilityFace));
                     }
                 } else {
                     if (!thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
@@ -209,12 +209,14 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
         if (world.isRemote)
             return;
 
-        if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos)) {
-            IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos);
-            if (thisNetworkTile.getNode() != null) {
-                thisNetworkTile.getNode().getNetwork().unregisterNodeAtPosition(pos);
-                thisNetworkTile.getNode().getNetwork().validateNetwork();
-                thisNetworkTile.setNode(null);
+        for (EnumFacing facing : EnumFacing.values()) {
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, facing)) {
+                IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
+                if (thisNetworkTile.getNode() != null) {
+                    thisNetworkTile.getNode().getNetwork().unregisterNodeAtPosition(pos, facing);
+                    thisNetworkTile.getNode().getNetwork().validateNetwork();
+                    thisNetworkTile.setNode(null);
+                }
             }
         }
     }

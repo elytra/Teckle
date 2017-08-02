@@ -168,7 +168,7 @@ public class TileRetriever extends TileLitNetworkMember {
                                     new EndpointData(new PathNode(pathNode, neighbourNode, direction.getOpposite()),
                                             direction.getOpposite()));
                         } else {
-                            if (neighbourNode.getNetworkTile().canConnectTo(direction.getOpposite())) {
+                            if (neighbourNode.canConnectTo(direction.getOpposite())) {
                                 nodeStack.add(new PathNode(pathNode, neighbourNode, direction.getOpposite()));
                                 iteratedPositions.add(neighbourPos);
                             }
