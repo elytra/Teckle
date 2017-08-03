@@ -395,12 +395,10 @@ public class WorldNetwork implements IWorldNetwork {
 
         // Serialize nodes first.
         compound.setInteger("nCount", networkNodes.size());
-        List<WorldNetworkNode> nodes = getNodes();
+        List<NodeContainer> nodes = getNodes();
         for (int i = 0; i < nodes.size(); i++) {
-            compound.setLong("n" + i, nodes.get(i).position.toLong());
-            for (int fi = 0; fi < nodes.get(i).getCapabilityFaces().size(); fi++) {
-                compound.setInteger("n" + i + "F" + fi, nodes.get(i).getCapabilityFaces().get(fi).getIndex());
-            }
+            compound.setLong("n" + i, nodes.get(i).getPos().toLong());
+            compound.setInteger("nF" + i, nodes.get(i).getFacing() == null ? -1 : nodes.get(i).getFacing().getIndex());
         }
 
         // Serialize travellers.
@@ -423,26 +421,12 @@ public class WorldNetwork implements IWorldNetwork {
 
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             BlockPos pos = BlockPos.fromLong(compound.getLong("n" + i));
-            if (compound.hasKey("n" + i + "F" + 0)) {
-                int fi = 0;
-                while (compound.hasKey("n" + i + "F" + fi)) {
-                    EnumFacing face = EnumFacing.values()[compound.getInteger("n" + i + "F" + fi)];
-                    if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, face)) {
-                        IWorldNetworkTile networkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, face);
-                        WorldNetworkNode node = networkTile.createNode(this, pos);
-                        networkTile.setNode(node);
-                        registerNode(node);
-                    }
-                    fi++;
-                }
-            } else {
-                if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos)) {
-                    IWorldNetworkTile networkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos);
-                    WorldNetworkNode node = networkTile.createNode(this, pos);
-                    networkTile.setNode(node);
-                    registerNode(node);
-                }
-            }
+            EnumFacing face = compound.getInteger("nF" + i) > -1 ? EnumFacing.values()[compound.getInteger("nF" + i)] : null;
+            IWorldNetworkTile networkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, face);
+
+            WorldNetworkNode node = networkTile.createNode(this, pos);
+            networkTile.setNode(node);
+            registerNode(node);
         }
 
         List<WorldNetworkTraveller> deserializedTravellers = new ArrayList<>();
@@ -453,14 +437,10 @@ public class WorldNetwork implements IWorldNetwork {
             deserializedTravellers.add(traveller);
         }
 
-        for (WorldNetworkNode networkNode : Lists.newArrayList(networkNodes.values())) {
-            if (networkNode.useFace()) {
-                networkNode.getCapabilityFaces().stream().filter(f -> networkNode.getNetworkTile(f) != null)
-                        .forEach(f -> networkNode.getNetworkTile(f).networkReloaded(WorldNetwork.this));
-            } else {
-                if (networkNode.getNetworkTile(null) != null)
-                    networkNode.getNetworkTile(null).networkReloaded(this);
-            }
+        for (PositionData positionData : Lists.newArrayList(networkNodes.values())) {
+            positionData.getNodeContainers(getNetworkID()).stream().map(NodeContainer::getNode)
+                    .filter(node -> node.getNetworkTile() != null).map(WorldNetworkNode::getNetworkTile)
+                    .forEach(t -> t.networkReloaded(this));
         }
 
         for (WorldNetworkTraveller traveller : deserializedTravellers) {
