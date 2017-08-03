@@ -429,7 +429,12 @@ public class WorldNetwork implements IWorldNetwork {
             EnumFacing face = compound.getInteger("nF" + i) > -1 ? EnumFacing.values()[compound.getInteger("nF" + i)] : null;
             IWorldNetworkTile networkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, face);
 
-            WorldNetworkNode node = networkTile.createNode(this, pos);
+            WorldNetworkNode node = null;
+            if (networkTile != null) {
+                node = networkTile.createNode(this, pos);
+            } else {
+                continue;
+            }
             networkTile.setNode(node);
             registerNode(node);
         }
