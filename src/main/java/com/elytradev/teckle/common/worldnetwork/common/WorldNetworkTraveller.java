@@ -338,10 +338,11 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     }
 
     public boolean isValidEndpoint(WorldNetworkTraveller traveller, BlockPos from, BlockPos endPoint) {
+        EnumFacing face = getFacingFromVector(endPoint.subtract(from));
         return !traveller.triedEndpoints.contains(new Tuple<>(network.getNodeContainersAtPosition(endPoint), getFacingFromVector(endPoint.subtract(from))))
                 && network.isNodePresent(endPoint)
-                && network.getNode(endPoint, getFacingFromVector(endPoint.subtract(from))).isEndpoint()
-                && network.getNode(endPoint, getFacingFromVector(endPoint.subtract(from))).canAcceptTraveller(traveller, getFacingFromVector(from.subtract(endPoint)));
+                && network.getNode(endPoint, face.getOpposite()).isEndpoint()
+                && network.getNode(endPoint, face.getOpposite()).canAcceptTraveller(traveller, getFacingFromVector(from.subtract(endPoint)));
     }
 
     @Override
