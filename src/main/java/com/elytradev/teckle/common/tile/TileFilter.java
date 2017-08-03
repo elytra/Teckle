@@ -38,7 +38,6 @@ import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoi
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import net.minecraft.block.BlockSourceImpl;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
@@ -225,7 +224,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                     || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getOutputFace().getOpposite())));
 
             if (!world.isRemote && (hasInsertionDestination || destinationIsAir)) {
-                WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().getNetwork().getNodeContainersAtPosition(pos);
+                WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode();
                 EnumFacing facing = networkTile.getOutputFace();
 
                 ItemStack extractionData = getExtractionData(facing);
@@ -248,7 +247,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
             debugInfo += " network " + (bool ? "null" : networkTile.getNode().getNetwork().toString());
             TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
             TeckleMod.LOG.error("Caught NPE in tryPush!, {}", this);
-            TeckleMod.LOG.error("Exception follows, {}", e);
+            e.printStackTrace();
             TeckleMod.LOG.error("Here's some useful debug info, {}", debugInfo);
             TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
         }
@@ -410,8 +409,15 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                 }
 
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-                WorldNetworkNode node = networkTile.createNode(network, pos);
+                WorldNetworkNode node = null;
+                node = networkTile.createNode(network, pos);
                 network.registerNode(node);
+                //if (network.getNode(pos, null) == null) {
+                //    node = networkTile.createNode(network, pos);
+                //    network.registerNode(node);
+                //} else {
+                //    node = network.getNode(pos, null);
+                //}
                 networkTile.setNode(node);
             }
         }

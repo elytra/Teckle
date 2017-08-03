@@ -215,7 +215,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         List<BlockPos> iteratedPositions = new ArrayList<>();
         HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();
 
-        nodeStack.add(new PathNode(null, network.getNode(startPos, entryPoint.getFacing().getOpposite()), null));
+        nodeStack.add(new PathNode(null, network.getNode(startPos, entryPoint.getFacing().getOpposite()), entryPoint.getFacing().getOpposite()));
         while (!nodeStack.isEmpty()) {
             PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
             for (EnumFacing direction : EnumFacing.VALUES) {

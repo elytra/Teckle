@@ -225,7 +225,6 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
     @Override
     public ItemStack insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, ItemStack insertData, ImmutableMap<String, NBTBase> additionalData, BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate, boolean networksInsertionOnly, boolean simulate) {
         ItemStack remaining = insertData.copy();
-        EnumFacing determinedCapFace = WorldNetworkTraveller.getFacingFromVector(insertInto.subtract(entryPoint.position));
         IWorldNetworkTile networkTile = entryPoint.getNetworkTile();
         World world = entryPoint.getNetwork().getWorld();
         if (networkTile.getNode() != null && networkTile.getNode().getNetwork() != null

@@ -76,7 +76,7 @@ public class WorldNetwork implements IWorldNetwork {
                 .filter(nodeContainer -> nodeContainer.getNode() != null && nodeContainer.getNode().getNetworkTile().listenToNetworkChange())
                 .forEach(nodeContainer -> nodeContainer.getNode().getNetworkTile().onNodeAdded(node));
 
-        if (node.getNetworkTile().listenToNetworkChange() && !listenerNodePositions.contains(node.position)) {
+        if (node.hasNetworkTile() && node.getNetworkTile().listenToNetworkChange() && !listenerNodePositions.contains(node.position)) {
             listenerNodePositions.add(node.position);
         }
         TeckleMod.LOG.debug(this + "/Registered node, " + node);
@@ -139,8 +139,13 @@ public class WorldNetwork implements IWorldNetwork {
     @Override
     @Nullable
     public WorldNetworkNode getNode(@Nonnull BlockPos pos, @Nullable EnumFacing capFace) {
-        Optional<NodeContainer> matching = getNodeContainersAtPosition(pos).stream().filter(nC -> Objects.equals(nC.getFacing(), capFace)).findAny();
+        Stream<NodeContainer> stream = getNodeContainersAtPosition(pos).stream();
+        stream = stream.filter(nC -> nC.getFacing() == null || capFace == null || Objects.equals(nC.getFacing(), capFace));
+        if (capFace != null) {
+            stream = stream.sorted((o1, o2) -> Objects.equals(o1.getFacing(), o2.getFacing()) ? 0 : Objects.equals(o1.getFacing(), capFace) ? 1 : -1);
+        }
 
+        Optional<NodeContainer> matching = stream.findFirst();
         return matching.isPresent() ? matching.get().getNode() : null;
     }
 

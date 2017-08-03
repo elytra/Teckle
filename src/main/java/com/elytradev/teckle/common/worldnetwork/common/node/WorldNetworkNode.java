@@ -23,6 +23,7 @@ import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
@@ -37,11 +38,11 @@ public class WorldNetworkNode {
     // Empty node, used instead of null because fuck NPEs.
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
     public BlockPos position;
-    private IWorldNetwork network;
     public EnumFacing capabilityFace = null;
     // Used when a tile isn't loaded.
     public BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate = (t, f) -> false;
     public Predicate<EnumFacing> canConnectToSidePredicate = (f) -> true;
+    private IWorldNetwork network;
     private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
 
     public WorldNetworkNode() {
@@ -84,10 +85,15 @@ public class WorldNetworkNode {
         }
     }
 
+    @Nullable
     public IWorldNetworkTile getNetworkTile() {
         if (CapabilityWorldNetworkTile.isPositionNetworkTile(getNetwork().getWorld(), position, capabilityFace))
             return CapabilityWorldNetworkTile.getNetworkTileAtPosition(getNetwork().getWorld(), position, capabilityFace);
         else return null;
+    }
+
+    public boolean hasNetworkTile() {
+        return isLoaded() && getNetworkTile() != null;
     }
 
     public void registerTraveller(WorldNetworkTraveller traveller) {

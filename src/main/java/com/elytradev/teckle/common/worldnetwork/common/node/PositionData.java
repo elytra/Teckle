@@ -83,7 +83,8 @@ public class PositionData {
     }
 
     public NodeContainer add(IWorldNetwork network, WorldNetworkNode node) {
-        List<NodeContainer> nodeContainers = this.nodeContainers.putIfAbsent(network.getNetworkID(), Lists.newArrayList());
+        this.nodeContainers.putIfAbsent(network.getNetworkID(), Lists.newArrayList());
+        List<NodeContainer> nodeContainers = this.nodeContainers.get(network.getNetworkID());
 
         NodeContainer container = new NodeContainer();
         container.setNetwork(network);
@@ -91,7 +92,7 @@ public class PositionData {
         container.setPos(pos);
         container.setFacing(node.getCapabilityFace());
 
-        nodeContainers.removeIf(oldContainer -> oldContainer.equals(container));
+        nodeContainers.removeIf(oldContainer -> Objects.equals(oldContainer, container));
         nodeContainers.add(container);
         return container;
     }
