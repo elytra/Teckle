@@ -27,7 +27,6 @@ import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
-import com.google.common.collect.Lists;
 import mcmultipart.api.container.IMultipartContainer;
 import mcmultipart.api.container.IPartInfo;
 import mcmultipart.api.multipart.IMultipartTile;
@@ -115,9 +114,8 @@ public class TileItemTube extends TileNetworkMember {
         public void networkReloaded(IWorldNetwork network) {
             List<TileEntity> neighbourNodes = ItemNetworkAssistant.getPotentialNeighbourNodes(networkTile, world, pos, true);
             for (TileEntity neighbourTile : neighbourNodes) {
-                BlockPos posDiff = pos
-                        .subtract(neighbourTile.getPos());
-                EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+                BlockPos posDiff = pos.subtract(neighbourTile.getPos());
+                EnumFacing capabilityFace = WorldNetworkTraveller.getFacingFromVector(posDiff);
 
                 if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos(), capabilityFace)) {
                     if (!getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
@@ -126,7 +124,6 @@ public class TileItemTube extends TileNetworkMember {
                         neighbourNetworkTile.setNode(getNode().getNetwork().getNode(neighbourTile.getPos(), neighbourNetworkTile.getCapabilityFace()));
                     }
                 } else {
-
                     if (!getNode().getNetwork().isNodePresent(neighbourTile.getPos()))
                         getNode().getNetwork().registerNode(new ItemNetworkEndpoint(getNode().getNetwork(), neighbourTile.getPos(), (capabilityFace)));
                 }

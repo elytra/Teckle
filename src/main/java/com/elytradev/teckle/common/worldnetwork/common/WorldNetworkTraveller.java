@@ -442,6 +442,8 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         tagCompound.setLong("prevnode", previousNode.position.toLong());
         tagCompound.setLong("nextnode", nextNode.position.toLong());
 
+        tagCompound.setInteger("entrypointface", entryPoint.getCapabilityFace() == null ? -1
+                : entryPoint.getCapabilityFace().getIndex());
         tagCompound.setInteger("curnodeface", currentNode.getCapabilityFace() == null ? -1
                 : currentNode.getCapabilityFace().getIndex());
         tagCompound.setInteger("prevnodeface", previousNode.getCapabilityFace() == null ? -1
@@ -470,13 +472,14 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
     @Override
     public void deserializeNBT(NBTTagCompound nbt) {
+        EnumFacing entryPointFace = nbt.getInteger("entrypointface") > -1 ? EnumFacing.values()[nbt.getInteger("entrypointface")] : null;
         EnumFacing curNodeFace = nbt.getInteger("curnodeface") > -1 ? EnumFacing.values()[nbt.getInteger("curnodeface")] : null;
         EnumFacing prevNodeFace = nbt.getInteger("prevnodeface") > -1 ? EnumFacing.values()[nbt.getInteger("prevnodeface")] : null;
         EnumFacing nextNodeFace = nbt.getInteger("nextnodeface") > -1 ? EnumFacing.values()[nbt.getInteger("nextnodeface")] : null;
 
         travelledDistance = nbt.getFloat("travelled");
         data = nbt.getCompoundTag("data");
-        entryPoint = (WorldNetworkEntryPoint) network.getNodeContainersAtPosition(BlockPos.fromLong(nbt.getLong("entrypoint")));
+        entryPoint = (WorldNetworkEntryPoint) network.getNode(BlockPos.fromLong(nbt.getLong("entrypoint")), entryPointFace);
         currentNode = network.getNode(BlockPos.fromLong(nbt.getLong("curnode")), curNodeFace);
         previousNode = network.getNode(BlockPos.fromLong(nbt.getLong("prevnode")), prevNodeFace);
         nextNode = network.getNode(BlockPos.fromLong(nbt.getLong("nextnode")), nextNodeFace);
