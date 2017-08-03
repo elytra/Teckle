@@ -75,11 +75,11 @@ public class CapabilityWorldNetworkTile {
     }
 
     public static boolean isPositionNetworkTile(IBlockAccess world, BlockPos pos, EnumFacing face) {
-        return !(world.getTileEntity(pos) == null || !world.getTileEntity(pos).hasCapability(NETWORK_TILE_CAPABILITY, face));
+        return world.getTileEntity(pos) != null && isTileNetworked(world.getTileEntity(pos), face);
     }
 
     public static boolean isTileNetworked(TileEntity tileEntity, EnumFacing face) {
-        return !(tileEntity == null || !tileEntity.hasCapability(NETWORK_TILE_CAPABILITY, face));
+        return tileEntity != null && tileEntity.hasCapability(NETWORK_TILE_CAPABILITY, face);
     }
 
     public static boolean isTileNetworked(TileEntity tileEntity) {
