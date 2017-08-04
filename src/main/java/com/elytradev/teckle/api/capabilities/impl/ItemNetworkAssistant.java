@@ -209,10 +209,11 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
         if (world.isRemote)
             return;
 
-        for (EnumFacing facing : EnumFacing.values()) {
+        for (int i = -1; i < EnumFacing.values().length; i++) {
+            EnumFacing facing = i > -1 ? EnumFacing.values()[i] : null;
             if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, facing)) {
                 IWorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
-                if (thisNetworkTile.getNode() != null) {
+                if (thisNetworkTile.getNode() != null && !(i > -1 && thisNetworkTile.getCapabilityFace() == null)) {
                     thisNetworkTile.getNode().getNetwork().unregisterNodeAtPosition(pos, facing);
                     thisNetworkTile.getNode().getNetwork().validateNetwork();
                     thisNetworkTile.setNode(null);
