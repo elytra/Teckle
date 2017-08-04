@@ -86,7 +86,6 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(32);
     public List<WorldNetworkTraveller> returnedTravellers = Lists.newArrayList();
     public DefaultRoute defaultRoute = DefaultRoute.NONE;
-    public boolean isLit;
     @SideOnly(Side.CLIENT)
     private int selectorPos = -1;
     private PullMode pullMode = new PullModeSingleStep();
@@ -328,7 +327,6 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             TeckleMod.LOG.error("Failed to read sorting machine modes from nbt.", e);
         }
 
-        isLit = compound.getBoolean("isLit");
         cachedFace = EnumFacing.values()[compound.getInteger("cachedFace")];
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
@@ -395,7 +393,6 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
         compound.setInteger("defaultRoute", defaultRoute.getMetadata());
         compound.setInteger("cachedFace", ejectionTile.getOutputFace().getIndex());
-        compound.setBoolean("isLit", isLit);
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             compound.setTag("filterRows", filterRows.serializeNBT());

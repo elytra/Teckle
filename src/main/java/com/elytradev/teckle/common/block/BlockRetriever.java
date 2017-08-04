@@ -82,13 +82,13 @@ public class BlockRetriever extends BlockContainer {
 
         TileRetriever retriever = (TileRetriever) worldIn.getTileEntity(pos);
         boolean powered = worldIn.isBlockPowered(pos);
-        boolean hadPower = retriever.isLit;
+        boolean hadPower = retriever.isLit();
         if (powered) {
             retriever.setTriggered();
             if (!hadPower)
                 retriever.onPulse();
         } else {
-            retriever.isLit = false;
+            retriever.setLit(false);
             new TileLitMessage(retriever).sendToAllWatching(retriever);
         }
     }
