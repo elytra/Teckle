@@ -78,11 +78,10 @@ public class WorldNetworkNode {
      * Used to determine if this node can be connected to from the given side.
      */
     public boolean canConnectTo(EnumFacing side) {
-        if (isLoaded()) {
-            return getNetworkTile().canConnectTo(side);
-        } else {
+        if (!isLoaded() || getNetworkTile() == null) {
             return canConnectToSidePredicate.test(side);
         }
+        return getNetworkTile().canConnectTo(side);
     }
 
     @Nullable

@@ -116,6 +116,9 @@ public class WorldNetwork implements IWorldNetwork {
             removedNodeContainers.forEach(removedContainer -> listenerNodePositions.stream().map(networkNodes::get).flatMap(pD -> pD.getNodeContainers(getNetworkID()).stream())
                     .filter(nodeContainer -> nodeContainer.getNode() != null && nodeContainer.getNode().getNetworkTile().listenToNetworkChange())
                     .forEach(nodeContainer -> nodeContainer.getNode().getNetworkTile().onNodeRemoved(removedContainer.getNode())));
+
+            // Clean position data of any old stuff.
+            networkNodes.values().removeIf(posData -> posData.getNodeContainers(getNetworkID()).isEmpty());
             checkListeners();
         }
         TeckleMod.LOG.debug(this + "/Unregistered node at, " + nodePosition);
@@ -342,9 +345,9 @@ public class WorldNetwork implements IWorldNetwork {
                             && remainingPositions.get(offsetPos).getNodeContainers(getNetworkID()).stream().anyMatch(nC -> nC.getNode().canConnectTo(direction));
                     if (addToStack) {
                         posStack.add(pos.add(direction.getDirectionVec()));
-                        iteratedPositions.add(pos.add(direction.getDirectionVec()));
                     }
                 }
+                iteratedPositions.add(offsetPos);
             }
         }
 
