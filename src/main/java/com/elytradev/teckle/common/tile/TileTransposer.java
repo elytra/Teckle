@@ -156,7 +156,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                     || (potentialInsertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, networkTile.getOutputFace().getOpposite())));
 
             if (!world.isRemote && (hasInsertionDestination || destinationIsAir)) {
-                WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().getNetwork().getNodeContainersAtPosition(pos);
+                WorldNetworkEntryPoint thisNode = (WorldNetworkEntryPoint) networkTile.getNode().getNetwork().getNode(pos, null);
                 EnumFacing facing = networkTile.getOutputFace();
 
                 ItemStack extractionData = getExtractionData(facing);

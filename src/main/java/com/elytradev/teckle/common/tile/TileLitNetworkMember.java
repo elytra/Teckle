@@ -14,16 +14,16 @@ import javax.annotation.Nullable;
 
 public class TileLitNetworkMember extends TileNetworkMember implements ITickable {
 
-    public boolean isLit;
+    private boolean isLit;
 
     @Override
     public void update() {
         if (world.isRemote)
             return;
 
-        if (isLit) {
+        if (isLit()) {
             if (!world.isBlockPowered(pos)) {
-                isLit = false;
+                setLit(false);
                 new TileLitMessage(this).sendToAllWatching(this);
             }
         }
@@ -32,18 +32,18 @@ public class TileLitNetworkMember extends TileNetworkMember implements ITickable
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
-        isLit = compound.getBoolean("isLit");
+        setLit(compound.getBoolean("isLit"));
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound.setBoolean("isLit", isLit);
+        compound.setBoolean("isLit", isLit());
         return super.writeToNBT(compound);
     }
 
     public void setTriggered() {
-        if (!isLit) {
-            isLit = true;
+        if (!isLit()) {
+            setLit(true);
             new TileLitMessage(this).sendToAllWatching(this);
         }
     }
@@ -78,4 +78,11 @@ public class TileLitNetworkMember extends TileNetworkMember implements ITickable
         return super.shouldRefresh(world, pos, oldState, newSate);
     }
 
+    public boolean isLit() {
+        return isLit;
+    }
+
+    public void setLit(boolean lit) {
+        isLit = lit;
+    }
 }

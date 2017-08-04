@@ -17,7 +17,7 @@ public class TileSortingMachineRender extends TileEntitySpecialRenderer<TileSort
     @Override
     public void render(TileSortingMachine te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         IBlockState blockState = te.getWorld().getBlockState(te.getPos());
-        if (blockState.getBlock() != TeckleObjects.blockSortingMachine || !te.isLit)
+        if (blockState.getBlock() != TeckleObjects.blockSortingMachine || !te.isLit())
             return;
 
         EnumFacing pointTo = blockState.getValue(BlockSortingMachine.FACING);

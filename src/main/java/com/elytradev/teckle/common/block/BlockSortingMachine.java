@@ -103,13 +103,13 @@ public class BlockSortingMachine extends BlockContainer {
 
         TileSortingMachine sortingMachine = (TileSortingMachine) worldIn.getTileEntity(pos);
         boolean powered = worldIn.isBlockPowered(pos);
-        boolean hadPower = sortingMachine.isLit;
+        boolean hadPower = sortingMachine.isLit();
         if (powered) {
             sortingMachine.setTriggered();
             if (!hadPower)
                 sortingMachine.getPullMode().onPulse(sortingMachine);
         } else {
-            sortingMachine.isLit = false;
+            sortingMachine.setLit(false);
             new TileLitMessage(sortingMachine).sendToAllWatching(sortingMachine);
         }
     }

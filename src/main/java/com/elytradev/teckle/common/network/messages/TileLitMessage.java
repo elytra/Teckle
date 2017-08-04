@@ -21,8 +21,8 @@ public class TileLitMessage extends Message {
 
     public TileLitMessage(TileLitNetworkMember networkMember) {
         super(TeckleNetworking.NETWORK);
-        networkMember.isLit = networkMember.isLit || networkMember.getWorld().isBlockPowered(networkMember.getPos());
-        this.isLit = networkMember.isLit;
+        networkMember.setLit(networkMember.isLit() || networkMember.getWorld().isBlockPowered(networkMember.getPos()));
+        this.isLit = networkMember.isLit();
         this.networkMemberPos = networkMember.getPos();
     }
 
@@ -30,7 +30,7 @@ public class TileLitMessage extends Message {
     protected void handle(EntityPlayer sender) {
         if (sender != null && sender.world != null) {
             TileLitNetworkMember networkMember = (TileLitNetworkMember) sender.world.getTileEntity(networkMemberPos);
-            networkMember.isLit = isLit;
+            networkMember.setLit(isLit);
         }
     }
 }
