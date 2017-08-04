@@ -269,6 +269,8 @@ public class WorldNetwork implements IWorldNetwork {
         TeckleMod.LOG.debug("Performing a network validation.");
         List<List<NodeContainer>> networks = new ArrayList<>();
         HashMap<BlockPos, PositionData> uncheckedPositions = new HashMap<>();
+        // Clean position data of any old stuff, just makes sure we don't try and iterate forever.
+        networkNodes.values().removeIf(posData -> posData.getNodeContainers(getNetworkID()).isEmpty());
         uncheckedPositions.putAll(this.networkNodes);
 
         while (!uncheckedPositions.isEmpty()) {
