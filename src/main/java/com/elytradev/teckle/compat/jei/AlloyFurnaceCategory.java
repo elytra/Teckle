@@ -17,7 +17,7 @@ import java.util.List;
 
 public class AlloyFurnaceCategory implements IRecipeCategory<IRecipeWrapper> {
 
-    public static final int width = 116;
+    public static final int width = 150;
     public static final int height = 54;
     private static final int craftOutputSlot = 0;
     private static final int craftInputSlot1 = 1;
@@ -30,7 +30,7 @@ public class AlloyFurnaceCategory implements IRecipeCategory<IRecipeWrapper> {
 
     public AlloyFurnaceCategory(IGuiHelper guiHelper) {
         ResourceLocation location = new ResourceLocation("teckle", "textures/gui/alloyfurnace.png");
-        background = guiHelper.createDrawable(location, 29, 16, width, height);
+        background = guiHelper.createDrawable(location, 16, 14, width, height);
         localizedName = I18n.format("tile.teckle.alloyfurnace.name");
         craftingGridHelper = guiHelper.createCraftingGridHelper(craftInputSlot1, craftOutputSlot);
 
@@ -64,19 +64,19 @@ public class AlloyFurnaceCategory implements IRecipeCategory<IRecipeWrapper> {
     @Override
     public void drawExtras(Minecraft minecraft) {
         flame.draw(minecraft, 2, 20);
-        arrow.draw(minecraft, 24, 18);
+        arrow.draw(minecraft, 91, 18);
     }
 
     @Override
     public void setRecipe(IRecipeLayout recipeLayout, IRecipeWrapper recipeWrapper, IIngredients ingredients) {
         IGuiItemStackGroup guiItemStacks = recipeLayout.getItemStacks();
 
-        guiItemStacks.init(craftOutputSlot, false, 94, 18);
+        guiItemStacks.init(craftOutputSlot, false, 129, 18);
 
         for (int y = 0; y < 3; ++y) {
             for (int x = 0; x < 3; ++x) {
                 int index = craftInputSlot1 + x + (y * 3);
-                guiItemStacks.init(index, true, x * 18, y * 18);
+                guiItemStacks.init(index, true, (x * 18) + 27, y * 18);
             }
         }
 
