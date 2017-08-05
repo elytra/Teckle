@@ -16,17 +16,37 @@
 
 package com.elytradev.teckle.compat.jei;
 
+import com.elytradev.teckle.common.TeckleObjects;
+import com.elytradev.teckle.common.crafting.AlloyRecipe;
+import com.elytradev.teckle.common.crafting.AlloyRecipes;
+import mezz.jei.api.IJeiHelpers;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.IModRegistry;
 import mezz.jei.api.JEIPlugin;
+import mezz.jei.api.recipe.IRecipeCategoryRegistration;
 import mezz.jei.api.recipe.VanillaRecipeCategoryUid;
+import net.minecraft.item.ItemStack;
 
 
 @JEIPlugin
 public class TeckleJEIPlugin implements IModPlugin {
 
+    public static final String ALLOYRECIPE_UID = "com.elytradev.teckle.alloyrecipes";
+    public static IJeiHelpers HELPERS;
+
     @Override
     public void register(IModRegistry registry) {
+        HELPERS = registry.getJeiHelpers();
         registry.getRecipeTransferRegistry().addRecipeTransferHandler(new FabricatorRecipeTransferHandler(), VanillaRecipeCategoryUid.CRAFTING);
+
+        registry.addRecipes(AlloyRecipes.getInstance().getRecipes(), ALLOYRECIPE_UID);
+        registry.handleRecipes(AlloyRecipe.class, AlloyRecipeWrapper::new, ALLOYRECIPE_UID);
+        registry.addRecipeCatalyst(new ItemStack(TeckleObjects.blockAlloyFurnace), ALLOYRECIPE_UID);
+    }
+
+    @Override
+    public void registerCategories(IRecipeCategoryRegistration registry) {
+        HELPERS = registry.getJeiHelpers();
+        registry.addRecipeCategories(new AlloyFurnaceCategory(HELPERS.getGuiHelper()));
     }
 }

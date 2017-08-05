@@ -133,4 +133,8 @@ public class AlloyRecipe {
     public int getCookTime() {
         return 200;
     }
+
+    public NonNullList<Object> getInputs() {
+        return input;
+    }
 }
