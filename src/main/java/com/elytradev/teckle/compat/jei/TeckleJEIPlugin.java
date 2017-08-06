@@ -16,6 +16,7 @@
 
 package com.elytradev.teckle.compat.jei;
 
+import com.elytradev.teckle.client.gui.GuiAlloyFurnace;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.crafting.AlloyRecipe;
 import com.elytradev.teckle.common.crafting.AlloyRecipes;
@@ -25,6 +26,7 @@ import mezz.jei.api.IModRegistry;
 import mezz.jei.api.JEIPlugin;
 import mezz.jei.api.recipe.IRecipeCategoryRegistration;
 import mezz.jei.api.recipe.VanillaRecipeCategoryUid;
+import net.minecraft.client.gui.inventory.GuiFurnace;
 import net.minecraft.item.ItemStack;
 
 
@@ -42,6 +44,8 @@ public class TeckleJEIPlugin implements IModPlugin {
         registry.addRecipes(AlloyRecipes.getInstance().getRecipes(), ALLOYRECIPE_UID);
         registry.handleRecipes(AlloyRecipe.class, AlloyRecipeWrapper::new, ALLOYRECIPE_UID);
         registry.addRecipeCatalyst(new ItemStack(TeckleObjects.blockAlloyFurnace), ALLOYRECIPE_UID);
+
+        registry.addRecipeClickArea(GuiAlloyFurnace.class, 107, 32, 26, 23, ALLOYRECIPE_UID);
     }
 
     @Override

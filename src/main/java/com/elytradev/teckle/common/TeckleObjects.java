@@ -31,7 +31,10 @@ import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.*;
+import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
@@ -132,12 +135,10 @@ public class TeckleObjects {
                 'R', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()),
                 'F', new ItemStack(blockFilter));
 
-        for (int i = 0; i < ItemDye.DYE_COLORS.length; i++) {
-            EnumDyeColor dyeColor = EnumDyeColor.byMetadata(i);
-            registerShapedRecipe(registry, new ItemStack(itemPaintBrush, 1, i),
-                    "D  ", " W ", "  S", 'D', "dye" + dyeColor.getUnlocalizedName().substring(0, 1).toUpperCase() + dyeColor.getUnlocalizedName().substring(1), 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
+        for (EnumDyeColor color : EnumDyeColor.values()) {
+            registerShapedRecipe(registry, new ItemStack(itemPaintBrush, 1, color.getDyeDamage()),
+                    "D  ", " W ", "  S", 'D', "dye" + color.getUnlocalizedName().substring(0, 1).toUpperCase() + color.getUnlocalizedName().substring(1), 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
         }
-
         AlloyRecipes.getInstance().init();
     }
 
