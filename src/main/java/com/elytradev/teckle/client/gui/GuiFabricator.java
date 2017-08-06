@@ -102,7 +102,6 @@ public class GuiFabricator extends GuiContainer {
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-        fontRenderer.drawString(I18n.format("gui.inventory"), 8, 73, 0x404040);
 
         if (fabricator.templateRecipe != null) {
             RenderHelper.enableGUIStandardItemLighting();

@@ -60,12 +60,6 @@ public class GuiFilter extends GuiContainer {
     }
 
     @Override
-    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-        fontRenderer.drawString(I18n.format("gui.inventory"), 8, 73, 0x404040);
-    }
-
-    @Override
     protected void drawGuiContainerBackgroundLayer(float var1, int var2, int var3) {
         GlStateManager.color(1, 1, 1);
         Minecraft.getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
