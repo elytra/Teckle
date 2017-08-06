@@ -44,6 +44,7 @@ public class AlloyRecipes {
     }
 
     public void init() {
+        recipes.clear();
         AlloyRecipe siliconBouleRecipe = new AlloyRecipe(
                 new ItemStack(TeckleObjects.itemSiliconBoule),
                 new Tuple<>("sand", 8),
