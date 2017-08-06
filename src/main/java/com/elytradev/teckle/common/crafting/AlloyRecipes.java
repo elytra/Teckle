@@ -16,15 +16,19 @@
 
 package com.elytradev.teckle.common.crafting;
 
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.item.ItemIngot;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 public class AlloyRecipes {
@@ -90,8 +94,15 @@ public class AlloyRecipes {
                 new Tuple<>("dustNikolite", 4)
         );
         recipes.add(blueAlloyIngotRecipe);
+
+        // Adds all the vanilla recipes to the alloy furnace.
+        if (TeckleMod.CONFIG.importFurnaceRecipes)
+            recipes.addAll(FurnaceRecipes.instance().getSmeltingList().entrySet().stream().map(this::convertFurnaceRecipe).collect(Collectors.toList()));
     }
 
+    private AlloyRecipe convertFurnaceRecipe(Map.Entry<ItemStack, ItemStack> furnaceRecipe) {
+        return new AlloyRecipe(furnaceRecipe.getValue(), new Tuple<>(furnaceRecipe.getKey(), null));
+    }
 
     public void clear() {
         recipes.clear();
