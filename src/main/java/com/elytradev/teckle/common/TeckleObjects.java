@@ -85,11 +85,6 @@ public class TeckleObjects {
     private int recipeID = 0;
 
     public void init(FMLInitializationEvent e) {
-        OreDictionary.registerOre("coal", Items.COAL); // Nothing to see here, move along.
-        OreDictionary.registerOre("dustNikolite", new ItemStack(itemNikolite, 1));
-        OreDictionary.registerOre("dyeBlue", new ItemStack(itemNikolite, 1));
-        OreDictionary.registerOre("oreNikolite", new ItemStack(blockNikoliteOre, 1));
-
         GameRegistry.registerTileEntity(TileItemTube.class, "teckleItemTube");
         GameRegistry.registerTileEntity(TileFilter.class, "teckleFilter");
         GameRegistry.registerTileEntity(TileTransposer.class, "teckleTransposer");
@@ -143,7 +138,6 @@ public class TeckleObjects {
                     "D  ", " W ", "  S", 'D', "dye" + dyeColor.getUnlocalizedName().substring(0, 1).toUpperCase() + dyeColor.getUnlocalizedName().substring(1), 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
         }
 
-        AlloyRecipes.getInstance().clear();
         AlloyRecipes.getInstance().init();
     }
 
@@ -205,6 +199,11 @@ public class TeckleObjects {
                         new ItemStack(itemIngot, 1, ingotType.getMetadata())));
         skipItemMesh.add(itemIngot);
         itemBlocksToRegister.forEach(registry::register);
+
+        OreDictionary.registerOre("coal", Items.COAL); // Nothing to see here, move along.
+        OreDictionary.registerOre("dustNikolite", new ItemStack(itemNikolite, 1));
+        OreDictionary.registerOre("dyeBlue", new ItemStack(itemNikolite, 1));
+        OreDictionary.registerOre("oreNikolite", new ItemStack(blockNikoliteOre, 1));
     }
 
     @SubscribeEvent
