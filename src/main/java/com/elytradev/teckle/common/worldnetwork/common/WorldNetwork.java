@@ -343,9 +343,9 @@ public class WorldNetwork implements IWorldNetwork {
             for (EnumFacing direction : EnumFacing.VALUES) {
                 BlockPos offsetPos = pos.offset(direction);
                 if (!iteratedPositions.contains(offsetPos)) {
-                    boolean addToStack = remainingPositions.containsKey(offsetPos);
-                    addToStack &= (remainingPositions.containsKey(offsetPos))
-                            && remainingPositions.get(offsetPos).getNodeContainers(getNetworkID()).stream().anyMatch(nC -> nC.getNode().canConnectTo(direction));
+                    boolean addToStack = remainingPositions.containsKey(offsetPos)
+                            && remainingPositions.get(offsetPos).getNodeContainers(getNetworkID()).stream()
+                            .anyMatch(nC -> nC.getNode().canConnectTo(direction.getOpposite()));
                     if (addToStack) {
                         posStack.add(pos.add(direction.getDirectionVec()));
                     }
