@@ -116,6 +116,7 @@ public class WorldNetwork implements IWorldNetwork {
             removedNodeContainers.forEach(removedContainer -> listenerNodePositions.stream().map(networkNodes::get).flatMap(pD -> pD.getNodeContainers(getNetworkID()).stream())
                     .filter(nodeContainer -> nodeContainer.getNode() != null && nodeContainer.getNode().getNetworkTile().listenToNetworkChange())
                     .forEach(nodeContainer -> nodeContainer.getNode().getNetworkTile().onNodeRemoved(removedContainer.getNode())));
+            removedNodeContainers.forEach(removed -> positionData.removeNodeContainer(getNetworkID(), removed));
 
             // Clean position data of any old stuff.
             networkNodes.values().removeIf(posData -> posData.getNodeContainers(getNetworkID()).isEmpty());

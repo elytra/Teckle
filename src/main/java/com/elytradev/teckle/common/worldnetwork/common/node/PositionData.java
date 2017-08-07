@@ -1,6 +1,7 @@
 package com.elytradev.teckle.common.worldnetwork.common.node;
 
 import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.util.math.BlockPos;
@@ -36,6 +37,9 @@ public class PositionData {
         Map<BlockPos, PositionData> dimensionPool = POOL.get(Integer.valueOf(dimension));
         if (!dimensionPool.containsKey(position))
             dimensionPool.put(position, new PositionData(dimension, position));
+
+        // Clear stray data.
+        dimensionPool.get(position).nodeContainers.keySet().removeIf(uuid -> !WorldNetworkDatabase.getNetworkDB(dimension).isNetworkPresent(uuid));
 
         return dimensionPool.get(position);
     }
