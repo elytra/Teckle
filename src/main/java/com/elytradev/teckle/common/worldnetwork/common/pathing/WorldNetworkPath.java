@@ -21,7 +21,6 @@ import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.worldnetwork.common.DummyWorldNetworkEndpoint;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
-import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;

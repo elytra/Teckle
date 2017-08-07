@@ -227,7 +227,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                 }
 
                 WorldNetworkNode neighbourNode = network.getNode(neighbourPos, direction.getOpposite());
-                if(neighbourNode == null){
+                if (neighbourNode == null) {
                     neighbourNode = network.getNode(neighbourPos, direction.getOpposite());
                 }
 
