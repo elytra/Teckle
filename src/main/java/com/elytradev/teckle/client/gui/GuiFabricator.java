@@ -31,9 +31,6 @@ import net.minecraft.util.ResourceLocation;
 
 import java.io.IOException;
 
-/**
- * Created by darkevilmac on 4/12/2017.
- */
 public class GuiFabricator extends GuiContainer {
 
     public static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation("teckle", "textures/gui/fabricator.png");
@@ -41,7 +38,6 @@ public class GuiFabricator extends GuiContainer {
     public final EntityPlayer player;
 
     private Template[] templates = new Template[9];
-
 
     public GuiFabricator(TileFabricator tile, EntityPlayer player) {
         super(new ContainerFabricator(tile, player));
@@ -96,6 +92,13 @@ public class GuiFabricator extends GuiContainer {
             mouseItem.setCount(1);
             fabricator.setTemplateSlot(templateID, mouseItem);
         }
+    }
+
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        this.drawDefaultBackground();
+        super.drawScreen(mouseX, mouseY, partialTicks);
+        this.renderHoveredToolTip(mouseX, mouseY);
     }
 
     @Override

@@ -94,7 +94,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     private NetworkTileTransporter ejectionTile = new NetworkTileTransporter() {
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), (getCapabilityFace()));
+            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
         }
 
         @Override
@@ -631,7 +631,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
                 }
 
                 for (WorldNetworkTraveller traveller : node.getTravellers()) {
-                    float distance = (Float.valueOf(traveller.activePath.getIndex()) / Float.valueOf(traveller.activePath.pathPositions().size())) * 10F;
+                    float distance = Float.valueOf(traveller.activePath.getIndex()) / Float.valueOf(traveller.activePath.pathPositions().size()) * 10F;
                     distance += traveller.travelledDistance;
                     distance -= 0.1F;
                     distance = MathHelper.clamp(distance, 0F, 10F);

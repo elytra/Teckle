@@ -201,6 +201,16 @@ public class WorldNetworkDatabase extends WorldSavedData {
         return networks.get(id);
     }
 
+    /**
+     * Check if a network with the given id is present in this database.
+     *
+     * @param id the network id.
+     * @return true if present, false otherwise.
+     */
+    public boolean isNetworkPresent(UUID id) {
+        return networks.containsKey(id);
+    }
+
     private void onTick(TickEvent.WorldTickEvent e) {
         if (networks.isEmpty() || !Objects.equals(world, e.world))
             return;
