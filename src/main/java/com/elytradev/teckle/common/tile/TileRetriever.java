@@ -13,7 +13,6 @@ import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoi
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.EndpointData;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.PathNode;
-import com.google.common.collect.Lists;
 import com.google.common.collect.TreeMultiset;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.EnumDyeColor;

@@ -28,8 +28,6 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
-import java.util.List;
-
 public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
 
     public ItemNetworkEndpoint(IWorldNetwork network, BlockPos pos, EnumFacing capabilityFace) {
