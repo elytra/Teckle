@@ -19,7 +19,6 @@ package com.elytradev.teckle.common.worldnetwork.common;
 import com.elytradev.teckle.common.TeckleMod;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -33,9 +32,14 @@ public class DropActions {
         try {
             World world = traveller.network.getWorld();
             BlockPos nodePos = traveller.currentNode.position;
-            world.spawnEntity(new EntityItem(world, nodePos.getX(), nodePos.getY(),
-                    nodePos.getZ(), new ItemStack(traveller.data.getCompoundTag("stack"))));
-            traveller.data.setTag("stack", new NBTTagCompound());
+            if (traveller.data.hasKey("stack")) {
+                ItemStack stackFromTag = new ItemStack(traveller.data.getCompoundTag("stack"));
+                if (!stackFromTag.isEmpty()) {
+                    world.spawnEntity(new EntityItem(world, nodePos.getX(), nodePos.getY(),
+                            nodePos.getZ(), stackFromTag));
+                }
+                traveller.data.removeTag("stack");
+            }
         } catch (NullPointerException npe) {
             boolean bool = traveller == null;
             String debugInfo = "traveller " + (bool ? "null" : traveller.toString());
@@ -43,11 +47,11 @@ public class DropActions {
             debugInfo += " network " + (bool ? "null" : traveller.network.toString());
             bool = bool || traveller.network.getWorld() == null;
             debugInfo += " world " + (bool ? "null" : traveller.network.getWorld().toString());
-            TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
+            TeckleMod.LOG.error("****************Caught exception when dropping itemstack*******");
             TeckleMod.LOG.error("Caught NPE in DropActions!, {}", traveller);
             TeckleMod.LOG.error("Exception follows, {}", npe);
             TeckleMod.LOG.error("Here's some useful debug info, {}", debugInfo);
-            TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
+            TeckleMod.LOG.error("***************************************************************");
         }
     });
 

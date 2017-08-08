@@ -60,11 +60,11 @@ public class SortModeFullMatch extends SortMode {
         if (sortingMachine.getSource() == null)
             return false;
 
-        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush(false);
         if (stacksToPush.isEmpty())
             return false;
 
-        IItemHandler pushStackHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
+        IItemHandler pushStackHandler = sortingMachine.getStacksToPush(false).get(0).itemHandler;
         if (pushStackHandler == sortingMachine.buffer || selectorPosition != -1) {
             return false;
         }
@@ -348,13 +348,13 @@ public class SortModeFullMatch extends SortMode {
         if (!sortingMachine.getPullMode().isPaused())
             return;
 
-        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush(false);
         if (stacksToPush.isEmpty()) {
             sortingMachine.getPullMode().unpause();
             return;
         }
 
-        IItemHandler pushStackHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
+        IItemHandler pushStackHandler = sortingMachine.getStacksToPush(false).get(0).itemHandler;
         if (pushStackHandler != sortingMachine.buffer) {
             return;
         }
