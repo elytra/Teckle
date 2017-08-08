@@ -74,9 +74,6 @@ public class WorldNetworkDatabase extends WorldSavedData {
 
     @SubscribeEvent
     public static void onWorldUnload(WorldEvent.Unload e) {
-        if (e.getWorld().isRemote)
-            return;
-
         if (DIMENSION_DATABASES.containsKey(e.getWorld().provider.getDimension())) {
             DIMENSION_DATABASES.remove(e.getWorld().provider.getDimension());
         }

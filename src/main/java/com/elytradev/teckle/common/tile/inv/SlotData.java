@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.tile.inv;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 
@@ -20,8 +21,20 @@ public class SlotData {
         return itemHandler.getStackInSlot(slot);
     }
 
+    public int getCount() {
+        return getStack().getCount();
+    }
+
     public boolean isEmpty() {
-        return itemHandler.getStackInSlot(slot).isEmpty();
+        return getStack().isEmpty();
+    }
+
+    public boolean isItemEqual(ItemStack other) {
+        return getStack().isItemEqual(other);
+    }
+
+    public Item getItem() {
+        return getStack().getItem();
     }
 
     public boolean canExtractCount(int count) {
