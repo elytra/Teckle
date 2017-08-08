@@ -34,11 +34,18 @@ import java.util.Random;
 public class RecipeSlice extends ShapelessOreRecipe {
 
     public int damageToTool = 1;
+    public NonNullList<Ingredient> visibleIngredients;
 
     public RecipeSlice(@Nonnull ItemStack result, int damageToTool, Object... recipe) {
         super(null, result, recipe);
         this.output = result.copy();
         this.damageToTool = damageToTool;
+
+        this.visibleIngredients = NonNullList.create();
+        this.visibleIngredients.add(Ingredient.fromItem(TeckleObjects.itemBlade));
+        for (Ingredient ingredient : super.getIngredients()) {
+            this.visibleIngredients.add(ingredient);
+        }
     }
 
     @Override
@@ -104,8 +111,6 @@ public class RecipeSlice extends ShapelessOreRecipe {
                     boolean match = next.apply(slot);
                     if (match) {
                         consumed.add(slot.copy());
-                    }
-                    if (match) {
                         inRecipe = true;
                         required.remove(next);
                         break;
@@ -171,9 +176,6 @@ public class RecipeSlice extends ShapelessOreRecipe {
     @Nonnull
     @Override
     public NonNullList<Ingredient> getIngredients() {
-        NonNullList<Ingredient> ingredients = super.getIngredients();
-        if (ingredients.stream().noneMatch(i -> i.test(TeckleObjects.itemBlade.getDefaultInstance())))
-            ingredients.add(0, Ingredient.fromItem(TeckleObjects.itemBlade));
-        return ingredients;
+        return visibleIngredients;
     }
 }
