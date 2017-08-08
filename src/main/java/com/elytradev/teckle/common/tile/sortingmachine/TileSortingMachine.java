@@ -485,8 +485,8 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     /**
      * Get a list of stacks that can be sorted from the source.
      *
-     * @return the list of all itemstacks available for sorting.
      * @param skipBuffer
+     * @return the list of all itemstacks available for sorting.
      */
     public List<SlotData> getStacksToPush(boolean skipBuffer) {
         List<SlotData> stacks = Lists.newArrayList();
