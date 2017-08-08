@@ -59,38 +59,28 @@ public class SortModeFullMatchSelector extends SortMode {
         if (sortingMachine.getSource() == null)
             return false;
 
-        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush(false);
         if (stacksToPush.isEmpty())
             return false;
 
         if (stacksToPush.get(0).itemHandler == sortingMachine.buffer) {
-            sortingMachine.getPullMode().pause();
-            return false;
+            genStacksToSatisfy(sortingMachine);
+            if (stacksLeftToSatisfy.isEmpty()) {
+                sortingMachine.getPullMode().pause();
+                return false;
+            }
         }
 
         AdvancedItemStackHandler pushStackHandler = sortingMachine.buffer;
-        IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
         Map<SlotData, ItemStack> slotsToExtract = Maps.newHashMap();
 
-        if (ItemStream.createItemStream(compartmentHandler).allMatch(ItemStack::isEmpty)) {
-            boolean changedSelector = false;
-            for (int i = selectorPosition + 1; i < 8; i++) {
-                IItemHandler selectedCompartmentHandler = sortingMachine.getCompartmentHandlers().get(i);
-
-                if (ItemStream.createItemStream(selectedCompartmentHandler).anyMatch(stack -> !stack.isEmpty())) {
-                    selectorPosition = i;
-                    changedSelector = true;
-                    break;
-                }
-            }
-
-            if (!changedSelector)
-                selectorPosition = 0;
-        }
+        changeCompartment(sortingMachine);
         genStacksToSatisfy(sortingMachine);
         if (stacksLeftToSatisfy.isEmpty()) {
             sortingMachine.getPullMode().pause();
             return true;
+        } else {
+            stacksToPush = sortingMachine.getStacksToPush(true);
         }
 
         // Gather information to shove in the buffer, as well as confirm that it will all fit.
@@ -98,10 +88,9 @@ public class SortModeFullMatchSelector extends SortMode {
             ItemStack stackToSatisfy = stacksLeftToSatisfy.get(i);
 
             Optional<SlotData> matchingSlotData = stacksToPush.stream().filter(slotData -> stackToSatisfy.isItemEqual(slotData.getStack())
-                    && stackToSatisfy.getCount() <= slotData.getStack().getCount()).findFirst();
+                    && slotData.getStack().getCount() > 0).findFirst();
 
-            if (matchingSlotData.isPresent() && matchingSlotData.get().canExtractCount(stackToSatisfy.getCount())
-                    && pushStackHandler.canInsertItem(stackToSatisfy.copy())) {
+            if (matchingSlotData.isPresent() && pushStackHandler.canInsertItem(matchingSlotData.get().getStack().copy())) {
                 slotsToExtract.put(matchingSlotData.get(), stackToSatisfy);
                 continue;
             }
@@ -111,7 +100,9 @@ public class SortModeFullMatchSelector extends SortMode {
 
         for (Map.Entry<SlotData, ItemStack> slotCountEntry : slotsToExtract.entrySet()) {
             SlotData slotData = slotCountEntry.getKey();
-            Integer countToExtract = slotCountEntry.getValue().getCount();
+            ItemStack satisfyStack = slotCountEntry.getValue();
+
+            Integer countToExtract = satisfyStack.getCount() < slotData.getStack().getCount() ? satisfyStack.getCount() : slotData.getStack().getCount();
             ItemStack extracted = slotData.extract(countToExtract, false);
             ItemStack remaining = sortingMachine.buffer.insertItem(extracted, false);
 
@@ -122,9 +113,9 @@ public class SortModeFullMatchSelector extends SortMode {
         }
         stacksLeftToSatisfy.removeIf(ItemStack::isEmpty);
 
-        if (stacksLeftToSatisfy.isEmpty())
+        if (stacksLeftToSatisfy.isEmpty()) {
             sortingMachine.getPullMode().pause();
-
+        }
         return true;
     }
 
@@ -151,13 +142,13 @@ public class SortModeFullMatchSelector extends SortMode {
         if (!sortingMachine.getPullMode().isPaused())
             return;
 
-        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush(false);
         if (stacksToPush.isEmpty() || stacksToPush.stream().allMatch(slotData -> slotData.getStack().isEmpty())) {
             sortingMachine.getPullMode().unpause();
             return;
         }
 
-        IItemHandler bufferHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
+        IItemHandler bufferHandler = sortingMachine.getStacksToPush(false).get(0).itemHandler;
         if (bufferHandler != sortingMachine.buffer) {
             sortingMachine.getPullMode().unpause();
             return;
@@ -241,9 +232,23 @@ public class SortModeFullMatchSelector extends SortMode {
         }
     }
 
-    private void incrementCompartmentSlot(TileSortingMachine sortingMachine) {
-        if (compartmentSlot < 7) {
+    private void changeCompartment(TileSortingMachine sortingMachine) {
+        IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
 
+        if (ItemStream.createItemStream(compartmentHandler).allMatch(ItemStack::isEmpty)) {
+            boolean changedSelector = false;
+            for (int i = selectorPosition + 1; i < 8; i++) {
+                IItemHandler selectedCompartmentHandler = sortingMachine.getCompartmentHandlers().get(i);
+
+                if (ItemStream.createItemStream(selectedCompartmentHandler).anyMatch(stack -> !stack.isEmpty())) {
+                    selectorPosition = i;
+                    changedSelector = true;
+                    break;
+                }
+            }
+
+            if (!changedSelector)
+                selectorPosition = 0;
         }
     }
 

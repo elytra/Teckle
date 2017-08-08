@@ -58,11 +58,11 @@ public class SortModePartialMatchSelector extends SortMode {
         if (sortingMachine.getSource() == null)
             return false;
 
-        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush(false);
         if (stacksToPush.isEmpty())
             return false;
 
-        IItemHandler pushStackHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
+        IItemHandler pushStackHandler = sortingMachine.getStacksToPush(false).get(0).itemHandler;
         if (pushStackHandler == sortingMachine.buffer) {
             return false;
         }
@@ -214,13 +214,13 @@ public class SortModePartialMatchSelector extends SortMode {
         if (!sortingMachine.getPullMode().isPaused())
             return;
 
-        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush(false);
         if (stacksToPush.isEmpty()) {
             sortingMachine.getPullMode().unpause();
             return;
         }
 
-        IItemHandler bufferHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
+        IItemHandler bufferHandler = sortingMachine.getStacksToPush(false).get(0).itemHandler;
         if (bufferHandler != sortingMachine.buffer) {
             sortingMachine.getPullMode().unpause();
             return;
@@ -236,7 +236,7 @@ public class SortModePartialMatchSelector extends SortMode {
 
         ItemStack selectedCompartmentStackClone = selectedCompartmentStack;
         if (selectedCompartmentStack.isEmpty()
-                || sortingMachine.getStacksToPush().stream()
+                || sortingMachine.getStacksToPush(false).stream()
                 .noneMatch(slotData -> slotData.getStack().isItemEqual(selectedCompartmentStackClone)
                         && slotData.getStack().getCount() >= selectedCompartmentStackClone.getCount())) {
 
@@ -248,7 +248,7 @@ public class SortModePartialMatchSelector extends SortMode {
                 if (compartmentStackInSlot.isEmpty())
                     continue;
 
-                Optional<SlotData> matchingSlotData = sortingMachine.getStacksToPush().stream().filter(slotData -> !slotData.getStack().isEmpty())
+                Optional<SlotData> matchingSlotData = sortingMachine.getStacksToPush(false).stream().filter(slotData -> !slotData.getStack().isEmpty())
                         .filter(slotData -> slotData.getStack().isItemEqual(compartmentStackInSlot)
                                 && slotData.getStack().getCount() >= compartmentStackInSlot.getCount()).findFirst();
 
@@ -280,7 +280,7 @@ public class SortModePartialMatchSelector extends SortMode {
         }
 
         if (selectedSlotData == null) {
-            Optional<SlotData> matchingSlotData = sortingMachine.getStacksToPush().stream().filter(slotData -> !slotData.getStack().isEmpty())
+            Optional<SlotData> matchingSlotData = sortingMachine.getStacksToPush(false).stream().filter(slotData -> !slotData.getStack().isEmpty())
                     .filter(slotData -> slotData.getStack().isItemEqual(compartmentHandler.getStackInSlot(compartmentSlot))
                             && slotData.getStack().getCount() >= compartmentHandler.getStackInSlot(compartmentSlot).getCount()).findFirst();
 

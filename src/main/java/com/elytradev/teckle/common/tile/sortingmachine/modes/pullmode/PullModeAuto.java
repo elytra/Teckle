@@ -35,8 +35,9 @@ public class PullModeAuto extends PullMode {
 
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
-        if (isPaused())
+        if (isPaused()) {
             return;
+        }
 
         if (coolDown > 0)
             coolDown--;

@@ -48,11 +48,11 @@ public class SortModeAnyStack extends SortMode {
         if (sortingMachine.getSource() == null)
             return false;
 
-        List<SlotData> stacksToPush = sortingMachine.getStacksToPush();
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush(false);
         if (stacksToPush.isEmpty())
             return false;
 
-        IItemHandler pushStackHandler = sortingMachine.getStacksToPush().get(0).itemHandler;
+        IItemHandler pushStackHandler = sortingMachine.getStacksToPush(false).get(0).itemHandler;
         for (int i = 0; i < stacksToPush.size(); i++) {
             ItemStack stackFromSource = stacksToPush.get(i).getStack();
             if (stackFromSource.isEmpty())
