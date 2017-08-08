@@ -35,6 +35,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.items.IItemHandler;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,77 +61,145 @@ public class SortModeFullMatch extends SortMode {
         if (sortingMachine.getSource() == null)
             return false;
 
-        List<SlotData> stacksToPush = sortingMachine.getStacksToPush(false);
-        if (stacksToPush.isEmpty())
+        if (sortingMachine.getStacksToPush(false).isEmpty())
             return false;
 
-        IItemHandler pushStackHandler = sortingMachine.getStacksToPush(false).get(0).itemHandler;
-        if (pushStackHandler == sortingMachine.buffer || selectorPosition != -1) {
-            return false;
+        List<SlotData> stacksToPush = sortingMachine.getStacksToPush(true);
+        AdvancedItemStackHandler buffer = sortingMachine.buffer;
+        if (selectorPosition != -1) {
+            genStacksToSatisfy(sortingMachine);
         }
 
-        // choose the compartment...
-        for (int stackToPush = 0; stackToPush < stacksToPush.size(); stackToPush++) {
-            SlotData stack = stacksToPush.get(stackToPush);
-            if (stack.isEmpty())
-                continue;
-
-            for (int compartment = 0; compartment < sortingMachine.getCompartmentHandlers().size(); compartment++) {
+        if (stacksLeftToSatisfy.isEmpty()) {
+            int selectedCompartment = -1;
+            Map<ItemStack, List<SlotData>> matchingDataBySlot = new HashMap<>();
+            for (int compartment = 0; compartment < 8; compartment++) {
                 IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(compartment);
-                Stream<ItemStack> compartmentStream = ItemStream.createItemStream(compartmentHandler);
-                Optional<ItemStack> matchingStack = compartmentStream.filter(s -> s.isItemEqual(stack.getStack()) && stack.getStack().getCount() >= s.getCount()).findFirst();
-                if (matchingStack.isPresent()) {
-                    selectorPosition = compartment;
+                if (ItemStream.createItemStream(compartmentHandler).allMatch(ItemStack::isEmpty))
+                    continue;
+                boolean failedChecks = false;
+                for (int slot = 0; slot < compartmentHandler.getSlots(); slot++) {
+                    ItemStack stackInSlot = compartmentHandler.getStackInSlot(slot);
+                    if (stackInSlot.isEmpty())
+                        continue;
+
+                    List<SlotData> matchingData = stacksToPush.stream().filter(slotData -> slotData.isItemEqual(stackInSlot)).collect(Collectors.toList());
+                    int totalMatchingCount = matchingData.stream().mapToInt(SlotData::getCount).sum();
+                    if (totalMatchingCount < stackInSlot.getCount()) {
+                        failedChecks = true;
+                        matchingDataBySlot = new HashMap<>();
+                        break;
+                    } else {
+                        matchingDataBySlot.put(stackInSlot.copy(), matchingData);
+                    }
+                }
+                if (!failedChecks) {
+                    selectedCompartment = compartment;
                     break;
                 }
             }
 
-            if (selectorPosition != -1)
-                break;
-        }
+            if (selectedCompartment != -1) {
+                selectorPosition = selectedCompartment;
+                AdvancedItemStackHandler bufferCopy = sortingMachine.buffer.copy();
+                boolean canFit = matchingDataBySlot.keySet().stream().allMatch(s -> bufferCopy.insertItem(s, false).isEmpty());
+                // Odds are this won't ever happen but this is just in case we can't fit all the items into the buffer to be pushed.
+                if (!canFit) {
+                    selectorPosition = -1;
+                    return false;
+                }
+                // Inserts all the matching items into the buffer.
+                for (Map.Entry<ItemStack, List<SlotData>> itemStackListEntry : matchingDataBySlot.entrySet()) {
+                    ItemStack stack = itemStackListEntry.getKey();
+                    List<SlotData> matchingSlots = itemStackListEntry.getValue();
 
-        if (selectorPosition == -1)
-            return false;
+                    while (stack.getCount() > 0) {
+                        for (SlotData matchingSlot : matchingSlots) {
+                            ItemStack extractedStack = matchingSlot.extract(stack.getCount(), false);
+                            stack.shrink(extractedStack.getCount());
+                            buffer.insertItem(extractedStack, false);
+                            if (stack.isEmpty())
+                                break;
+                        }
+                    }
+                }
+            }
+            selectorPosition = selectedCompartment;
+        } else {
+            // Gather information to shove in the buffer, as well as confirm that it will all fit.
+            Map<SlotData, ItemStack> slotsToExtract = Maps.newHashMap();
+            for (int i = 0; i < stacksLeftToSatisfy.size(); i++) {
+                ItemStack stackToSatisfy = stacksLeftToSatisfy.get(i);
 
-        IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
-        Map<SlotData, Integer> slotsToExtract = Maps.newHashMap();
+                Optional<SlotData> matchingSlotData = stacksToPush.stream().filter(slotData -> stackToSatisfy.isItemEqual(slotData.getStack())
+                        && slotData.getStack().getCount() > 0).findFirst();
 
-        // Gather information to shove in the buffer, as well as confirm that it will all fit.
-        for (int i = 0; i < compartmentHandler.getSlots(); i++) {
-            ItemStack compartmentStackInSlot = compartmentHandler.getStackInSlot(i);
-            if (compartmentStackInSlot.isEmpty())
-                continue;
+                if (matchingSlotData.isPresent() && buffer.canInsertItem(matchingSlotData.get().getStack().copy())) {
+                    slotsToExtract.put(matchingSlotData.get(), stackToSatisfy);
+                    continue;
+                }
 
-            Optional<SlotData> matchingSlotData = stacksToPush.stream().filter(slotData -> compartmentStackInSlot.isItemEqual(slotData.getStack())
-                    && compartmentStackInSlot.getCount() >= slotData.getStack().getCount()).findFirst();
-            if (matchingSlotData.isPresent() && matchingSlotData.get().canExtractCount(compartmentStackInSlot.getCount())
-                    && sortingMachine.buffer.canInsertItem(compartmentStackInSlot.copy())) {
-                slotsToExtract.put(matchingSlotData.get(), compartmentStackInSlot.getCount());
-            } else {
                 return false;
             }
-        }
-        // Confirm the buffer can fit everything before attempting actual insertion into the real thing.
-        for (Map.Entry<SlotData, Integer> slotCountEntry : slotsToExtract.entrySet()) {
-            SlotData slotData = slotCountEntry.getKey();
-            Integer count = slotCountEntry.getValue();
 
-            // If it didn't fit, return false.
-            if (!sortingMachine.buffer.insertItem(slotData.extract(count, true), true).isEmpty()) {
-                return false;
+            for (Map.Entry<SlotData, ItemStack> slotCountEntry : slotsToExtract.entrySet()) {
+                SlotData slotData = slotCountEntry.getKey();
+                ItemStack satisfyStack = slotCountEntry.getValue();
+
+                Integer countToExtract = satisfyStack.getCount() < slotData.getStack().getCount() ? satisfyStack.getCount() : slotData.getStack().getCount();
+                ItemStack extracted = slotData.extract(countToExtract, false);
+                ItemStack remaining = sortingMachine.buffer.insertItem(extracted, false);
+
+                slotCountEntry.getValue().shrink(countToExtract - remaining.getCount());
+                if (!remaining.isEmpty()) {
+                    slotData.itemHandler.getStackInSlot(slotData.slot).grow(remaining.getCount());
+                }
+            }
+            stacksLeftToSatisfy.removeIf(ItemStack::isEmpty);
+        }
+        if (selectorPosition != -1) {
+            genStacksToSatisfy(sortingMachine);
+        }
+        if (stacksLeftToSatisfy.isEmpty()) {
+            sortingMachine.getPullMode().pause();
+            return true;
+        }
+        return false;
+    }
+
+    private void genStacksToSatisfy(TileSortingMachine sortingMachine) {
+        if (stacksLeftToSatisfy.isEmpty()) {
+            stacksLeftToSatisfy = ItemStream.createItemStream(sortingMachine.getCompartmentHandlers().get(selectorPosition)).filter(s -> !s.isEmpty()).map(ItemStack::copy).collect(Collectors.toList());
+
+            // Don't satisfy things in the buffer. Duh.
+            AdvancedItemStackHandler buffer = sortingMachine.buffer;
+            if (!buffer.stream().allMatch(ItemStack::isEmpty)) {
+                for (int i = 0; i < buffer.getStacks().size(); i++) {
+                    if (buffer.getStackInSlot(i).isEmpty())
+                        continue;
+
+                    ItemStack clonedBufferStack = buffer.getStackInSlot(i).copy();
+                    for (ItemStack stackToSatisfy : stacksLeftToSatisfy) {
+                        if (stackToSatisfy.isEmpty())
+                            continue;
+
+                        if (stackToSatisfy.isItemEqual(clonedBufferStack)) {
+                            if (stackToSatisfy.getCount() >= clonedBufferStack.getCount()) {
+                                stackToSatisfy.shrink(clonedBufferStack.getCount());
+                                clonedBufferStack.shrink(clonedBufferStack.getCount());
+                            } else {
+                                clonedBufferStack.shrink(stackToSatisfy.getCount());
+                                stackToSatisfy.shrink(stackToSatisfy.getCount());
+                            }
+                        }
+
+                        if (clonedBufferStack.isEmpty())
+                            break;
+                    }
+                }
+                stacksLeftToSatisfy.removeIf(ItemStack::isEmpty);
             }
         }
-
-        for (Map.Entry<SlotData, Integer> slotCountEntry : slotsToExtract.entrySet()) {
-            SlotData slotData = slotCountEntry.getKey();
-            Integer count = slotCountEntry.getValue();
-
-            sortingMachine.buffer.insertItem(slotData.extract(count, false), false);
-        }
-
-        sortingMachine.getPullMode().pause();
-
-        return true;
     }
 
     /**
@@ -411,9 +480,9 @@ public class SortModeFullMatch extends SortMode {
         // If the buffer has been emptied move the selector.
         if (bufferStream.allMatch(ItemStack::isEmpty)) {
             compartmentSlot = 0;
+            selectorPosition = -1;
             sortingMachine.getPullMode().unpause();
         }
-
     }
 
 
