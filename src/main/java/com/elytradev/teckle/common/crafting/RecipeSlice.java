@@ -17,52 +17,28 @@
 package com.elytradev.teckle.common.crafting;
 
 import com.elytradev.teckle.common.TeckleObjects;
-import net.minecraft.block.Block;
 import net.minecraft.inventory.InventoryCrafting;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.InvWrapper;
-import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.registries.IForgeRegistryEntry;
+import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 import javax.annotation.Nonnull;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-public class RecipeSlice extends IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
+public class RecipeSlice extends ShapelessOreRecipe {
 
     public int damageToTool = 1;
-    @Nonnull
-    protected ItemStack output = ItemStack.EMPTY;
-    protected NonNullList<Object> input = NonNullList.create();
 
     public RecipeSlice(@Nonnull ItemStack result, int damageToTool, Object... recipe) {
-        output = result.copy();
+        super(null, result, recipe);
+        this.output = result.copy();
         this.damageToTool = damageToTool;
-        for (Object in : recipe) {
-            if (in instanceof ItemStack) {
-                input.add(((ItemStack) in).copy());
-            } else if (in instanceof Item) {
-                input.add(new ItemStack((Item) in));
-            } else if (in instanceof Block) {
-                input.add(new ItemStack((Block) in));
-            } else if (in instanceof String) {
-                input.add(OreDictionary.getOres((String) in));
-            } else {
-                String ret = "Invalid shapeless ore recipe: ";
-                for (Object tmp : recipe) {
-                    ret += tmp + ", ";
-                }
-                ret += output;
-                throw new RuntimeException(ret);
-            }
-        }
     }
 
     @Override
@@ -101,7 +77,7 @@ public class RecipeSlice extends IForgeRegistryEntry.Impl<IRecipe> implements IR
     }
 
     private NonNullList getConsumed(InventoryCrafting inv) {
-        NonNullList<Object> required = NonNullList.create();
+        NonNullList<Ingredient> required = NonNullList.create();
         NonNullList<ItemStack> consumed = NonNullList.create();
         required.addAll(input);
         boolean hasSlicer = false;
@@ -121,28 +97,14 @@ public class RecipeSlice extends IForgeRegistryEntry.Impl<IRecipe> implements IR
                         inRecipe = true;
                 }
 
-                Iterator<Object> req = required.iterator();
+                Iterator<Ingredient> req = required.iterator();
 
                 while (req.hasNext()) {
-                    boolean match = false;
-
-                    Object next = req.next();
-
-                    if (next instanceof ItemStack) {
-                        match = OreDictionary.itemMatches((ItemStack) next, slot, false);
-                        if (match) {
-                            consumed.add(slot.copy());
-                        }
-                    } else if (next instanceof List) {
-                        Iterator<ItemStack> itr = ((List<ItemStack>) next).iterator();
-                        while (itr.hasNext() && !match) {
-                            match = OreDictionary.itemMatches(itr.next(), slot, false);
-                            if (match) {
-                                consumed.add(slot.copy());
-                            }
-                        }
+                    Ingredient next = req.next();
+                    boolean match = next.apply(slot);
+                    if (match) {
+                        consumed.add(slot.copy());
                     }
-
                     if (match) {
                         inRecipe = true;
                         required.remove(next);
@@ -204,5 +166,14 @@ public class RecipeSlice extends IForgeRegistryEntry.Impl<IRecipe> implements IR
         }
 
         return remaining;
+    }
+
+    @Nonnull
+    @Override
+    public NonNullList<Ingredient> getIngredients() {
+        NonNullList<Ingredient> ingredients = super.getIngredients();
+        if (ingredients.stream().noneMatch(i -> i.test(TeckleObjects.itemBlade.getDefaultInstance())))
+            ingredients.add(0, Ingredient.fromItem(TeckleObjects.itemBlade));
+        return ingredients;
     }
 }
