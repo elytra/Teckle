@@ -38,6 +38,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -97,6 +98,14 @@ public class TeckleObjects {
     }
 
     public void postInit(FMLPostInitializationEvent e) {
+        // Crash if there's missing ores.
+        boolean foundMatchingOre = !OreDictionary.getOres("ingotSilver").isEmpty();
+        foundMatchingOre = foundMatchingOre && !OreDictionary.getOres("ingotTin").isEmpty();
+        foundMatchingOre = foundMatchingOre && !OreDictionary.getOres("ingotCopper").isEmpty();
+        if (!foundMatchingOre && !TeckleMod.INDEV) {
+            TeckleMod.LOG.error("Teckle is missing ores, Tin, Silver, and Copper must be present to run. The game will now exit.");
+            FMLCommonHandler.instance().exitJava(1, false);
+        }
     }
 
     @SubscribeEvent
