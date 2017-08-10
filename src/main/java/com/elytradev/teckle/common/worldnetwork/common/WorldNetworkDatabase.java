@@ -84,7 +84,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
         if (e.phase.equals(TickEvent.Phase.START) || e.side.isClient())
             return;
 
-        DIMENSION_DATABASES.get(e.world.provider.getDimension()).onTick(e);
+        getNetworkDB(e.world).onTick(e);
     }
 
     /**
