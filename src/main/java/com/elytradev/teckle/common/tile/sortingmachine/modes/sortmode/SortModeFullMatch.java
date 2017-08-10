@@ -414,8 +414,11 @@ public class SortModeFullMatch extends SortMode {
         }
 
         coolDown = 5;
-        if (!sortingMachine.getPullMode().isPaused())
+        if (!sortingMachine.getPullMode().isPaused()) {
             return;
+        } else if (selectorPosition < 0) {
+            sortingMachine.getPullMode().unpause();
+        }
 
         List<SlotData> stacksToPush = sortingMachine.getStacksToPush(false);
         if (stacksToPush.isEmpty()) {
