@@ -395,7 +395,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             filterData.deserializeNBT(compound.getCompoundTag("filterData"));
             buffer.deserializeNBT(compound.getCompoundTag("buffer"));
-            UUID networkID = compound.getUniqueId("networkID");
+            UUID networkID = compound.hasKey("networkID") ? compound.getUniqueId("networkID") : null;
             int dimID = compound.getInteger("databaseID");
             if (networkID == null) {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
