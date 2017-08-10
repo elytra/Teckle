@@ -326,7 +326,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         cachedFace = EnumFacing.values()[compound.getInteger("cachedFace")];
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            UUID networkID = compound.getUniqueId("networkID");
+            UUID networkID = compound.hasKey("networkID") ? compound.getUniqueId("networkID") : null;
             int dimID = compound.getInteger("databaseID");
             if (networkID == null) {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);

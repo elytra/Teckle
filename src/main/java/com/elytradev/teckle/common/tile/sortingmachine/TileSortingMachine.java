@@ -340,7 +340,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
                 returnedTravellers.set(i, deserializedTraveller);
             }
 
-            UUID networkID = compound.getUniqueId("networkIDEntryPoint");
+            UUID networkID = compound.hasKey("networkIDEntryPoint") ? compound.getUniqueId("networkIDEntryPoint") : null;
             int dimID = compound.getInteger("databaseID");
             if (networkID == null) {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
