@@ -159,6 +159,11 @@ public class WorldNetwork implements IWorldNetwork {
     }
 
     @Override
+    public boolean isNodePresent(BlockPos nodePosition, EnumFacing facing) {
+        return getNodeContainersAtPosition(nodePosition).stream().map(NodeContainer::getFacing).anyMatch(nF -> faceMatches(facing, nF));
+    }
+
+    @Override
     public Stream<NodeContainer> nodeStream() {
         return networkNodes.values().stream().flatMap(positionData -> positionData.getNodeContainers(getNetworkID()).stream());
     }

@@ -85,6 +85,8 @@ public interface IWorldNetwork extends INBTSerializable<NBTTagCompound>, ITickab
      */
     boolean isNodePresent(BlockPos nodePosition);
 
+    boolean isNodePresent(BlockPos nodePosition, EnumFacing facing);
+
     /**
      * Creates a stream of all the nodes in the network
      *
