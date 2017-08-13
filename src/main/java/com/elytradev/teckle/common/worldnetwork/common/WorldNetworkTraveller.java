@@ -108,9 +108,9 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
             for (EnumFacing direction : EnumFacing.VALUES) {
                 BlockPos neighbourPos = pathNode.realNode.position.add(direction.getDirectionVec());
-                if (!network.isNodePresent(neighbourPos) ||
+                if (!network.isNodePresent(neighbourPos, direction.getOpposite()) ||
                         iteratedPositions.contains(neighbourPos) ||
-                        (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite()))) {
+                        endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())) {
                     continue;
                 }
                 WorldNetworkNode neighbourNode = network.getNode(neighbourPos, direction.getOpposite());
@@ -156,9 +156,9 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                     PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
                     for (EnumFacing direction : EnumFacing.VALUES) {
                         BlockPos neighbourPos = pathNode.realNode.position.add(direction.getDirectionVec());
-                        if ((!network.isNodePresent(neighbourPos) ||
+                        if (!network.isNodePresent(neighbourPos, direction.getOpposite()) ||
                                 iteratedPositions.contains(neighbourPos) ||
-                                (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())))) {
+                                endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())) {
                             continue;
                         }
 
@@ -222,7 +222,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                 BlockPos neighbourPos = pathNode.realNode.position.add(direction.getDirectionVec());
                 if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(entryPoint.position) ||
                         iteratedPositions.contains(neighbourPos) ||
-                        (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite()))) {
+                        endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())) {
                     continue;
                 }
 
@@ -362,7 +362,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             return;
 
         if (travelledDistance >= 0.5F) {
-            if (!network.isNodePresent(nextNode.position) || (!nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector()))) {
+            if (!network.isNodePresent(nextNode.position) || !nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector())) {
                 EnumFacing injectionFace = getFacingFromVector(activePath.getEnd().realNode.position.subtract(activePath.getEnd().from.realNode.position)).getOpposite();
                 triedEndpoints.add(new Tuple<>(activePath.getEnd().realNode, injectionFace));
                 previousNode.unregisterTraveller(this);
@@ -420,7 +420,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             }
         }
 
-        travelledDistance += (1F / 10F);
+        travelledDistance += 1F / 10F;
     }
 
     public void quickRepath() {
