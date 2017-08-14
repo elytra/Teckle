@@ -43,4 +43,8 @@ public class TeckleLog {
     public void info(String s, Object... o) {
         LOG.info(s, o);
     }
+
+    public void warn(String s, Object... o) {
+        LOG.warn(s, o);
+    }
 }

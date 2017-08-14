@@ -18,7 +18,7 @@ package com.elytradev.teckle.common.tile;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
-import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.impl.ItemNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.common.TeckleMod;
@@ -119,7 +119,7 @@ public class TileItemTube extends TileNetworkMember {
 
                 if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos(), capabilityFace)) {
                     if (!getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
-                        IWorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
+                        WorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
                         getNode().getNetwork().registerNode(neighbourNetworkTile.createNode(getNode().getNetwork(), neighbourTile.getPos()));
                         neighbourNetworkTile.setNode(getNode().getNetwork().getNode(neighbourTile.getPos(), neighbourNetworkTile.getCapabilityFace()));
                     }

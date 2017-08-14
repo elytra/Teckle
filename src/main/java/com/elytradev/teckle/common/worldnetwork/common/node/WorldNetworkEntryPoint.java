@@ -17,7 +17,7 @@
 package com.elytradev.teckle.common.worldnetwork.common.node;
 
 import com.elytradev.teckle.api.IWorldNetwork;
-import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.common.network.messages.TravellerDataMessage;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.nbt.NBTTagCompound;
@@ -32,7 +32,7 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
     public WorldNetworkEndpoint endpoint = new WorldNetworkEndpoint(getNetwork(), position, getCapabilityFace()) {
         @Override
         public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {
-            IWorldNetworkTile networkTile = WorldNetworkEntryPoint.this.getNetworkTile();
+            WorldNetworkTile networkTile = WorldNetworkEntryPoint.this.getNetworkTile();
             networkTile.acceptReturn(traveller, from);
             return true;
         }

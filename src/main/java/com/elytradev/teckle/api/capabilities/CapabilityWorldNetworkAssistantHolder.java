@@ -57,6 +57,7 @@ public class CapabilityWorldNetworkAssistantHolder {
     @SuppressWarnings({"deprecation", "unused"}) // forge docs specify using this instead...
     @SubscribeEvent
     public static void attachWorldEvent(AttachCapabilitiesEvent<World> e) {
+        TeckleMod.LOG.info("Attached assistant holder to {}", e.getObject());
         e.addCapability(CAPABILITY_PROVIDER_NAME, new ICapabilityProvider() {
             public IWorldNetworkAssistantHolder assistantHolder;
 
@@ -65,7 +66,6 @@ public class CapabilityWorldNetworkAssistantHolder {
                 if (capability == null)
                     return false;
                 return capability == NETWORK_ASSISTANT_HOLDER_CAPABILITY;
-
             }
 
             @Nullable

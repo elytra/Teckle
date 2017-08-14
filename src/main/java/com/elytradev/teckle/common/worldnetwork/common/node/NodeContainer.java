@@ -1,7 +1,7 @@
 package com.elytradev.teckle.common.worldnetwork.common.node;
 
 import com.elytradev.teckle.api.IWorldNetwork;
-import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
@@ -73,7 +73,7 @@ public class NodeContainer {
         return getNode().isLoaded();
     }
 
-    public IWorldNetworkTile getNetworkTile() {
+    public WorldNetworkTile getNetworkTile() {
         return getNode().getNetworkTile();
     }
 

@@ -1,7 +1,7 @@
 package com.elytradev.teckle.common.tile;
 
 import com.elytradev.teckle.api.IWorldNetwork;
-import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockSortingMachine;
@@ -107,7 +107,7 @@ public class TileRetriever extends TileLitNetworkMember {
             return getOutputFace();
         }
     };
-    private IWorldNetworkTile insertionTile = new NetworkTileTransporter() {
+    private WorldNetworkTile insertionTile = new NetworkTileTransporter() {
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
             return side.equals(getCapabilityFace());
