@@ -17,8 +17,7 @@
 package com.elytradev.teckle.common.worldnetwork.common;
 
 import com.elytradev.teckle.api.IWorldNetwork;
-import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
-import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.network.messages.TravellerDataMessage;
 import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
@@ -415,6 +414,8 @@ public class WorldNetwork implements IWorldNetwork {
         for (int i = 0; i < nodes.size(); i++) {
             compound.setLong("n" + i, nodes.get(i).getPos().toLong());
             compound.setInteger("nF" + i, nodes.get(i).getFacing() == null ? -1 : nodes.get(i).getFacing().getIndex());
+            // TODO: We either need to store network tiles on nodes, or store them in node containers directly and have tiles get that info vis posdata
+            compound.setTag("nT" + i, nodes.get(i).getNetworkTile().serializeNBT());
         }
 
         // Serialize travellers.
@@ -438,14 +439,10 @@ public class WorldNetwork implements IWorldNetwork {
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             BlockPos pos = BlockPos.fromLong(compound.getLong("n" + i));
             EnumFacing face = compound.getInteger("nF" + i) > -1 ? EnumFacing.values()[compound.getInteger("nF" + i)] : null;
-            IWorldNetworkTile networkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, face);
-
-            WorldNetworkNode node = null;
-            if (networkTile != null) {
-                node = networkTile.createNode(this, pos);
-            } else {
+            WorldNetworkTile networkTile = WorldNetworkTile.create(this, face, compound.getCompoundTag("nT" + i));
+            if (networkTile == null)
                 continue;
-            }
+            WorldNetworkNode node = networkTile.createNode(this, pos);
             networkTile.setNode(node);
             registerNode(node);
         }

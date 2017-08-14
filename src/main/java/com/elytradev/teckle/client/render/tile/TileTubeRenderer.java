@@ -17,7 +17,7 @@
 package com.elytradev.teckle.client.render.tile;
 
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
-import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.tile.TileItemTube;
@@ -50,7 +50,7 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
 
     @Override
     public void render(TileItemTube te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
-        IWorldNetworkTile networkTile = te.getCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, null);
+        WorldNetworkTile networkTile = te.getCapability(CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY, null);
 
         HashMap<DummyNetworkTraveller, Vec3d> colourTravellers = new HashMap<>();
 

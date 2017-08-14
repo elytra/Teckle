@@ -23,7 +23,7 @@ import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
-import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.client.gui.GuiSortingMachine;
 import com.elytradev.teckle.common.TeckleMod;
@@ -166,7 +166,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             return getOutputFace();
         }
     };
-    private IWorldNetworkTile insertionTile = new NetworkTileTransporter() {
+    private WorldNetworkTile insertionTile = new NetworkTileTransporter() {
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
             return Objects.equals(side, getCapabilityFace());
@@ -508,7 +508,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         return stacks;
     }
 
-    public IWorldNetworkTile getEjectionTile() {
+    public WorldNetworkTile getEjectionTile() {
         return ejectionTile;
     }
 
@@ -616,7 +616,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             for (EnumFacing facing : EnumFacing.VALUES) {
                 if (!CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, facing))
                     continue;
-                IWorldNetworkTile networkTileAtPosition = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
+                WorldNetworkTile networkTileAtPosition = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
                 WorldNetworkNode node = networkTileAtPosition.getNode();
                 String faceName = networkTileAtPosition.getCapabilityFace() == null ? "" : networkTileAtPosition.getCapabilityFace().getName();
                 if (node == null || nodes.contains(node))

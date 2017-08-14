@@ -22,6 +22,7 @@ import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.worldgen.NikoliteOreGenerator;
+import com.elytradev.teckle.common.worldnetwork.common.NetworkTileRegistry;
 import mcmultipart.api.multipart.IMultipartTile;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.common.MinecraftForge;
@@ -30,6 +31,7 @@ import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLInterModComms;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -86,5 +88,10 @@ public class TeckleMod {
     public void onPostInit(FMLPostInitializationEvent e) {
         OBJECTS.postInit(e);
         PROXY.registerRenderers(e.getModState());
+    }
+
+    @Mod.EventHandler
+    public void onFMLInterModCommsIMC(FMLInterModComms.IMCEvent e) {
+        NetworkTileRegistry.handleIMCEvent(e);
     }
 }

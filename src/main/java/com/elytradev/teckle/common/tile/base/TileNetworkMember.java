@@ -23,7 +23,7 @@ import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistantHolder;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
-import com.elytradev.teckle.api.capabilities.IWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -79,7 +79,7 @@ public abstract class TileNetworkMember extends TileEntity {
             for (EnumFacing facing : EnumFacing.VALUES) {
                 if (!CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, facing))
                     continue;
-                IWorldNetworkTile networkTileAtPosition = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
+                WorldNetworkTile networkTileAtPosition = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
                 WorldNetworkNode node = networkTileAtPosition.getNode();
                 String faceName = networkTileAtPosition.getCapabilityFace() == null ? "" : networkTileAtPosition.getCapabilityFace().getName();
                 if (node == null || nodes.contains(node))

@@ -18,49 +18,107 @@ package com.elytradev.teckle.api.capabilities;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
+import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.worldnetwork.common.NetworkTileRegistry;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
 import java.util.function.BiPredicate;
 
 /**
  * Used to store node data on tiles.
  */
-public interface IWorldNetworkTile {
+public abstract class WorldNetworkTile implements INBTSerializable {
+
+    protected World world;
+    protected WorldNetworkNode node;
+
+    private HashMap<NBTTagCompound, DummyNetworkTraveller> dummyTravellers = Maps.newHashMap();
+
+    /**
+     * WorldNetworkTile default constructor, you need to have a constructor with just a world parameter to properly load.
+     *
+     * @param world the world the tile resides in.
+     */
+    public WorldNetworkTile(World world) {
+        setWorld(world);
+    }
+
+    @Nullable
+    public static WorldNetworkTile create(IWorldNetwork network, EnumFacing face, NBTTagCompound serializedData) {
+        ResourceLocation id = new ResourceLocation(serializedData.getString("id"));
+        Class<? extends WorldNetworkTile> tileClazz = NetworkTileRegistry.getNetworkTile(id);
+        WorldNetworkTile createdTile = null;
+        try {
+            Constructor<? extends WorldNetworkTile> constructor = tileClazz.getConstructor(World.class);
+            createdTile = constructor.newInstance(network.getWorld());
+        } catch (NoSuchMethodException e) {
+            TeckleMod.LOG.error("Unable to find constructor with world parameter for {}, the network tile will not be created...", tileClazz.getName());
+            return null;
+        } catch (Exception e) {
+            TeckleMod.LOG.error("Failed to instantiate {}, the network tile will be skipped.", tileClazz.getName());
+            e.printStackTrace();
+            return null;
+        }
+
+        createdTile.deserializeNBT(serializedData.getCompoundTag("ImplementationData"));
+        return createdTile;
+    }
+
+    public World getWorld() {
+        return world;
+    }
+
+    public void setWorld(World world) {
+        this.world = world;
+    }
 
     /**
      * Add client traveller, used for rendering.
      *
      * @param traveller
      */
-    void addClientTraveller(DummyNetworkTraveller traveller);
+    public void addClientTraveller(DummyNetworkTraveller traveller) {
+        dummyTravellers.put(traveller.data, traveller);
+    }
 
     /**
      * Remove client traveller by data, used for rendering.
      *
      * @param data
      */
-    void removeClientTraveller(NBTTagCompound data);
+    public void removeClientTraveller(NBTTagCompound data) {
+        if (dummyTravellers.containsKey(data))
+            dummyTravellers.remove(data);
+    }
 
     /**
      * Get an immutable map of all the client travellers on this tile.
      *
      * @return a map of travellers.
      */
-    ImmutableMap<NBTTagCompound, DummyNetworkTraveller> getClientTravellers();
+    public ImmutableMap<NBTTagCompound, DummyNetworkTraveller> getClientTravellers() {
+        return ImmutableMap.copyOf(dummyTravellers);
+    }
 
     /**
      * Called after a network has been loaded from WorldSavedData, allows adding of missing nodes for endpoints and such.
      *
      * @param network
      */
-    default void networkReloaded(IWorldNetwork network) {
+    public void networkReloaded(IWorldNetwork network) {
     }
 
     /**
@@ -70,21 +128,25 @@ public interface IWorldNetworkTile {
      * @param side    the direction of the neighbour that wants to add
      * @return true if can be added false otherwise.
      */
-    boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side);
+    public abstract boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side);
 
     /**
      * Get the current node stored in this object.
      *
      * @return
      */
-    WorldNetworkNode getNode();
+    public WorldNetworkNode getNode() {
+        return this.node;
+    }
 
     /**
      * Set the stored node of this tile.
      *
      * @param node the node to set to.
      */
-    void setNode(WorldNetworkNode node);
+    public void setNode(WorldNetworkNode node) {
+        this.node = node;
+    }
 
     /**
      * Create a new node for the given network, should ALWAYS be a new instance.
@@ -92,7 +154,7 @@ public interface IWorldNetworkTile {
      * @param network the network to create the node for.
      * @return a new node.
      */
-    WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos);
+    public abstract WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos);
 
     /**
      * Check if the tile can accept a given traveller, DO NOT forward to your node.
@@ -102,7 +164,7 @@ public interface IWorldNetworkTile {
      * @param from      the direction the traveller is coming from
      * @return true if accepted, false otherwise.
      */
-    boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from);
+    public abstract boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from);
 
     /**
      * Can this node be connected to from the given side?
@@ -110,13 +172,13 @@ public interface IWorldNetworkTile {
      * @param side the side to connect to.
      * @return true if connections are possible, false otherwise.
      */
-    boolean canConnectTo(EnumFacing side);
+    public abstract boolean canConnectTo(EnumFacing side);
 
     /**
      * Use to determine if a traveller can enter from the specified face when the tile is not loaded.
      * Set on node creation.
      */
-    default BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate() {
+    public BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate() {
         return (t, t2) -> false;
     }
 
@@ -127,7 +189,7 @@ public interface IWorldNetworkTile {
      * @param traveller
      * @param side
      */
-    default void acceptReturn(WorldNetworkTraveller traveller, EnumFacing side) {
+    public void acceptReturn(WorldNetworkTraveller traveller, EnumFacing side) {
     }
 
     /**
@@ -135,7 +197,7 @@ public interface IWorldNetworkTile {
      *
      * @return true to listen for changes, false if no changes are received.
      */
-    default boolean listenToNetworkChange() {
+    public boolean listenToNetworkChange() {
         return false;
     }
 
@@ -144,7 +206,7 @@ public interface IWorldNetworkTile {
      *
      * @param addedNode the node that was added.
      */
-    default void onNodeAdded(WorldNetworkNode addedNode) {
+    public void onNodeAdded(WorldNetworkNode addedNode) {
     }
 
     /**
@@ -152,7 +214,7 @@ public interface IWorldNetworkTile {
      *
      * @param removedNode the node that was removed.
      */
-    default void onNodeRemoved(WorldNetworkNode removedNode) {
+    public void onNodeRemoved(WorldNetworkNode removedNode) {
     }
 
     /**
@@ -161,7 +223,7 @@ public interface IWorldNetworkTile {
      * @return the output face of the tile, null if this doesn't output.
      */
     @Nullable
-    default EnumFacing getOutputFace() {
+    public EnumFacing getOutputFace() {
         return null;
     }
 
@@ -170,7 +232,7 @@ public interface IWorldNetworkTile {
      *
      * @return the face used to get this tile from a capability
      */
-    default EnumFacing getCapabilityFace() {
+    public EnumFacing getCapabilityFace() {
         return null;
     }
 
@@ -179,7 +241,14 @@ public interface IWorldNetworkTile {
      *
      * @return the tile entity at this position.
      */
-    default TileEntity getTileEntity() {
-        return this.getNode().getNetwork().getWorld().getTileEntity(getNode().position);
+    public TileEntity getTileEntity() {
+        return getWorld().getTileEntity(getNode().position);
     }
+
+    public NBTTagCompound serializeData(NBTTagCompound tag) {
+        tag.setString("id", NetworkTileRegistry.getNetworkTileName(this.getClass()).toString());
+        tag.setTag("ImplementationData", serializeNBT());
+        return tag;
+    }
+
 }

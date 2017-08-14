@@ -31,18 +31,18 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 
 public class CapabilityWorldNetworkTile {
 
-    @CapabilityInject(IWorldNetworkTile.class)
-    public static Capability<IWorldNetworkTile> NETWORK_TILE_CAPABILITY = null;
+    @CapabilityInject(WorldNetworkTile.class)
+    public static Capability<WorldNetworkTile> NETWORK_TILE_CAPABILITY = null;
 
     public static void register() {
-        CapabilityManager.INSTANCE.register(IWorldNetworkTile.class, new Capability.IStorage<IWorldNetworkTile>() {
+        CapabilityManager.INSTANCE.register(WorldNetworkTile.class, new Capability.IStorage<WorldNetworkTile>() {
                     @Override
-                    public NBTBase writeNBT(Capability<IWorldNetworkTile> capability, IWorldNetworkTile instance, EnumFacing side) {
+                    public NBTBase writeNBT(Capability<WorldNetworkTile> capability, WorldNetworkTile instance, EnumFacing side) {
                         return new NBTTagCompound();
                     }
 
                     @Override
-                    public void readNBT(Capability<IWorldNetworkTile> capability, IWorldNetworkTile instance, EnumFacing side, NBTBase base) {
+                    public void readNBT(Capability<WorldNetworkTile> capability, WorldNetworkTile instance, EnumFacing side, NBTBase base) {
                     }
                 },
                 () -> new NetworkTileTransporter() {
@@ -86,19 +86,19 @@ public class CapabilityWorldNetworkTile {
         return isTileNetworked(tileEntity, null);
     }
 
-    public static IWorldNetworkTile getTileNetworked(TileEntity tileEntity) {
+    public static WorldNetworkTile getTileNetworked(TileEntity tileEntity) {
         return getTileNetworked(tileEntity, null);
     }
 
-    public static IWorldNetworkTile getTileNetworked(TileEntity tileEntity, EnumFacing face) {
+    public static WorldNetworkTile getTileNetworked(TileEntity tileEntity, EnumFacing face) {
         return tileEntity.getCapability(NETWORK_TILE_CAPABILITY, face);
     }
 
-    public static IWorldNetworkTile getNetworkTileAtPosition(IBlockAccess world, BlockPos pos) {
+    public static WorldNetworkTile getNetworkTileAtPosition(IBlockAccess world, BlockPos pos) {
         return getNetworkTileAtPosition(world, pos, null);
     }
 
-    public static IWorldNetworkTile getNetworkTileAtPosition(IBlockAccess world, BlockPos pos, EnumFacing face) {
+    public static WorldNetworkTile getNetworkTileAtPosition(IBlockAccess world, BlockPos pos, EnumFacing face) {
         return world.getTileEntity(pos).getCapability(NETWORK_TILE_CAPABILITY, face);
     }
 
