@@ -146,7 +146,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             WorldNetworkPath lastPath = this.activePath;
             triedEndpoints.clear();
             genPath(false);
-            if (this.activePath.equals(lastPath)) {
+            if (Objects.equals(this.activePath, lastPath)) {
                 nodeStack = new ArrayList<>();
                 iteratedPositions = new ArrayList<>();
                 endpoints = new HashMap<>();
