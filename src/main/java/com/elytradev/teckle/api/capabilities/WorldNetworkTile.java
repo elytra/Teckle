@@ -44,6 +44,7 @@ public abstract class WorldNetworkTile implements INBTSerializable {
 
     protected World world;
     protected WorldNetworkNode node;
+    protected BlockPos pos;
 
     private HashMap<NBTTagCompound, DummyNetworkTraveller> dummyTravellers = Maps.newHashMap();
 
@@ -72,8 +73,7 @@ public abstract class WorldNetworkTile implements INBTSerializable {
             e.printStackTrace();
             return null;
         }
-
-        createdTile.deserializeNBT(serializedData.getCompoundTag("ImplementationData"));
+        createdTile.deserializeData(serializedData);
         return createdTile;
     }
 
@@ -247,8 +247,14 @@ public abstract class WorldNetworkTile implements INBTSerializable {
 
     public NBTTagCompound serializeData(NBTTagCompound tag) {
         tag.setString("id", NetworkTileRegistry.getNetworkTileName(this.getClass()).toString());
+        tag.setLong("pos", pos.toLong());
         tag.setTag("ImplementationData", serializeNBT());
         return tag;
+    }
+
+    public void deserializeData(NBTTagCompound tag) {
+        this.pos = BlockPos.fromLong(tag.getLong("pos"));
+        this.deserializeNBT(tag.getTag("ImplementationData"));
     }
 
 }

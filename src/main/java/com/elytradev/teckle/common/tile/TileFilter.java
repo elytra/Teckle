@@ -22,15 +22,16 @@ import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
-import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.client.gui.GuiFilter;
 import com.elytradev.teckle.common.TeckleMod;
-import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.container.ContainerFilter;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
+import com.elytradev.teckle.common.tile.networktiles.NetworkTileFilter;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
@@ -74,110 +75,36 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
 
     public EnumFacing cachedFace = EnumFacing.DOWN;
     public EnumDyeColor colour = null;
-    public AdvancedItemStackHandler filterData = new AdvancedItemStackHandler(9);
-    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
-    private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
-        @Override
-        public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
-        }
-
-        @Override
-        public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return Objects.equals(side, getOutputFace());
-        }
-
-        @Override
-        public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-            if (Objects.equals(traveller.getEntryPoint().position, TileFilter.this.pos))
-                return true;
-
-            if (Objects.equals(from, getOutputFace().getOpposite()) && !TileFilter.this.isPowered()) {
-                // Allows use of filters for filtering items already in tubes. Not really a good reason to do this but it was possible in RP2 so it's possible in Teckle.
-                ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
-                boolean foundNonEmptySlot = false;
-                boolean colourMatches = !traveller.data.hasKey("colour");
-                if (!colourMatches) {
-                    if (TileFilter.this.colour == null) {
-                        colourMatches = true;
-                    } else {
-                        colourMatches = Objects.equals(TileFilter.this.colour, EnumDyeColor.byMetadata(traveller.data.getInteger("colour")));
-                    }
-                }
-
-                if (!colourMatches)
-                    return false;
-
-                for (int i = 0; i < filterData.getSlots(); i++) {
-                    if (!filterData.getStackInSlot(i).isEmpty()) {
-                        foundNonEmptySlot = true;
-
-                        if (filterData.getStackInSlot(i).isItemEqualIgnoreDurability(travellerStack)) {
-                            return true;
-                        }
-                    }
-                }
-
-                return !foundNonEmptySlot;
-            }
-            return false;
-        }
-
-        @Override
-        public boolean canConnectTo(EnumFacing side) {
-            return side.equals(getOutputFace()) || side.getOpposite().equals(getOutputFace());
-        }
-
-        @Override
-        public EnumFacing getOutputFace() {
-            if (world != null) {
-                IBlockState thisState = world.getBlockState(pos);
-                if (Objects.equals(thisState.getBlock(), TeckleObjects.blockFilter)) {
-                    return thisState.getValue(BlockFilter.FACING);
-                }
-            }
-
-            return cachedFace;
-        }
-
-        @Override
-        public void acceptReturn(WorldNetworkTraveller traveller, EnumFacing side) {
-            if (!traveller.data.hasKey("stack"))
-                return; // wtf am I supposed to do with this???
-
-            ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
-            EnumFacing facing = getOutputFace();
-            BlockPos sourcePos = pos.offset(facing);
-
-            // Try and put it back where we found it.
-            if (Objects.equals(side, getOutputFace())) {
-                if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
-                    TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
-                    if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
-                        IItemHandler itemHandler = pushTo.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
-                        for (int slot = 0; slot < itemHandler.getSlots() && !stack.isEmpty(); slot++) {
-                            stack = itemHandler.insertItem(slot, stack, false);
-                        }
-                    }
-                }
-            }
-            if (!stack.isEmpty()) {
-                ItemStack remaining = stack.copy();
-                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                    remaining = buffer.insertItem(i, remaining, false);
-                }
-
-                // Spawn into the world I guess.
-                if (!remaining.isEmpty()) {
-                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
-                }
-            }
-        }
-    };
+    public UUID filterID, bufferID;
+    public AdvancedStackHandlerEntry filterData, bufferData;
+    private NetworkTileFilter networkTile = new NetworkTileFilter(world);
 
     private int cooldown = 0;
+
+    @Override
+    public void validate() {
+        if (filterID == null) {
+            if (filterData == null) {
+                filterData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(9));
+            }
+            filterID = filterData.getId();
+        } else {
+            filterData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(filterID);
+        }
+        if (bufferID == null) {
+            if (bufferData == null) {
+                bufferData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(9));
+            }
+            bufferID = bufferData.getId();
+        } else {
+            bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
+        }
+
+        this.networkTile.filterData = this.filterData;
+        this.networkTile.bufferData = this.bufferData;
+        this.networkTile.filterID = this.filterID;
+        this.networkTile.bufferID = this.bufferID;
+    }
 
     @Nullable
     @Override
@@ -271,8 +198,8 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         ItemStack remaining = networkAssistant.insertData(thisNode, potentialInsertionTile.getPos(), extractionData, additionalData, false, false).copy();
 
         if (!remaining.isEmpty()) {
-            for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                remaining = buffer.insertItem(i, remaining, false);
+            for (int i = 0; i < bufferData.getHandler().getSlots() && !remaining.isEmpty(); i++) {
+                remaining = bufferData.getHandler().insertItem(i, remaining, false);
             }
 
             if (!remaining.isEmpty()) {
@@ -290,15 +217,15 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
 
         // Check if the buffer is empty first...
         int bufferSlot = -1;
-        for (int i = 0; i < buffer.getSlots(); i++) {
-            if (!buffer.getStackInSlot(i).isEmpty()) {
+        for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {
+            if (!bufferData.getHandler().getStackInSlot(i).isEmpty()) {
                 bufferSlot = i;
                 break;
             }
         }
 
         if (bufferSlot != -1) {
-            extractionData = buffer.extractItem(bufferSlot, 8, false);
+            extractionData = bufferData.getHandler().extractItem(bufferSlot, 8, false);
         } else {
             if (world.getTileEntity(pos.offset(facing.getOpposite())) != null && world.getTileEntity(pos.offset(facing.getOpposite()))
                     .hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
@@ -306,8 +233,8 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                         .getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
 
 
-                if (filterData.stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
-                    for (ItemStack stack : filterData.getStacks()) {
+                if (filterData.getHandler().stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
+                    for (ItemStack stack : filterData.getHandler().getStacks()) {
                         if (!extractionData.isEmpty())
                             break;
                         if (stack.isEmpty())
@@ -359,8 +286,8 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
             for (EntityItem entityItem : itemsToPickup) {
                 ItemStack entityStack = entityItem.getItem().copy();
 
-                for (int i = 0; i < buffer.getSlots() && !entityStack.isEmpty(); i++) {
-                    entityStack = buffer.insertItem(i, entityStack, false);
+                for (int i = 0; i < bufferData.getHandler().getSlots() && !entityStack.isEmpty(); i++) {
+                    entityStack = bufferData.getHandler().insertItem(i, entityStack, false);
                 }
 
                 entityItem.setItem(entityStack);
@@ -376,8 +303,8 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
     }
 
     public boolean canFitItemsInBuffer() {
-        for (int i = 0; i < buffer.getSlots(); i++) {
-            if (buffer.getStackInSlot(i).isEmpty() || buffer.getStackInSlot(i).getCount() < buffer.getSlotLimit(i)) {
+        for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {
+            if (bufferData.getHandler().getStackInSlot(i).isEmpty() || bufferData.getHandler().getStackInSlot(i).getCount() < bufferData.getHandler().getSlotLimit(i)) {
                 return true;
             }
         }
@@ -386,17 +313,28 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
+    public void readFromNBT(NBTTagCompound tag) {
+        super.readFromNBT(tag);
 
-        this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
-        this.cachedFace = EnumFacing.values()[compound.getInteger("cachedFace")];
+        this.colour = !tag.hasKey("colour") ? null : EnumDyeColor.byMetadata(tag.getInteger("colour"));
+        this.cachedFace = EnumFacing.values()[tag.getInteger("cachedFace")];
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            filterData.deserializeNBT(compound.getCompoundTag("filterData"));
-            buffer.deserializeNBT(compound.getCompoundTag("buffer"));
-            UUID networkID = compound.hasKey("networkID") ? compound.getUniqueId("networkID") : null;
-            int dimID = compound.getInteger("databaseID");
+            if (tag.hasKey("filterData")) {
+                validate();
+                filterData.getHandler().deserializeNBT(tag.getCompoundTag("filterData"));
+                bufferData.getHandler().deserializeNBT(tag.getCompoundTag("buffer"));
+                tag.removeTag("filterData");
+                tag.removeTag("buffer");
+            } else {
+                this.bufferID = tag.getUniqueId("buffer");
+                this.filterID = tag.getUniqueId("filter");
+                this.bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
+                this.filterData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(filterID);
+            }
+
+            UUID networkID = tag.hasKey("networkID") ? tag.getUniqueId("networkID") : null;
+            int dimID = tag.getInteger("databaseID");
             if (networkID == null) {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
             } else {
@@ -424,23 +362,23 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+    public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         if (colour != null) {
-            compound.setInteger("colour", colour.getMetadata());
+            tag.setInteger("colour", colour.getMetadata());
         } else {
-            compound.removeTag("colour");
+            tag.removeTag("colour");
         }
-        compound.setTag("filterData", filterData.serializeNBT());
-        compound.setTag("buffer", buffer.serializeNBT());
-        compound.setInteger("cachedFace", networkTile.getOutputFace().getIndex());
+        tag.setUniqueId("buffer", bufferID);
+        tag.setUniqueId("filter", filterID);
+        tag.setInteger("cachedFace", networkTile.getOutputFace().getIndex());
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            compound.setInteger("databaseID", getWorld().provider.getDimension());
+            tag.setInteger("databaseID", getWorld().provider.getDimension());
             if (networkTile.getNode() == null)
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-            compound.setUniqueId("networkID", networkTile.getNode().getNetwork().getNetworkID());
+            tag.setUniqueId("networkID", networkTile.getNode().getNetwork().getNetworkID());
         }
-        return super.writeToNBT(compound);
+        return super.writeToNBT(tag);
     }
 
     public List<EntityItem> getItemsInBlockPos(BlockPos pos) {
@@ -472,6 +410,19 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
     }
 
     @Override
+    public void setWorld(World worldIn) {
+        super.setWorld(worldIn);
+        networkTile.setWorld(worldIn);
+    }
+
+    @Override
+    protected void setWorldCreate(World worldIn) {
+        super.setWorldCreate(worldIn);
+        // Mojang's method doesnt do this because they were drunk or something idk.
+        setWorld(worldIn);
+    }
+
+    @Override
     public Object getServerElement(EntityPlayer player) {
         return new ContainerFilter(this, player);
     }
@@ -489,15 +440,15 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
     private final class ProbeCapability implements IProbeDataProvider {
         @Override
         public void provideProbeData(List<IProbeData> data) {
-            if (networkTile.node == null)
+            if (networkTile.getNode() == null)
                 return;
 
             if (TeckleMod.INDEV)
                 data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", networkTile.getNode().getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
 
             List<ItemStack> stacks = new ArrayList<>();
-            for (int i = 0; i < buffer.getSlots(); i++) {
-                stacks.add(buffer.getStackInSlot(i));
+            for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {
+                stacks.add(bufferData.getHandler().getStackInSlot(i));
             }
 
             ProbeData probeData = new ProbeData(new TextComponentTranslation("tooltip.teckle.filter.buffer")).withInventory(ImmutableList.copyOf(stacks));

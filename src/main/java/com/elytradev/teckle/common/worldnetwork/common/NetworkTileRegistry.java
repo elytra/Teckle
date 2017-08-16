@@ -5,7 +5,10 @@ import com.elytradev.teckle.common.TeckleMod;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.RegistryNamespaced;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.common.event.FMLInterModComms;
+
+import java.util.Objects;
 
 /**
  * Handles all code related to the registration of Network Tiles, IMCs are forwarded here to be handled.
@@ -17,7 +20,8 @@ public class NetworkTileRegistry {
 
     public static void handleIMCEvent(FMLInterModComms.IMCEvent e) {
         for (FMLInterModComms.IMCMessage msg : e.getMessages()) {
-            parseIMCMessage(msg);
+            if (msg.isNBTMessage() && Objects.equals(msg.getNBTValue().getString("type"), "RegisterTile"))
+                parseIMCMessage(msg);
         }
     }
 
@@ -36,6 +40,11 @@ public class NetworkTileRegistry {
             TeckleMod.LOG.error("Failed to get class for network tile with name {}", receivedData.getString("class"));
             exception.printStackTrace();
             return;
+        }
+        try {
+            tileClass.getConstructor(World.class);
+        } catch (NoSuchMethodException e) {
+            TeckleMod.LOG.error("Tried to register a world network tile via IMC but received a class that does not have a constructor matching (World), it will be skipped. Mod: {}, Class: {}", msg.getSender(), tileClass.getName());
         }
         if (!WorldNetworkTile.class.isAssignableFrom(tileClass)) {
             TeckleMod.LOG.error("Tried to register a world network tile via IMC but received a class that does not extend WorldNetworkTile, it will be skipped. Mod: {}, Class: {}", msg.getSender(), tileClass.getName());

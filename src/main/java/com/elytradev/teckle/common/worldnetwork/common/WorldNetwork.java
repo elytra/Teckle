@@ -414,8 +414,11 @@ public class WorldNetwork implements IWorldNetwork {
         for (int i = 0; i < nodes.size(); i++) {
             compound.setLong("n" + i, nodes.get(i).getPos().toLong());
             compound.setInteger("nF" + i, nodes.get(i).getFacing() == null ? -1 : nodes.get(i).getFacing().getIndex());
-            // TODO: We either need to store network tiles on nodes, or store them in node containers directly and have tiles get that info vis posdata
-            compound.setTag("nT" + i, nodes.get(i).getNetworkTile().serializeNBT());
+            if (nodes.get(i).getNetworkTile() != null) {
+                compound.setTag("nT" + i, nodes.get(i).getNetworkTile().serializeData(new NBTTagCompound()));
+            } else {
+                compound.setTag("nN" + i, nodes.get(i).getNode().serializeNBT());
+            }
         }
 
         // Serialize travellers.
@@ -439,12 +442,18 @@ public class WorldNetwork implements IWorldNetwork {
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             BlockPos pos = BlockPos.fromLong(compound.getLong("n" + i));
             EnumFacing face = compound.getInteger("nF" + i) > -1 ? EnumFacing.values()[compound.getInteger("nF" + i)] : null;
-            WorldNetworkTile networkTile = WorldNetworkTile.create(this, face, compound.getCompoundTag("nT" + i));
-            if (networkTile == null)
-                continue;
-            WorldNetworkNode node = networkTile.createNode(this, pos);
-            networkTile.setNode(node);
-            registerNode(node);
+            WorldNetworkNode node = null;
+            if (compound.hasKey("nT" + i)) {
+                WorldNetworkTile networkTile = WorldNetworkTile.create(this, face, compound.getCompoundTag("nT" + i));
+                if (networkTile == null)
+                    continue;
+                node = networkTile.createNode(this, pos);
+                networkTile.setNode(node);
+            } else if (compound.hasKey("nN" + i)) {
+                node = WorldNetworkNode.create(this, pos, face, compound.getCompoundTag("nN" + i));
+            }
+            if (node != null)
+                registerNode(node);
         }
 
         List<WorldNetworkTraveller> deserializedTravellers = new ArrayList<>();
