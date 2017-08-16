@@ -1,30 +1,16 @@
 package com.elytradev.teckle.common.tile;
 
-import com.elytradev.teckle.api.IWorldNetwork;
-import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
-import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
-import com.elytradev.teckle.common.TeckleObjects;
-import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
-import com.elytradev.teckle.common.tile.sortingmachine.SortingMachineEndpoint;
-import com.elytradev.teckle.common.worldnetwork.common.DropActions;
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
-import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
-import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
-import com.elytradev.teckle.common.worldnetwork.common.pathing.EndpointData;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.PathNode;
 import com.google.common.collect.TreeMultiset;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
-import java.util.*;
+import java.util.Comparator;
 
 public class TileRetriever extends TileLitNetworkMember {
 
