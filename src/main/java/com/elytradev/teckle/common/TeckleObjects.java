@@ -26,7 +26,10 @@ import com.elytradev.teckle.common.item.ItemIngot;
 import com.elytradev.teckle.common.item.ItemPaintbrush;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.tile.*;
+import com.elytradev.teckle.common.tile.networktiles.NetworkTileFilter;
+import com.elytradev.teckle.common.tile.networktiles.NetworkTileItemTube;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import com.elytradev.teckle.common.worldnetwork.common.NetworkTileRegistry;
 import com.elytradev.teckle.common.worldnetwork.common.node.NetworkNodeRegistry;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import net.minecraft.block.Block;
@@ -43,6 +46,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.OreDictionary;
@@ -90,6 +94,11 @@ public class TeckleObjects {
     private static List<Item> itemBlocksToRegister;
     private int recipeID = 0;
 
+    public void preInit(FMLPreInitializationEvent e) {
+        NetworkTileRegistry.setup();
+        NetworkNodeRegistry.setup();
+    }
+
     public void init(FMLInitializationEvent e) {
         GameRegistry.registerTileEntity(TileItemTube.class, "teckleItemTube");
         GameRegistry.registerTileEntity(TileFilter.class, "teckleFilter");
@@ -98,7 +107,9 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileFabricator.class, "teckleFabricator");
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
 
-        NetworkNodeRegistry.registerNetworkNode(new ResourceLocation("teckle", "itemendpoint"), ItemNetworkEndpoint.class);
+        NetworkTileRegistry.registerNetworkTile("teckle", "itemTube", NetworkTileItemTube.class);
+        NetworkTileRegistry.registerNetworkTile("teckle", "filter", NetworkTileFilter.class);
+        NetworkNodeRegistry.registerNetworkNode("teckle", "itemendpoint", ItemNetworkEndpoint.class);
     }
 
     public void postInit(FMLPostInitializationEvent e) {

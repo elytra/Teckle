@@ -58,6 +58,7 @@ public class MultipartTube implements IMultipart {
             if (tube.getNetworkTile() != null && tube.getNetworkTile().getNode() != null && tube.getNetworkTile().getNode().getNetwork() != null) {
                 tube.getNetworkTile().getNode().getNetwork().validateNetwork();
             }
+            tube.getNetworkTile().calculateBlockedFaces();
         }
     }
 

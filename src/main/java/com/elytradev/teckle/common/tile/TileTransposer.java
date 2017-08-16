@@ -64,7 +64,17 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
     public EnumFacing cachedFace = EnumFacing.DOWN;
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
-    private NetworkTileTransporter networkTile = new NetworkTileTransporter() {
+    private NetworkTileTransporter networkTile = new NetworkTileTransporter(null) {
+        @Override
+        public NBTTagCompound serializeNBT() {
+            return null;
+        }
+
+        @Override
+        public void deserializeNBT(NBTTagCompound nbt) {
+
+        }
+
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
             return Objects.equals(side, getOutputFace());

@@ -73,4 +73,8 @@ public class NetworkNodeRegistry {
     public static ResourceLocation getNetworkNodeName(Class<? extends WorldNetworkNode> entry) {
         return REGISTRY.getNameForObject(entry);
     }
+
+    public static void setup() {
+        REGISTRY = new RegistryNamespaced<>();
+    }
 }

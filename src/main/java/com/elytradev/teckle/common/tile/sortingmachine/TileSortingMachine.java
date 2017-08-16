@@ -91,7 +91,17 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     private PullMode pullMode = new PullModeSingleStep();
     private SortMode sortMode = new SortModeAnyStack();
     private List<IItemHandler> subHandlers;
-    private NetworkTileTransporter ejectionTile = new NetworkTileTransporter() {
+    private NetworkTileTransporter ejectionTile = new NetworkTileTransporter(null) {
+        @Override
+        public NBTTagCompound serializeNBT() {
+            return null;
+        }
+
+        @Override
+        public void deserializeNBT(NBTTagCompound nbt) {
+
+        }
+
         @Override
         public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
             return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
@@ -166,7 +176,17 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             return getOutputFace();
         }
     };
-    private WorldNetworkTile insertionTile = new NetworkTileTransporter() {
+    private WorldNetworkTile insertionTile = new NetworkTileTransporter(null) {
+        @Override
+        public NBTTagCompound serializeNBT() {
+            return null;
+        }
+
+        @Override
+        public void deserializeNBT(NBTTagCompound nbt) {
+
+        }
+
         @Override
         public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
             return Objects.equals(side, getCapabilityFace());

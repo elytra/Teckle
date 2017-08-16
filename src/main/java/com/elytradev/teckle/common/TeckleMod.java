@@ -70,6 +70,7 @@ public class TeckleMod {
         CONFIG = new TeckleConfiguration(e.getSuggestedConfigurationFile(), MOD_ID);
         CONFIG.loadConfig();
         MinecraftForge.EVENT_BUS.register(OBJECTS);
+        OBJECTS.preInit(e);
         CapabilityWorldNetworkTile.register();
         CapabilityWorldNetworkAssistantHolder.register();
         TeckleNetworking.setupNetwork();

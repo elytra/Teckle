@@ -18,123 +18,34 @@ package com.elytradev.teckle.common.tile;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
-import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
-import com.elytradev.teckle.api.capabilities.impl.ItemNetworkAssistant;
-import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
+import com.elytradev.teckle.common.tile.networktiles.NetworkTileFilter;
+import com.elytradev.teckle.common.tile.networktiles.NetworkTileItemTube;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
-import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
-import mcmultipart.api.container.IMultipartContainer;
-import mcmultipart.api.container.IPartInfo;
-import mcmultipart.api.multipart.IMultipartTile;
-import mcmultipart.api.multipart.MultipartHelper;
-import mcmultipart.api.slot.EnumSlotAccess;
-import mcmultipart.api.slot.IPartSlot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.util.*;
-import java.util.function.BiPredicate;
-
-import static com.elytradev.teckle.common.TeckleMod.MULTIPART_CAPABILITY;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 public class TileItemTube extends TileNetworkMember {
 
     private EnumDyeColor colour = null;
-    private NetworkTileTransporter networkTile = new NetworkTileTransporter(WorldNetworkNode.class) {
-        @Override
-        public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return true;
-        }
-
-        @Override
-        public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-            if (TileItemTube.this.colour != null && traveller.data.hasKey("colour")) {
-                return Objects.equals(TileItemTube.this.colour, EnumDyeColor.byMetadata(traveller.data.getInteger("colour")));
-            }
-
-            return true;
-        }
-
-        @Override
-        public boolean canConnectTo(EnumFacing side) {
-            if (MULTIPART_CAPABILITY != null) {
-                //MCMP loaded, do some checks.
-                TileEntity neighbourTile = world.getTileEntity(pos.offset(side));
-                IMultipartTile multipartTile = (IMultipartTile) getCapability(MULTIPART_CAPABILITY, null);
-                if (multipartTile != null) {
-                    Optional<IMultipartContainer> optionalContainer = MultipartHelper.getContainer(world, pos);
-
-                    if (optionalContainer.isPresent()) {
-                        IMultipartContainer container = optionalContainer.get();
-
-                        for (IPartSlot slot : container.getParts().keySet()) {
-                            if (slot.getFaceAccess(side.getOpposite()) == EnumSlotAccess.NONE)
-                                return false;
-                        }
-                    }
-                }
-                if (neighbourTile != null && neighbourTile.hasCapability(MULTIPART_CAPABILITY, null)) {
-                    BlockPos neighbourPos = pos.offset(side);
-                    Optional<IMultipartContainer> optionalContainer = MultipartHelper.getContainer(world, neighbourPos);
-
-                    if (optionalContainer.isPresent()) {
-                        IMultipartContainer container = optionalContainer.get();
-
-                        for (Map.Entry<IPartSlot, ? extends IPartInfo> iPartSlotEntry : container.getParts().entrySet()) {
-                            IPartSlot slot = iPartSlotEntry.getKey();
-                            IPartInfo info = iPartSlotEntry.getValue();
-                            if (slot.getRegistryName().getResourceDomain() == "chiselsandbits") {
-                            }
-
-                            if (slot.getFaceAccess(side) == EnumSlotAccess.NONE)
-                                return false;
-                        }
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        @Override
-        public void networkReloaded(IWorldNetwork network) {
-            List<TileEntity> neighbourNodes = ItemNetworkAssistant.getPotentialNeighbourNodes(networkTile, world, pos, true);
-            for (TileEntity neighbourTile : neighbourNodes) {
-                BlockPos posDiff = pos.subtract(neighbourTile.getPos());
-                EnumFacing capabilityFace = WorldNetworkTraveller.getFacingFromVector(posDiff);
-
-                if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos(), capabilityFace)) {
-                    if (!getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
-                        WorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
-                        getNode().getNetwork().registerNode(neighbourNetworkTile.createNode(getNode().getNetwork(), neighbourTile.getPos()));
-                        neighbourNetworkTile.setNode(getNode().getNetwork().getNode(neighbourTile.getPos(), neighbourNetworkTile.getCapabilityFace()));
-                    }
-                } else {
-                    if (!getNode().getNetwork().isNodePresent(neighbourTile.getPos()))
-                        getNode().getNetwork().registerNode(new ItemNetworkEndpoint(getNode().getNetwork(), neighbourTile.getPos(), (capabilityFace)));
-                }
-            }
-        }
-
-        @Override
-        public BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate() {
-            return (t, f) -> !t.data.hasKey("colour") || EnumDyeColor.byMetadata(t.data.getInteger("colour")).equals(colour);
-        }
-    };
+    private NetworkTileItemTube networkTile;
 
     public EnumDyeColor getColour() {
         return colour;
@@ -144,8 +55,14 @@ public class TileItemTube extends TileNetworkMember {
         this.colour = colour;
     }
 
-    public NetworkTileTransporter getNetworkTile() {
+    public NetworkTileItemTube getNetworkTile() {
         return networkTile;
+    }
+
+    @Override
+    public void validate() {
+        if (networkTile == null)
+            this.networkTile = new NetworkTileItemTube(this);
     }
 
     @Nullable
@@ -183,13 +100,13 @@ public class TileItemTube extends TileNetworkMember {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
-        this.colour = !compound.hasKey("colour") ? null : EnumDyeColor.byMetadata(compound.getInteger("colour"));
+    public void readFromNBT(NBTTagCompound tag) {
+        super.readFromNBT(tag);
+        this.colour = !tag.hasKey("colour") ? null : EnumDyeColor.byMetadata(tag.getInteger("colour"));
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            UUID networkID = compound.getUniqueId("networkID");
-            int dimID = compound.getInteger("databaseID");
+            UUID networkID = tag.hasKey("networkIDLeast") ? tag.getUniqueId("networkID") : null;
+            int dimID = tag.getInteger("databaseID");
             if (networkID == null) {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
             } else {
@@ -200,30 +117,46 @@ public class TileItemTube extends TileNetworkMember {
                     networkID = networkDB.getRemappedNodes().remove(any.get());
                     TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
                 }
+
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-                WorldNetworkNode node = networkTile.createNode(network, pos);
-                network.registerNode(node);
-                networkTile.setNode(node);
+                for (NodeContainer container : network.getNodeContainersAtPosition(pos)) {
+                    if (container.getFacing() == null && container.getNetworkTile() instanceof NetworkTileItemTube) {
+                        networkTile = (NetworkTileItemTube) container.getNetworkTile();
+                        break;
+                    }
+                }
             }
         }
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+    public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         if (colour != null) {
-            compound.setInteger("colour", colour.getMetadata());
+            tag.setInteger("colour", colour.getMetadata());
         } else {
-            compound.removeTag("colour");
+            tag.removeTag("colour");
         }
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            compound.setInteger("databaseID", getWorld().provider.getDimension());
+            tag.setInteger("databaseID", getWorld().provider.getDimension());
             if (networkTile.getNode() == null)
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-            compound.setUniqueId("networkID", networkTile.getNode().getNetwork().getNetworkID());
+            tag.setUniqueId("networkID", networkTile.getNode().getNetwork().getNetworkID());
         }
+        return super.writeToNBT(tag);
+    }
 
-        return super.writeToNBT(compound);
+    public void setWorld(World worldIn) {
+        super.setWorld(worldIn);
+        if (networkTile != null)
+            networkTile.setWorld(worldIn);
+    }
+
+    @Override
+    protected void setWorldCreate(World worldIn) {
+        super.setWorldCreate(worldIn);
+        // Mojang's method doesnt do this because they were drunk or something idk.
+        setWorld(worldIn);
     }
 
     @Override

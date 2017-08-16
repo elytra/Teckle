@@ -45,14 +45,14 @@ public class CapabilityWorldNetworkTile {
                     public void readNBT(Capability<WorldNetworkTile> capability, WorldNetworkTile instance, EnumFacing side, NBTBase base) {
                     }
                 },
-                () -> new WorldNetworkTile(null) {
+                () -> new WorldNetworkTile(null, null, null) {
                     @Override
-                    public NBTBase serializeNBT() {
+                    public NBTTagCompound serializeNBT() {
                         return null;
                     }
 
                     @Override
-                    public void deserializeNBT(NBTBase nbt) {
+                    public void deserializeNBT(NBTTagCompound tag) {
 
                     }
 

@@ -3,7 +3,9 @@ package com.elytradev.teckle.common.worldnetwork.common;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.common.TeckleMod;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryNamespaced;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.event.FMLInterModComms;
@@ -42,9 +44,9 @@ public class NetworkTileRegistry {
             return;
         }
         try {
-            tileClass.getConstructor(World.class);
+            tileClass.getConstructor(World.class, BlockPos.class, EnumFacing.class);
         } catch (NoSuchMethodException e) {
-            TeckleMod.LOG.error("Tried to register a world network tile via IMC but received a class that does not have a constructor matching (World), it will be skipped. Mod: {}, Class: {}", msg.getSender(), tileClass.getName());
+            TeckleMod.LOG.error("Tried to register a world network tile via IMC but received a class that does not have a constructor matching (World, BlockPos, EnumFacing), it will be skipped. Mod: {}, Class: {}", msg.getSender(), tileClass.getName());
         }
         if (!WorldNetworkTile.class.isAssignableFrom(tileClass)) {
             TeckleMod.LOG.error("Tried to register a world network tile via IMC but received a class that does not extend WorldNetworkTile, it will be skipped. Mod: {}, Class: {}", msg.getSender(), tileClass.getName());
@@ -69,5 +71,9 @@ public class NetworkTileRegistry {
 
     public static ResourceLocation getNetworkTileName(Class<? extends WorldNetworkTile> entry) {
         return REGISTRY.getNameForObject(entry);
+    }
+
+    public static void setup() {
+        REGISTRY = new RegistryNamespaced<>();
     }
 }

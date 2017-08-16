@@ -40,31 +40,37 @@ import java.util.function.BiPredicate;
 /**
  * Used to store node data on tiles.
  */
-public abstract class WorldNetworkTile implements INBTSerializable {
+public abstract class WorldNetworkTile implements INBTSerializable<NBTTagCompound> {
 
     protected World world;
     protected WorldNetworkNode node;
     protected BlockPos pos;
+    protected EnumFacing capabilityFace;
 
     private HashMap<NBTTagCompound, DummyNetworkTraveller> dummyTravellers = Maps.newHashMap();
 
     /**
-     * WorldNetworkTile default constructor, you need to have a constructor with just a world parameter to properly load.
+     * WorldNetworkTile default constructor, you need to have a constructor with a world parameter and position to properly load.
      *
      * @param world the world the tile resides in.
+     * @param pos   the position of the tile.
+     * @param face  the face of the tile.
      */
-    public WorldNetworkTile(World world) {
-        setWorld(world);
+    public WorldNetworkTile(World world, BlockPos pos, EnumFacing face) {
+        this.setWorld(world);
+        this.setPos(pos);
+        this.setCapabilityFace(face);
+        TeckleMod.LOG.debug("Created a network tile, {} {} {}", world, pos, false);
     }
 
     @Nullable
-    public static WorldNetworkTile create(IWorldNetwork network, EnumFacing face, NBTTagCompound serializedData) {
+    public static WorldNetworkTile create(IWorldNetwork network, BlockPos pos, EnumFacing face, NBTTagCompound serializedData) {
         ResourceLocation id = new ResourceLocation(serializedData.getString("id"));
         Class<? extends WorldNetworkTile> tileClazz = NetworkTileRegistry.getNetworkTile(id);
         WorldNetworkTile createdTile = null;
         try {
-            Constructor<? extends WorldNetworkTile> constructor = tileClazz.getConstructor(World.class);
-            createdTile = constructor.newInstance(network.getWorld());
+            Constructor<? extends WorldNetworkTile> constructor = tileClazz.getConstructor(World.class, BlockPos.class, EnumFacing.class);
+            createdTile = constructor.newInstance(network.getWorld(), pos, face);
         } catch (NoSuchMethodException e) {
             TeckleMod.LOG.error("Unable to find constructor with world parameter for {}, the network tile will not be created...", tileClazz.getName());
             return null;
@@ -83,6 +89,14 @@ public abstract class WorldNetworkTile implements INBTSerializable {
 
     public void setWorld(World world) {
         this.world = world;
+    }
+
+    public BlockPos getPos() {
+        return pos;
+    }
+
+    public void setPos(BlockPos pos) {
+        this.pos = pos;
     }
 
     /**
@@ -233,7 +247,16 @@ public abstract class WorldNetworkTile implements INBTSerializable {
      * @return the face used to get this tile from a capability
      */
     public EnumFacing getCapabilityFace() {
-        return null;
+        return capabilityFace;
+    }
+
+    /**
+     * Set the capability face this tile is associated with, only used during instantiation.
+     *
+     * @param capabilityFace the new capability face.
+     */
+    public void setCapabilityFace(EnumFacing capabilityFace) {
+        this.capabilityFace = capabilityFace;
     }
 
     /**
@@ -248,13 +271,15 @@ public abstract class WorldNetworkTile implements INBTSerializable {
     public NBTTagCompound serializeData(NBTTagCompound tag) {
         tag.setString("id", NetworkTileRegistry.getNetworkTileName(this.getClass()).toString());
         tag.setLong("pos", pos.toLong());
+        tag.setInteger("face", getCapabilityFace() == null ? -1 : getCapabilityFace().getIndex());
         tag.setTag("ImplementationData", serializeNBT());
         return tag;
     }
 
     public void deserializeData(NBTTagCompound tag) {
         this.pos = BlockPos.fromLong(tag.getLong("pos"));
-        this.deserializeNBT(tag.getTag("ImplementationData"));
+        this.setCapabilityFace(tag.getInteger("face") > 0 ? EnumFacing.values()[tag.getInteger("face")] : null);
+        this.deserializeNBT(tag.getCompoundTag("ImplementationData"));
     }
 
 }

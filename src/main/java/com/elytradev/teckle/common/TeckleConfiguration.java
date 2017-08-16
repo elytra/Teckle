@@ -17,6 +17,9 @@ public class TeckleConfiguration extends ConcreteConfig {
     @ConfigValue(type = Property.Type.BOOLEAN, category = "misc", comment = "Determines if the alloy furnace will import all available furnace recipes.")
     public boolean importFurnaceRecipes = true;
 
+    @ConfigValue(type = Property.Type.INTEGER, category = "worldnetwork", comment = "Determines the amount of ticks that pass between cleaning a network database.")
+    public int databaseCleaningCooldown = 160;
+
     protected TeckleConfiguration(File configFile, String modID) {
         super(configFile, modID);
     }

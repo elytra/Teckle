@@ -35,6 +35,7 @@ import com.elytradev.teckle.common.tile.networktiles.NetworkTileFilter;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableList;
@@ -70,14 +71,13 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Nullable;
 import java.util.*;
 
-
 public class TileFilter extends TileNetworkMember implements ITickable, IElementProvider {
 
     public EnumFacing cachedFace = EnumFacing.DOWN;
     public EnumDyeColor colour = null;
     public UUID filterID, bufferID;
     public AdvancedStackHandlerEntry filterData, bufferData;
-    private NetworkTileFilter networkTile = new NetworkTileFilter(world);
+    private NetworkTileFilter networkTile;
 
     private int cooldown = 0;
 
@@ -99,6 +99,8 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         } else {
             bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
         }
+        if (networkTile == null)
+            this.networkTile = new NetworkTileFilter(this);
 
         this.networkTile.filterData = this.filterData;
         this.networkTile.bufferData = this.bufferData;
@@ -333,7 +335,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                 this.filterData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(filterID);
             }
 
-            UUID networkID = tag.hasKey("networkID") ? tag.getUniqueId("networkID") : null;
+            UUID networkID = tag.hasKey("networkIDLeast") ? tag.getUniqueId("networkID") : null;
             int dimID = tag.getInteger("databaseID");
             if (networkID == null) {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
@@ -347,16 +349,12 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                 }
 
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-                WorldNetworkNode node = null;
-                node = networkTile.createNode(network, pos);
-                network.registerNode(node);
-                //if (network.getNode(pos, null) == null) {
-                //    node = networkTile.createNode(network, pos);
-                //    network.registerNode(node);
-                //} else {
-                //    node = network.getNode(pos, null);
-                //}
-                networkTile.setNode(node);
+                for (NodeContainer container : network.getNodeContainersAtPosition(pos)) {
+                    if (container.getFacing() == null && container.getNetworkTile() instanceof NetworkTileFilter) {
+                        networkTile = (NetworkTileFilter) container.getNetworkTile();
+                        break;
+                    }
+                }
             }
         }
     }
@@ -412,7 +410,8 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
     @Override
     public void setWorld(World worldIn) {
         super.setWorld(worldIn);
-        networkTile.setWorld(worldIn);
+        if (networkTile != null)
+            networkTile.setWorld(worldIn);
     }
 
     @Override
@@ -444,7 +443,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
                 return;
 
             if (TeckleMod.INDEV)
-                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", networkTile.getNode().getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", networkTile.getNode().getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", "")).appendText("\n Count " + networkTile.getNode().getNetwork().getNodePositions().size())));
 
             List<ItemStack> stacks = new ArrayList<>();
             for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {
