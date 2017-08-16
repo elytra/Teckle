@@ -120,6 +120,10 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
         return tile;
     }
 
+    public void setNetworkTile(WorldNetworkTile tile) {
+        this.tile = tile;
+    }
+
     public boolean hasNetworkTile() {
         return isLoaded() && getNetworkTile() != null;
     }

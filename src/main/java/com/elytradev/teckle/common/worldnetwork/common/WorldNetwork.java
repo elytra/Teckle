@@ -448,6 +448,7 @@ public class WorldNetwork implements IWorldNetwork {
                 if (networkTile == null)
                     continue;
                 node = networkTile.createNode(this, pos);
+                node.setNetworkTile(networkTile);
                 networkTile.setNode(node);
             } else if (compound.hasKey("nN" + i)) {
                 node = WorldNetworkNode.create(this, pos, face, compound.getCompoundTag("nN" + i));
