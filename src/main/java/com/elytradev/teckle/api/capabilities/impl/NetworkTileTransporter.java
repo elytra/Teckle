@@ -18,17 +18,11 @@ package com.elytradev.teckle.api.capabilities.impl;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
-import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-
-import java.util.HashMap;
 
 /**
  * Framework to build on for network tiles, doesn't implement everything you will need to make adjustments.

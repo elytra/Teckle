@@ -27,6 +27,8 @@ import com.elytradev.teckle.common.item.ItemPaintbrush;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.tile.*;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import com.elytradev.teckle.common.worldnetwork.common.node.NetworkNodeRegistry;
+import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
@@ -95,6 +97,8 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileSortingMachine.class, "teckleSortingMachine");
         GameRegistry.registerTileEntity(TileFabricator.class, "teckleFabricator");
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
+
+        NetworkNodeRegistry.registerNetworkNode(new ResourceLocation("teckle", "itemendpoint"), ItemNetworkEndpoint.class);
     }
 
     public void postInit(FMLPostInitializationEvent e) {

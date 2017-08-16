@@ -35,6 +35,20 @@ public class AdvancedItemStackHandler extends ItemStackHandler {
         super(i);
     }
 
+    /**
+     * Resets this handler to default settings, also clears all stacks.
+     *
+     * @param size the new size.
+     * @return this handler.
+     */
+    public AdvancedItemStackHandler reset(int size) {
+        this.stacks = NonNullList.withSize(size, ItemStack.EMPTY);
+        this.changeListener = slot -> {/*NOOP*/};
+        this.slotLimit = slot -> 64;
+        this.insertCheck = (integer, stack) -> true;
+        return this;
+    }
+
     public AdvancedItemStackHandler withChangeListener(IContentChangeListener changeListener) {
         this.changeListener = changeListener;
         return this;

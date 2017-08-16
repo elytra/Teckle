@@ -17,8 +17,8 @@
 package com.elytradev.teckle.api.capabilities;
 
 import com.elytradev.teckle.api.IWorldNetwork;
-import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -45,20 +45,35 @@ public class CapabilityWorldNetworkTile {
                     public void readNBT(Capability<WorldNetworkTile> capability, WorldNetworkTile instance, EnumFacing side, NBTBase base) {
                     }
                 },
-                () -> new NetworkTileTransporter() {
+                () -> new WorldNetworkTile(null) {
+                    @Override
+                    public NBTBase serializeNBT() {
+                        return null;
+                    }
+
+                    @Override
+                    public void deserializeNBT(NBTBase nbt) {
+
+                    }
+
                     @Override
                     public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-                        return true;
+                        return false;
+                    }
+
+                    @Override
+                    public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
+                        return null;
                     }
 
                     @Override
                     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-                        return true;
+                        return false;
                     }
 
                     @Override
                     public boolean canConnectTo(EnumFacing side) {
-                        return true;
+                        return false;
                     }
                 });
     }
