@@ -34,7 +34,7 @@ public abstract class NetworkTileTransporter extends WorldNetworkTile {
     public WorldNetworkNode node;
 
     public NetworkTileTransporter(World world, Class<? extends WorldNetworkNode> nodeClazz) {
-        super(world);
+        super(null, null, null);
         this.nodeClazz = nodeClazz;
     }
 
@@ -42,7 +42,7 @@ public abstract class NetworkTileTransporter extends WorldNetworkTile {
      * Only use this constructor if you will override createNode
      */
     public NetworkTileTransporter(World world) {
-        super(world);
+        super(null, null, null);
     }
 
     /**

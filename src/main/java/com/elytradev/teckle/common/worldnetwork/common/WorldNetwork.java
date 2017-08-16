@@ -174,7 +174,7 @@ public class WorldNetwork implements IWorldNetwork {
 
     @Override
     public List<BlockPos> getNodePositions() {
-        return Arrays.asList((BlockPos[]) networkNodes.keySet().toArray());
+        return Lists.newArrayList(networkNodes.keySet());
     }
 
     @Override
@@ -444,7 +444,7 @@ public class WorldNetwork implements IWorldNetwork {
             EnumFacing face = compound.getInteger("nF" + i) > -1 ? EnumFacing.values()[compound.getInteger("nF" + i)] : null;
             WorldNetworkNode node = null;
             if (compound.hasKey("nT" + i)) {
-                WorldNetworkTile networkTile = WorldNetworkTile.create(this, face, compound.getCompoundTag("nT" + i));
+                WorldNetworkTile networkTile = WorldNetworkTile.create(this, pos, face, compound.getCompoundTag("nT" + i));
                 if (networkTile == null)
                     continue;
                 node = networkTile.createNode(this, pos);

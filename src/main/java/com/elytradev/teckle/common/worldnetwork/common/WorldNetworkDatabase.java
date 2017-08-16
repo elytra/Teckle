@@ -47,6 +47,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
     private HashMap<Pair<BlockPos, EnumFacing>, UUID> remappedNodes = Maps.newHashMap();
 
     private World world;
+    private int cooldownTime = TeckleMod.CONFIG.databaseCleaningCooldown;
 
     public WorldNetworkDatabase(World world) {
         super(NAME);
@@ -98,6 +99,8 @@ public class WorldNetworkDatabase extends WorldSavedData {
             getSavedDatabase(network.getWorld());
         }
         DIMENSION_DATABASES.get(network.getWorld().provider.getDimension()).networks.put(network.getNetworkID(), network);
+
+        TeckleMod.LOG.debug("Registered new network, total is now {}", DIMENSION_DATABASES.get(network.getWorld().provider.getDimension()).networks.size());
     }
 
     /**
@@ -211,25 +214,33 @@ public class WorldNetworkDatabase extends WorldSavedData {
     private void onTick(TickEvent.WorldTickEvent e) {
         if (networks.isEmpty() || !Objects.equals(world, e.world))
             return;
-
-        List<IWorldNetwork> emptyNetworks = new ArrayList<>();
+        boolean doSearch = this.cooldownTime <= 0;
+        List<IWorldNetwork> strayNetworks = new ArrayList<>();
         for (IWorldNetwork network : networks.values()) {
-            if (network.getNodes().isEmpty()) {
-                if (!emptyNetworks.contains(network))
-                    emptyNetworks.add(network);
+            if (doSearch) {
+                if (network.getNodes().isEmpty() || network.getNodes().stream().noneMatch(container -> container.getNetworkTile() != null)) {
+                    if (!strayNetworks.contains(network))
+                        strayNetworks.add(network);
 
-                TeckleMod.LOG.debug("Found empty network " + network);
-                continue;
+                    TeckleMod.LOG.debug("Found stray network " + network);
+                    continue;
+                }
             }
             if (Objects.equals(e.world, network.getWorld()))
                 network.update();
         }
 
-        for (IWorldNetwork emptyNetwork : emptyNetworks) {
-            TeckleMod.LOG.debug("Removing empty network " + emptyNetwork);
+        for (IWorldNetwork emptyNetwork : strayNetworks) {
+            TeckleMod.LOG.debug("Removing stray network " + emptyNetwork);
             networks.remove(emptyNetwork.getNetworkID());
         }
 
+        if (this.cooldownTime <= 0) {
+            this.cooldownTime = TeckleMod.CONFIG.databaseCleaningCooldown;
+        } else {
+            this.cooldownTime--;
+        }
+        // It's always dirty, nodes and tiles change on a regular basis.
         if (!this.isDirty())
             this.markDirty();
     }

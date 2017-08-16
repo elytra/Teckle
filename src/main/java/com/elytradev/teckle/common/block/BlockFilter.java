@@ -22,6 +22,7 @@ import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
 import com.elytradev.teckle.common.tile.TileFilter;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockPistonBase;
@@ -143,9 +144,11 @@ public class BlockFilter extends BlockContainer {
                 TileFilter filter = (TileFilter) worldIn.getTileEntity(pos);
 
                 // Vomit the buffer.
-                filter.buffer.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+                filter.bufferData.getHandler().stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
                 // Vomit the filter data.
-                filter.filterData.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+                filter.filterData.getHandler().stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+                AdvancedStackHandlerPool.getPool(worldIn).remove(filter.filterData.getId());
+                AdvancedStackHandlerPool.getPool(worldIn).remove(filter.bufferData.getId());
             }
         }
 

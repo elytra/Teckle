@@ -34,7 +34,7 @@ public class ContainerFilter extends Container {
 
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                this.addSlotToContainer(new SlotItemHandler(tile.filterData, j + i * 3, 62 + j * 18, 17 + i * 18));
+                this.addSlotToContainer(new SlotItemHandler(tile.filterData.getHandler(), j + i * 3, 62 + j * 18, 17 + i * 18));
             }
         }
         bindPlayerInventory(player.inventory);

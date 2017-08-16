@@ -19,6 +19,7 @@ package com.elytradev.teckle.common.proxy;
 import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.LoaderState;
@@ -38,6 +39,7 @@ public class CommonProxy {
         NetworkRegistry.INSTANCE.registerGuiHandler(TeckleMod.INSTANCE, new TeckleGuiHandler());
 
         MinecraftForge.EVENT_BUS.register(WorldNetworkDatabase.class);
+        MinecraftForge.EVENT_BUS.register(AdvancedStackHandlerPool.class);
         MinecraftForge.EVENT_BUS.register(this);
     }
 

@@ -56,6 +56,12 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
         this.setNetwork(null);
     }
 
+    public WorldNetworkNode(IWorldNetwork network, BlockPos position, EnumFacing capabilityFace) {
+        this.setNetwork(network);
+        this.position = position;
+        this.setCapabilityFace(capabilityFace);
+    }
+
     @Nullable
     public static WorldNetworkNode create(IWorldNetwork network, BlockPos pos, EnumFacing face, NBTTagCompound serializedData) {
         ResourceLocation id = new ResourceLocation(serializedData.getString("id"));

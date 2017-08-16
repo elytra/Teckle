@@ -25,6 +25,7 @@ public class AdvancedStackHandlerEntry {
         this.setId(id);
         this.setDimension(dimension);
         this.setHandler(handler);
+        AdvancedStackHandlerPool.getPool(dimension).put(id, this);
     }
 
     public static AdvancedStackHandlerEntry create(NBTTagCompound tag) {

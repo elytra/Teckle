@@ -28,6 +28,7 @@ import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoi
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.item.ItemNetworkEndpoint;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -102,11 +103,13 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
         if (world.isRemote)
             return;
 
+        List<WorldNetworkTile> handledTiles = Lists.newArrayList();
         for (EnumFacing facing : EnumFacing.VALUES) {
             WorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
-            if (thisNetworkTile == null)
+            if (thisNetworkTile == null || handledTiles.contains(thisNetworkTile))
                 continue;
 
+            handledTiles.add(thisNetworkTile);
             List<IWorldNetwork> neighbourNetworks = getNeighbourNetworks(thisNetworkTile, world, pos);
             if (!neighbourNetworks.isEmpty()) {
                 // Found neighbour networks, join the network or merge.

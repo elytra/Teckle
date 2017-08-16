@@ -4,6 +4,7 @@ import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockFilter;
+import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
@@ -13,7 +14,6 @@ import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -29,12 +29,20 @@ import java.util.UUID;
 public class NetworkTileFilter extends WorldNetworkTile {
 
     public EnumFacing cachedFace = EnumFacing.DOWN;
-    public EnumDyeColor colour = null;
+    public EnumDyeColor cachedColour = null;
     public UUID filterID, bufferID;
     public AdvancedStackHandlerEntry filterData, bufferData;
 
-    public NetworkTileFilter(World world) {
-        super(world);
+    public NetworkTileFilter(World world, BlockPos pos, EnumFacing face) {
+        super(world, pos, face);
+    }
+
+    public NetworkTileFilter(TileFilter filter) {
+        super(filter.getWorld(), filter.getPos(), filter.cachedFace);
+        this.filterData = filter.filterData;
+        this.bufferData = filter.bufferData;
+        this.filterID = filter.filterID;
+        this.bufferID = filter.bufferID;
     }
 
     @Override
@@ -59,10 +67,10 @@ public class NetworkTileFilter extends WorldNetworkTile {
             boolean foundNonEmptySlot = false;
             boolean colourMatches = !traveller.data.hasKey("colour");
             if (!colourMatches) {
-                if (this.colour == null) {
+                if (this.getColour() == null) {
                     colourMatches = true;
                 } else {
-                    colourMatches = Objects.equals(this.colour, EnumDyeColor.byMetadata(traveller.data.getInteger("colour")));
+                    colourMatches = Objects.equals(this.getColour(), EnumDyeColor.byMetadata(traveller.data.getInteger("colour")));
                 }
             }
 
@@ -89,6 +97,14 @@ public class NetworkTileFilter extends WorldNetworkTile {
             return world.getBlockState(pos).getValue(BlockFilter.TRIGGERED).booleanValue();
         }
         return false;
+    }
+
+    public EnumDyeColor getColour() {
+        if (world != null && world.isBlockLoaded(pos) && world.getTileEntity(pos) instanceof TileFilter) {
+            this.cachedColour = ((TileFilter) world.getTileEntity(pos)).colour;
+        }
+
+        return this.cachedColour;
     }
 
     @Override
@@ -145,10 +161,10 @@ public class NetworkTileFilter extends WorldNetworkTile {
     }
 
     @Override
-    public NBTBase serializeNBT() {
+    public NBTTagCompound serializeNBT() {
         NBTTagCompound tag = new NBTTagCompound();
-        if (colour != null) {
-            tag.setInteger("colour", colour.getMetadata());
+        if (getColour() != null) {
+            tag.setInteger("colour", getColour().getMetadata());
         } else {
             tag.removeTag("colour");
         }
@@ -159,9 +175,8 @@ public class NetworkTileFilter extends WorldNetworkTile {
     }
 
     @Override
-    public void deserializeNBT(NBTBase nbt) {
-        NBTTagCompound tag = (NBTTagCompound) nbt;
-        this.colour = !tag.hasKey("colour") ? null : EnumDyeColor.byMetadata(tag.getInteger("colour"));
+    public void deserializeNBT(NBTTagCompound tag) {
+        this.cachedColour = !tag.hasKey("colour") ? null : EnumDyeColor.byMetadata(tag.getInteger("colour"));
         this.cachedFace = EnumFacing.values()[tag.getInteger("cachedFace")];
         this.bufferID = tag.getUniqueId("buffer");
         this.filterID = tag.getUniqueId("filter");
