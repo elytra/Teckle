@@ -32,8 +32,6 @@ import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 /**
  * A node in a worldnetwork, contains the position and the current travellers.

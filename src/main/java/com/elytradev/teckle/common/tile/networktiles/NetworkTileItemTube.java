@@ -4,7 +4,6 @@ import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.impl.ItemNetworkAssistant;
-import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiPredicate;
 
 import static com.elytradev.teckle.common.TeckleMod.MULTIPART_CAPABILITY;
 
@@ -67,14 +65,14 @@ public class NetworkTileItemTube extends WorldNetworkTile {
     }
 
     public void calculateBlockedFaces() {
-        if (MULTIPART_CAPABILITY != null && world.isBlockLoaded(pos)) {
+        if (MULTIPART_CAPABILITY != null && getWorld().isBlockLoaded(getPos())) {
             for (EnumFacing side : EnumFacing.values()) {
                 //MCMP loaded, do some checks.
                 boolean found = false;
-                TileEntity neighbourTile = world.getTileEntity(pos.offset(side));
+                TileEntity neighbourTile = getWorld().getTileEntity(getPos().offset(side));
                 IMultipartTile multipartTile = (IMultipartTile) getTileEntity().getCapability(MULTIPART_CAPABILITY, null);
                 if (multipartTile != null) {
-                    Optional<IMultipartContainer> optionalContainer = MultipartHelper.getContainer(world, pos);
+                    Optional<IMultipartContainer> optionalContainer = MultipartHelper.getContainer(getWorld(), getPos());
 
                     if (optionalContainer.isPresent()) {
                         IMultipartContainer container = optionalContainer.get();
@@ -91,8 +89,8 @@ public class NetworkTileItemTube extends WorldNetworkTile {
                 if (found)
                     continue;
                 if (neighbourTile != null && neighbourTile.hasCapability(MULTIPART_CAPABILITY, null)) {
-                    BlockPos neighbourPos = pos.offset(side);
-                    Optional<IMultipartContainer> optionalContainer = MultipartHelper.getContainer(world, neighbourPos);
+                    BlockPos neighbourPos = getPos().offset(side);
+                    Optional<IMultipartContainer> optionalContainer = MultipartHelper.getContainer(getWorld(), neighbourPos);
 
                     if (optionalContainer.isPresent()) {
                         IMultipartContainer container = optionalContainer.get();
@@ -109,7 +107,7 @@ public class NetworkTileItemTube extends WorldNetworkTile {
                 }
             }
         } else {
-            if (world.isBlockLoaded(pos))
+            if (getWorld().isBlockLoaded(getPos()))
                 blockedFaces = Lists.newArrayList();
         }
     }
@@ -121,14 +119,14 @@ public class NetworkTileItemTube extends WorldNetworkTile {
 
     @Override
     public void networkReloaded(IWorldNetwork network) {
-        List<TileEntity> neighbourNodes = ItemNetworkAssistant.getPotentialNeighbourNodes(this, world, pos, true);
+        List<TileEntity> neighbourNodes = ItemNetworkAssistant.getPotentialNeighbourNodes(this, getWorld(), getPos(), true);
         for (TileEntity neighbourTile : neighbourNodes) {
-            BlockPos posDiff = pos.subtract(neighbourTile.getPos());
+            BlockPos posDiff = getPos().subtract(neighbourTile.getPos());
             EnumFacing capabilityFace = WorldNetworkTraveller.getFacingFromVector(posDiff);
 
-            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos(), capabilityFace)) {
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(getWorld(), neighbourTile.getPos(), capabilityFace)) {
                 if (!getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
-                    WorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
+                    WorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(getWorld(), neighbourTile.getPos(), capabilityFace);
                     getNode().getNetwork().registerNode(neighbourNetworkTile.createNode(getNode().getNetwork(), neighbourTile.getPos()));
                     neighbourNetworkTile.setNode(getNode().getNetwork().getNode(neighbourTile.getPos(), neighbourNetworkTile.getCapabilityFace()));
                 }
@@ -140,8 +138,8 @@ public class NetworkTileItemTube extends WorldNetworkTile {
     }
 
     public EnumDyeColor getColour() {
-        if (world != null && world.isBlockLoaded(pos) && world.getTileEntity(pos) instanceof TileFilter) {
-            this.cachedColour = ((TileFilter) world.getTileEntity(pos)).colour;
+        if (getWorld() != null && getWorld().isBlockLoaded(getPos()) && getWorld().getTileEntity(getPos()) instanceof TileItemTube) {
+            this.cachedColour = ((TileItemTube) getWorld().getTileEntity(getPos())).getColour();
         }
 
         return this.cachedColour;

@@ -47,7 +47,7 @@ public class NetworkTileFilter extends WorldNetworkTile {
 
     @Override
     public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-        this.pos = pos;
+        this.setPos(pos);
         return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
     }
 
@@ -58,7 +58,7 @@ public class NetworkTileFilter extends WorldNetworkTile {
 
     @Override
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        if (Objects.equals(traveller.getEntryPoint().position, this.pos))
+        if (Objects.equals(traveller.getEntryPoint().position, this.getPos()))
             return true;
 
         if (Objects.equals(from, getOutputFace().getOpposite()) && !this.isPowered()) {
@@ -93,15 +93,15 @@ public class NetworkTileFilter extends WorldNetworkTile {
     }
 
     private boolean isPowered() {
-        if (world != null && world.isBlockLoaded(pos) && Objects.equals(world.getBlockState(pos).getBlock(), TeckleObjects.blockFilter)) {
-            return world.getBlockState(pos).getValue(BlockFilter.TRIGGERED).booleanValue();
+        if (getWorld() != null && getWorld().isBlockLoaded(getPos()) && Objects.equals(getWorld().getBlockState(getPos()).getBlock(), TeckleObjects.blockFilter)) {
+            return getWorld().getBlockState(getPos()).getValue(BlockFilter.TRIGGERED).booleanValue();
         }
         return false;
     }
 
     public EnumDyeColor getColour() {
-        if (world != null && world.isBlockLoaded(pos) && world.getTileEntity(pos) instanceof TileFilter) {
-            this.cachedColour = ((TileFilter) world.getTileEntity(pos)).colour;
+        if (getWorld() != null && getWorld().isBlockLoaded(getPos()) && getWorld().getTileEntity(getPos()) instanceof TileFilter) {
+            this.cachedColour = ((TileFilter) getWorld().getTileEntity(getPos())).colour;
         }
 
         return this.cachedColour;
@@ -114,8 +114,8 @@ public class NetworkTileFilter extends WorldNetworkTile {
 
     @Override
     public EnumFacing getOutputFace() {
-        if (world != null && world.isBlockLoaded(pos)) {
-            IBlockState thisState = world.getBlockState(pos);
+        if (getWorld() != null && getWorld().isBlockLoaded(getPos())) {
+            IBlockState thisState = getWorld().getBlockState(getPos());
             if (Objects.equals(thisState.getBlock(), TeckleObjects.blockFilter)) {
                 return thisState.getValue(BlockFilter.FACING);
             }
@@ -131,12 +131,12 @@ public class NetworkTileFilter extends WorldNetworkTile {
 
         ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
         EnumFacing facing = getOutputFace();
-        BlockPos sourcePos = pos.offset(facing);
+        BlockPos sourcePos = getPos().offset(facing);
 
         // Try and put it back where we found it.
         if (Objects.equals(side, getOutputFace())) {
-            if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
-                TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
+            if (getWorld().getTileEntity(getPos().offset(facing.getOpposite())) != null) {
+                TileEntity pushTo = getWorld().getTileEntity(getPos().offset(facing.getOpposite()));
                 if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
                     IItemHandler itemHandler = pushTo.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
                     for (int slot = 0; slot < itemHandler.getSlots() && !stack.isEmpty(); slot++) {
@@ -180,7 +180,7 @@ public class NetworkTileFilter extends WorldNetworkTile {
         this.cachedFace = EnumFacing.values()[tag.getInteger("cachedFace")];
         this.bufferID = tag.getUniqueId("buffer");
         this.filterID = tag.getUniqueId("filter");
-        this.bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
-        this.filterData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(filterID);
+        this.bufferData = AdvancedStackHandlerPool.getPool(getWorld().provider.getDimension()).get(bufferID);
+        this.filterData = AdvancedStackHandlerPool.getPool(getWorld().provider.getDimension()).get(filterID);
     }
 }

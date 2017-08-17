@@ -131,8 +131,8 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
         @Override
         public EnumFacing getOutputFace() {
-            if (world != null) {
-                IBlockState thisState = world.getBlockState(pos);
+            if (getWorld() != null) {
+                IBlockState thisState = getWorld().getBlockState(getPos());
                 if (Objects.equals(thisState.getBlock(), TeckleObjects.blockSortingMachine)) {
                     return thisState.getValue(BlockSortingMachine.FACING);
                 }
@@ -151,8 +151,8 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
             // Try and put it back where we found it.
             if (Objects.equals(side, getOutputFace())) {
-                if (world.getTileEntity(pos.offset(facing.getOpposite())) != null) {
-                    TileEntity pushTo = world.getTileEntity(pos.offset(facing.getOpposite()));
+                if (getWorld().getTileEntity(getPos().offset(facing.getOpposite())) != null) {
+                    TileEntity pushTo = getWorld().getTileEntity(getPos().offset(facing.getOpposite()));
                     if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
                         IItemHandler itemHandler = pushTo.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
                         for (int slot = 0; slot < itemHandler.getSlots() && !stack.isEmpty(); slot++) {

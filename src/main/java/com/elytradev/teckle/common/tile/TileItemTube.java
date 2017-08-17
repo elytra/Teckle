@@ -57,10 +57,15 @@ public class TileItemTube extends TileNetworkMember {
         return networkTile;
     }
 
+    public void setNetworkTile(NetworkTileItemTube networkTile) {
+        this.networkTile = networkTile;
+    }
+
     @Override
     public void validate() {
-        if (networkTile == null)
-            this.networkTile = new NetworkTileItemTube(this);
+        if (getNetworkTile() == null) {
+            this.setNetworkTile(new NetworkTileItemTube(this));
+        }
     }
 
     @Nullable
@@ -110,7 +115,7 @@ public class TileItemTube extends TileNetworkMember {
             } else {
                 WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
                 Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
-                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), networkTile.getCapabilityFace())).findAny();
+                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), getNetworkTile().getCapabilityFace())).findAny();
                 if (any.isPresent()) {
                     networkID = networkDB.getRemappedNodes().remove(any.get());
                     TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
@@ -119,7 +124,7 @@ public class TileItemTube extends TileNetworkMember {
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
                 for (NodeContainer container : network.getNodeContainersAtPosition(pos)) {
                     if (container.getFacing() == null && container.getNetworkTile() instanceof NetworkTileItemTube) {
-                        networkTile = (NetworkTileItemTube) container.getNetworkTile();
+                        setNetworkTile((NetworkTileItemTube) container.getNetworkTile());
                         break;
                     }
                 }
@@ -137,17 +142,17 @@ public class TileItemTube extends TileNetworkMember {
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             tag.setInteger("databaseID", getWorld().provider.getDimension());
-            if (networkTile.getNode() == null)
+            if (getNetworkTile().getNode() == null)
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-            tag.setUniqueId("networkID", networkTile.getNode().getNetwork().getNetworkID());
+            tag.setUniqueId("networkID", getNetworkTile().getNode().getNetwork().getNetworkID());
         }
         return super.writeToNBT(tag);
     }
 
     public void setWorld(World worldIn) {
         super.setWorld(worldIn);
-        if (networkTile != null)
-            networkTile.setWorld(worldIn);
+        if (getNetworkTile() != null)
+            getNetworkTile().setWorld(worldIn);
     }
 
     @Override
@@ -162,7 +167,7 @@ public class TileItemTube extends TileNetworkMember {
         if (capability == null) {
             return null;
         } else if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
-            return (T) networkTile;
+            return (T) getNetworkTile();
         }
 
         return super.getCapability(capability, facing);

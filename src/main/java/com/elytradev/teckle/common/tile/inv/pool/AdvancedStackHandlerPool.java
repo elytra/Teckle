@@ -1,7 +1,6 @@
 package com.elytradev.teckle.common.tile.inv.pool;
 
 import com.elytradev.teckle.common.TeckleMod;
-import com.elytradev.teckle.common.worldnetwork.common.node.PositionData;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
