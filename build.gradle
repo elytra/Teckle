@@ -114,7 +114,7 @@ dependencies {
     deobfCompile "mezz.jei:jei_${mc_version}:${jei_version}:api"
     runtime "mezz.jei:jei_${mc_version}:${jei_version}"
 
-    deobfCompile "MCMultiPart2:MCMultiPart:${mcmp_version}"
+    deobfCompile "MCMultiPart2:MCMultiPart-exp:${mcmp_version}"
 	
 	deobfCompile "com.elytradev:concrete:${concrete_version}:all"
     shadow "com.elytradev:concrete:${concrete_version}:all"

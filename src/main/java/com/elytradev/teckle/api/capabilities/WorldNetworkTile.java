@@ -35,18 +35,16 @@ import net.minecraftforge.common.util.INBTSerializable;
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
-import java.util.function.BiPredicate;
 
 /**
  * Used to store node data on tiles.
  */
 public abstract class WorldNetworkTile implements INBTSerializable<NBTTagCompound> {
 
-    protected World world;
-    protected WorldNetworkNode node;
-    protected BlockPos pos;
     protected EnumFacing capabilityFace;
-
+    private World world;
+    private WorldNetworkNode node;
+    private BlockPos pos;
     private HashMap<NBTTagCompound, DummyNetworkTraveller> dummyTravellers = Maps.newHashMap();
 
     /**
@@ -159,6 +157,7 @@ public abstract class WorldNetworkTile implements INBTSerializable<NBTTagCompoun
      * @param node the node to set to.
      */
     public void setNode(WorldNetworkNode node) {
+        TeckleMod.LOG.debug("Set node to {}", node);
         this.node = node;
     }
 
@@ -262,14 +261,14 @@ public abstract class WorldNetworkTile implements INBTSerializable<NBTTagCompoun
 
     public NBTTagCompound serializeData(NBTTagCompound tag) {
         tag.setString("id", NetworkTileRegistry.getNetworkTileName(this.getClass()).toString());
-        tag.setLong("pos", pos.toLong());
+        tag.setLong("pos", getPos().toLong());
         tag.setInteger("face", getCapabilityFace() == null ? -1 : getCapabilityFace().getIndex());
         tag.setTag("ImplementationData", serializeNBT());
         return tag;
     }
 
     public void deserializeData(NBTTagCompound tag) {
-        this.pos = BlockPos.fromLong(tag.getLong("pos"));
+        this.setPos(BlockPos.fromLong(tag.getLong("pos")));
         this.setCapabilityFace(tag.getInteger("face") > 0 ? EnumFacing.values()[tag.getInteger("face")] : null);
         this.deserializeNBT(tag.getCompoundTag("ImplementationData"));
     }
