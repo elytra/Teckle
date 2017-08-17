@@ -1,15 +1,15 @@
 package com.elytradev.teckle.common.tile.inv.pool;
 
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.worldnetwork.common.node.PositionData;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
-import net.minecraft.world.storage.MapStorage;
 import net.minecraft.world.storage.WorldSavedData;
 import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.annotation.Nonnull;
@@ -64,14 +64,19 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
     }
 
     private static AdvancedStackHandlerPool getSavedPool(World world) {
-        MapStorage storage = world.getPerWorldStorage();
-        AdvancedStackHandlerPool instance = (AdvancedStackHandlerPool) storage.getOrLoadData(AdvancedStackHandlerPool.class, DATA_NAME);
-
-        if (instance == null) {
-            instance = new AdvancedStackHandlerPool();
-            storage.setData(DATA_NAME, instance);
+        AdvancedStackHandlerPool data = (AdvancedStackHandlerPool) world.getPerWorldStorage().getOrLoadData(AdvancedStackHandlerPool.class, DATA_NAME);
+        if (data == null) {
+            data = AdvancedStackHandlerPool.getPool(world);
+            world.getPerWorldStorage().setData(DATA_NAME, data);
+            data.markDirty();
         }
-        return instance;
+
+        return data;
+    }
+
+    @Override
+    public boolean isDirty() {
+        return true;
     }
 
     public boolean containsKey(Object key) {
@@ -87,6 +92,7 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
     }
 
     public AdvancedStackHandlerEntry put(UUID key, AdvancedStackHandlerEntry value) {
+        TeckleMod.LOG.debug("Added handler to pool {}", value);
         return registeredHandlers.put(key, value);
     }
 
@@ -128,25 +134,29 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
-        NBTTagList entries = tag.getTagList("entries", Constants.NBT.TAG_COMPOUND);
-        for (int i = 0; i < entries.tagCount(); i++) {
-            NBTTagCompound entryCompound = entries.getCompoundTagAt(i);
+        for (int i = 0; i < tag.getInteger("tags"); i++) {
+            NBTTagCompound entryCompound = tag.getCompoundTag("e" + i);
             AdvancedStackHandlerEntry advancedStackHandlerEntry = AdvancedStackHandlerEntry.create(entryCompound);
             registeredHandlers.put(advancedStackHandlerEntry.getId(), advancedStackHandlerEntry);
+            TeckleMod.LOG.debug("Deserialized {}", advancedStackHandlerEntry);
         }
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
-        NBTTagList entries = new NBTTagList();
-        for (AdvancedStackHandlerEntry entry : registeredHandlers.values()) {
-            PositionData positionData = PositionData.getPositionData(entry.getDimension(), entry.getPos());
-            if (positionData.allNodeContainers().isEmpty())
-                continue;
+        if (FMLCommonHandler.instance().getEffectiveSide().isClient())
+            return tag;
 
-            entries.appendTag(entry.serialize());
+        List<NBTTagCompound> entries = Lists.newArrayList();
+        for (AdvancedStackHandlerEntry entry : registeredHandlers.values()) {
+            TeckleMod.LOG.debug("Iterating {}", entry);
+            entries.add(entry.serialize());
+            TeckleMod.LOG.debug("Serialized {}", entry);
         }
-        tag.setTag("entries", entries);
+        tag.setInteger("tags", entries.size());
+        for (int i = 0; i < entries.size(); i++) {
+            tag.setTag("e" + i, entries.get(i));
+        }
         return tag;
     }
 }

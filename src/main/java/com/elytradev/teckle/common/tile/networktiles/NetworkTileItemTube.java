@@ -139,11 +139,6 @@ public class NetworkTileItemTube extends WorldNetworkTile {
         }
     }
 
-    @Override
-    public BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate() {
-        return (t, f) -> !t.data.hasKey("colour") || EnumDyeColor.byMetadata(t.data.getInteger("colour")).equals(getColour());
-    }
-
     public EnumDyeColor getColour() {
         if (world != null && world.isBlockLoaded(pos) && world.getTileEntity(pos) instanceof TileFilter) {
             this.cachedColour = ((TileFilter) world.getTileEntity(pos)).colour;
