@@ -45,9 +45,6 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
     public BlockPos position;
     public EnumFacing capabilityFace = null;
     public WorldNetworkTile tile = null;
-    // Used when a tile isn't loaded.
-    public BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate = (t, f) -> false;
-    public Predicate<EnumFacing> canConnectToSidePredicate = (f) -> true;
     private IWorldNetwork network;
     private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
 
@@ -89,25 +86,24 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
     }
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        if (isLoaded()) {
-            if (getNetworkTile() != null)
-                return getNetworkTile().canAcceptTraveller(traveller, from);
+        if (getNetworkTile() != null) {
+            return getNetworkTile().canAcceptTraveller(traveller, from);
         } else {
-            return canAcceptTravellerPredicate.test(traveller, from);
+            return true;
         }
-        return isLoaded();
     }
 
     /**
-     * Forward method for network tiles, uses a predicate as fallback if the tile isn't loaded.
+     * Forward method for network tiles, returns true if no network tile is associated with this.
      * <p>
      * Used to determine if this node can be connected to from the given side.
      */
     public boolean canConnectTo(EnumFacing side) {
-        if (!isLoaded() || getNetworkTile() == null) {
-            return canConnectToSidePredicate.test(side);
+        if (getNetworkTile() != null) {
+            return getNetworkTile().canConnectTo(side);
+        } else {
+            return true;
         }
-        return getNetworkTile().canConnectTo(side);
     }
 
     @Nullable

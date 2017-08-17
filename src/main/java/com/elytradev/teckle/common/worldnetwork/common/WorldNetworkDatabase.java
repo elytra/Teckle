@@ -240,9 +240,11 @@ public class WorldNetworkDatabase extends WorldSavedData {
         } else {
             this.cooldownTime--;
         }
-        // It's always dirty, nodes and tiles change on a regular basis.
-        if (!this.isDirty())
-            this.markDirty();
+    }
+
+    @Override
+    public boolean isDirty() {
+        return true;
     }
 
     public World getWorld() {

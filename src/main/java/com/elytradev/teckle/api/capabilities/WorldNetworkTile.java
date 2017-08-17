@@ -189,14 +189,6 @@ public abstract class WorldNetworkTile implements INBTSerializable<NBTTagCompoun
     public abstract boolean canConnectTo(EnumFacing side);
 
     /**
-     * Use to determine if a traveller can enter from the specified face when the tile is not loaded.
-     * Set on node creation.
-     */
-    public BiPredicate<WorldNetworkTraveller, EnumFacing> canAcceptTravellerPredicate() {
-        return (t, t2) -> false;
-    }
-
-    /**
      * Handles a traveller being returned to this tile after all destinations have been attempted.
      * Only relevant if this node is an entrypoint.
      *

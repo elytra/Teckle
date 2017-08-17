@@ -159,7 +159,8 @@ public class WorldNetwork implements IWorldNetwork {
 
     @Override
     public boolean isNodePresent(BlockPos nodePosition, EnumFacing facing) {
-        return getNodeContainersAtPosition(nodePosition).stream().map(NodeContainer::getFacing).anyMatch(nF -> faceMatches(facing, nF));
+        WorldNetworkNode node = getNode(nodePosition, facing);
+        return node != null;
     }
 
     @Override
@@ -465,11 +466,11 @@ public class WorldNetwork implements IWorldNetwork {
             deserializedTravellers.add(traveller);
         }
 
-        for (PositionData positionData : Lists.newArrayList(networkNodes.values())) {
-            positionData.getNodeContainers(getNetworkID()).stream().map(NodeContainer::getNode)
-                    .filter(node -> node.getNetworkTile() != null).map(WorldNetworkNode::getNetworkTile)
-                    .forEach(t -> t.networkReloaded(this));
-        }
+        //for (PositionData positionData : Lists.newArrayList(networkNodes.values())) {
+        //    positionData.getNodeContainers(getNetworkID()).stream().map(NodeContainer::getNode)
+        //            .filter(node -> node.getNetworkTile() != null).map(WorldNetworkNode::getNetworkTile)
+        //            .forEach(t -> t.networkReloaded(this));
+        //}
 
         for (WorldNetworkTraveller traveller : deserializedTravellers) {
             traveller.genPath(true);
