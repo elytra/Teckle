@@ -22,17 +22,18 @@ import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
-import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.common.TeckleMod;
-import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockTransposer;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
+import com.elytradev.teckle.common.tile.networktiles.NetworkTileTransposer;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
-import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.block.BlockSourceImpl;
@@ -62,92 +63,27 @@ import java.util.*;
 
 public class TileTransposer extends TileNetworkMember implements ITickable {
 
-    public EnumFacing cachedFace = EnumFacing.DOWN;
-    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(9);
-    private NetworkTileTransporter networkTile = new NetworkTileTransporter(null) {
-        @Override
-        public NBTTagCompound serializeNBT() {
-            return null;
-        }
-
-        @Override
-        public void deserializeNBT(NBTTagCompound nbt) {
-
-        }
-
-        @Override
-        public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return Objects.equals(side, getOutputFace());
-        }
-
-        @Override
-        public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
-        }
-
-        @Override
-        public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-            if (Objects.equals(traveller.getEntryPoint().position, TileTransposer.this.pos))
-                return true;
-
-            return Objects.equals(from, getOutputFace().getOpposite()) && !TileTransposer.this.isPowered();
-        }
-
-        @Override
-        public boolean canConnectTo(EnumFacing side) {
-            return side.equals(getOutputFace()) || side.getOpposite().equals(getOutputFace());
-        }
-
-
-        @Override
-        public EnumFacing getOutputFace() {
-            if (getWorld() != null) {
-                IBlockState thisState = getWorld().getBlockState(getPos());
-                if (Objects.equals(thisState.getBlock(), TeckleObjects.blockTransposer)) {
-                    return thisState.getValue(BlockTransposer.FACING);
-                }
-            }
-
-            return cachedFace;
-        }
-
-        @Override
-        public void acceptReturn(WorldNetworkTraveller traveller, EnumFacing side) {
-            if (!traveller.data.hasKey("stack"))
-                return; // wtf am I supposed to do with this???
-
-            ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
-            EnumFacing facing = getOutputFace();
-
-            // Try and put it back where we found it.
-            if (Objects.equals(side, getOutputFace())) {
-                if (getWorld().getTileEntity(getPos().offset(facing.getOpposite())) != null) {
-                    TileEntity pushTo = getWorld().getTileEntity(getPos().offset(facing.getOpposite()));
-                    if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
-                        IItemHandler itemHandler = pushTo.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
-                        for (int slot = 0; slot < itemHandler.getSlots() && !stack.isEmpty(); slot++) {
-                            stack = itemHandler.insertItem(slot, stack, false);
-                        }
-                    }
-                }
-            }
-            if (!stack.isEmpty()) {
-                // Spawn into the world I guess.
-                ItemStack remaining = stack.copy();
-                for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                    remaining = buffer.insertItem(i, remaining, false);
-                }
-
-                if (!remaining.isEmpty()) {
-                    WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                    remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                    DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
-                }
-            }
-        }
-    };
-
+    public UUID bufferID;
+    public AdvancedStackHandlerEntry bufferData;
+    private NetworkTileTransposer networkTile;
     private int cooldown = 0;
+
+    @Override
+    public void validate() {
+        if (bufferID == null) {
+            if (bufferData == null) {
+                bufferData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(9));
+            }
+            bufferID = bufferData.getId();
+        } else {
+            bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
+        }
+        if (networkTile == null)
+            this.networkTile = new NetworkTileTransposer(this);
+
+        this.networkTile.bufferData = this.bufferData;
+        this.networkTile.bufferID = this.bufferID;
+    }
 
     /**
      * Attempt to push to our network, by pulling from our input position.
@@ -213,8 +149,8 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         ItemStack remaining = networkAssistant.insertData(thisNode, potentialInsertionTile.getPos(), extractionData, ImmutableMap.of(), false, false).copy();
 
         if (!remaining.isEmpty()) {
-            for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                remaining = buffer.insertItem(i, remaining, false);
+            for (int i = 0; i < bufferData.getHandler().getSlots() && !remaining.isEmpty(); i++) {
+                remaining = bufferData.getHandler().insertItem(i, remaining, false);
             }
 
             if (!remaining.isEmpty()) {
@@ -232,15 +168,15 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
         // Check if the buffer is empty first...
         int bufferSlot = -1;
-        for (int i = 0; i < buffer.getSlots(); i++) {
-            if (!buffer.getStackInSlot(i).isEmpty()) {
+        for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {
+            if (!bufferData.getHandler().getStackInSlot(i).isEmpty()) {
                 bufferSlot = i;
                 break;
             }
         }
 
         if (bufferSlot != -1) {
-            extractionData = buffer.extractItem(bufferSlot, 1, false);
+            extractionData = bufferData.getHandler().extractItem(bufferSlot, 1, false);
         } else {
             if (world.getTileEntity(pos.offset(facing.getOpposite())) != null && world.getTileEntity(pos.offset(facing.getOpposite()))
                     .hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
@@ -302,8 +238,8 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             for (EntityItem entityItem : itemsToPickup) {
                 ItemStack entityStack = entityItem.getItem().copy();
 
-                for (int i = 0; i < buffer.getSlots() && !entityStack.isEmpty(); i++) {
-                    entityStack = buffer.insertItem(i, entityStack, false);
+                for (int i = 0; i < bufferData.getHandler().getSlots() && !entityStack.isEmpty(); i++) {
+                    entityStack = bufferData.getHandler().insertItem(i, entityStack, false);
                 }
 
                 entityItem.setItem(entityStack);
@@ -319,8 +255,8 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
     }
 
     public boolean canFitItemsInBuffer() {
-        for (int i = 0; i < buffer.getSlots(); i++) {
-            if (buffer.getStackInSlot(i).isEmpty() || buffer.getStackInSlot(i).getCount() < buffer.getSlotLimit(i)) {
+        for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {
+            if (bufferData.getHandler().getStackInSlot(i).isEmpty() || bufferData.getHandler().getStackInSlot(i).getCount() < bufferData.getHandler().getSlotLimit(i)) {
                 return true;
             }
         }
@@ -329,15 +265,34 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
-
-        buffer.deserializeNBT(compound.getCompoundTag("buffer"));
-        cachedFace = EnumFacing.values()[compound.getInteger("cachedFace")];
+    public NBTTagCompound writeToNBT(NBTTagCompound tag) {
+        tag.setUniqueId("buffer", bufferID);
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            UUID networkID = compound.hasKey("networkID") ? compound.getUniqueId("networkID") : null;
-            int dimID = compound.getInteger("databaseID");
+            tag.setInteger("databaseID", getWorld().provider.getDimension());
+            if (networkTile.getNode() == null)
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            tag.setUniqueId("networkID", networkTile.getNode().getNetwork().getNetworkID());
+        }
+        return super.writeToNBT(tag);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound tag) {
+        super.readFromNBT(tag);
+
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            if (tag.hasKey("buffer")) {
+                validate();
+                bufferData.getHandler().deserializeNBT(tag.getCompoundTag("buffer"));
+                tag.removeTag("buffer");
+            } else {
+                this.bufferID = tag.getUniqueId("buffer");
+                this.bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
+            }
+
+            UUID networkID = tag.hasKey("networkIDLeast") ? tag.getUniqueId("networkID") : null;
+            int dimID = tag.getInteger("databaseID");
             if (networkID == null) {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
             } else {
@@ -350,25 +305,14 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                 }
 
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-                WorldNetworkNode node = networkTile.createNode(network, pos);
-                network.registerNode(node);
-                networkTile.setNode(node);
+                for (NodeContainer container : network.getNodeContainersAtPosition(pos)) {
+                    if (container.getFacing() == null && container.getNetworkTile() instanceof NetworkTileTransposer) {
+                        networkTile = (NetworkTileTransposer) container.getNetworkTile();
+                        break;
+                    }
+                }
             }
         }
-    }
-
-    @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound.setTag("buffer", buffer.serializeNBT());
-        compound.setInteger("cachedFace", networkTile.getOutputFace().getIndex());
-
-        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            compound.setInteger("databaseID", getWorld().provider.getDimension());
-            if (networkTile.getNode() == null)
-                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-            compound.setUniqueId("networkID", networkTile.getNode().getNetwork().getNetworkID());
-        }
-        return super.writeToNBT(compound);
     }
 
     public List<EntityItem> getItemsInBlockPos(BlockPos pos) {
@@ -402,15 +346,15 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
     private final class ProbeCapability implements IProbeDataProvider {
         @Override
         public void provideProbeData(List<IProbeData> data) {
-            if (networkTile.node == null)
+            if (networkTile.getNode() == null)
                 return;
 
             if (TeckleMod.INDEV)
-                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", networkTile.node.getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", networkTile.getNode().getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
 
             List<ItemStack> stacks = new ArrayList<>();
-            for (int i = 0; i < buffer.getSlots(); i++) {
-                stacks.add(buffer.getStackInSlot(i));
+            for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {
+                stacks.add(bufferData.getHandler().getStackInSlot(i));
             }
 
             ProbeData probeData = new ProbeData(new TextComponentTranslation("tooltip.teckle.filter.buffer")).withInventory(ImmutableList.copyOf(stacks));

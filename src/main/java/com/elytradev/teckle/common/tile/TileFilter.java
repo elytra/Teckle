@@ -72,7 +72,6 @@ import java.util.*;
 
 public class TileFilter extends TileNetworkMember implements ITickable, IElementProvider {
 
-    public EnumFacing cachedFace = EnumFacing.DOWN;
     public EnumDyeColor colour = null;
     public UUID filterID, bufferID;
     public AdvancedStackHandlerEntry filterData, bufferData;
@@ -318,7 +317,6 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         super.readFromNBT(tag);
 
         this.colour = !tag.hasKey("colour") ? null : EnumDyeColor.byMetadata(tag.getInteger("colour"));
-        this.cachedFace = EnumFacing.values()[tag.getInteger("cachedFace")];
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             if (tag.hasKey("filterData")) {
@@ -367,7 +365,6 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
         }
         tag.setUniqueId("buffer", bufferID);
         tag.setUniqueId("filter", filterID);
-        tag.setInteger("cachedFace", networkTile.getOutputFace().getIndex());
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             tag.setInteger("databaseID", getWorld().provider.getDimension());

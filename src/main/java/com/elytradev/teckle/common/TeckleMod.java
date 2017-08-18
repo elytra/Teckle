@@ -92,7 +92,7 @@ public class TeckleMod {
     }
 
     @Mod.EventHandler
-    public void onFMLInterModCommsIMC(FMLInterModComms.IMCEvent e) {
+    public void onIMCsReceived(FMLInterModComms.IMCEvent e) {
         NetworkTileRegistry.handleIMCEvent(e);
     }
 }

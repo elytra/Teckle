@@ -20,6 +20,7 @@ import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistantHold
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.common.tile.TileTransposer;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockPistonBase;
@@ -136,7 +137,8 @@ public class BlockTransposer extends BlockContainer {
                 TileTransposer transposer = (TileTransposer) worldIn.getTileEntity(pos);
 
                 // Vomit the buffer.
-                transposer.buffer.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+                transposer.bufferData.getHandler().stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+                AdvancedStackHandlerPool.getPool(worldIn).remove(transposer.bufferData.getId());
             }
         }
 

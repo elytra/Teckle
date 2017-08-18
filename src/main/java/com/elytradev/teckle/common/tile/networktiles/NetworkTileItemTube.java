@@ -172,4 +172,13 @@ public class NetworkTileItemTube extends WorldNetworkTile {
 
         this.cachedColour = !tag.hasKey("colour") ? null : EnumDyeColor.byMetadata(tag.getInteger("colour"));
     }
+
+    @Override
+    public String toString() {
+        return "NetworkTileItemTube{" +
+                "blockedFaces=" + blockedFaces +
+                ", cachedColour=" + cachedColour +
+                ", node=" + getNode() +
+                '}';
+    }
 }

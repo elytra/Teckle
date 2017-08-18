@@ -243,9 +243,12 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
             if (tileAtPos.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)) {
                 canConnect = true;
             }
-            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, connectionPos, side)
-                    && CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, connectionPos, side).canConnectTo(side)) {
-                canConnect = true;
+
+            boolean positionNetworkTile = CapabilityWorldNetworkTile.isPositionNetworkTile(world, connectionPos, side);
+
+            if (positionNetworkTile) {
+                if (CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, connectionPos, side).canConnectTo(side))
+                    canConnect = true;
             }
         }
 
