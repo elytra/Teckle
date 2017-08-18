@@ -183,4 +183,13 @@ public class TileItemTube extends TileNetworkMember {
 
         return super.hasCapability(capability, facing);
     }
+
+    @Override
+    public String toString() {
+        return "TileItemTube{" +
+                "pos=" + pos +
+                ", colour=" + colour +
+                ", networkTile=" + networkTile +
+                '}';
+    }
 }

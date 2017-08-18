@@ -1,15 +1,18 @@
 package com.elytradev.teckle.compat.mcmp;
 
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockItemTube;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import mcmultipart.api.container.IPartInfo;
 import mcmultipart.api.multipart.IMultipart;
+import mcmultipart.api.multipart.IMultipartTile;
 import mcmultipart.api.slot.EnumCenterSlot;
 import mcmultipart.api.slot.IPartSlot;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -24,6 +27,12 @@ import java.util.List;
  * Simple multipart for tubes.
  */
 public class MultipartTube implements IMultipart {
+
+    @Override
+    public IMultipartTile convertToMultipartTile(TileEntity tileEntity) {
+        return IMultipartTile.wrap(tileEntity);
+    }
+
     @Override
     public IPartSlot getSlotForPlacement(World world, BlockPos pos, IBlockState state, EnumFacing facing, float hitX, float hitY, float hitZ, EntityLivingBase placer) {
         return EnumCenterSlot.CENTER;
