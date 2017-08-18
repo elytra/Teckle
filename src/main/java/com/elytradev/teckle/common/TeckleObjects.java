@@ -121,7 +121,7 @@ public class TeckleObjects {
         boolean foundCopper = !OreDictionary.getOres("ingotCopper").isEmpty();
 
         boolean foundMatchingOres = foundSilver && foundTin && foundCopper;
-        if (!foundMatchingOres && !TeckleMod.INDEV) {
+        if (!foundMatchingOres && !TeckleMod.INDEV && !TeckleMod.CONFIG.skipOreChecks) {
             String additionalData = (foundSilver ? "Found " : "Couldn't find ") + "silver ingots. ";
             additionalData += (foundTin ? "Found " : "Couldn't find ") + "tin ingots. ";
             additionalData += (foundCopper ? "Found " : "Couldn't find ") + "copper ingots.";
