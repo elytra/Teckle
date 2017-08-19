@@ -25,6 +25,7 @@ import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.block.property.UnlistedBool;
 import com.elytradev.teckle.common.block.property.UnlistedEnum;
 import com.elytradev.teckle.common.tile.TileItemTube;
+import com.google.common.collect.Maps;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -51,10 +52,13 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @SuppressWarnings("deprecation")
 public class BlockItemTube extends BlockContainer implements IResourceHolder {
+
+    public static Map<EnumFacing, UnlistedBool> FACE_PROPERTIES = Maps.newHashMap();
 
     public static UnlistedBool NORTH = new UnlistedBool("north");
     public static UnlistedBool EAST = new UnlistedBool("east");
@@ -63,8 +67,16 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
     public static UnlistedBool UP = new UnlistedBool("up");
     public static UnlistedBool DOWN = new UnlistedBool("down");
     public static UnlistedBool NODE = new UnlistedBool("node");
-
     public static UnlistedEnum<EnumDyeColor> COLOUR = new UnlistedEnum("colour", EnumDyeColor.class);
+
+    static {
+        FACE_PROPERTIES.put(EnumFacing.NORTH, NORTH);
+        FACE_PROPERTIES.put(EnumFacing.EAST, EAST);
+        FACE_PROPERTIES.put(EnumFacing.SOUTH, SOUTH);
+        FACE_PROPERTIES.put(EnumFacing.WEST, WEST);
+        FACE_PROPERTIES.put(EnumFacing.UP, UP);
+        FACE_PROPERTIES.put(EnumFacing.DOWN, DOWN);
+    }
 
     public BlockItemTube(Material materialIn) {
         super(materialIn);

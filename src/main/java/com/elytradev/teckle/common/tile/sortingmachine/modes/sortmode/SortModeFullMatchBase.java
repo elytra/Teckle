@@ -11,6 +11,9 @@ import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.items.IItemHandler;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 import java.util.Map;
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 public abstract class SortModeFullMatchBase extends SortMode {
 
     public int selectorPosition = 0;
+    public int compartmentSlot = 0;
     public List<ItemStack> stacksLeftToSatisfy = Lists.newArrayList();
 
     public SortModeFullMatchBase(int id, String unlocalizedName, SortModeType type) {
@@ -127,5 +131,49 @@ public abstract class SortModeFullMatchBase extends SortMode {
         }
         stacksLeftToSatisfy.removeIf(ItemStack::isEmpty);
         return false;
+    }
+
+    public Triple<ItemStack, SlotData, ItemStack> selectCompartmentSlot(TileSortingMachine sortingMachine, IItemHandler compartmentHandler, IItemHandler pushStackHandler) {
+        ItemStack selectedStack = ItemStack.EMPTY;
+        SlotData selectedStackInSlot = null;
+        ItemStack selectedCompartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
+
+        if (selectedCompartmentStack.isEmpty()) {
+            if (compartmentSlot < 6) {
+                for (int currentCompartmentItem = compartmentSlot; currentCompartmentItem < compartmentHandler.getSlots(); currentCompartmentItem++) {
+                    if (!compartmentHandler.getStackInSlot(currentCompartmentItem).isEmpty()) {
+                        selectedCompartmentStack = compartmentHandler.getStackInSlot(currentCompartmentItem);
+                        compartmentSlot = currentCompartmentItem;
+                        break;
+                    }
+                }
+            } else {
+                sortingMachine.getPullMode().unpause();
+                return new ImmutableTriple<>(selectedStack, selectedStackInSlot, selectedCompartmentStack);
+            }
+        }
+
+        if (selectedCompartmentStack.isEmpty()) {
+            compartmentSlot = 0;
+            sortingMachine.getPullMode().unpause();
+        }
+
+        for (int slot = 0; slot < pushStackHandler.getSlots(); slot++) {
+            ItemStack stackInSlot = pushStackHandler.getStackInSlot(slot);
+
+            if (stackInSlot.isEmpty())
+                continue;
+
+            if (selectedCompartmentStack.isItemEqual(stackInSlot) && selectedCompartmentStack.getCount() <= stackInSlot.getCount()) {
+                selectedStack = selectedCompartmentStack.copy();
+                selectedStackInSlot = new SlotData(pushStackHandler, slot);
+                compartmentSlot++;
+                break;
+            } else {
+                continue;
+            }
+        }
+
+        return new ImmutableTriple<>(selectedStack, selectedStackInSlot, selectedCompartmentStack);
     }
 }

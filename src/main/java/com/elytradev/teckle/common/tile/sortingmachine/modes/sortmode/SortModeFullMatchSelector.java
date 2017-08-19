@@ -34,6 +34,7 @@ import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.items.IItemHandler;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 import java.util.Map;
@@ -42,8 +43,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class SortModeFullMatchSelector extends SortModeFullMatchBase {
-
-    public int compartmentSlot = 0;
 
     public int coolDown = 5;
 
@@ -125,45 +124,10 @@ public class SortModeFullMatchSelector extends SortModeFullMatchBase {
 
         IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
         EnumDyeColor compartmentColour = sortingMachine.colours[selectorPosition];
-        ItemStack selectedStack = ItemStack.EMPTY;
-        SlotData selectedSlotData = null;
-        ItemStack selectedCompartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
-
-        if (selectedCompartmentStack.isEmpty()) {
-            if (compartmentSlot < 6) {
-                for (int currentCompartmentItem = compartmentSlot; currentCompartmentItem < compartmentHandler.getSlots(); currentCompartmentItem++) {
-                    if (!compartmentHandler.getStackInSlot(currentCompartmentItem).isEmpty()) {
-                        selectedCompartmentStack = compartmentHandler.getStackInSlot(currentCompartmentItem);
-                        compartmentSlot = currentCompartmentItem;
-                        break;
-                    }
-                }
-            } else {
-                sortingMachine.getPullMode().unpause();
-                return;
-            }
-        }
-
-        if (selectedCompartmentStack.isEmpty()) {
-            compartmentSlot = 0;
-            sortingMachine.getPullMode().unpause();
-        }
-
-        for (int slot = 0; slot < bufferHandler.getSlots(); slot++) {
-            ItemStack bufferStack = bufferHandler.getStackInSlot(slot);
-
-            if (bufferStack.isEmpty())
-                continue;
-
-            if (selectedCompartmentStack.isItemEqual(bufferStack) && selectedCompartmentStack.getCount() <= bufferStack.getCount()) {
-                selectedStack = selectedCompartmentStack.copy();
-                selectedSlotData = new SlotData(bufferHandler, slot);
-                compartmentSlot++;
-                break;
-            } else {
-                continue;
-            }
-        }
+        Triple<ItemStack, SlotData, ItemStack> selectedData = selectCompartmentSlot(sortingMachine, compartmentHandler, bufferHandler);
+        ItemStack selectedStack = selectedData.getLeft();
+        SlotData selectedSlotData = selectedData.getMiddle();
+        ItemStack selectedCompartmentStack = selectedData.getRight();
 
         if (selectedStack.isEmpty())
             return;
@@ -283,7 +247,7 @@ public class SortModeFullMatchSelector extends SortModeFullMatchBase {
         genStacksToSatisfy(sortingMachine);
         Optional<ItemStack> matchingStack = stacksLeftToSatisfy.stream().filter(stack -> stack.isItemEqual(travellerStack)).findFirst();
         ItemStack handledStack = handleAcceptedTraveller(sortingMachine, traveller, travellerStack, matchingStack);
-        if(handledStack != null) return handledStack;
+        if (handledStack != null) return handledStack;
 
         if (stacksLeftToSatisfy.isEmpty()) {
             sortingMachine.getPullMode().pause();

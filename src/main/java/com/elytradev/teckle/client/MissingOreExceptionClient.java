@@ -16,7 +16,8 @@ public class MissingOreExceptionClient extends CustomModLoadingErrorDisplayExcep
     }
 
     @Override
-    public void initGui(GuiErrorScreen errorScreen, FontRenderer fontRenderer) {}
+    public void initGui(GuiErrorScreen errorScreen, FontRenderer fontRenderer) {
+    }
 
     @Override
     public void drawScreen(GuiErrorScreen errorScreen, FontRenderer fontRenderer, int mouseRelX, int mouseRelY, float tickTime) {

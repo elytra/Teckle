@@ -82,32 +82,7 @@ public class NetworkTileTransposer extends WorldNetworkTile {
 
         ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
         EnumFacing facing = getOutputFace();
-
-        // Try and put it back where we found it.
-        if (Objects.equals(side, getOutputFace())) {
-            if (getWorld().getTileEntity(getPos().offset(facing.getOpposite())) != null) {
-                TileEntity pushTo = getWorld().getTileEntity(getPos().offset(facing.getOpposite()));
-                if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
-                    IItemHandler itemHandler = pushTo.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
-                    for (int slot = 0; slot < itemHandler.getSlots() && !stack.isEmpty(); slot++) {
-                        stack = itemHandler.insertItem(slot, stack, false);
-                    }
-                }
-            }
-        }
-        if (!stack.isEmpty()) {
-            // Spawn into the world I guess.
-            ItemStack remaining = stack.copy();
-            for (int i = 0; i < bufferData.getHandler().getSlots() && !remaining.isEmpty(); i++) {
-                remaining = bufferData.getHandler().insertItem(i, remaining, false);
-            }
-
-            if (!remaining.isEmpty()) {
-                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
-            }
-        }
+        handleReturnStack(side, stack, facing);
     }
 
     private boolean isPowered() {
@@ -115,6 +90,34 @@ public class NetworkTileTransposer extends WorldNetworkTile {
             return getWorld().getBlockState(getPos()).getValue(BlockTransposer.TRIGGERED).booleanValue();
         }
         return false;
+    }
+
+    protected void handleReturnStack(EnumFacing from, ItemStack stack, EnumFacing neighbourFace) {
+        // Try and put it back where we found it.
+        if (Objects.equals(from, getOutputFace())) {
+            if (getWorld().getTileEntity(getPos().offset(neighbourFace.getOpposite())) != null) {
+                TileEntity pushTo = getWorld().getTileEntity(getPos().offset(neighbourFace.getOpposite()));
+                if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, neighbourFace)) {
+                    IItemHandler itemHandler = pushTo.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, neighbourFace);
+                    for (int slot = 0; slot < itemHandler.getSlots() && !stack.isEmpty(); slot++) {
+                        stack = itemHandler.insertItem(slot, stack, false);
+                    }
+                }
+            }
+        }
+        if (!stack.isEmpty()) {
+            ItemStack remaining = stack.copy();
+            for (int i = 0; i < bufferData.getHandler().getSlots() && !remaining.isEmpty(); i++) {
+                remaining = bufferData.getHandler().insertItem(i, remaining, false);
+            }
+
+            // Spawn into the world I guess...
+            if (!remaining.isEmpty()) {
+                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
+                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
+                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
+            }
+        }
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.elytradev.teckle.compat.mcmp;
 
-import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockItemTube;
 import com.elytradev.teckle.common.tile.TileItemTube;
