@@ -19,7 +19,6 @@ package com.elytradev.teckle.common;
 import com.elytradev.teckle.common.block.*;
 import com.elytradev.teckle.common.crafting.AlloyRecipes;
 import com.elytradev.teckle.common.crafting.RecipeSlice;
-import com.elytradev.teckle.common.exception.MissingOreException;
 import com.elytradev.teckle.common.handlers.PaintbrushRecipe;
 import com.elytradev.teckle.common.item.ItemBlade;
 import com.elytradev.teckle.common.item.ItemIngot;
@@ -112,9 +111,7 @@ public class TeckleObjects {
         NetworkTileRegistry.registerNetworkTile("teckle", "filter", NetworkTileFilter.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "transposer", NetworkTileTransposer.class);
         NetworkNodeRegistry.registerNetworkNode("teckle", "itemendpoint", ItemNetworkEndpoint.class);
-    }
 
-    public void postInit(FMLPostInitializationEvent e) {
         // Crash if there's missing ores.
         boolean foundSilver = !OreDictionary.getOres("ingotSilver").isEmpty();
         boolean foundTin = !OreDictionary.getOres("ingotTin").isEmpty();
@@ -125,8 +122,11 @@ public class TeckleObjects {
             String additionalData = (foundSilver ? "Found " : "Couldn't find ") + "silver ingots. ";
             additionalData += (foundTin ? "Found " : "Couldn't find ") + "tin ingots. ";
             additionalData += (foundCopper ? "Found " : "Couldn't find ") + "copper ingots.";
-            throw new MissingOreException("Teckle is missing ores, Tin, Silver, and Copper must be present to run. " + additionalData);
+            TeckleMod.PROXY.handleMissingOres("Teckle is missing ores, Tin, Silver, and Copper must be present to run. " + additionalData);
         }
+    }
+
+    public void postInit(FMLPostInitializationEvent e) {
     }
 
     @SubscribeEvent

@@ -18,10 +18,16 @@ package com.elytradev.teckle.common.proxy;
 
 import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.exception.MissingOreException;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiErrorScreen;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.client.CustomModLoadingErrorDisplayException;
 import net.minecraftforge.fml.common.LoaderState;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
@@ -57,6 +63,10 @@ public class CommonProxy {
             TeckleMod.INDEV = false;
             TeckleLog.developerPlayer = null;
         }
+    }
+
+    public void handleMissingOres(String m) {
+        throw new MissingOreException(m);
     }
 
 }

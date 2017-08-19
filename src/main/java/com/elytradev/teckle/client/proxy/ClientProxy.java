@@ -18,6 +18,7 @@ package com.elytradev.teckle.client.proxy;
 
 import com.elytradev.concrete.resgen.ConcreteResourcePack;
 import com.elytradev.concrete.resgen.IResourceHolder;
+import com.elytradev.teckle.client.MissingOreExceptionClient;
 import com.elytradev.teckle.client.render.model.ModelMachineOverlay;
 import com.elytradev.teckle.client.render.model.TubeModelLoader;
 import com.elytradev.teckle.client.render.tile.TileSortingMachineRender;
@@ -26,6 +27,7 @@ import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockItemTube;
+import com.elytradev.teckle.common.exception.MissingOreException;
 import com.elytradev.teckle.common.item.ItemIngot;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.proxy.CommonProxy;
@@ -162,5 +164,11 @@ public class ClientProxy extends CommonProxy {
     public void registerHandlers() {
         super.registerHandlers();
         MinecraftForge.EVENT_BUS.register(ClientTravellerManager.class);
+    }
+
+    @Override
+    public void handleMissingOres(String m) {
+        // FML doesn't seem to work properly but this will still cause the game to exit for now.
+        throw new MissingOreExceptionClient(m, new MissingOreException(m));
     }
 }
