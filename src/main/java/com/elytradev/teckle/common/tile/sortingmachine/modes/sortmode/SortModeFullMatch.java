@@ -34,6 +34,7 @@ import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.items.IItemHandler;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +48,6 @@ import java.util.stream.Stream;
  */
 public class SortModeFullMatch extends SortModeFullMatchBase {
 
-    public int compartmentSlot = 0;
     public int coolDown = 5;
 
     public SortModeFullMatch() {
@@ -305,7 +305,6 @@ public class SortModeFullMatch extends SortModeFullMatchBase {
     }
 
 
-
     /**
      * Get the position of the selector, if no selector is used in this mode return -1.
      *
@@ -344,47 +343,12 @@ public class SortModeFullMatch extends SortModeFullMatchBase {
 
         IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
         EnumDyeColor compartmentColour = sortingMachine.colours[selectorPosition];
-        ItemStack selectedStack = null;
-        SlotData selectedStackInSlot = null;
-        ItemStack selectedCompartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
+        Triple<ItemStack, SlotData, ItemStack> selectedData = selectCompartmentSlot(sortingMachine, compartmentHandler, pushStackHandler);
+        ItemStack selectedStack = selectedData.getLeft();
+        SlotData selectedStackInSlot = selectedData.getMiddle();
+        ItemStack selectedCompartmentStack = selectedData.getRight();
 
-        if (selectedCompartmentStack.isEmpty()) {
-            if (compartmentSlot < 6) {
-                for (int currentCompartmentItem = compartmentSlot; currentCompartmentItem < compartmentHandler.getSlots(); currentCompartmentItem++) {
-                    if (!compartmentHandler.getStackInSlot(currentCompartmentItem).isEmpty()) {
-                        selectedCompartmentStack = compartmentHandler.getStackInSlot(currentCompartmentItem);
-                        compartmentSlot = currentCompartmentItem;
-                        break;
-                    }
-                }
-            } else {
-                sortingMachine.getPullMode().unpause();
-                return;
-            }
-        }
-
-        if (selectedCompartmentStack.isEmpty()) {
-            compartmentSlot = 0;
-            sortingMachine.getPullMode().unpause();
-        }
-
-        for (int slot = 0; slot < pushStackHandler.getSlots(); slot++) {
-            ItemStack stackInSlot = pushStackHandler.getStackInSlot(slot);
-
-            if (stackInSlot.isEmpty())
-                continue;
-
-            if (selectedCompartmentStack.isItemEqual(stackInSlot) && selectedCompartmentStack.getCount() <= stackInSlot.getCount()) {
-                selectedStack = selectedCompartmentStack.copy();
-                selectedStackInSlot = new SlotData(pushStackHandler, slot);
-                compartmentSlot++;
-                break;
-            } else {
-                continue;
-            }
-        }
-
-        if (selectedStack == null)
+        if (selectedStack.isEmpty())
             return;
 
         sortingMachine.addToNetwork(selectedStackInSlot.itemHandler, selectedStackInSlot.slot, selectedStack.getCount(),
@@ -399,7 +363,6 @@ public class SortModeFullMatch extends SortModeFullMatchBase {
         }
     }
 
-
     @Override
     public NBTBase serializeNBT() {
         NBTTagCompound tagCompound = new NBTTagCompound();
@@ -407,7 +370,6 @@ public class SortModeFullMatch extends SortModeFullMatchBase {
         tagCompound.setInteger("selectorPosition", selectorPosition);
         tagCompound.setInteger("compartmentSlot", compartmentSlot);
         tagCompound.setInteger("cooldown", coolDown);
-
         tagCompound.setInteger("stacksLeftToSatisfy", stacksLeftToSatisfy.size());
         for (int i = 0; i < stacksLeftToSatisfy.size(); i++) {
             tagCompound.setTag("stacksLeftToSatisfy" + i, stacksLeftToSatisfy.get(i).serializeNBT());

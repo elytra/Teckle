@@ -27,7 +27,6 @@ import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.container.ContainerFilter;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
-import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
@@ -70,7 +69,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class TileFilter extends TileNetworkMember implements ITickable, IElementProvider {
+public class TileFilter extends TileTransposer implements ITickable, IElementProvider {
 
     public EnumDyeColor colour = null;
     public UUID filterID, bufferID;
@@ -275,41 +274,7 @@ public class TileFilter extends TileNetworkMember implements ITickable, IElement
             cooldown--;
         }
 
-        boolean canFitItems = world.isAirBlock(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec())) && canFitItemsInBuffer();
-        if (canFitItems) {
-            List<EntityItem> itemsToPickup = getItemsInBlockPos(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec()));
-            if (world.getBlockState(pos).getValue(BlockFilter.TRIGGERED) && world.isAirBlock(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec())
-                    .add(networkTile.getOutputFace().getOpposite().getDirectionVec())))
-                itemsToPickup.addAll(getItemsInBlockPos(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec())
-                        .add(networkTile.getOutputFace().getOpposite().getDirectionVec())));
-
-            for (EntityItem entityItem : itemsToPickup) {
-                ItemStack entityStack = entityItem.getItem().copy();
-
-                for (int i = 0; i < bufferData.getHandler().getSlots() && !entityStack.isEmpty(); i++) {
-                    entityStack = bufferData.getHandler().insertItem(i, entityStack, false);
-                }
-
-                entityItem.setItem(entityStack);
-                if (entityStack.isEmpty()) {
-                    world.removeEntity(entityItem);
-                }
-
-                canFitItems = canFitItemsInBuffer();
-                if (!canFitItems)
-                    break;
-            }
-        }
-    }
-
-    public boolean canFitItemsInBuffer() {
-        for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {
-            if (bufferData.getHandler().getStackInSlot(i).isEmpty() || bufferData.getHandler().getStackInSlot(i).getCount() < bufferData.getHandler().getSlotLimit(i)) {
-                return true;
-            }
-        }
-
-        return false;
+        pullItemEntities(isPowered());
     }
 
     @Override

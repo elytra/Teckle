@@ -227,10 +227,14 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             cooldown--;
         }
 
+        pullItemEntities(isPowered());
+    }
+
+    protected void pullItemEntities(boolean increaseDistance) {
         boolean canFitItems = world.isAirBlock(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec())) && canFitItemsInBuffer();
         if (canFitItems) {
             List<EntityItem> itemsToPickup = getItemsInBlockPos(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec()));
-            if (world.getBlockState(pos).getValue(BlockTransposer.TRIGGERED) && world.isAirBlock(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec())
+            if (increaseDistance && world.isAirBlock(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec())
                     .add(networkTile.getOutputFace().getOpposite().getDirectionVec())))
                 itemsToPickup.addAll(getItemsInBlockPos(pos.add(networkTile.getOutputFace().getOpposite().getDirectionVec())
                         .add(networkTile.getOutputFace().getOpposite().getDirectionVec())));

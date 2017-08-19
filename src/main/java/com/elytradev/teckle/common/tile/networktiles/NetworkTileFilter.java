@@ -1,13 +1,11 @@
 package com.elytradev.teckle.common.tile.networktiles;
 
 import com.elytradev.teckle.api.IWorldNetwork;
-import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.tile.TileFilter;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
-import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -15,18 +13,15 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
 
 import java.util.Objects;
 import java.util.UUID;
 
 
-public class NetworkTileFilter extends WorldNetworkTile {
+public class NetworkTileFilter extends NetworkTileTransposer {
 
     public EnumFacing cachedFace = EnumFacing.DOWN;
     public EnumDyeColor cachedColour = null;
@@ -131,33 +126,7 @@ public class NetworkTileFilter extends WorldNetworkTile {
 
         ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
         EnumFacing facing = getOutputFace();
-        BlockPos sourcePos = getPos().offset(facing);
-
-        // Try and put it back where we found it.
-        if (Objects.equals(side, getOutputFace())) {
-            if (getWorld().getTileEntity(getPos().offset(facing.getOpposite())) != null) {
-                TileEntity pushTo = getWorld().getTileEntity(getPos().offset(facing.getOpposite()));
-                if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
-                    IItemHandler itemHandler = pushTo.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
-                    for (int slot = 0; slot < itemHandler.getSlots() && !stack.isEmpty(); slot++) {
-                        stack = itemHandler.insertItem(slot, stack, false);
-                    }
-                }
-            }
-        }
-        if (!stack.isEmpty()) {
-            ItemStack remaining = stack.copy();
-            for (int i = 0; i < bufferData.getHandler().getSlots() && !remaining.isEmpty(); i++) {
-                remaining = bufferData.getHandler().insertItem(i, remaining, false);
-            }
-
-            // Spawn into the world I guess...
-            if (!remaining.isEmpty()) {
-                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
-            }
-        }
+        handleReturnStack(side, stack, facing);
     }
 
     @Override

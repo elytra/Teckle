@@ -45,47 +45,21 @@ public class BakedTubeModel implements IBakedModel {
 
         if (state.getValue(BlockItemTube.NODE)) {
             result.add(nodeModel);
-            if (state.getValue(BlockItemTube.UP)) {
-                result.add(legModelsNode.get(EnumFacing.UP));
-            }
-            if (state.getValue(BlockItemTube.DOWN)) {
-                result.add(legModelsNode.get(EnumFacing.DOWN));
-            }
-            if (state.getValue(BlockItemTube.NORTH)) {
-                result.add(legModelsNode.get(EnumFacing.NORTH));
-            }
-            if (state.getValue(BlockItemTube.SOUTH)) {
-                result.add(legModelsNode.get(EnumFacing.SOUTH));
-            }
-            if (state.getValue(BlockItemTube.WEST)) {
-                result.add(legModelsNode.get(EnumFacing.WEST));
-            }
-            if (state.getValue(BlockItemTube.EAST)) {
-                result.add(legModelsNode.get(EnumFacing.EAST));
-            }
+            addLegs(state, legModelsNode, result);
         } else {
             // No node.
-            if (state.getValue(BlockItemTube.UP)) {
-                result.add(legModels.get(EnumFacing.UP));
-            }
-            if (state.getValue(BlockItemTube.DOWN)) {
-                result.add(legModels.get(EnumFacing.DOWN));
-            }
-            if (state.getValue(BlockItemTube.NORTH)) {
-                result.add(legModels.get(EnumFacing.NORTH));
-            }
-            if (state.getValue(BlockItemTube.SOUTH)) {
-                result.add(legModels.get(EnumFacing.SOUTH));
-            }
-            if (state.getValue(BlockItemTube.WEST)) {
-                result.add(legModels.get(EnumFacing.WEST));
-            }
-            if (state.getValue(BlockItemTube.EAST)) {
-                result.add(legModels.get(EnumFacing.EAST));
-            }
+            addLegs(state, legModels, result);
         }
 
         return result;
+    }
+
+    protected void addLegs(IExtendedBlockState state, HashMap<EnumFacing, IBakedModel> legModels, List<IBakedModel> result) {
+        for (EnumFacing enumFacing : EnumFacing.values()) {
+            if (state.getValue(BlockItemTube.FACE_PROPERTIES.get(enumFacing))) {
+                result.add(legModels.get(enumFacing));
+            }
+        }
     }
 
     @Override
