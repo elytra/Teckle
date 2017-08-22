@@ -3,6 +3,7 @@ package com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.ItemStream;
 import com.elytradev.teckle.common.tile.inv.SlotData;
+import com.elytradev.teckle.common.tile.sortingmachine.NetworkTileSortingMachineBase;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
@@ -30,13 +31,13 @@ public abstract class SortModeFullMatchBase extends SortMode {
         super(id, unlocalizedName, type);
     }
 
-    protected ItemStack handleAcceptedTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, ItemStack travellerStack, Optional<ItemStack> matchingStack) {
+    protected ItemStack handleAcceptedTraveller(NetworkTileSortingMachineBase sortingMachine, WorldNetworkTraveller traveller, ItemStack travellerStack, Optional<ItemStack> matchingStack) {
         if (matchingStack.isPresent()) {
             ItemStack toInsert = travellerStack.copy();
             toInsert.setCount(matchingStack.get().getCount());
             ItemStack remainder = travellerStack.copy();
             remainder.setCount(travellerStack.getCount() - matchingStack.get().getCount());
-            ItemStack leftover = sortingMachine.buffer.insertItem(toInsert, false);
+            ItemStack leftover = sortingMachine.getBuffer().insertItem(toInsert, false);
             remainder.grow(leftover.getCount());
 
             matchingStack.get().shrink(toInsert.getCount() - leftover.getCount());
@@ -45,17 +46,17 @@ public abstract class SortModeFullMatchBase extends SortMode {
                 sortingMachine.getPullMode().pause();
 
             return remainder;
-        } else if (!sortingMachine.defaultRoute.isBlocked()) {
+        } else if (!sortingMachine.getDefaultRoute().isBlocked()) {
             WorldNetworkTraveller travellerCopy = traveller.clone();
-            if (sortingMachine.defaultRoute.isColoured()) {
-                travellerCopy.data.setInteger("colour", sortingMachine.defaultRoute.getColour().getMetadata());
+            if (sortingMachine.getDefaultRoute().isColoured()) {
+                travellerCopy.data.setInteger("colour", sortingMachine.getDefaultRoute().getColour().getMetadata());
             } else {
                 travellerCopy.data.removeTag("colour");
             }
-            BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getEjectionTile().getOutputFace());
+            BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getOutputTile().getOutputFace());
             ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
             ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class)
-                    .insertData((WorldNetworkEntryPoint) sortingMachine.getEjectionTile().getNode(), insertInto,
+                    .insertData((WorldNetworkEntryPoint) sortingMachine.getOutputTile().getNode(), insertInto,
                             travellerStack, collect, false, false);
 
             if (result.isEmpty() || result.getCount() != travellerStack.getCount()) {
@@ -67,12 +68,11 @@ public abstract class SortModeFullMatchBase extends SortMode {
         return null;
     }
 
-    protected void genStacksToSatisfy(TileSortingMachine sortingMachine) {
+    protected void genStacksToSatisfy(AdvancedItemStackHandler buffer, List<IItemHandler> compartmentHandlers) {
         if (stacksLeftToSatisfy.isEmpty()) {
-            stacksLeftToSatisfy = ItemStream.createItemStream(sortingMachine.getCompartmentHandlers().get(selectorPosition)).filter(s -> !s.isEmpty()).map(ItemStack::copy).collect(Collectors.toList());
+            stacksLeftToSatisfy = ItemStream.createItemStream(compartmentHandlers.get(selectorPosition)).filter(s -> !s.isEmpty()).map(ItemStack::copy).collect(Collectors.toList());
 
             // Don't satisfy things in the buffer. Duh.
-            AdvancedItemStackHandler buffer = sortingMachine.buffer;
             if (!buffer.stream().allMatch(ItemStack::isEmpty)) {
                 for (int i = 0; i < buffer.getStacks().size(); i++) {
                     if (buffer.getStackInSlot(i).isEmpty())
@@ -109,7 +109,7 @@ public abstract class SortModeFullMatchBase extends SortMode {
             Optional<SlotData> matchingSlotData = stacksToPush.stream().filter(slotData -> stackToSatisfy.isItemEqual(slotData.getStack())
                     && slotData.getStack().getCount() > 0).findFirst();
 
-            if (matchingSlotData.isPresent() && sortingMachine.buffer.canInsertItem(matchingSlotData.get().getStack().copy())) {
+            if (matchingSlotData.isPresent() && sortingMachine.bufferData.getHandler().canInsertItem(matchingSlotData.get().getStack().copy())) {
                 slotsToExtract.put(matchingSlotData.get(), stackToSatisfy);
                 continue;
             }
@@ -122,7 +122,7 @@ public abstract class SortModeFullMatchBase extends SortMode {
 
             Integer countToExtract = satisfyStack.getCount() < slotData.getStack().getCount() ? satisfyStack.getCount() : slotData.getStack().getCount();
             ItemStack extracted = slotData.extract(countToExtract, false);
-            ItemStack remaining = sortingMachine.buffer.insertItem(extracted, false);
+            ItemStack remaining = sortingMachine.bufferData.getHandler().insertItem(extracted, false);
 
             slotCountEntry.getValue().shrink(countToExtract - remaining.getCount());
             if (!remaining.isEmpty()) {
