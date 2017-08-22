@@ -354,7 +354,10 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                 return;
 
             if (TeckleMod.INDEV)
-                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network", networkTile.getNode().getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
+                data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network",
+                        "All",
+                        networkTile.getNode().getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""),
+                        networkTile.getNode().getNetwork().getNodePositions().size())));
 
             List<ItemStack> stacks = new ArrayList<>();
             for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {
