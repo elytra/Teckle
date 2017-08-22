@@ -48,19 +48,19 @@ public class TubeModel implements IModel {
             nodeModel = unbakedNodeModel.bake(new TRSRTransformation(ModelRotation.X0_Y0), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter());
 
             for (EnumFacing facing : EnumFacing.VALUES) {
-                buildLegModel(rotations, unbakedLegModel, unbakedLegModelInside, facing);
-                buildLegModel(rotations, unbakedLegNodeModel, unbakedLegNodeModelInside, facing);
+                legModels.put(facing, buildLegModel(rotations, unbakedLegModel, unbakedLegModelInside, facing));
+                legModelsNode.put(facing, buildLegModel(rotations, unbakedLegNodeModel, unbakedLegNodeModelInside, facing));
             }
         } catch (Exception e) {
             TeckleMod.LOG.error("Failed to load tube model data, things will work but won't look very nice.", e);
         }
     }
 
-    private void buildLegModel(HashMap<EnumFacing, ModelRotation> rotations, IModel unBakedModel, IModel unbakedModelInside, EnumFacing facing) {
+    private IBakedModel buildLegModel(HashMap<EnumFacing, ModelRotation> rotations, IModel unBakedModel, IModel unbakedModelInside, EnumFacing facing) {
         MultipartBakedModel.Builder builder = new MultipartBakedModel.Builder();
         builder.putModel(input -> true, unBakedModel.bake(new TRSRTransformation(rotations.get(facing)), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()));
         builder.putModel(input -> true, unbakedModelInside.bake(new TRSRTransformation(rotations.get(facing)), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()));
-        legModels.put(facing, builder.makeMultipartModel());
+        return builder.makeMultipartModel();
     }
 
     @Override
