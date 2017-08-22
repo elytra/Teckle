@@ -145,7 +145,10 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
     @Override
     public NBTTagCompound getUpdateTag() {
-        return this.writeToNBT(new NBTTagCompound());
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setInteger("sortmodeID", getSortMode().getID());
+        tag.setInteger("pullmodeID", getPullMode().getID());
+        return this.writeToNBT(tag);
     }
 
     @Override
@@ -156,6 +159,17 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     @Override
     public void handleUpdateTag(NBTTagCompound tag) {
         this.readFromNBT(tag);
+
+        try {
+            if (tag.hasKey("sortmodeID")) {
+                getOutputTile().setSortMode(SortMode.SORT_MODES.get(tag.getInteger("sortmodeID")).newInstance());
+            }
+            if (tag.hasKey("pullmodeID")) {
+                getOutputTile().setPullMode(PullMode.PULL_MODES.get(tag.getInteger("pullmodeID")).newInstance());
+            }
+        } catch (Exception e) {
+            // just eat the exception it doesnt matter that much
+        }
     }
 
     @Override
@@ -581,13 +595,16 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
                 WorldNetworkTile networkTileAtPosition = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
                 WorldNetworkNode node = networkTileAtPosition.getNode();
                 String faceName = networkTileAtPosition.getCapabilityFace() == null ? "" : networkTileAtPosition.getCapabilityFace().getName();
+                faceName = faceName.substring(0, 1).toUpperCase() + faceName.substring(1, faceName.length());
                 if (node == null || nodes.contains(node))
                     continue;
 
                 nodes.add(node);
                 if (TeckleMod.INDEV)
                     data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network",
-                            faceName, node.getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""))));
+                            faceName,
+                            node.getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""),
+                            node.getNetwork().getNodePositions().size())));
 
                 if (!node.getTravellers().isEmpty()) {
                     data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.traveller.data")));

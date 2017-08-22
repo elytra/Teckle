@@ -34,7 +34,7 @@ item.teckle.siliconwafer.plain.name=Silizium-Wafer
 item.teckle.siliconwafer.red.name=Rot dotierter Wafer
 item.teckle.siliconwafer.blue.name=Blau dotierter Wafer
 
-tooltip.teckle.node.network=Netzwerk %s %s
+tooltip.teckle.node.network=Netzwerk %s %s %s
 tooltip.teckle.traveller.data=Travellers
 tooltip.teckle.filter.buffer=Puffer
 

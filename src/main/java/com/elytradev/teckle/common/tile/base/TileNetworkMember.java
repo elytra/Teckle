@@ -81,14 +81,16 @@ public abstract class TileNetworkMember extends TileEntity {
                     continue;
                 WorldNetworkTile networkTileAtPosition = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
                 WorldNetworkNode node = networkTileAtPosition.getNode();
-                String faceName = networkTileAtPosition.getCapabilityFace() == null ? "" : networkTileAtPosition.getCapabilityFace().getName();
+                String faceName = networkTileAtPosition.getCapabilityFace() == null ? "All" : networkTileAtPosition.getCapabilityFace().getName();
                 if (node == null || nodes.contains(node))
                     continue;
 
                 nodes.add(node);
                 if (TeckleMod.INDEV)
                     data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network",
-                            faceName, node.getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", "")).appendText("\n Count " + networkTileAtPosition.getNode().getNetwork().getNodePositions().size())));
+                            faceName,
+                            node.getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""),
+                            networkTileAtPosition.getNode().getNetwork().getNodePositions().size())));
 
                 if (!node.getTravellers().isEmpty()) {
                     data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.traveller.data")));
