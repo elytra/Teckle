@@ -1,11 +1,13 @@
 package com.elytradev.teckle.common.tile.sortingmachine;
 
 import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.common.TeckleObjects;
+import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -18,9 +20,25 @@ public class NetworkTileSortingMachineInput extends NetworkTileSortingMachineBas
         super(world, pos, face);
     }
 
+    public NetworkTileSortingMachineInput(TileSortingMachine sortingMachine) {
+        super(sortingMachine.getWorld(), sortingMachine.getPos(), sortingMachine.getFacing().getOpposite());
+
+        this.filterData = sortingMachine.filterData;
+        this.bufferData = sortingMachine.bufferData;
+        this.filterID = sortingMachine.filterID;
+        this.bufferID = sortingMachine.bufferID;
+    }
+
     @Override
     public EnumFacing getCapabilityFace() {
-        return getOutputTile().getOutputFace().getOpposite();
+        if (getWorld() != null && getWorld().isBlockLoaded(getPos())) {
+            IBlockState thisState = getWorld().getBlockState(getPos());
+            if (Objects.equals(thisState.getBlock(), TeckleObjects.blockSortingMachine)) {
+                setCapabilityFace(thisState.getValue(BlockSortingMachine.FACING));
+            }
+        }
+
+        return super.getCapabilityFace();
     }
 
     @Override
@@ -31,10 +49,6 @@ public class NetworkTileSortingMachineInput extends NetworkTileSortingMachineBas
     @Override
     public PullMode getPullMode() {
         return getOutputTile().getPullMode();
-    }
-
-    public NetworkTileSortingMachineInput(TileSortingMachine sortingMachine) {
-        super(sortingMachine.getWorld(), sortingMachine.getPos(), sortingMachine.getFacing().getOpposite());
     }
 
     @Override
@@ -57,13 +71,4 @@ public class NetworkTileSortingMachineInput extends NetworkTileSortingMachineBas
         return Objects.equals(side, getCapabilityFace());
     }
 
-    @Override
-    public NBTTagCompound serializeNBT() {
-        return null;
-    }
-
-    @Override
-    public void deserializeNBT(NBTTagCompound nbt) {
-
-    }
 }

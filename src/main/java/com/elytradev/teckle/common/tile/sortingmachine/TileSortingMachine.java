@@ -20,11 +20,14 @@ import com.elytradev.probe.api.IProbeData;
 import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.probe.api.UnitDictionary;
 import com.elytradev.probe.api.impl.ProbeData;
+import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.client.gui.GuiSortingMachine;
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleObjects;
+import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
 import com.elytradev.teckle.common.network.messages.TileLitMessage;
 import com.elytradev.teckle.common.tile.TileLitNetworkMember;
@@ -34,9 +37,13 @@ import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullModeSingleStep;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModeAnyStack;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.google.common.collect.ImmutableList;
@@ -66,12 +73,10 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -87,8 +92,8 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     @SideOnly(Side.CLIENT)
     private int selectorPos = -1;
     private List<IItemHandler> subHandlers;
-    private NetworkTileSortingMachineOutput outputTile = new NetworkTileSortingMachineOutput(this);
-    private NetworkTileSortingMachineInput inputTile = new NetworkTileSortingMachineInput(this);
+    private NetworkTileSortingMachineOutput outputTile;
+    private NetworkTileSortingMachineInput inputTile;
 
     @Override
     public void validate() {
@@ -227,59 +232,123 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
+    public void readFromNBT(NBTTagCompound tag) {
+        super.readFromNBT(tag);
 
-        defaultRoute = DefaultRoute.byMetadata(compound.getInteger("defaultRoute"));
-        NBTTagList coloursTag = compound.getTagList("colours", 3);
+        this.defaultRoute = DefaultRoute.byMetadata(tag.getInteger("defaultRoute"));
+        this.cachedFace = EnumFacing.values()[tag.getInteger("cachedFace")];
+        NBTTagList coloursTag = tag.getTagList("colours", 3);
         for (int i = 0; i < 8; i++) {
             if (coloursTag.getIntAt(i) > -1) {
-                colours[i] = EnumDyeColor.byMetadata(coloursTag.getIntAt(i));
+                this.colours[i] = EnumDyeColor.byMetadata(coloursTag.getIntAt(i));
             } else {
-                colours[i] = null;
+                this.colours[i] = null;
             }
         }
 
-        try {
-            setPullMode(PullMode.PULL_MODES.get(compound.getInteger("pullModeID")).newInstance());
-            getPullMode().deserializeNBT(compound.getCompoundTag("pullMode"));
-
-            setSortMode(SortMode.SORT_MODES.get(compound.getInteger("sortModeID")).newInstance());
-            getSortMode().deserializeNBT(compound.getCompoundTag("sortMode"));
-        } catch (Exception e) {
-            TeckleMod.LOG.error("Failed to read sorting machine modes from nbt.", e);
-        }
-
-        cachedFace = EnumFacing.values()[compound.getInteger("cachedFace")];
-
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            if (tag.hasKey("filterRows")) {
+                validate();
+                filterData.getHandler().deserializeNBT(tag.getCompoundTag("filterRows"));
+                bufferData.getHandler().deserializeNBT(tag.getCompoundTag("buffer"));
+
+                int returnedTravellersSize = tag.getInteger("returnedTravellers");
+                getOutputTile().returnedTravellers = Lists.newArrayListWithExpectedSize(returnedTravellersSize);
+                for (int i = 0; i < returnedTravellersSize; i++) {
+                    WorldNetworkTraveller deserializedTraveller = new WorldNetworkTraveller(new NBTTagCompound());
+                    deserializedTraveller.deserializeNBT(tag.getCompoundTag("returnedTravellers" + i));
+                    tag.removeTag("returnedTravellers" + i);
+                    getOutputTile().returnedTravellers.set(i, deserializedTraveller);
+                }
+
+                try {
+                    getOutputTile().setSortMode(SortMode.SORT_MODES.get(tag.getInteger("sortmodeID")).newInstance());
+                    getOutputTile().setPullMode(PullMode.PULL_MODES.get(tag.getInteger("pullmodeID")).newInstance());
+
+                    getOutputTile().getSortMode().deserializeNBT(tag.getCompoundTag("sortmode"));
+                    getOutputTile().getPullMode().deserializeNBT(tag.getCompoundTag("pullmode"));
+                } catch (Exception e) {
+                    TeckleMod.LOG.warn("Failed to deserialize pull mode and sort mode, they will be reset to default. Caught: {}", e);
+                    getOutputTile().setSortMode(new SortModeAnyStack());
+                    getOutputTile().setPullMode(new PullModeSingleStep());
+                }
+
+                tag.removeTag("sortmodeID");
+                tag.removeTag("pullmodeID");
+                tag.removeTag("sortmode");
+                tag.removeTag("pullmode");
+                tag.removeTag("returnedTravellers");
+                tag.removeTag("filterRows");
+                tag.removeTag("buffer");
+            } else {
+                int dimID = tag.getInteger("databaseID");
+                this.bufferID = tag.getUniqueId("buffer");
+                this.filterID = tag.getUniqueId("filter");
+                this.bufferData = AdvancedStackHandlerPool.getPool(dimID).get(bufferID);
+                this.filterData = AdvancedStackHandlerPool.getPool(dimID).get(filterID);
+            }
+
+            if (loadNetworkTile(tag, "inputTileID", getFacing().getOpposite(), NetworkTileSortingMachineInput.class)) {
+                loadNetworkTile(tag, "outputTileID", getFacing(), NetworkTileSortingMachineOutput.class);
+            }
         }
     }
 
+    protected boolean loadNetworkTile(NBTTagCompound tag, String tileIDKey, EnumFacing tileFace, Class<? extends WorldNetworkTile> tileType) {
+        UUID networkID = tag.hasUniqueId(tileIDKey) ? tag.getUniqueId(tileIDKey) : null;
+        int dimID = tag.getInteger("databaseID");
+        if (networkID == null) {
+            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            return false;
+        } else {
+            WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
+            Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
+                    .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), inputTile.getCapabilityFace())).findAny();
+            if (any.isPresent()) {
+                networkID = networkDB.getRemappedNodes().remove(any.get());
+                TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+            }
+
+            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+            for (NodeContainer container : network.getNodeContainersAtPosition(pos)) {
+                if (Objects.equals(container.getFacing(), tileFace) && container.getNetworkTile() != null && tileType.isInstance(container.getNetworkTile())) {
+                    if (tileType == NetworkTileSortingMachineOutput.class) {
+                        outputTile = (NetworkTileSortingMachineOutput) container.getNetworkTile();
+                    } else {
+                        inputTile = (NetworkTileSortingMachineInput) container.getNetworkTile();
+                    }
+                    break;
+                }
+            }
+        }
+        return true;
+    }
+
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+    public NBTTagCompound writeToNBT(NBTTagCompound tag) {
+        tag.setInteger("defaultRoute", this.defaultRoute.getMetadata());
+        tag.setInteger("cachedFace", this.outputTile.getOutputFace().getIndex());
         NBTTagList coloursTag = new NBTTagList();
-        for (int i = 0; i < colours.length; i++) {
-            if (colours[i] != null) {
-                coloursTag.appendTag(new NBTTagInt(colours[i].getMetadata()));
+        for (int i = 0; i < this.colours.length; i++) {
+            if (this.colours[i] != null) {
+                coloursTag.appendTag(new NBTTagInt(this.colours[i].getMetadata()));
             } else {
                 coloursTag.appendTag(new NBTTagInt(-1));
             }
         }
-        compound.setTag("colours", coloursTag);
-
-
-        compound.setTag("pullMode", getPullMode().serializeNBT());
-        compound.setInteger("pullModeID", getPullMode().getID());
-        compound.setTag("sortMode", getSortMode().serializeNBT());
-        compound.setInteger("sortModeID", getSortMode().getID());
-
-        compound.setInteger("defaultRoute", defaultRoute.getMetadata());
-        compound.setInteger("cachedFace", outputTile.getOutputFace().getIndex());
+        tag.setTag("colours", coloursTag);
+        tag.setUniqueId("buffer", bufferID);
+        tag.setUniqueId("filter", filterID);
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            tag.setInteger("databaseID", getWorld().provider.getDimension());
+            if (inputTile.getNode() == null || outputTile.getNode() == null)
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+
+            tag.setUniqueId("inputTileID", inputTile.getNode().getNetwork().getNetworkID());
+            tag.setUniqueId("outputTileID", outputTile.getNode().getNetwork().getNetworkID());
         }
-        return super.writeToNBT(compound);
+        return super.writeToNBT(tag);
     }
 
     public boolean isUsableByPlayer(EntityPlayer player) {
@@ -324,7 +393,14 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     }
 
     public EnumFacing getFacing() {
-        return outputTile.getOutputFace();
+        if (getWorld() != null && getWorld().isBlockLoaded(getPos())) {
+            IBlockState thisState = getWorld().getBlockState(getPos());
+            if (Objects.equals(thisState.getBlock(), TeckleObjects.blockSortingMachine)) {
+                cachedFace = thisState.getValue(BlockSortingMachine.FACING);
+            }
+        }
+
+        return cachedFace;
     }
 
     public ItemStack addToNetwork(IItemHandler source, int slot, int quantity, ImmutableMap<String, NBTBase> additionalData) {

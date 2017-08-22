@@ -1,6 +1,8 @@
 package com.elytradev.teckle.client.render.model;
 
 import com.elytradev.teckle.common.block.BlockItemTube;
+import com.elytradev.teckle.common.block.property.UnlistedBool;
+import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -41,25 +43,28 @@ public class BakedTubeModel implements IBakedModel {
     }
 
     public List<IBakedModel> getModelData(IExtendedBlockState state) {
-        List<IBakedModel> result = new ArrayList<>();
+        List<IBakedModel> result = Lists.newArrayList();
 
         if (state.getValue(BlockItemTube.NODE)) {
             result.add(nodeModel);
-            addLegs(state, legModelsNode, result);
+            result.addAll(addLegs(state, legModelsNode));
         } else {
             // No node.
-            addLegs(state, legModels, result);
+            result.addAll(addLegs(state, legModels));
         }
 
         return result;
     }
 
-    protected void addLegs(IExtendedBlockState state, HashMap<EnumFacing, IBakedModel> legModels, List<IBakedModel> result) {
+    protected List<IBakedModel> addLegs(IExtendedBlockState state, HashMap<EnumFacing, IBakedModel> sourceModels) {
+        List<IBakedModel> models = Lists.newArrayList();
         for (EnumFacing enumFacing : EnumFacing.values()) {
-            if (state.getValue(BlockItemTube.FACE_PROPERTIES.get(enumFacing))) {
-                result.add(legModels.get(enumFacing));
+            UnlistedBool property = BlockItemTube.FACE_PROPERTIES.get(enumFacing);
+            if (state.getValue(property).booleanValue()) {
+                models.add(sourceModels.get(enumFacing));
             }
         }
+        return models;
     }
 
     @Override

@@ -43,11 +43,6 @@ public class NetworkTileRegistry {
             exception.printStackTrace();
             return;
         }
-        try {
-            tileClass.getConstructor(World.class, BlockPos.class, EnumFacing.class);
-        } catch (NoSuchMethodException e) {
-            TeckleMod.LOG.error("Tried to register a world network tile via IMC but received a class that does not have a constructor matching (World, BlockPos, EnumFacing), it will be skipped. Mod: {}, Class: {}", msg.getSender(), tileClass.getName());
-        }
         if (!WorldNetworkTile.class.isAssignableFrom(tileClass)) {
             TeckleMod.LOG.error("Tried to register a world network tile via IMC but received a class that does not extend WorldNetworkTile, it will be skipped. Mod: {}, Class: {}", msg.getSender(), tileClass.getName());
             return;
@@ -58,6 +53,13 @@ public class NetworkTileRegistry {
 
     public static void registerNetworkTile(ResourceLocation id, Class<? extends WorldNetworkTile> clazz) {
         TeckleMod.LOG.info("Registering a network tile with the following key {}", id);
+
+        try {
+            clazz.getConstructor(World.class, BlockPos.class, EnumFacing.class);
+        } catch (NoSuchMethodException e) {
+            TeckleMod.LOG.error("Tried to register a world network tile but received a class that does not have a constructor matching (World, BlockPos, EnumFacing), it will be skipped. Mod: {}, Class: {}", id.getResourceDomain(), clazz.getName());
+        }
+
         REGISTRY.putObject(id, clazz);
     }
 
