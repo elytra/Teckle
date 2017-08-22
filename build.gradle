@@ -32,6 +32,7 @@ plugins {
 }
 
 apply plugin: "net.minecraftforge.gradle.forge"
+apply plugin: "maven"
 
 
 def branch
@@ -51,6 +52,15 @@ archivesBaseName = modBaseName
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+configurations {
+	deploy
+}
+
+dependencies {
+	deploy 'org.apache.maven.wagon:wagon-ssh:2.10'
+}
+
 
 minecraft {
     version = project.forgeVersion
@@ -139,4 +149,8 @@ tasks.build.dependsOn reobfShadowJar
 
 artifacts {
     archives shadowJar
+}
+
+if (file('private.gradle').exists()) {
+	apply from: 'private.gradle'
 }
