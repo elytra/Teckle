@@ -129,9 +129,9 @@ public class BlockSortingMachine extends BlockContainer {
                 TileSortingMachine sortingMachine = (TileSortingMachine) worldIn.getTileEntity(pos);
 
                 // Vomit the sorting data.
-                sortingMachine.filterRows.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
-                sortingMachine.buffer.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
-                sortingMachine.returnedTravellers.forEach(traveller -> traveller.dropActions.forEach((s, iDropAction) -> iDropAction.dropToWorld(traveller)));
+                sortingMachine.filterData.getHandler().stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+                sortingMachine.bufferData.getHandler().stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+                sortingMachine.getReturnedTravellers().forEach(traveller -> traveller.dropActions.forEach((s, iDropAction) -> iDropAction.dropToWorld(traveller)));
             }
         }
 

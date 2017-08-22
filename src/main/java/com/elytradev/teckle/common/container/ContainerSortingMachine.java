@@ -46,7 +46,7 @@ public class ContainerSortingMachine extends Container {
                 int slotNumber = (box * 6) + slot;
                 int xPos = xS + ((slot & 1) * 18);
                 int yPos = yS + ((slot >= 2 ? (slot >= 4 ? 2 : 1) : 0) * 18);
-                this.addSlotToContainer(new SlotItemHandler(tileSortingMachine.filterRows, slotNumber, xPos, yPos));
+                this.addSlotToContainer(new SlotItemHandler(tileSortingMachine.filterData.getHandler(), slotNumber, xPos, yPos));
             }
         }
 

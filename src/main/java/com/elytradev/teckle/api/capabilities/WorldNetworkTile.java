@@ -48,7 +48,7 @@ public abstract class WorldNetworkTile implements INBTSerializable<NBTTagCompoun
     private HashMap<NBTTagCompound, DummyNetworkTraveller> dummyTravellers = Maps.newHashMap();
 
     /**
-     * WorldNetworkTile default constructor, you need to have a constructor with a world parameter and position to properly load.
+     * WorldNetworkTile default constructor, you need to have a constructor with a world, position, and enumfacing to properly load.
      *
      * @param world the world the tile resides in.
      * @param pos   the position of the tile.

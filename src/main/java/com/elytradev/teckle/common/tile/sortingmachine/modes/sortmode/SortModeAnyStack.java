@@ -17,6 +17,7 @@
 package com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode;
 
 import com.elytradev.teckle.common.tile.inv.SlotData;
+import com.elytradev.teckle.common.tile.sortingmachine.NetworkTileSortingMachineBase;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
@@ -102,7 +103,7 @@ public class SortModeAnyStack extends SortMode {
      * @return
      */
     @Override
-    public boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
+    public boolean canAcceptTraveller(NetworkTileSortingMachineBase sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
         ItemStack acceptionResult = acceptTraveller(sortingMachine, traveller, true);
         return acceptionResult != null && acceptionResult.isEmpty();
     }
@@ -125,11 +126,11 @@ public class SortModeAnyStack extends SortMode {
      * @return true if the entire traveller is accepted, false otherwise.
      */
     @Override
-    public ItemStack acceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
+    public ItemStack acceptTraveller(NetworkTileSortingMachineBase sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
         return acceptTraveller(sortingMachine, traveller, false);
     }
 
-    private ItemStack acceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, boolean simulate) {
+    private ItemStack acceptTraveller(NetworkTileSortingMachineBase sortingMachine, WorldNetworkTraveller traveller, boolean simulate) {
         if (traveller.data.hasKey("stack")) {
             WorldNetworkTraveller travellerCopy = traveller.clone();
             travellerCopy.data.removeTag("idLeast");
@@ -138,7 +139,7 @@ public class SortModeAnyStack extends SortMode {
             boolean setColour = false;
             for (int compartmentNumber = 0; compartmentNumber < sortingMachine.getCompartmentHandlers().size(); compartmentNumber++) {
                 IItemHandler compartment = sortingMachine.getCompartmentHandlers().get(compartmentNumber);
-                EnumDyeColor compartmentColour = sortingMachine.colours[compartmentNumber];
+                EnumDyeColor compartmentColour = sortingMachine.getColours()[compartmentNumber];
 
                 for (int slot = 0; slot < compartment.getSlots(); slot++) {
                     ItemStack stackInSlot = compartment.getStackInSlot(slot);
@@ -157,9 +158,9 @@ public class SortModeAnyStack extends SortMode {
             }
 
             if (!setColour) {
-                if (!sortingMachine.defaultRoute.isBlocked()) {
-                    if (sortingMachine.defaultRoute.isColoured()) {
-                        travellerCopy.data.setInteger("colour", sortingMachine.defaultRoute.getColour().getMetadata());
+                if (!sortingMachine.getDefaultRoute().isBlocked()) {
+                    if (sortingMachine.getDefaultRoute().isColoured()) {
+                        travellerCopy.data.setInteger("colour", sortingMachine.getDefaultRoute().getColour().getMetadata());
                     } else {
                         travellerCopy.data.removeTag("colour");
                     }
@@ -168,9 +169,9 @@ public class SortModeAnyStack extends SortMode {
             }
 
             if (setColour) {
-                BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getEjectionTile().getOutputFace());
+                BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getOutputTile().getOutputFace());
                 ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
-                ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getEjectionTile().getNode(),
+                ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getOutputTile().getNode(),
                         insertInto, travellerStack, collect, false, simulate);
                 if (!result.isEmpty() && !simulate) {
                     if (result.getCount() != travellerStack.getCount())

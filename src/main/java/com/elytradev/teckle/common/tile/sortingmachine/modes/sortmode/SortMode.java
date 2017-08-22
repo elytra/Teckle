@@ -17,6 +17,7 @@
 package com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode;
 
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.tile.sortingmachine.NetworkTileSortingMachineBase;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
@@ -84,7 +85,7 @@ public abstract class SortMode implements INBTSerializable {
      * @param from
      * @return
      */
-    public abstract boolean canAcceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from);
+    public abstract boolean canAcceptTraveller(NetworkTileSortingMachineBase sortingMachine, WorldNetworkTraveller traveller, EnumFacing from);
 
     /**
      * Get the position of the selector, if no selector is used in this mode return 0.
@@ -108,5 +109,5 @@ public abstract class SortMode implements INBTSerializable {
      * @param from           the side the traveller is to be injected into.
      * @return true if the entire traveller is accepted, false otherwise.
      */
-    public abstract ItemStack acceptTraveller(TileSortingMachine sortingMachine, WorldNetworkTraveller traveller, EnumFacing from);
+    public abstract ItemStack acceptTraveller(NetworkTileSortingMachineBase sortingMachine, WorldNetworkTraveller traveller, EnumFacing from);
 }

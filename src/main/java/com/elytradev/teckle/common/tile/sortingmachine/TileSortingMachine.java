@@ -20,27 +20,22 @@ import com.elytradev.probe.api.IProbeData;
 import com.elytradev.probe.api.IProbeDataProvider;
 import com.elytradev.probe.api.UnitDictionary;
 import com.elytradev.probe.api.impl.ProbeData;
-import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
-import com.elytradev.teckle.api.capabilities.impl.NetworkTileTransporter;
 import com.elytradev.teckle.client.gui.GuiSortingMachine;
 import com.elytradev.teckle.common.TeckleMod;
-import com.elytradev.teckle.common.TeckleObjects;
-import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
 import com.elytradev.teckle.common.network.messages.TileLitMessage;
 import com.elytradev.teckle.common.tile.TileLitNetworkMember;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.SlotData;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
-import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullModeSingleStep;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;
-import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModeAnyStack;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -71,157 +66,65 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 
 public class TileSortingMachine extends TileLitNetworkMember implements IElementProvider {
 
     public EnumFacing cachedFace = EnumFacing.DOWN;
-    public AdvancedItemStackHandler filterRows = new AdvancedItemStackHandler(48);
-    public EnumDyeColor[] colours = new EnumDyeColor[8];
-    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(32);
-    public List<WorldNetworkTraveller> returnedTravellers = Lists.newArrayList();
+    public AdvancedStackHandlerEntry bufferData, filterData;
+    public UUID bufferID, filterID;
+
     public DefaultRoute defaultRoute = DefaultRoute.NONE;
+    public EnumDyeColor[] colours = new EnumDyeColor[8];
+
     @SideOnly(Side.CLIENT)
     private int selectorPos = -1;
-    private PullMode pullMode = new PullModeSingleStep();
-    private SortMode sortMode = new SortModeAnyStack();
     private List<IItemHandler> subHandlers;
-    private NetworkTileTransporter ejectionTile = new NetworkTileTransporter(null) {
-        @Override
-        public NBTTagCompound serializeNBT() {
-            return null;
-        }
+    private NetworkTileSortingMachineOutput outputTile = new NetworkTileSortingMachineOutput(this);
+    private NetworkTileSortingMachineInput inputTile = new NetworkTileSortingMachineInput(this);
 
-        @Override
-        public void deserializeNBT(NBTTagCompound nbt) {
-
-        }
-
-        @Override
-        public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
-        }
-
-        @Override
-        public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return Objects.equals(side, getOutputFace());
-        }
-
-        @Override
-        public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-            if (Objects.equals(traveller.getEntryPoint().position, TileSortingMachine.this.pos))
-                return true;
-
-            if (Objects.equals(from, getOutputFace().getOpposite())) {
-                // Allows use of filters for filtering items already in tubes. Not really a good reason to do this but it was possible in RP2 so it's possible in Teckle.
-                return getSortMode().canAcceptTraveller(TileSortingMachine.this, traveller, from);
+    @Override
+    public void validate() {
+        if (filterID == null) {
+            if (filterData == null) {
+                filterData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(48));
             }
-            return false;
+            filterID = filterData.getId();
+        } else {
+            filterData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(filterID);
         }
-
-        @Override
-        public boolean canConnectTo(EnumFacing side) {
-            return Objects.equals(side, getOutputFace());
-        }
-
-        @Override
-        public EnumFacing getOutputFace() {
-            if (getWorld() != null) {
-                IBlockState thisState = getWorld().getBlockState(getPos());
-                if (Objects.equals(thisState.getBlock(), TeckleObjects.blockSortingMachine)) {
-                    return thisState.getValue(BlockSortingMachine.FACING);
-                }
+        if (bufferID == null) {
+            if (bufferData == null) {
+                bufferData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(32));
             }
-
-            return cachedFace;
+            bufferID = bufferData.getId();
+        } else {
+            bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
         }
+        if (this.inputTile == null)
+            this.inputTile = new NetworkTileSortingMachineInput(this);
+        if (this.outputTile == null)
+            this.outputTile = new NetworkTileSortingMachineOutput(this);
 
-        @Override
-        public void acceptReturn(WorldNetworkTraveller traveller, EnumFacing side) {
-            if (!traveller.data.hasKey("stack"))
-                return; // wtf am I supposed to do with this???
+        this.inputTile.filterData = this.filterData;
+        this.inputTile.bufferData = this.bufferData;
+        this.inputTile.filterID = this.filterID;
+        this.inputTile.bufferID = this.bufferID;
 
-            ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
-            EnumFacing facing = getOutputFace();
+        this.outputTile.filterData = this.filterData;
+        this.outputTile.bufferData = this.bufferData;
+        this.outputTile.filterID = this.filterID;
+        this.outputTile.bufferID = this.bufferID;
 
-            // Try and put it back where we found it.
-            if (Objects.equals(side, getOutputFace())) {
-                if (getWorld().getTileEntity(getPos().offset(facing.getOpposite())) != null) {
-                    TileEntity pushTo = getWorld().getTileEntity(getPos().offset(facing.getOpposite()));
-                    if (pushTo.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
-                        IItemHandler itemHandler = pushTo.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
-                        for (int slot = 0; slot < itemHandler.getSlots() && !stack.isEmpty(); slot++) {
-                            stack = itemHandler.insertItem(slot, stack, false);
-                        }
-                    }
-                }
-            }
-            if (!stack.isEmpty()) {
-                traveller.data.setTag("stack", stack.serializeNBT());
-                if (returnedTravellers.size() <= 32) {
-                    returnedTravellers.add(traveller);
-                } else {
-                    DropActions.ITEMSTACK.getSecond().dropToWorld(traveller);
-                }
-            }
-        }
-
-        @Override
-        public EnumFacing getCapabilityFace() {
-            return getOutputFace();
-        }
-    };
-    private WorldNetworkTile insertionTile = new NetworkTileTransporter(null) {
-        @Override
-        public NBTTagCompound serializeNBT() {
-            return null;
-        }
-
-        @Override
-        public void deserializeNBT(NBTTagCompound nbt) {
-
-        }
-
-        @Override
-        public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-            return Objects.equals(side, getCapabilityFace());
-        }
-
-        @Override
-        public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-            return new SortingMachineEndpoint(network, pos, getCapabilityFace());
-        }
-
-        @Override
-        public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-            return sortMode.canAcceptTraveller(TileSortingMachine.this, traveller, from);
-        }
-
-        @Override
-        public boolean canConnectTo(EnumFacing side) {
-            return Objects.equals(side, getCapabilityFace());
-        }
-
-        @Override
-        public EnumFacing getCapabilityFace() {
-            return TileSortingMachine.this.ejectionTile.getOutputFace().getOpposite();
-        }
-    };
-
-    public List<IItemHandler> getCompartmentHandlers() {
-        if (subHandlers == null || subHandlers.isEmpty()) {
-            subHandlers = new ArrayList<>();
-            for (int i = 0; i < 8; i++) {
-                subHandlers.add(filterRows.subHandler(i * 6, 6));
-            }
-        }
-
-        return subHandlers;
+        this.inputTile.setOtherTile(outputTile);
+        this.outputTile.setOtherTile(inputTile);
     }
 
     @Override
@@ -266,20 +169,20 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         if (world.isRemote)
             return;
 
-        if (!returnedTravellers.isEmpty()) {
-            WorldNetworkTraveller traveller = returnedTravellers.get(0);
-            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos.offset(ejectionTile.getOutputFace()), ejectionTile.getOutputFace().getOpposite())) {
-                BlockPos outputPos = pos.offset(ejectionTile.getOutputFace());
+        if (!getReturnedTravellers().isEmpty()) {
+            WorldNetworkTraveller traveller = getReturnedTravellers().get(0);
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos.offset(outputTile.getOutputFace()), outputTile.getOutputFace().getOpposite())) {
+                BlockPos outputPos = pos.offset(outputTile.getOutputFace());
 
                 ItemStack stackToInsert = new ItemStack(traveller.data.getCompoundTag("stack"));
                 ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(traveller.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> traveller.data.getTag(o))));
-                ItemStack result = (ItemStack) getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) ejectionTile.getNode(),
+                ItemStack result = (ItemStack) getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) outputTile.getNode(),
                         outputPos, stackToInsert.copy(), collect, false, false);
 
                 if (result.isEmpty()) {
-                    returnedTravellers.remove(0);
+                    getReturnedTravellers().remove(0);
                 } else {
-                    returnedTravellers.get(0).data.setTag("stack", result.serializeNBT());
+                    getReturnedTravellers().get(0).data.setTag("stack", result.serializeNBT());
                 }
 
                 if (result.getCount() != stackToInsert.getCount()) {
@@ -297,7 +200,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
     public TileEntity getSource() {
         if (world != null) {
-            EnumFacing facing = ejectionTile.getOutputFace();
+            EnumFacing facing = outputTile.getOutputFace();
             BlockPos sourcePos = pos.offset(facing.getOpposite());
 
             TileEntity sourceTile = world.getTileEntity(sourcePos);
@@ -311,7 +214,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
     public TileEntity getOutput() {
         if (world != null) {
-            EnumFacing facing = ejectionTile.getOutputFace();
+            EnumFacing facing = outputTile.getOutputFace();
             BlockPos sourcePos = pos.offset(facing);
 
             TileEntity sourceTile = world.getTileEntity(sourcePos);
@@ -350,46 +253,6 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         cachedFace = EnumFacing.values()[compound.getInteger("cachedFace")];
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            filterRows.deserializeNBT(compound.getCompoundTag("filterRows"));
-            buffer.deserializeNBT(compound.getCompoundTag("buffer"));
-            int stacksLeftToSatisfySize = compound.getInteger("returnedTravellers");
-            returnedTravellers = Lists.newArrayListWithExpectedSize(stacksLeftToSatisfySize);
-            for (int i = 0; i < stacksLeftToSatisfySize; i++) {
-                WorldNetworkTraveller deserializedTraveller = new WorldNetworkTraveller(new NBTTagCompound());
-                deserializedTraveller.deserializeNBT(compound.getCompoundTag("returnedTravellers" + i));
-                returnedTravellers.set(i, deserializedTraveller);
-            }
-
-            UUID networkID = compound.hasKey("networkIDEntryPoint") ? compound.getUniqueId("networkIDEntryPoint") : null;
-            int dimID = compound.getInteger("databaseID");
-            if (networkID == null) {
-                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-            } else {
-                WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
-                Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
-                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), ejectionTile.getCapabilityFace())).findAny();
-                if (any.isPresent()) {
-                    networkID = networkDB.getRemappedNodes().remove(any.get());
-                    TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
-                }
-
-                IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-                WorldNetworkNode node = ejectionTile.createNode(network, pos);
-                network.registerNode(node);
-                ejectionTile.setNode(node);
-
-                networkID = compound.getUniqueId("networkIDEndPoint");
-                any = networkDB.getRemappedNodes().keySet().stream()
-                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), insertionTile.getCapabilityFace())).findAny();
-                if (any.isPresent()) {
-                    networkID = networkDB.getRemappedNodes().remove(any.get());
-                    TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
-                }
-                network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
-                node = insertionTile.createNode(network, pos);
-                network.registerNode(node);
-                insertionTile.setNode(node);
-            }
         }
     }
 
@@ -412,21 +275,9 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         compound.setInteger("sortModeID", getSortMode().getID());
 
         compound.setInteger("defaultRoute", defaultRoute.getMetadata());
-        compound.setInteger("cachedFace", ejectionTile.getOutputFace().getIndex());
+        compound.setInteger("cachedFace", outputTile.getOutputFace().getIndex());
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            compound.setTag("filterRows", filterRows.serializeNBT());
-            compound.setTag("buffer", buffer.serializeNBT());
-            compound.setInteger("returnedTravellers", returnedTravellers.size());
-            for (int i = 0; i < returnedTravellers.size(); i++) {
-                compound.setTag("returnedTravellers" + i, returnedTravellers.get(i).serializeNBT());
-            }
-
-            compound.setInteger("databaseID", getWorld().provider.getDimension());
-            if (ejectionTile.getNode() == null || insertionTile.getNode() == null)
-                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-            compound.setUniqueId("networkIDEntryPoint", ejectionTile.getNode().getNetwork().getNetworkID());
-            compound.setUniqueId("networkIDEndPoint", insertionTile.getNode().getNetwork().getNetworkID());
         }
         return super.writeToNBT(compound);
     }
@@ -444,9 +295,9 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         }
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
             if (Objects.equals(facing, getFacing()))
-                return (T) ejectionTile;
+                return (T) outputTile;
             else if (Objects.equals(facing, getFacing().getOpposite()))
-                return (T) insertionTile;
+                return (T) inputTile;
         }
         return super.getCapability(capability, facing);
     }
@@ -473,21 +324,21 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     }
 
     public EnumFacing getFacing() {
-        return ejectionTile.getOutputFace();
+        return outputTile.getOutputFace();
     }
 
     public ItemStack addToNetwork(IItemHandler source, int slot, int quantity, ImmutableMap<String, NBTBase> additionalData) {
         ItemStack remaining = source.extractItem(slot, quantity, false).copy();
         IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
-        remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getEjectionTile().getNode(), pos.offset(getFacing()), remaining, additionalData, false, false).copy();
+        remaining = networkAssistant.insertData((WorldNetworkEntryPoint) getOutputTile().getNode(), pos.offset(getFacing()), remaining, additionalData, false, false).copy();
 
         if (!remaining.isEmpty()) {
             if (remaining.getCount() != quantity) {
                 setTriggered();
             }
 
-            for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
-                remaining = buffer.insertItem(i, remaining, false);
+            for (int i = 0; i < bufferData.getHandler().getSlots() && !remaining.isEmpty(); i++) {
+                remaining = bufferData.getHandler().insertItem(i, remaining, false);
             }
 
             if (!remaining.isEmpty()) {
@@ -511,9 +362,9 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     public List<SlotData> getStacksToPush(boolean skipBuffer) {
         List<SlotData> stacks = Lists.newArrayList();
 
-        if (!skipBuffer && !buffer.stream().allMatch(ItemStack::isEmpty)) {
-            for (int i = 0; i < buffer.getStacks().size(); i++) {
-                stacks.add(new SlotData(buffer, i));
+        if (!skipBuffer && !bufferData.getHandler().stream().allMatch(ItemStack::isEmpty)) {
+            for (int i = 0; i < bufferData.getHandler().getStacks().size(); i++) {
+                stacks.add(new SlotData(bufferData.getHandler(), i));
             }
             return stacks;
         }
@@ -528,24 +379,24 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         return stacks;
     }
 
-    public WorldNetworkTile getEjectionTile() {
-        return ejectionTile;
+    public NetworkTileSortingMachineOutput getOutputTile() {
+        return outputTile;
     }
 
     public PullMode getPullMode() {
-        return pullMode;
+        return getOutputTile().getPullMode();
     }
 
     public void setPullMode(PullMode pullMode) {
-        this.pullMode = pullMode;
+        this.getOutputTile().setPullMode(pullMode);
     }
 
     public SortMode getSortMode() {
-        return sortMode;
+        return getOutputTile().getSortMode();
     }
 
     public void setSortMode(SortMode sortMode) {
-        this.sortMode = sortMode;
+        this.getOutputTile().setSortMode(sortMode);
 
         if (this.getPullMode().isPaused()) {
             this.getPullMode().unpause();
@@ -560,6 +411,21 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     @SideOnly(Side.CLIENT)
     public void setSelectorPos(int selectorPos) {
         this.selectorPos = selectorPos;
+    }
+
+    public List<WorldNetworkTraveller> getReturnedTravellers() {
+        return outputTile.returnedTravellers;
+    }
+
+    public List<IItemHandler> getCompartmentHandlers() {
+        if (subHandlers == null || subHandlers.isEmpty()) {
+            subHandlers = new ArrayList<>();
+            for (int i = 0; i < 8; i++) {
+                subHandlers.add(filterData.getHandler().subHandler(i * 6, 6));
+            }
+        }
+
+        return subHandlers;
     }
 
     public enum DefaultRoute implements IStringSerializable {
@@ -652,7 +518,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
                 }
 
                 for (WorldNetworkTraveller traveller : node.getTravellers()) {
-                    float distance = Float.valueOf(traveller.activePath.getIndex()) / Float.valueOf(traveller.activePath.pathPositions().size()) * 10F;
+                    float distance = (float) traveller.activePath.getIndex() / (float) traveller.activePath.pathPositions().size() * 10F;
                     distance += traveller.travelledDistance;
                     distance -= 0.1F;
                     distance = MathHelper.clamp(distance, 0F, 10F);
@@ -666,16 +532,16 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             }
 
             List<ItemStack> stacks = new ArrayList<>();
-            for (int i = 0; i < buffer.getSlots(); i++) {
-                stacks.add(buffer.getStackInSlot(i));
+            for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {
+                stacks.add(bufferData.getHandler().getStackInSlot(i));
             }
 
             ProbeData bufferData = new ProbeData(new TextComponentTranslation("tooltip.teckle.filter.buffer")).withInventory(ImmutableList.copyOf(stacks));
             data.add(bufferData);
 
-            if (!returnedTravellers.isEmpty()) {
+            if (!getReturnedTravellers().isEmpty()) {
                 ProbeData returnedTravellerData = new ProbeData(new TextComponentTranslation("tooltip.teckle.sortingmachine.returns"))
-                        .withInventory(ImmutableList.copyOf(returnedTravellers.stream().map
+                        .withInventory(ImmutableList.copyOf(getReturnedTravellers().stream().map
                                 (traveller -> new ItemStack(traveller.data.getCompoundTag("stack"))).collect(Collectors.toList())));
                 data.add(returnedTravellerData);
             }

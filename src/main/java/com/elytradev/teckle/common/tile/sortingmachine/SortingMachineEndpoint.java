@@ -17,7 +17,7 @@ public class SortingMachineEndpoint extends WorldNetworkEndpoint {
         TileSortingMachine sortingMachine = (TileSortingMachine) this.getNetworkTile().getTileEntity();
         if (sortingMachine == null)
             return false;
-        ItemStack remaining = sortingMachine.getSortMode().acceptTraveller(sortingMachine, traveller, from);
+        ItemStack remaining = sortingMachine.getSortMode().acceptTraveller((NetworkTileSortingMachineBase) getNetworkTile(), traveller, from);
 
         if (remaining == null)
             return false;

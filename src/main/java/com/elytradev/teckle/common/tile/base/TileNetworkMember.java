@@ -95,7 +95,7 @@ public abstract class TileNetworkMember extends TileEntity {
                 }
 
                 for (WorldNetworkTraveller traveller : node.getTravellers()) {
-                    float distance = (Float.valueOf(traveller.activePath.getIndex()) / Float.valueOf(traveller.activePath.pathPositions().size())) * 10F;
+                    float distance = ((float) traveller.activePath.getIndex() / (float) traveller.activePath.pathPositions().size()) * 10F;
                     distance += traveller.travelledDistance;
                     distance -= 0.1F;
                     distance = MathHelper.clamp(distance, 0F, 10F);

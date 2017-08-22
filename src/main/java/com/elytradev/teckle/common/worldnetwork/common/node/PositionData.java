@@ -31,10 +31,10 @@ public class PositionData {
      * @return
      */
     public static PositionData getPositionData(int dimension, BlockPos position) {
-        if (!POOL.containsKey(Integer.valueOf(dimension)))
-            POOL.put(Integer.valueOf(dimension), Maps.newHashMap());
+        if (!POOL.containsKey(dimension))
+            POOL.put(dimension, Maps.newHashMap());
 
-        Map<BlockPos, PositionData> dimensionPool = POOL.get(Integer.valueOf(dimension));
+        Map<BlockPos, PositionData> dimensionPool = POOL.get(dimension);
         if (!dimensionPool.containsKey(position))
             dimensionPool.put(position, new PositionData(dimension, position));
 
