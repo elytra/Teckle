@@ -28,6 +28,7 @@ import com.elytradev.teckle.common.tile.*;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileFilter;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileItemTube;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileTransposer;
+import com.elytradev.teckle.common.tile.retriever.TileRetriever;
 import com.elytradev.teckle.common.tile.sortingmachine.NetworkTileSortingMachineInput;
 import com.elytradev.teckle.common.tile.sortingmachine.NetworkTileSortingMachineOutput;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
@@ -70,6 +71,7 @@ public class TeckleObjects {
     public static BlockFilter blockFilter;
     public static BlockTransposer blockTransposer;
     public static BlockSortingMachine blockSortingMachine;
+    public static BlockRetriever blockRetriever;
     public static BlockAlloyFurnace blockAlloyFurnace;
     public static BlockNikoliteOre blockNikoliteOre;
     public static BlockFabricator blockFabricator;
@@ -108,6 +110,7 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileSortingMachine.class, "teckleSortingMachine");
         GameRegistry.registerTileEntity(TileFabricator.class, "teckleFabricator");
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
+        GameRegistry.registerTileEntity(TileRetriever.class, "teckleRetriever");
 
         NetworkTileRegistry.registerNetworkTile("teckle", "itemTube", NetworkTileItemTube.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "filter", NetworkTileFilter.class);
@@ -182,22 +185,25 @@ public class TeckleObjects {
         registeredBlocks = new HashMap<>();
         itemBlocksToRegister = new ArrayList<>();
 
-        blockItemTube = new BlockItemTube(Material.CIRCUITS);
+        blockItemTube = new BlockItemTube(Material.IRON);
         registerBlock(registry, "tube.item", blockItemTube);
 
-        blockFilter = new BlockFilter(Material.CIRCUITS);
+        blockFilter = new BlockFilter(Material.ROCK);
         registerBlock(registry, "filter", blockFilter);
 
-        blockTransposer = new BlockTransposer(Material.CIRCUITS);
+        blockTransposer = new BlockTransposer(Material.ROCK);
         registerBlock(registry, "transposer", blockTransposer);
 
-        blockSortingMachine = new BlockSortingMachine(Material.CIRCUITS);
+        blockSortingMachine = new BlockSortingMachine(Material.IRON);
         registerBlock(registry, "sortingmachine", blockSortingMachine);
+
+        blockRetriever = new BlockRetriever(Material.IRON);
+        registerBlock(registry, "retriever", blockRetriever);
 
         blockAlloyFurnace = new BlockAlloyFurnace(Material.ROCK);
         registerBlock(registry, "alloyfurnace", blockAlloyFurnace);
 
-        blockFabricator = new BlockFabricator(Material.CIRCUITS);
+        blockFabricator = new BlockFabricator(Material.IRON);
         registerBlock(registry, "fabricator", blockFabricator);
 
         blockNikoliteOre = new BlockNikoliteOre();
