@@ -28,6 +28,8 @@ import com.elytradev.teckle.common.tile.*;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileFilter;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileItemTube;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileTransposer;
+import com.elytradev.teckle.common.tile.retriever.NetworkTileRetrieverInput;
+import com.elytradev.teckle.common.tile.retriever.NetworkTileRetrieverOutput;
 import com.elytradev.teckle.common.tile.retriever.TileRetriever;
 import com.elytradev.teckle.common.tile.sortingmachine.NetworkTileSortingMachineInput;
 import com.elytradev.teckle.common.tile.sortingmachine.NetworkTileSortingMachineOutput;
@@ -117,6 +119,8 @@ public class TeckleObjects {
         NetworkTileRegistry.registerNetworkTile("teckle", "transposer", NetworkTileTransposer.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "sortingmachineIn", NetworkTileSortingMachineInput.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "sortingmachineOut", NetworkTileSortingMachineOutput.class);
+        NetworkTileRegistry.registerNetworkTile("teckle", "retrieverIn",  NetworkTileRetrieverInput.class);
+        NetworkTileRegistry.registerNetworkTile("teckle", "retrieverOut", NetworkTileRetrieverOutput.class);
         NetworkNodeRegistry.registerNetworkNode("teckle", "itemendpoint", ItemNetworkEndpoint.class);
 
         // Crash if there's missing ores.

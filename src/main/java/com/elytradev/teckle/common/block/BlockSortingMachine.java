@@ -21,6 +21,7 @@ import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
 import com.elytradev.teckle.common.network.messages.TileLitMessage;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -132,6 +133,8 @@ public class BlockSortingMachine extends BlockContainer {
                 sortingMachine.filterData.getHandler().stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
                 sortingMachine.bufferData.getHandler().stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
                 sortingMachine.getReturnedTravellers().forEach(traveller -> traveller.dropActions.forEach((s, iDropAction) -> iDropAction.dropToWorld(traveller)));
+                AdvancedStackHandlerPool.getPool(worldIn).remove(sortingMachine.filterData.getId());
+                AdvancedStackHandlerPool.getPool(worldIn).remove(sortingMachine.bufferData.getId());
             }
         }
 

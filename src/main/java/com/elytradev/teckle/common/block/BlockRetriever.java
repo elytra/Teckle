@@ -5,6 +5,7 @@ import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
 import com.elytradev.teckle.common.network.messages.TileLitMessage;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import com.elytradev.teckle.common.tile.retriever.TileRetriever;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -15,6 +16,7 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
@@ -105,6 +107,11 @@ public class BlockRetriever extends BlockContainer {
 
             if (tileAtPos instanceof TileRetriever) {
                 TileRetriever retriever = (TileRetriever) worldIn.getTileEntity(pos);
+
+                retriever.filterData.getHandler().stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+                retriever.bufferData.getHandler().stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+                AdvancedStackHandlerPool.getPool(worldIn).remove(retriever.filterData.getId());
+                AdvancedStackHandlerPool.getPool(worldIn).remove(retriever.bufferData.getId());
             }
         }
 
