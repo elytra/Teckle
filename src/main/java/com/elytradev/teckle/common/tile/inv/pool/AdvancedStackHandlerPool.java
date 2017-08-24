@@ -149,8 +149,14 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
         List<NBTTagCompound> entries = Lists.newArrayList();
         for (AdvancedStackHandlerEntry entry : registeredHandlers.values()) {
             TeckleMod.LOG.debug("Iterating {}", entry);
-            entries.add(entry.serialize());
-            TeckleMod.LOG.debug("Serialized {}", entry);
+            World world = DimensionManager.getWorld(entry.getDimension());
+            // sanity check, makes sure we don't save stuff if there's nothing at the position this handler is at.
+            // not perfect but it gets the job done.
+            boolean skip = entry.getPos() != null && world.isBlockLoaded(entry.getPos()) && world.getTileEntity(entry.getPos()) == null;
+            if (!skip) {
+                entries.add(entry.serialize());
+                TeckleMod.LOG.debug("Serialized {}", entry);
+            }
         }
         tag.setInteger("tags", entries.size());
         for (int i = 0; i < entries.size(); i++) {

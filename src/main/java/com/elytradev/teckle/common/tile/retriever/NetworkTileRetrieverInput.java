@@ -8,10 +8,9 @@ import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.EndpointData;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.PathNode;
-import com.google.common.collect.Lists;
+import com.google.common.collect.TreeMultiset;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -22,15 +21,19 @@ import java.util.*;
 
 public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
 
-    private ArrayList<PathNode> sourceNodes = Lists.newArrayList();
+    protected TreeMultiset<PathNode> sourceNodes = TreeMultiset.create(Comparator.comparingInt(o -> o.cost));
 
     public NetworkTileRetrieverInput(World world, BlockPos pos, EnumFacing face) {
         super(world, pos, face);
     }
 
-    @Override
-    public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-        return side.equals(getCapabilityFace());
+    public NetworkTileRetrieverInput(TileRetriever retriever) {
+        super(retriever.getWorld(), retriever.getPos(), retriever.getFacing().getOpposite());
+
+        this.filterData = retriever.filterData;
+        this.bufferData = retriever.bufferData;
+        this.filterID = retriever.filterID;
+        this.bufferID = retriever.bufferID;
     }
 
     @Override
@@ -44,16 +47,11 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
     }
 
     @Override
-    public boolean canConnectTo(EnumFacing side) {
-        return side.equals(getCapabilityFace());
-    }
-
-    @Override
     public EnumFacing getCapabilityFace() {
         if (getWorld() != null && getWorld().isBlockLoaded(getPos())) {
             IBlockState thisState = getWorld().getBlockState(getPos());
             if (Objects.equals(thisState.getBlock(), TeckleObjects.blockRetriever)) {
-                setCapabilityFace(thisState.getValue(BlockRetriever.FACING));
+                setCapabilityFace(thisState.getValue(BlockRetriever.FACING).getOpposite());
             }
         }
 
@@ -123,6 +121,17 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
         sourceNodes.removeIf(pN -> pN.realNode.equals(removedNode) || pN.realNode.position.equals(removedNode.position));
     }
 
+    @Override
+    public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
+        return Objects.equals(side, getCapabilityFace());
+    }
+
+
+    @Override
+    public boolean canConnectTo(EnumFacing side) {
+        return Objects.equals(side, getCapabilityFace());
+    }
+
     private boolean isValidSourceNode(BlockPos position, EnumFacing direction) {
         direction = direction.getOpposite();
 
@@ -137,15 +146,5 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
     public ItemStack acceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
         //TODO: Implement for accepting when inline.
         return ItemStack.EMPTY;
-    }
-
-    @Override
-    public NBTTagCompound serializeNBT() {
-        return null;
-    }
-
-    @Override
-    public void deserializeNBT(NBTTagCompound nbt) {
-
     }
 }

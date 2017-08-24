@@ -55,11 +55,6 @@ public class NetworkTileSortingMachineOutput extends NetworkTileSortingMachineBa
     }
 
     @Override
-    public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-        return Objects.equals(side, getOutputFace());
-    }
-
-    @Override
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
         if (Objects.equals(traveller.getEntryPoint().position, getPos()))
             return true;
@@ -73,6 +68,12 @@ public class NetworkTileSortingMachineOutput extends NetworkTileSortingMachineBa
 
     @Override
     public boolean canConnectTo(EnumFacing side) {
+        return Objects.equals(side, getOutputFace());
+    }
+
+
+    @Override
+    public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
         return Objects.equals(side, getOutputFace());
     }
 

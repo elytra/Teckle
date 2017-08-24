@@ -2,12 +2,14 @@ package com.elytradev.teckle.common.tile.retriever;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.TeckleObjects;
-import com.elytradev.teckle.common.block.BlockSortingMachine;
+import com.elytradev.teckle.common.block.BlockRetriever;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
+import com.elytradev.teckle.common.worldnetwork.common.pathing.PathNode;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -16,21 +18,61 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
+
+import java.util.Objects;
 
 public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
+
+    protected int roundRobinTicker = 0;
+    protected int selectorPosition = 0;
+    protected boolean useSelector = true;
+    protected boolean matchCount = false;
+
+    private EnumFacing cachedFace = EnumFacing.DOWN;
+    private EnumDyeColor colour;
+
+    @Override
+    public NBTTagCompound serializeNBT() {
+        NBTTagCompound tag = super.serializeNBT();
+
+        tag.setInteger("cachedFace", getOutputFace().getIndex());
+        tag.setInteger("roundRobinTicker", roundRobinTicker);
+        tag.setInteger("selectorPosition", selectorPosition);
+        tag.setBoolean("useSelector", useSelector);
+        tag.setBoolean("matchCount", matchCount);
+        tag.setInteger("colour", colour == null ? -1 : colour.getMetadata());
+
+        return tag;
+    }
+
+    @Override
+    public void deserializeNBT(NBTTagCompound tag) {
+        super.deserializeNBT(tag);
+        this.cachedFace = EnumFacing.VALUES[tag.getInteger("cachedFace")];
+        this.roundRobinTicker = tag.getInteger("roundRobinTicker");
+        this.selectorPosition = tag.getInteger("selectorPosition");
+        this.useSelector = tag.getBoolean("useSelector");
+        this.matchCount = tag.getBoolean("matchCount");
+        this.colour = tag.getInteger("colour") < 0 ? null : EnumDyeColor.byMetadata(tag.getInteger("colour"));
+    }
 
     public NetworkTileRetrieverOutput(World world, BlockPos pos, EnumFacing face) {
         super(world, pos, face);
     }
 
-    @Override
-    public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-        return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
+    public NetworkTileRetrieverOutput(TileRetriever retriever) {
+        super(retriever.getWorld(), retriever.getPos(), retriever.getFacing());
+
+        this.filterData = retriever.filterData;
+        this.bufferData = retriever.bufferData;
+        this.filterID = retriever.filterID;
+        this.bufferID = retriever.bufferID;
     }
 
     @Override
-    public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-        return side.equals(getOutputFace());
+    public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
+        return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
     }
 
     @Override
@@ -40,19 +82,24 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
 
     @Override
     public boolean canConnectTo(EnumFacing side) {
-        return side.equals(getOutputFace());
+        return Objects.equals(side, getOutputFace());
+    }
+
+    @Override
+    public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
+        return Objects.equals(side, getOutputFace());
     }
 
     @Override
     public EnumFacing getOutputFace() {
-        if (getWorld() != null) {
+        if (getWorld() != null && getWorld().isBlockLoaded(getPos())) {
             IBlockState thisState = getWorld().getBlockState(getPos());
-            if (thisState.getBlock().equals(TeckleObjects.blockSortingMachine)) {
-                return thisState.getValue(BlockSortingMachine.FACING);
+            if (Objects.equals(thisState.getBlock(), TeckleObjects.blockRetriever)) {
+                cachedFace = thisState.getValue(BlockRetriever.FACING);
             }
         }
 
-        return EnumFacing.DOWN;
+        return cachedFace;
     }
 
     @Override
@@ -91,13 +138,107 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
         return getOutputFace();
     }
 
-    @Override
-    public NBTTagCompound serializeNBT() {
-        return null;
+    public void onPulse() {
+        ItemStack filterItem = getFilterItem();
+
+        if (!getSourceNodes().isEmpty()) {
+            PathNode[] nodes = new PathNode[getSourceNodes().size()];
+            getSourceNodes().toArray(nodes);
+            ItemStack extracted = ItemStack.EMPTY;
+            for (int i = roundRobinTicker; i < nodes.length; i++) {
+                PathNode node = nodes[i];
+                IItemHandler nodeItemHandler;
+                TileEntity tile = getWorld().getTileEntity(node.realNode.position);
+                if (tile == null || !tile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, node.faceFrom))
+                    continue;
+
+                nodeItemHandler = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, node.faceFrom);
+
+                int countToExtract = filterItem.isEmpty() ? 64 : matchCount ? filterItem.getCount() : 64;
+                for (int slot = 0; slot < nodeItemHandler.getSlots(); slot++) {
+                    ItemStack testExtraction = nodeItemHandler.extractItem(slot, countToExtract, true);
+                    if (!filterItem.isEmpty()) {
+                        if (ItemHandlerHelper.canItemStacksStack(testExtraction, filterItem)) {
+                            extracted = nodeItemHandler.extractItem(slot, countToExtract, false);
+                            break;
+                        }
+                    } else {
+                        if (!testExtraction.isEmpty()) {
+                            extracted = nodeItemHandler.extractItem(slot, countToExtract, false);
+                            break;
+                        }
+                    }
+                }
+                if (!extracted.isEmpty()) {
+                    if (node.cost <= getSourceNodes().firstEntry().getElement().cost) {
+                        if (i + 1 < nodes.length && nodes[i + 1].cost == node.cost) {
+                            roundRobinTicker++;
+                        } else {
+                            roundRobinTicker = 0;
+                        }
+                    } else {
+                        roundRobinTicker = 0;
+                    }
+                    break;
+                }
+            }
+
+            if (extracted.isEmpty()) {
+                roundRobinTicker = 0;
+            } else if (useSelector) {
+                incrementSelector();
+            }
+        }
+    }
+
+    public void incrementSelector() {
+        int prevSelectorPos = selectorPosition;
+        for (int newSelectorPos = selectorPosition + 1; newSelectorPos < 9; newSelectorPos++) {
+            ItemStack stackInSlot = filterData.getHandler().getStackInSlot(newSelectorPos);
+            if (!stackInSlot.isEmpty()) {
+                selectorPosition = newSelectorPos;
+                break;
+            }
+        }
+
+        if (selectorPosition == prevSelectorPos) {
+            selectorPosition = 0;
+            for (int newSelectorPos = 0; newSelectorPos < 9; newSelectorPos++) {
+                ItemStack stackInSlot = filterData.getHandler().getStackInSlot(newSelectorPos);
+                if (!stackInSlot.isEmpty()) {
+                    selectorPosition = newSelectorPos;
+                    break;
+                }
+            }
+        }
+    }
+
+    public ItemStack getFilterItem() {
+        ItemStack selectedStack = ItemStack.EMPTY;
+        if (useSelector) {
+            selectedStack = filterData.getHandler().getStackInSlot(selectorPosition);
+        }
+        return selectedStack;
     }
 
     @Override
-    public void deserializeNBT(NBTTagCompound nbt) {
-
+    public EnumDyeColor getColour() {
+        return this.colour;
     }
+
+    @Override
+    public EnumDyeColor setColour(EnumDyeColor colour) {
+        EnumDyeColor oldColour = this.colour;
+        this.colour = colour;
+        return oldColour;
+    }
+
+    public boolean anyStackMode() {
+        return !useSelector;
+    }
+
+    public boolean useSelector() {
+        return useSelector;
+    }
+
 }

@@ -56,6 +56,12 @@ public class NetworkTileSortingMachineInput extends NetworkTileSortingMachineBas
         return Objects.equals(side, getCapabilityFace());
     }
 
+
+    @Override
+    public boolean canConnectTo(EnumFacing side) {
+        return Objects.equals(side, getCapabilityFace());
+    }
+
     @Override
     public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
         return new SortingMachineEndpoint(network, pos, getCapabilityFace());
@@ -66,9 +72,5 @@ public class NetworkTileSortingMachineInput extends NetworkTileSortingMachineBas
         return getSortMode().canAcceptTraveller(this, traveller, from);
     }
 
-    @Override
-    public boolean canConnectTo(EnumFacing side) {
-        return Objects.equals(side, getCapabilityFace());
-    }
 
 }
