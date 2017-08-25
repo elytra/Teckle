@@ -19,6 +19,7 @@ package com.elytradev.teckle.common.worldnetwork.common;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.network.messages.TravellerDataMessage;
 import com.elytradev.teckle.common.network.messages.TravellerMoveMessage;
+import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEndpoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -33,6 +34,7 @@ import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.common.util.INBTSerializable;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -52,7 +54,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     // The current distance travelled between our previous node, and the increment node.
     public float travelledDistance = 0F;
     public NBTTagCompound data;
-    public List<Tuple<WorldNetworkNode, EnumFacing>> triedEndpoints = new ArrayList<>();
+    public List<ImmutablePair<WorldNetworkNode, EnumFacing>> triedEndpoints = new ArrayList<>();
     public HashMap<String, IDropAction> dropActions = new HashMap<>();
     protected WorldNetworkEntryPoint entryPoint;
     private BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate = (o0, o1) -> true;
@@ -343,7 +345,10 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
     public boolean isValidEndpoint(WorldNetworkTraveller traveller, BlockPos from, BlockPos endPoint) {
         EnumFacing face = getFacingFromVector(endPoint.subtract(from));
-        return !traveller.triedEndpoints.contains(new Tuple<>(network.getNodeContainersAtPosition(endPoint), getFacingFromVector(endPoint.subtract(from))))
+        ImmutablePair<WorldNetworkNode, EnumFacing> endpoint =
+                new ImmutablePair<>(network.getNode(endPoint, face.getOpposite()),
+                        face.getOpposite());
+        return !traveller.triedEndpoints.contains(endpoint)
                 && network.isNodePresent(endPoint)
                 && network.getNode(endPoint, face.getOpposite()).isEndpoint()
                 && network.getNode(endPoint, face.getOpposite()).canAcceptTraveller(traveller, getFacingFromVector(from.subtract(endPoint)));
@@ -364,7 +369,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         if (travelledDistance >= 0.5F) {
             if (!network.isNodePresent(nextNode.getPosition()) || !nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector())) {
                 EnumFacing injectionFace = getFacingFromVector(activePath.getEnd().realNode.getPosition().subtract(activePath.getEnd().from.realNode.getPosition())).getOpposite();
-                triedEndpoints.add(new Tuple<>(activePath.getEnd().realNode, injectionFace));
+                triedEndpoints.add(new ImmutablePair<>(activePath.getEnd().realNode, injectionFace));
                 quickRepath();
             } else if (travelledDistance >= 1F) {
                 if (nextNode.isEndpoint()) {
@@ -375,7 +380,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
                         if (!didInject) {
                             new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.getWorld(), this.currentNode.getPosition());
-                            triedEndpoints.add(new Tuple<>(nextNode, injectionFace));
+                            triedEndpoints.add(new ImmutablePair<>(nextNode, injectionFace));
                             previousNode.unregisterTraveller(this);
                             currentNode.unregisterTraveller(this);
                             genPath(true);
@@ -448,13 +453,13 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
         tagCompound.setInteger("tried", triedEndpoints.size());
         for (int i = 0; i < triedEndpoints.size(); i++) {
-            Tuple<WorldNetworkNode, EnumFacing> triedEndpoint = triedEndpoints.get(i);
-            if (triedEndpoint.getFirst() == null)
+            ImmutablePair<WorldNetworkNode, EnumFacing> triedEndpoint = triedEndpoints.get(i);
+            if (triedEndpoint.getLeft() == null)
                 continue;
-            tagCompound.setLong("triedp" + i, triedEndpoint.getFirst().getPosition().toLong());
-            tagCompound.setInteger("triedf" + i, triedEndpoint.getSecond().getIndex());
-            tagCompound.setInteger("triedcf" + i, triedEndpoint.getFirst().getCapabilityFace() == null ? -1
-                    : triedEndpoint.getFirst().getCapabilityFace().getIndex());
+            tagCompound.setLong("triedp" + i, triedEndpoint.getLeft().getPosition().toLong());
+            tagCompound.setInteger("triedf" + i, triedEndpoint.getRight().getIndex());
+            tagCompound.setInteger("triedcf" + i, triedEndpoint.getLeft().getCapabilityFace() == null ? -1
+                    : triedEndpoint.getLeft().getCapabilityFace().getIndex());
         }
 
         tagCompound.setInteger("actions", dropActions.size());
@@ -481,7 +486,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
         for (int i = 0; i < nbt.getInteger("tried"); i++) {
             EnumFacing triedCF = nbt.getInteger("triedcf" + i) > -1 ? EnumFacing.values()[nbt.getInteger("triedcf")] : null;
-            triedEndpoints.add(new Tuple<>(network.getNode(BlockPos.fromLong(nbt.getLong("triedp" + i)), triedCF),
+            triedEndpoints.add(new ImmutablePair<>(network.getNode(BlockPos.fromLong(nbt.getLong("triedp" + i)), triedCF),
                     EnumFacing.values()[data.getInteger("triedf")]));
         }
 
