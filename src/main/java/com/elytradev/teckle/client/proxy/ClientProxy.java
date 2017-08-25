@@ -18,7 +18,6 @@ package com.elytradev.teckle.client.proxy;
 
 import com.elytradev.concrete.resgen.ConcreteResourcePack;
 import com.elytradev.concrete.resgen.IResourceHolder;
-import com.elytradev.concrete.resgen.ResourceProvider;
 import com.elytradev.teckle.client.MissingOreExceptionClient;
 import com.elytradev.teckle.client.render.model.ModelMachineOverlay;
 import com.elytradev.teckle.client.render.model.TubeModelLoader;
@@ -57,8 +56,6 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.LoaderState;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-import java.io.InputStream;
-
 
 public class ClientProxy extends CommonProxy {
 
@@ -66,7 +63,7 @@ public class ClientProxy extends CommonProxy {
     public void registerRenderers(LoaderState.ModState state) {
         if (state == LoaderState.ModState.PREINITIALIZED) {
             ModelLoaderRegistry.registerLoader(new TubeModelLoader());
-            ConcreteResourcePack concreteResourcePack = new ConcreteResourcePack(TeckleMod.MOD_ID);
+            new ConcreteResourcePack(TeckleMod.MOD_ID);
         }
 
         if (state == LoaderState.ModState.INITIALIZED) {
