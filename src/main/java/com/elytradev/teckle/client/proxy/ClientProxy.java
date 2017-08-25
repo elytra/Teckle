@@ -21,6 +21,7 @@ import com.elytradev.concrete.resgen.IResourceHolder;
 import com.elytradev.teckle.client.MissingOreExceptionClient;
 import com.elytradev.teckle.client.render.model.ModelMachineOverlay;
 import com.elytradev.teckle.client.render.model.TubeModelLoader;
+import com.elytradev.teckle.client.render.tile.TileRetrieverRender;
 import com.elytradev.teckle.client.render.tile.TileSortingMachineRender;
 import com.elytradev.teckle.client.render.tile.TileTubeRenderer;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
@@ -32,6 +33,7 @@ import com.elytradev.teckle.common.item.ItemIngot;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.tile.TileItemTube;
+import com.elytradev.teckle.common.tile.retriever.TileRetriever;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -90,6 +92,7 @@ public class ClientProxy extends CommonProxy {
     public void registerTileEntitySpecialRenderers() {
         ClientRegistry.bindTileEntitySpecialRenderer(TileItemTube.class, new TileTubeRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(TileSortingMachine.class, new TileSortingMachineRender());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileRetriever.class, new TileRetrieverRender());
     }
 
     public void registerItemRenderers() {

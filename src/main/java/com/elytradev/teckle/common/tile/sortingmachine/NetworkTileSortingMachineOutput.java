@@ -31,9 +31,9 @@ import java.util.Objects;
 
 public class NetworkTileSortingMachineOutput extends NetworkTileSortingMachineBase {
 
+    public List<WorldNetworkTraveller> returnedTravellers = Lists.newArrayList();
     private PullMode pullMode = new PullModeSingleStep();
     private SortMode sortMode = new SortModeAnyStack();
-    public List<WorldNetworkTraveller> returnedTravellers = Lists.newArrayList();
     private EnumFacing cachedFace = EnumFacing.DOWN;
 
     public NetworkTileSortingMachineOutput(World world, BlockPos pos, EnumFacing face) {
@@ -51,7 +51,7 @@ public class NetworkTileSortingMachineOutput extends NetworkTileSortingMachineBa
 
     @Override
     public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-        return new WorldNetworkEntryPoint(network, pos,  getCapabilityFace());
+        return new WorldNetworkEntryPoint(network, pos, getCapabilityFace());
     }
 
     @Override

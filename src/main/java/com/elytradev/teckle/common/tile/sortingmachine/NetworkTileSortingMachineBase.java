@@ -1,7 +1,5 @@
 package com.elytradev.teckle.common.tile.sortingmachine;
 
-import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistantHolder;
-import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.common.tile.TileLitNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
@@ -17,7 +15,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.ArrayList;

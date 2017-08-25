@@ -18,7 +18,6 @@ package com.elytradev.teckle.common.worldnetwork.common.node;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
