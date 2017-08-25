@@ -37,6 +37,19 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
     private EnumFacing cachedFace = EnumFacing.DOWN;
     private EnumDyeColor colour;
 
+    public NetworkTileRetrieverOutput(World world, BlockPos pos, EnumFacing face) {
+        super(world, pos, face);
+    }
+
+    public NetworkTileRetrieverOutput(TileRetriever retriever) {
+        super(retriever.getWorld(), retriever.getPos(), retriever.getFacing());
+
+        this.filterData = retriever.filterData;
+        this.bufferData = retriever.bufferData;
+        this.filterID = retriever.filterID;
+        this.bufferID = retriever.bufferID;
+    }
+
     @Override
     public NBTTagCompound serializeNBT() {
         NBTTagCompound tag = super.serializeNBT();
@@ -60,19 +73,6 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
         this.useSelector = tag.getBoolean("useSelector");
         this.matchCount = tag.getBoolean("matchCount");
         this.colour = tag.getInteger("colour") < 0 ? null : EnumDyeColor.byMetadata(tag.getInteger("colour"));
-    }
-
-    public NetworkTileRetrieverOutput(World world, BlockPos pos, EnumFacing face) {
-        super(world, pos, face);
-    }
-
-    public NetworkTileRetrieverOutput(TileRetriever retriever) {
-        super(retriever.getWorld(), retriever.getPos(), retriever.getFacing());
-
-        this.filterData = retriever.filterData;
-        this.bufferData = retriever.bufferData;
-        this.filterID = retriever.filterID;
-        this.bufferID = retriever.bufferID;
     }
 
     @Override

@@ -40,12 +40,11 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
 
     // Empty node, used instead of null because fuck NPEs.
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
+    public WorldNetworkTile tile = null;
     private BlockPos position;
     private EnumFacing capabilityFace = null;
     private IWorldNetwork network;
     private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
-
-    public WorldNetworkTile tile = null;
 
     public WorldNetworkNode() {
         this.setPosition(new BlockPos(0, -1, 0));

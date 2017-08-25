@@ -119,7 +119,7 @@ public class TeckleObjects {
         NetworkTileRegistry.registerNetworkTile("teckle", "transposer", NetworkTileTransposer.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "sortingmachineIn", NetworkTileSortingMachineInput.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "sortingmachineOut", NetworkTileSortingMachineOutput.class);
-        NetworkTileRegistry.registerNetworkTile("teckle", "retrieverIn",  NetworkTileRetrieverInput.class);
+        NetworkTileRegistry.registerNetworkTile("teckle", "retrieverIn", NetworkTileRetrieverInput.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "retrieverOut", NetworkTileRetrieverOutput.class);
         NetworkNodeRegistry.registerNetworkNode("teckle", "itemendpoint", ItemNetworkEndpoint.class);
 

@@ -158,8 +158,7 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
     public ItemStack acceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
         if (sourceNodes.stream().anyMatch(pN ->
                 Objects.equals(pN.realNode.getPosition(), traveller.getEntryPoint().getPosition()))) {
-            traveller.setEndpointPredicate((o, o2) -> true);
-            return new ItemStack(traveller.data.getCompoundTag("stack"));
+
         } else {
 
         }
