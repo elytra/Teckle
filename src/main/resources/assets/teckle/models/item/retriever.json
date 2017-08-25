@@ -1,0 +1,8 @@
+{
+    "parent": "teckle:block/filter",
+    "textures": {
+        "side": "teckle:blocks/retrieverside",
+        "out": "teckle:blocks/retrieverout",
+        "in": "teckle:blocks/retrieverin"
+    }
+}

@@ -161,6 +161,9 @@ public class ClientProxy extends CommonProxy {
     public void onStitch(TextureStitchEvent.Pre e) {
         e.getMap().registerSprite(new ResourceLocation(TeckleMod.MOD_ID, "blocks/sortingmachineblinkenlights"));
         e.getMap().registerSprite(new ResourceLocation(TeckleMod.MOD_ID, "blocks/sortingmachinemouth"));
+
+        e.getMap().registerSprite(new ResourceLocation(TeckleMod.MOD_ID, "blocks/retrieverblinkenlights"));
+        e.getMap().registerSprite(new ResourceLocation(TeckleMod.MOD_ID, "blocks/retrievermouth"));
     }
 
     @Override

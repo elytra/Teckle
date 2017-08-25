@@ -4,12 +4,16 @@ import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockRetriever;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.EndpointData;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.PathNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.TreeMultiset;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -158,7 +162,11 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
     public ItemStack acceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
         if (sourceNodes.stream().anyMatch(pN ->
                 Objects.equals(pN.realNode.getPosition(), traveller.getEntryPoint().getPosition()))) {
-
+            ImmutableMap<String, NBTBase> additionalData = getColour() == null ? ImmutableMap.of()
+                    : ImmutableMap.of("colour", new NBTTagInt(getColour().getMetadata()));
+            return getOutputTile().getNetworkAssistant(ItemStack.class).insertData(
+                    (WorldNetworkEntryPoint) getOutputTile().getNode(), getPos().offset(getCapabilityFace().getOpposite()),
+                    new ItemStack(traveller.data.getCompoundTag("stack")), additionalData, false, false);
         } else {
 
         }
