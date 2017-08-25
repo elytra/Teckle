@@ -1,0 +1,42 @@
+{
+    "forge_marker": 1,
+    "defaults": {
+        "textures": {
+            "side": "teckle:blocks/retrieverside",
+            "particle": "teckle:blocks/retrieverside",
+            "out": "teckle:blocks/retrieverout",
+            "in": "teckle:blocks/retrieverin"
+        },
+        "uvlock": false,
+        "transform": "forge:default-block",
+        "model": "teckle:filter"
+    },
+    "variants": {
+        "facing": {
+            "down": {
+                "x": 180,
+                "y": 0
+            },
+            "up": {
+                "x": 0,
+                "y": 0
+            },
+            "north": {
+                "x": 90,
+                "y": 0
+            },
+            "south": {
+                "x": 90,
+                "y": 180
+            },
+            "west": {
+                "x": 90,
+                "y": 270
+            },
+            "east": {
+                "x": 90,
+                "y": 90
+            }
+        }
+    }
+}

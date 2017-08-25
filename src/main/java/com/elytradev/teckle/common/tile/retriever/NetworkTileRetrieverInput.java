@@ -3,7 +3,6 @@ package com.elytradev.teckle.common.tile.retriever;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockRetriever;
-import com.elytradev.teckle.common.tile.sortingmachine.SortingMachineEndpoint;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.EndpointData;
@@ -38,7 +37,7 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
 
     @Override
     public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-        return new SortingMachineEndpoint(network, pos, getCapabilityFace());
+        return new RetrieverEndpoint(network, pos, getCapabilityFace());
     }
 
     @Override
@@ -157,7 +156,13 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
     }
 
     public ItemStack acceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        //TODO: Implement for accepting when inline.
+        if (sourceNodes.stream().anyMatch(pN ->
+                Objects.equals(pN.realNode.getPosition(), traveller.getEntryPoint().getPosition()))) {
+            traveller.setEndpointPredicate((o, o2) -> true);
+            return new ItemStack(traveller.data.getCompoundTag("stack"));
+        } else {
+
+        }
         return ItemStack.EMPTY;
     }
 }

@@ -194,8 +194,9 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
                 ImmutableMap<String, NBTBase> additionalData = getColour() != null ? ImmutableMap.of("colour", new NBTTagInt(getColour().getMetadata())) : ImmutableMap.of();
                 BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate =
                         (worldNetworkNode, facing) ->
-                                Objects.equals(worldNetworkNode.getPosition(), getPos()) &&
-                                        Objects.equals(worldNetworkNode.getCapabilityFace(), getInputTile().getCapabilityFace());
+                                (Objects.equals(worldNetworkNode.getPosition(), getPos()) &&
+                                        Objects.equals(worldNetworkNode.getCapabilityFace(), getInputTile().getCapabilityFace())
+                                        || (Objects.equals(entryPoint.getPosition(), worldNetworkNode.getPosition())));
                 extractedStack = selectedExtractionData.extract(countToExtract, false);
                 ItemStack insertionResult = getNetworkAssistant(ItemStack.class).insertData(entryPoint, insertInto,
                         extractedStack, additionalData, endpointPredicate,
