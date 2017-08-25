@@ -32,6 +32,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.INBTSerializable;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
@@ -256,7 +257,12 @@ public abstract class WorldNetworkTile implements INBTSerializable<NBTTagCompoun
      * @return the tile entity at this position.
      */
     public TileEntity getTileEntity() {
-        return getWorld().getTileEntity(getNode().position);
+        return getWorld().getTileEntity(getNode().getPosition());
+    }
+
+    @Nullable
+    public <T extends INBTSerializable> IWorldNetworkAssistant<T> getNetworkAssistant(Class<T> type) {
+        return getWorld().getCapability(CapabilityWorldNetworkAssistantHolder.NETWORK_ASSISTANT_HOLDER_CAPABILITY, null).getAssistant(type);
     }
 
     public NBTTagCompound serializeData(NBTTagCompound tag) {

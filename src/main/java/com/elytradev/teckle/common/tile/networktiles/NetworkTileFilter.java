@@ -43,7 +43,7 @@ public class NetworkTileFilter extends NetworkTileTransposer {
     @Override
     public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
         this.setPos(pos);
-        return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
+        return new WorldNetworkEntryPoint(network, pos, getCapabilityFace());
     }
 
     @Override
@@ -53,7 +53,7 @@ public class NetworkTileFilter extends NetworkTileTransposer {
 
     @Override
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        if (Objects.equals(traveller.getEntryPoint().position, this.getPos()))
+        if (Objects.equals(traveller.getEntryPoint().getPosition(), this.getPos()))
             return true;
 
         if (Objects.equals(from, getOutputFace().getOpposite()) && !this.isPowered()) {

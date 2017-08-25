@@ -230,10 +230,9 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
     public ItemStack insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, ItemStack insertData, ImmutableMap<String, NBTBase> additionalData, BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate, boolean networksInsertionOnly, boolean simulate) {
         ItemStack remaining = insertData.copy();
         IWorldNetwork network = entryPoint.getNetwork();
-        WorldNetworkTile networkTile = entryPoint.getNetworkTile();
         World world = entryPoint.getNetwork().getWorld();
-        if (networkTile.getNode() != null && networkTile.getNode().getNetwork() != null
-                && network.isNodePresent(insertInto, entryPoint.getFacing().getOpposite())) {
+        if (entryPoint != null && network != null
+                && network.isNodePresent(insertInto, entryPoint.getCapabilityFace().getOpposite())) {
             NBTTagCompound tagCompound = new NBTTagCompound();
             tagCompound.setTag("stack", insertData.serializeNBT());
             additionalData.forEach(tagCompound::setTag);

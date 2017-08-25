@@ -84,8 +84,8 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
     }
 
     public void translateForMovement(DummyNetworkTraveller traveller, float partialTicks, java.util.HashMap<DummyNetworkTraveller, Vec3d> colourTravellers) {
-        EnumFacing facing = traveller.travelledDistance < 0.5F ? WorldNetworkTraveller.getFacingFromVector(traveller.currentNode.position.subtract(traveller.previousNode.position))
-                : WorldNetworkTraveller.getFacingFromVector(traveller.currentNode.position.subtract(traveller.nextNode.position)).getOpposite();
+        EnumFacing facing = traveller.travelledDistance < 0.5F ? WorldNetworkTraveller.getFacingFromVector(traveller.currentNode.getPosition().subtract(traveller.previousNode.getPosition()))
+                : WorldNetworkTraveller.getFacingFromVector(traveller.currentNode.getPosition().subtract(traveller.nextNode.getPosition())).getOpposite();
 
         Vec3d offset = new Vec3d(facing.getDirectionVec());
         // Smooth the variables out.

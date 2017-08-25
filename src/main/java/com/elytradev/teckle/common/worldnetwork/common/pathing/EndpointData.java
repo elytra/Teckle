@@ -35,7 +35,7 @@ public class EndpointData {
         this.node = node;
 
         this.cost = node.cost;
-        this.pos = node.realNode.position;
+        this.pos = node.realNode.getPosition();
     }
 
     @Override

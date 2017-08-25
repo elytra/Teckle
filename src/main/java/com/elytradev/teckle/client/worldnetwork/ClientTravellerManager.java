@@ -53,8 +53,8 @@ public class ClientTravellerManager {
                     traveller.nextNode = traveller.activePath.next();
 
                     World clientWorld = Minecraft.getMinecraft().world;
-                    TileEntity tileAtPrev = clientWorld.getTileEntity(traveller.previousNode.position);
-                    TileEntity tileAtCur = clientWorld.getTileEntity(traveller.currentNode.position);
+                    TileEntity tileAtPrev = clientWorld.getTileEntity(traveller.previousNode.getPosition());
+                    TileEntity tileAtCur = clientWorld.getTileEntity(traveller.currentNode.getPosition());
 
                     if (CapabilityWorldNetworkTile.isTileNetworked(tileAtPrev))
                         CapabilityWorldNetworkTile.getTileNetworked(tileAtPrev).removeClientTraveller(traveller.data);
@@ -71,8 +71,8 @@ public class ClientTravellerManager {
             if (traveller == null)
                 continue;
             World clientWorld = Minecraft.getMinecraft().world;
-            TileEntity tileAtPrev = traveller.previousNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.previousNode.position) : null;
-            TileEntity tileAtCur = traveller.currentNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.currentNode.position) : null;
+            TileEntity tileAtPrev = traveller.previousNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.previousNode.getPosition()) : null;
+            TileEntity tileAtCur = traveller.currentNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.currentNode.getPosition()) : null;
 
             if (CapabilityWorldNetworkTile.isTileNetworked(tileAtPrev))
                 CapabilityWorldNetworkTile.getTileNetworked(tileAtPrev).removeClientTraveller(traveller.data);
@@ -99,8 +99,8 @@ public class ClientTravellerManager {
             if (traveller == null)
                 return;
             World clientWorld = Minecraft.getMinecraft().world;
-            TileEntity tileAtPrev = traveller.previousNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.previousNode.position) : null;
-            TileEntity tileAtCur = traveller.currentNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.currentNode.position) : null;
+            TileEntity tileAtPrev = traveller.previousNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.previousNode.getPosition()) : null;
+            TileEntity tileAtCur = traveller.currentNode != WorldNetworkNode.NONE ? clientWorld.getTileEntity(traveller.currentNode.getPosition()) : null;
 
             if (CapabilityWorldNetworkTile.isTileNetworked(tileAtPrev))
                 CapabilityWorldNetworkTile.getTileNetworked(tileAtPrev).removeClientTraveller(traveller.data);
@@ -111,7 +111,7 @@ public class ClientTravellerManager {
 
     public static DummyNetworkTraveller put(NBTTagCompound key, DummyNetworkTraveller value) {
         World clientWorld = Minecraft.getMinecraft().world;
-        TileEntity tileAtCur = clientWorld.getTileEntity(value.currentNode.position);
+        TileEntity tileAtCur = clientWorld.getTileEntity(value.currentNode.getPosition());
 
         if (CapabilityWorldNetworkTile.isTileNetworked(tileAtCur))
             CapabilityWorldNetworkTile.getTileNetworked(tileAtCur).addClientTraveller(value);

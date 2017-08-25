@@ -29,7 +29,7 @@ import net.minecraft.util.math.BlockPos;
  */
 public class WorldNetworkEntryPoint extends WorldNetworkNode {
 
-    public WorldNetworkEndpoint endpoint = new WorldNetworkEndpoint(getNetwork(), position, getCapabilityFace()) {
+    private WorldNetworkEndpoint endpoint = new WorldNetworkEndpoint(getNetwork(), getPosition(), getCapabilityFace()) {
         @Override
         public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {
             WorldNetworkTile networkTile = WorldNetworkEntryPoint.this.getNetworkTile();
@@ -37,16 +37,14 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
             return true;
         }
     };
-    private EnumFacing facing = EnumFacing.DOWN;
 
-    public WorldNetworkEntryPoint(IWorldNetwork network, BlockPos position, EnumFacing facing, EnumFacing capabilityFace) {
+    public WorldNetworkEntryPoint(IWorldNetwork network, BlockPos position, EnumFacing capabilityFace) {
         this.setNetwork(network);
-        this.position = position;
-        this.facing = facing;
-        this.capabilityFace = capabilityFace;
+        this.setPosition(position);
+        this.setCapabilityFace(capabilityFace);
 
-        this.endpoint.position = this.position;
-        this.endpoint.setNetwork(this.getNetwork());
+        this.getEndpoint().setPosition(this.getPosition());
+        this.getEndpoint().setNetwork(this.getNetwork());
     }
 
     public WorldNetworkTraveller addTraveller(NBTTagCompound data, boolean send) {
@@ -54,8 +52,8 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         if (traveller.genInitialPath()) {
             getNetwork().registerTraveller(traveller, false);
             if (send) {
-                new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller, traveller.currentNode.position,
-                        traveller.previousNode.position).sendToAllWatching(getNetwork().getWorld(), position);
+                new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, traveller, traveller.currentNode.getPosition(),
+                        traveller.previousNode.getPosition()).sendToAllWatching(getNetwork().getWorld(), getPosition());
             }
             return traveller;
         }
@@ -63,8 +61,8 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         return WorldNetworkTraveller.NONE;
     }
 
-    public EnumFacing getFacing() {
-        return facing;
+    public WorldNetworkEndpoint getEndpoint() {
+        return endpoint;
     }
 
 }

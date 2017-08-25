@@ -95,7 +95,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     }
 
     public EnumFacing getFacingVector() {
-        return getFacingFromVector(nextNode.position.subtract(currentNode.position)).getOpposite();
+        return getFacingFromVector(nextNode.getPosition().subtract(currentNode.getPosition())).getOpposite();
     }
 
     public void genPath(boolean attemptReroute) {
@@ -107,7 +107,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         while (!nodeStack.isEmpty()) {
             PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
             for (EnumFacing direction : EnumFacing.VALUES) {
-                BlockPos neighbourPos = pathNode.realNode.position.add(direction.getDirectionVec());
+                BlockPos neighbourPos = pathNode.realNode.getPosition().add(direction.getDirectionVec());
                 if (!network.isNodePresent(neighbourPos, direction.getOpposite()) ||
                         iteratedPositions.contains(neighbourPos) ||
                         endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())) {
@@ -118,12 +118,12 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                     if (!endpoints.containsKey(neighbourPos)) {
                         endpoints.put(neighbourPos, new HashMap<>());
                     }
-                    if (isValidEndpoint(this, pathNode.realNode.position, neighbourPos) && endpointPredicate.test(neighbourNode, direction.getOpposite())) {
+                    if (isValidEndpoint(this, pathNode.realNode.getPosition(), neighbourPos) && endpointPredicate.test(neighbourNode, direction.getOpposite())) {
                         endpoints.get(neighbourPos).put(direction.getOpposite(),
                                 new EndpointData(new PathNode(pathNode, network.getNode(neighbourPos, direction.getOpposite()), direction.getOpposite()),
                                         direction.getOpposite()));
-                    } else if (entryPoint.position.equals(neighbourPos) && entryPoint.getNetwork().equals(network)) {
-                        PathNode nextNode = new PathNode(pathNode, entryPoint.endpoint, direction.getOpposite());
+                    } else if (entryPoint.getPosition().equals(neighbourPos) && entryPoint.getNetwork().equals(network)) {
+                        PathNode nextNode = new PathNode(pathNode, entryPoint.getEndpoint(), direction.getOpposite());
                         nextNode.cost = Integer.MAX_VALUE;
                         endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(nextNode, direction.getOpposite()));
                     } else {
@@ -155,7 +155,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                 while (!nodeStack.isEmpty()) {
                     PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
                     for (EnumFacing direction : EnumFacing.VALUES) {
-                        BlockPos neighbourPos = pathNode.realNode.position.add(direction.getDirectionVec());
+                        BlockPos neighbourPos = pathNode.realNode.getPosition().add(direction.getDirectionVec());
                         if (!network.isNodePresent(neighbourPos, direction.getOpposite()) ||
                                 iteratedPositions.contains(neighbourPos) ||
                                 endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())) {
@@ -169,7 +169,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                                 endpoints.put(neighbourPos, new HashMap<>());
                             }
 
-                            if (!isValidEndpoint(this, pathNode.realNode.position, neighbourPos) || !endpointPredicate.test(neighbourNode, direction.getOpposite())) {
+                            if (!isValidEndpoint(this, pathNode.realNode.getPosition(), neighbourPos) || !endpointPredicate.test(neighbourNode, direction.getOpposite())) {
                                 nodeStack.add(new PathNode(pathNode, network.getNode(neighbourPos, direction.getOpposite()), direction.getOpposite()));
                                 endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(neighbourPathNode, direction.getOpposite()));
                             }
@@ -207,7 +207,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
      * @return
      */
     public boolean genInitialPath() {
-        BlockPos startPos = this.entryPoint.position.add(entryPoint.getFacing().getDirectionVec());
+        BlockPos startPos = this.entryPoint.getPosition().add(entryPoint.getCapabilityFace().getDirectionVec());
         if (!network.isNodePresent(startPos))
             return false;
 
@@ -215,12 +215,12 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         List<BlockPos> iteratedPositions = new ArrayList<>();
         HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();
 
-        nodeStack.add(new PathNode(null, network.getNode(startPos, entryPoint.getFacing().getOpposite()), entryPoint.getFacing().getOpposite()));
+        nodeStack.add(new PathNode(null, network.getNode(startPos, entryPoint.getCapabilityFace().getOpposite()), entryPoint.getCapabilityFace().getOpposite()));
         while (!nodeStack.isEmpty()) {
             PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
             for (EnumFacing direction : EnumFacing.VALUES) {
-                BlockPos neighbourPos = pathNode.realNode.position.add(direction.getDirectionVec());
-                if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(entryPoint.position) ||
+                BlockPos neighbourPos = pathNode.realNode.getPosition().add(direction.getDirectionVec());
+                if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(entryPoint.getPosition()) ||
                         iteratedPositions.contains(neighbourPos) ||
                         endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite())) {
                     continue;
@@ -232,7 +232,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
                 }
 
                 if (neighbourNode.canAcceptTraveller(this, direction.getOpposite())) {
-                    if (isValidEndpoint(this, pathNode.realNode.position, neighbourPos) && endpointPredicate.test(neighbourNode, direction.getOpposite())) {
+                    if (isValidEndpoint(this, pathNode.realNode.getPosition(), neighbourPos) && endpointPredicate.test(neighbourNode, direction.getOpposite())) {
                         if (!endpoints.containsKey(neighbourPos)) {
                             endpoints.put(neighbourPos, new HashMap<>());
                         }
@@ -351,7 +351,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
 
     @Override
     public void update() {
-        if (!network.isNodePresent(currentNode.position)) {
+        if (!network.isNodePresent(currentNode.getPosition())) {
             // Unregister before dropping because drop actions will empty our nbt.
             this.network.unregisterTraveller(this, false, true);
             dropActions.values().forEach(action -> action.dropToWorld(WorldNetworkTraveller.this));
@@ -362,42 +362,42 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             return;
 
         if (travelledDistance >= 0.5F) {
-            if (!network.isNodePresent(nextNode.position) || !nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector())) {
-                EnumFacing injectionFace = getFacingFromVector(activePath.getEnd().realNode.position.subtract(activePath.getEnd().from.realNode.position)).getOpposite();
+            if (!network.isNodePresent(nextNode.getPosition()) || !nextNode.isEndpoint() && !nextNode.canAcceptTraveller(this, getFacingVector())) {
+                EnumFacing injectionFace = getFacingFromVector(activePath.getEnd().realNode.getPosition().subtract(activePath.getEnd().from.realNode.getPosition())).getOpposite();
                 triedEndpoints.add(new Tuple<>(activePath.getEnd().realNode, injectionFace));
                 quickRepath();
             } else if (travelledDistance >= 1F) {
                 if (nextNode.isEndpoint()) {
                     if (travelledDistance >= 1.25F) {
                         travelledDistance = 0F;
-                        EnumFacing injectionFace = getFacingFromVector(nextNode.position.subtract(currentNode.position)).getOpposite();
+                        EnumFacing injectionFace = getFacingFromVector(nextNode.getPosition().subtract(currentNode.getPosition())).getOpposite();
                         boolean didInject = ((WorldNetworkEndpoint) nextNode).inject(this, injectionFace);
 
                         if (!didInject) {
-                            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.getWorld(), this.currentNode.position);
+                            new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.getWorld(), this.currentNode.getPosition());
                             triedEndpoints.add(new Tuple<>(nextNode, injectionFace));
                             previousNode.unregisterTraveller(this);
                             currentNode.unregisterTraveller(this);
                             genPath(true);
                             currentNode.registerTraveller(this);
                             travelledDistance = -1.15F;
-                            TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
+                            TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.getPosition(), previousNode.getPosition());
                             message.travelledDistance = travelledDistance;
-                            message.sendToAllWatching(this.network.getWorld(), this.currentNode.position);
+                            message.sendToAllWatching(this.network.getWorld(), this.currentNode.getPosition());
                         } else {
                             network.unregisterTraveller(this, false, true);
                         }
                     }
-                } else if (nextNode.position.equals(activePath.getEnd().realNode.position)) {
+                } else if (nextNode.getPosition().equals(activePath.getEnd().realNode.getPosition())) {
                     if (travelledDistance >= 1.25F) {
                         previousNode.unregisterTraveller(this);
                         currentNode.unregisterTraveller(this);
                         genPath(true);
-                        new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.getWorld(), currentNode.position);
+                        new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.getWorld(), currentNode.getPosition());
                         travelledDistance = -1.1F;
-                        TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
+                        TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.getPosition(), previousNode.getPosition());
                         message.travelledDistance = travelledDistance;
-                        message.sendToAllWatching(this.network.getWorld(), this.currentNode.position);
+                        message.sendToAllWatching(this.network.getWorld(), this.currentNode.getPosition());
                     }
                 } else {
                     travelledDistance = 0;
@@ -419,12 +419,12 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         currentNode.unregisterTraveller(this);
         genPath(true);
         currentNode.registerTraveller(this);
-        new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.getWorld(), currentNode.position);
+        new TravellerDataMessage(TravellerDataMessage.Action.UNREGISTER, this).sendToAllWatching(network.getWorld(), currentNode.getPosition());
         if (travelledDistance > 0.5F)
             travelledDistance = 0.5F;
-        TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.position, previousNode.position);
+        TravellerDataMessage message = new TravellerDataMessage(TravellerDataMessage.Action.REGISTER, this, currentNode.getPosition(), previousNode.getPosition());
         message.travelledDistance = travelledDistance;
-        message.sendToAllWatching(this.network.getWorld(), this.currentNode.position);
+        message.sendToAllWatching(this.network.getWorld(), this.currentNode.getPosition());
     }
 
     @Override
@@ -432,10 +432,10 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         NBTTagCompound tagCompound = new NBTTagCompound();
         tagCompound.setFloat("travelled", travelledDistance);
         tagCompound.setTag("data", data);
-        tagCompound.setLong("entrypoint", entryPoint.position.toLong());
-        tagCompound.setLong("curnode", currentNode.position.toLong());
-        tagCompound.setLong("prevnode", previousNode.position.toLong());
-        tagCompound.setLong("nextnode", nextNode.position.toLong());
+        tagCompound.setLong("entrypoint", entryPoint.getPosition().toLong());
+        tagCompound.setLong("curnode", currentNode.getPosition().toLong());
+        tagCompound.setLong("prevnode", previousNode.getPosition().toLong());
+        tagCompound.setLong("nextnode", nextNode.getPosition().toLong());
 
         tagCompound.setInteger("entrypointface", entryPoint.getCapabilityFace() == null ? -1
                 : entryPoint.getCapabilityFace().getIndex());
@@ -451,7 +451,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
             Tuple<WorldNetworkNode, EnumFacing> triedEndpoint = triedEndpoints.get(i);
             if (triedEndpoint.getFirst() == null)
                 continue;
-            tagCompound.setLong("triedp" + i, triedEndpoint.getFirst().position.toLong());
+            tagCompound.setLong("triedp" + i, triedEndpoint.getFirst().getPosition().toLong());
             tagCompound.setInteger("triedf" + i, triedEndpoint.getSecond().getIndex());
             tagCompound.setInteger("triedcf" + i, triedEndpoint.getFirst().getCapabilityFace() == null ? -1
                     : triedEndpoint.getFirst().getCapabilityFace().getIndex());
@@ -516,23 +516,23 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         this.network = newNetwork;
         this.network.registerTraveller(this, false);
 
-        if (!network.isNodePresent(entryPoint.position)) {
+        if (!network.isNodePresent(entryPoint.getPosition())) {
             //TODO: Handle purgatory.
         }
 
-        if (!network.isNodePresent(currentNode.position)) {
+        if (!network.isNodePresent(currentNode.getPosition())) {
             dropActions.values().forEach(action -> action.dropToWorld(WorldNetworkTraveller.this));
             prevNetwork.unregisterTraveller(this, true, false);
             this.network.unregisterTraveller(data, true, false);
             return;
         } else {
         }
-        if (!network.isNodePresent(nextNode.position)) {
+        if (!network.isNodePresent(nextNode.getPosition())) {
             genPath(true);
             return;
         }
 
         TravellerMoveMessage message = new TravellerMoveMessage(this);
-        message.sendToAllWatching(network.getWorld(), currentNode.position);
+        message.sendToAllWatching(network.getWorld(), currentNode.getPosition());
     }
 }

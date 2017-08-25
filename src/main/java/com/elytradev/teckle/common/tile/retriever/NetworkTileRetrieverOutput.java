@@ -3,15 +3,19 @@ package com.elytradev.teckle.common.tile.retriever;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockRetriever;
+import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.PathNode;
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -21,6 +25,7 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import java.util.Objects;
+import java.util.function.BiPredicate;
 
 public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
 
@@ -72,12 +77,12 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
 
     @Override
     public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-        return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
+        return new WorldNetworkEntryPoint(network, pos, getCapabilityFace());
     }
 
     @Override
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        return traveller.getEntryPoint().position.equals(getPos());
+        return traveller.getEntryPoint().getPosition().equals(getPos());
     }
 
     @Override
@@ -139,37 +144,37 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
     }
 
     public void onPulse() {
-        ItemStack filterItem = getFilterItem();
-
         if (!getSourceNodes().isEmpty()) {
+            ItemStack filterItem = getFilterItem();
+            int countToExtract = filterItem.isEmpty() ? 64 : matchCount ? filterItem.getCount() : 64;
             PathNode[] nodes = new PathNode[getSourceNodes().size()];
             getSourceNodes().toArray(nodes);
-            ItemStack extracted = ItemStack.EMPTY;
+            SlotData selectedExtractionData = null;
+            PathNode usedNode = null;
             for (int i = roundRobinTicker; i < nodes.length; i++) {
-                PathNode node = nodes[i];
+                PathNode node = usedNode = nodes[i];
                 IItemHandler nodeItemHandler;
-                TileEntity tile = getWorld().getTileEntity(node.realNode.position);
+                TileEntity tile = getWorld().getTileEntity(node.realNode.getPosition());
                 if (tile == null || !tile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, node.faceFrom))
                     continue;
 
                 nodeItemHandler = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, node.faceFrom);
 
-                int countToExtract = filterItem.isEmpty() ? 64 : matchCount ? filterItem.getCount() : 64;
                 for (int slot = 0; slot < nodeItemHandler.getSlots(); slot++) {
                     ItemStack testExtraction = nodeItemHandler.extractItem(slot, countToExtract, true);
                     if (!filterItem.isEmpty()) {
                         if (ItemHandlerHelper.canItemStacksStack(testExtraction, filterItem)) {
-                            extracted = nodeItemHandler.extractItem(slot, countToExtract, false);
+                            selectedExtractionData = new SlotData(nodeItemHandler, slot);
                             break;
                         }
                     } else {
                         if (!testExtraction.isEmpty()) {
-                            extracted = nodeItemHandler.extractItem(slot, countToExtract, false);
+                            selectedExtractionData = new SlotData(nodeItemHandler, slot);
                             break;
                         }
                     }
                 }
-                if (!extracted.isEmpty()) {
+                if (!selectedExtractionData.isEmpty()) {
                     if (node.cost <= getSourceNodes().firstEntry().getElement().cost) {
                         if (i + 1 < nodes.length && nodes[i + 1].cost == node.cost) {
                             roundRobinTicker++;
@@ -182,8 +187,24 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
                     break;
                 }
             }
+            ItemStack extractedStack = ItemStack.EMPTY;
+            if (!selectedExtractionData.isEmpty()) {
+                WorldNetworkEntryPoint entryPoint = new WorldNetworkEntryPoint(usedNode.realNode.getNetwork(), usedNode.realNode.getPosition(), usedNode.faceFrom);
+                BlockPos insertInto = entryPoint.getPosition().offset(usedNode.faceFrom);
+                ImmutableMap<String, NBTBase> additionalData = getColour() != null ? ImmutableMap.of("colour", new NBTTagInt(getColour().getMetadata())) : ImmutableMap.of();
+                BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate =
+                        (worldNetworkNode, facing) ->
+                                Objects.equals(worldNetworkNode.getPosition(), getPos()) &&
+                                        Objects.equals(worldNetworkNode.getCapabilityFace(), getInputTile().getCapabilityFace());
+                extractedStack = selectedExtractionData.extract(countToExtract, false);
+                ItemStack insertionResult = getNetworkAssistant(ItemStack.class).insertData(entryPoint, insertInto,
+                        extractedStack, additionalData, endpointPredicate,
+                        true, false);
+                if (!insertionResult.isEmpty())
+                    selectedExtractionData.itemHandler.insertItem(selectedExtractionData.slot, insertionResult, false);
+            }
 
-            if (extracted.isEmpty()) {
+            if (selectedExtractionData.isEmpty()) {
                 roundRobinTicker = 0;
             } else if (useSelector) {
                 incrementSelector();

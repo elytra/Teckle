@@ -36,7 +36,7 @@ public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
 
     @Override
     public boolean inject(WorldNetworkTraveller traveller, EnumFacing from) {
-        TileEntity endPointTile = getNetwork().getWorld().getTileEntity(position);
+        TileEntity endPointTile = getNetwork().getWorld().getTileEntity(getPosition());
 
         if (endPointTile != null) {
             ICapabilityProvider endPointCapabilityProvider = endPointTile;
@@ -62,7 +62,7 @@ public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
     }
 
     private boolean canInject(WorldNetworkTraveller traveller, EnumFacing from) {
-        TileEntity endPointTile = getNetwork().getWorld().getTileEntity(position);
+        TileEntity endPointTile = getNetwork().getWorld().getTileEntity(getPosition());
 
         if (endPointTile != null) {
             ICapabilityProvider endPointCapabilityProvider = endPointTile;
