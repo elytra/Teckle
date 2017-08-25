@@ -56,7 +56,8 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
 
     @Override
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        return false;
+        return from.equals(getCapabilityFace()) && sourceNodes.stream()
+                .anyMatch(pN -> Objects.equals(pN.realNode.getPosition(), traveller.getEntryPoint().getPosition()));
     }
 
     @Override
@@ -89,8 +90,8 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
             while (!nodeStack.isEmpty() && endpoints.size() < 6) {
                 PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
                 for (EnumFacing direction : EnumFacing.VALUES) {
-                    BlockPos neighbourPos = pathNode.realNode.position.add(direction.getDirectionVec());
-                    if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(this.getNode().position) ||
+                    BlockPos neighbourPos = pathNode.realNode.getPosition().add(direction.getDirectionVec());
+                    if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(this.getNode().getPosition()) ||
                             iteratedPositions.contains(neighbourPos) ||
                             (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite()))) {
                         continue;
@@ -119,7 +120,7 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
 
             for (Map.Entry<BlockPos, HashMap<EnumFacing, EndpointData>> entry : endpoints.entrySet()) {
                 for (EndpointData endpointData : entry.getValue().values()) {
-                    if (sourceNodes.stream().noneMatch(pathNode -> pathNode.realNode.position.equals(endpointData.pos)
+                    if (sourceNodes.stream().noneMatch(pathNode -> pathNode.realNode.getPosition().equals(endpointData.pos)
                             && pathNode.from.equals(endpointData.node.from))) {
                         sourceNodes.add(endpointData.node);
                     }
@@ -131,14 +132,13 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
     @Override
     public void onNodeRemoved(WorldNetworkNode removedNode) {
         // Remove the node if it's known to us.
-        sourceNodes.removeIf(pN -> pN.realNode.equals(removedNode) || pN.realNode.position.equals(removedNode.position));
+        sourceNodes.removeIf(pN -> pN.realNode.equals(removedNode) || pN.realNode.getPosition().equals(removedNode.getPosition()));
     }
 
     @Override
     public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
         return Objects.equals(side, getCapabilityFace());
     }
-
 
     @Override
     public boolean canConnectTo(EnumFacing side) {

@@ -31,7 +31,7 @@ public class DropActions {
     public static Tuple<String, IDropAction> ITEMSTACK = new Tuple<>("itemstack", traveller -> {
         try {
             World world = traveller.network.getWorld();
-            BlockPos nodePos = traveller.currentNode.position;
+            BlockPos nodePos = traveller.currentNode.getPosition();
             if (traveller.data.hasKey("stack")) {
                 ItemStack stackFromTag = new ItemStack(traveller.data.getCompoundTag("stack"));
                 if (!stackFromTag.isEmpty()) {

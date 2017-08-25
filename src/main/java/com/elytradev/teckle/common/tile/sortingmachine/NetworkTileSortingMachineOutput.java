@@ -51,12 +51,12 @@ public class NetworkTileSortingMachineOutput extends NetworkTileSortingMachineBa
 
     @Override
     public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-        return new WorldNetworkEntryPoint(network, pos, getOutputFace(), getCapabilityFace());
+        return new WorldNetworkEntryPoint(network, pos,  getCapabilityFace());
     }
 
     @Override
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        if (Objects.equals(traveller.getEntryPoint().position, getPos()))
+        if (Objects.equals(traveller.getEntryPoint().getPosition(), getPos()))
             return true;
 
         if (Objects.equals(from, getOutputFace().getOpposite())) {

@@ -98,7 +98,7 @@ public class WorldNetworkPath implements Marshallable {
         List<BlockPos> out = new ArrayList<>();
 
         for (int i = 0; i < path.size(); i++) {
-            out.add(path.get(i).realNode.position);
+            out.add(path.get(i).realNode.getPosition());
         }
 
         return out;
@@ -136,7 +136,7 @@ public class WorldNetworkPath implements Marshallable {
         ByteBufUtils.writeVarInt(buf, path.size(), 3);
 
         for (PathNode pathNode : path) {
-            buf.writeLong(pathNode.realNode.position.toLong());
+            buf.writeLong(pathNode.realNode.getPosition().toLong());
             buf.writeInt(pathNode.faceFrom != null ? pathNode.faceFrom.getIndex() : -1);
         }
     }

@@ -70,10 +70,6 @@ public abstract class NetworkTileSortingMachineBase extends WorldNetworkTile {
         return subHandlers;
     }
 
-    public <T extends INBTSerializable> IWorldNetworkAssistant<T> getNetworkAssistant(Class<T> type) {
-        return getWorld().getCapability(CapabilityWorldNetworkAssistantHolder.NETWORK_ASSISTANT_HOLDER_CAPABILITY, null).getAssistant(type);
-    }
-
     public void setOtherTile(NetworkTileSortingMachineBase otherTile) {
         this.otherTile = otherTile;
     }

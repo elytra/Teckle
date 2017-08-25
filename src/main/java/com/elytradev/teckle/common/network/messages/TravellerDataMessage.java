@@ -56,7 +56,7 @@ public class TravellerDataMessage extends Message {
         super(TeckleNetworking.NETWORK);
         this.action = action;
         this.data = traveller.data;
-        this.current = traveller.currentNode.position;
+        this.current = traveller.currentNode.getPosition();
         this.path = traveller.activePath;
         this.travelledDistance = traveller.travelledDistance;
 

@@ -40,20 +40,21 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
 
     // Empty node, used instead of null because fuck NPEs.
     public static final WorldNetworkNode NONE = new WorldNetworkNode();
-    public BlockPos position;
-    public EnumFacing capabilityFace = null;
-    public WorldNetworkTile tile = null;
+    private BlockPos position;
+    private EnumFacing capabilityFace = null;
     private IWorldNetwork network;
     private HashMap<UUID, WorldNetworkTraveller> travellers = new HashMap<>();
 
+    public WorldNetworkTile tile = null;
+
     public WorldNetworkNode() {
-        this.position = new BlockPos(0, -1, 0);
+        this.setPosition(new BlockPos(0, -1, 0));
         this.setNetwork(null);
     }
 
     public WorldNetworkNode(IWorldNetwork network, BlockPos position, EnumFacing capabilityFace) {
         this.setNetwork(network);
-        this.position = position;
+        this.setPosition(position);
         this.setCapabilityFace(capabilityFace);
     }
 
@@ -80,7 +81,7 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
     public boolean isLoaded() {
         if (getNetwork() == null || getNetwork().getWorld() == null)
             return false;
-        return getNetwork().getWorld().isBlockLoaded(position);
+        return getNetwork().getWorld().isBlockLoaded(getPosition());
     }
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
@@ -107,8 +108,8 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
     @Nullable
     public WorldNetworkTile getNetworkTile() {
         if (tile == null && isLoaded()) {
-            if (CapabilityWorldNetworkTile.isPositionNetworkTile(getNetwork().getWorld(), position, capabilityFace)) {
-                tile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(getNetwork().getWorld(), position, capabilityFace);
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(getNetwork().getWorld(), getPosition(), getCapabilityFace())) {
+                tile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(getNetwork().getWorld(), getPosition(), getCapabilityFace());
             }
         }
         return tile;
@@ -153,8 +154,8 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
     @Override
     public String toString() {
         return "WorldNetworkNode{" +
-                "position=" + position +
-                ", capabilityFace=" + capabilityFace +
+                "position=" + getPosition() +
+                ", capabilityFace=" + getCapabilityFace() +
                 '}';
     }
 
@@ -178,4 +179,11 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
         // NOOP
     }
 
+    public BlockPos getPosition() {
+        return position;
+    }
+
+    public void setPosition(BlockPos position) {
+        this.position = position;
+    }
 }
