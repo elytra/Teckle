@@ -42,6 +42,19 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
     }
 
     @Override
+    public void setNode(WorldNetworkNode node) {
+        if (!Objects.equals(node, this.getNode())) {
+            super.setNode(node);
+            getNode().getNetwork().getNodes().stream().filter(nodeContainer -> nodeContainer.getNode().isEndpoint())
+                    .filter(nodeContainer -> sourceNodes.stream()
+                            .noneMatch(pN -> Objects.equals(pN.realNode, nodeContainer.getNode())))
+                    .forEach(nodeContainer -> onNodeAdded(nodeContainer.getNode()));
+        } else {
+            super.setNode(node);
+        }
+    }
+
+    @Override
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
         return false;
     }
