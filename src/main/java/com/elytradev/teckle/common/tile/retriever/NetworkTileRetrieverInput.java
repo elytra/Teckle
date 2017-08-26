@@ -159,17 +159,19 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
         return false;
     }
 
-    public ItemStack acceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
+    public ItemStack acceptTraveller(WorldNetworkTraveller traveller) {
         if (sourceNodes.stream().anyMatch(pN ->
                 Objects.equals(pN.realNode.getPosition(), traveller.getEntryPoint().getPosition()))) {
             ImmutableMap<String, NBTBase> additionalData = getColour() == null ? ImmutableMap.of()
                     : ImmutableMap.of("colour", new NBTTagInt(getColour().getMetadata()));
-            return getOutputTile().getNetworkAssistant(ItemStack.class).insertData(
+            ItemStack remainder = getOutputTile().getNetworkAssistant(ItemStack.class).insertData(
                     (WorldNetworkEntryPoint) getOutputTile().getNode(), getPos().offset(getCapabilityFace().getOpposite()),
                     new ItemStack(traveller.data.getCompoundTag("stack")), additionalData, false, false);
+            if(!remainder.isEmpty())
+            remainder = bufferData.getHandler().insertItem(remainder, false);
+            return remainder;
         } else {
-
+            return new ItemStack(traveller.data.getCompoundTag("stack"));
         }
-        return ItemStack.EMPTY;
     }
 }

@@ -17,7 +17,7 @@ public class RetrieverEndpoint extends WorldNetworkEndpoint {
         NetworkTileRetrieverInput retriever = (NetworkTileRetrieverInput) this.getNetworkTile();
         if (retriever == null)
             return false;
-        ItemStack remaining = retriever.acceptTraveller(traveller, from);
+        ItemStack remaining = retriever.acceptTraveller(traveller);
 
         if (remaining == null)
             return false;
