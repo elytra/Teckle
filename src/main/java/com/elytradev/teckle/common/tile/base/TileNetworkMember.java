@@ -48,6 +48,8 @@ public abstract class TileNetworkMember extends TileEntity {
 
     protected Object probeCapability;
 
+    private boolean isJammed = false;
+
     @Nullable
     public IWorldNetworkAssistant getNetworkAssistant(@Nonnull Class type) {
         return world.getCapability(CapabilityWorldNetworkAssistantHolder.NETWORK_ASSISTANT_HOLDER_CAPABILITY, null).getAssistant(type);
@@ -70,6 +72,18 @@ public abstract class TileNetworkMember extends TileEntity {
             return true;
         }
         return super.hasCapability(capability, facing);
+    }
+
+    public boolean isJammed() {
+        return this.isJammed;
+    }
+
+    public void unJam(){
+
+    }
+
+    public void setJammed(boolean jammed) {
+        this.isJammed = jammed;
     }
 
     private final class ProbeCapability implements IProbeDataProvider {
