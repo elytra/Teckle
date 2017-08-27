@@ -35,6 +35,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nonnull;
@@ -84,6 +85,12 @@ public abstract class TileNetworkMember extends TileEntity {
 
     public void setJammed(boolean jammed) {
         this.isJammed = jammed;
+    }
+
+
+    @Override
+    protected void setWorldCreate(World worldIn) {
+        super.setWorld(worldIn);
     }
 
     private final class ProbeCapability implements IProbeDataProvider {
