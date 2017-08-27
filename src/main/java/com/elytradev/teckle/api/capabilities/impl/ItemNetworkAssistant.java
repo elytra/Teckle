@@ -59,9 +59,12 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
     public static List<IWorldNetwork> getNeighbourNetworks(WorldNetworkTile networkTile, World world, BlockPos pos) {
         List<IWorldNetwork> neighbourNetworks = new ArrayList<>();
         for (EnumFacing facing : EnumFacing.VALUES) {
+            if (!networkTile.canConnectTo(facing))
+                continue;
+
             BlockPos neighbourPos = pos.add(facing.getDirectionVec());
 
-            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourPos, facing.getOpposite()) && networkTile.canConnectTo(facing)) {
+            if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourPos, facing.getOpposite())) {
                 WorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourPos, facing.getOpposite());
                 if (!neighbourNetworks.contains(neighbourNetworkTile.getNode().getNetwork()))
                     neighbourNetworks.add(neighbourNetworkTile.getNode().getNetwork());
