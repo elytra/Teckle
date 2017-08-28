@@ -18,6 +18,7 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
 
     private static final String DATA_NAME = "tecklestackpool";
     private static final HashMap<Integer, AdvancedStackHandlerPool> DIMENSION_POOLS = Maps.newHashMap();
+    private static final HashMap<Integer, AdvancedStackHandlerPool> FALLBACK_POOLS = Maps.newHashMap();
 
     private Map<UUID, AdvancedStackHandlerEntry> registeredHandlers = Maps.newHashMap();
 
@@ -57,7 +58,13 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
     public static AdvancedStackHandlerPool getPool(Integer dim) {
         if (!DIMENSION_POOLS.containsKey(dim)) {
             DIMENSION_POOLS.put(dim, new AdvancedStackHandlerPool());
-            getSavedPool(DimensionManager.getWorld(dim));
+            if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+                getSavedPool(DimensionManager.getWorld(dim));
+            }
+        }
+        if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
+            FALLBACK_POOLS.put(dim, new AdvancedStackHandlerPool());
+            return FALLBACK_POOLS.get(dim);
         }
         return DIMENSION_POOLS.get(dim);
     }

@@ -31,6 +31,7 @@ import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileFilter;
+import com.elytradev.teckle.common.tile.networktiles.NetworkTileTransposer;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
@@ -72,8 +73,8 @@ import java.util.*;
 public class TileFilter extends TileTransposer implements ITickable, IElementProvider {
 
     public EnumDyeColor colour = null;
-    public UUID filterID, bufferID;
-    public AdvancedStackHandlerEntry filterData, bufferData;
+    public UUID filterID;
+    public AdvancedStackHandlerEntry filterData;
     private NetworkTileFilter networkTile;
 
     private int cooldown = 0;
@@ -103,6 +104,13 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
         this.networkTile.bufferData = this.bufferData;
         this.networkTile.filterID = this.filterID;
         this.networkTile.bufferID = this.bufferID;
+
+        this.tileEntityInvalid = false;
+    }
+
+    @Override
+    protected NetworkTileTransposer getNetworkTile() {
+        return networkTile;
     }
 
     @Nullable
@@ -131,7 +139,7 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
     @Override
     public void handleUpdateTag(NBTTagCompound tag) {
         this.colour = !tag.hasKey("colour") ? null : EnumDyeColor.byMetadata(tag.getInteger("colour"));
-        super.readFromNBT(tag);
+        readFromNBT(tag);
     }
 
     /**

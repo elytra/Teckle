@@ -130,6 +130,8 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
         this.inputTile.setOtherTile(outputTile);
         this.outputTile.setOtherTile(inputTile);
+
+        this.tileEntityInvalid = false;
     }
 
     @Override
