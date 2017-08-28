@@ -107,11 +107,10 @@ public class WorldNetwork implements IWorldNetwork {
         TeckleMod.LOG.debug(this + "/Unregistering a node at, " + nodePosition);
         if (networkNodes.containsKey(nodePosition)) {
             PositionData positionData = networkNodes.get(nodePosition);
-            List<NodeContainer> nodeContainers = positionData.getNodeContainers(this.getNetworkID());
-            List<NodeContainer> removedNodeContainers = nodeContainers.stream()
+            List<NodeContainer> removedNodeContainers = positionData.getNodeContainers(this.getNetworkID()).stream()
                     .filter(nodeContainer -> faceMatches(face, nodeContainer.getFacing()) && nodeContainer.getPos().equals(nodePosition))
                     .collect(Collectors.toList());
-            nodeContainers.removeIf(nodeContainer -> faceMatches(face, nodeContainer.getFacing()) && nodeContainer.getPos().equals(nodePosition));
+            positionData.removeIf(getNetworkID(), nodeContainer -> faceMatches(face, nodeContainer.getFacing()) && nodeContainer.getPos().equals(nodePosition));
             removedNodeContainers.forEach(removedContainer -> listenerNodePositions.stream().map(networkNodes::get).flatMap(pD -> pD.getNodeContainers(getNetworkID()).stream())
                     .filter(nodeContainer -> nodeContainer.getNode() != null && nodeContainer.getNode().getNetworkTile().listenToNetworkChange())
                     .forEach(nodeContainer -> nodeContainer.getNode().getNetworkTile().onNodeRemoved(removedContainer.getNode())));
@@ -364,9 +363,7 @@ public class WorldNetwork implements IWorldNetwork {
 
     @Override
     public void update() {
-        for (WorldNetworkTraveller traveller : travellers.values()) {
-            traveller.update();
-        }
+        travellers.values().forEach(WorldNetworkTraveller::update);
         for (WorldNetworkTraveller traveller : travellersToUnregister) {
             if (traveller == null)
                 continue;
