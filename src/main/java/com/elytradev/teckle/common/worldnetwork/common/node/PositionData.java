@@ -83,7 +83,9 @@ public class PositionData {
     }
 
     public boolean removeIf(UUID key, Predicate<NodeContainer> predicate) {
-        return nodeContainers.get(key).removeIf(predicate);
+        boolean result = nodeContainers.get(key).removeIf(predicate);
+        nodeContainers.values().removeIf(List::isEmpty);
+        return result;
     }
 
     public NodeContainer add(IWorldNetwork network, WorldNetworkNode node) {

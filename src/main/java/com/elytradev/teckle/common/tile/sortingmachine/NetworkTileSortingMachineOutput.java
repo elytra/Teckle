@@ -121,7 +121,14 @@ public class NetworkTileSortingMachineOutput extends NetworkTileSortingMachineBa
 
     @Override
     public EnumFacing getCapabilityFace() {
-        return getOutputFace();
+        if (getWorld() != null && getWorld().isBlockLoaded(getPos())) {
+            IBlockState thisState = getWorld().getBlockState(getPos());
+            if (Objects.equals(thisState.getBlock(), TeckleObjects.blockSortingMachine)) {
+                setCapabilityFace(thisState.getValue(BlockSortingMachine.FACING));
+            }
+        }
+
+        return super.getCapabilityFace();
     }
 
     @Override
