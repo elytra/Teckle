@@ -66,6 +66,8 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
 
             if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourPos, facing.getOpposite())) {
                 WorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourPos, facing.getOpposite());
+                if (neighbourNetworkTile.getNode() == null || neighbourNetworkTile.getNode().getNetwork() == null)
+                    continue;
                 if (!neighbourNetworks.contains(neighbourNetworkTile.getNode().getNetwork()))
                     neighbourNetworks.add(neighbourNetworkTile.getNode().getNetwork());
             }
