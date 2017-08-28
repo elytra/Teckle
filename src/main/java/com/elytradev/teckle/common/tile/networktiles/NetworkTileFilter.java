@@ -23,10 +23,9 @@ import java.util.UUID;
 
 public class NetworkTileFilter extends NetworkTileTransposer {
 
-    public EnumFacing cachedFace = EnumFacing.DOWN;
     public EnumDyeColor cachedColour = null;
-    public UUID filterID, bufferID;
-    public AdvancedStackHandlerEntry filterData, bufferData;
+    public UUID filterID;
+    public AdvancedStackHandlerEntry filterData;
 
     public NetworkTileFilter(World world, BlockPos pos, EnumFacing face) {
         super(world, pos, face);

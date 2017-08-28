@@ -167,8 +167,8 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
             ItemStack remainder = getOutputTile().getNetworkAssistant(ItemStack.class).insertData(
                     (WorldNetworkEntryPoint) getOutputTile().getNode(), getPos().offset(getCapabilityFace().getOpposite()),
                     new ItemStack(traveller.data.getCompoundTag("stack")), additionalData, false, false);
-            if(!remainder.isEmpty())
-            remainder = bufferData.getHandler().insertItem(remainder, false);
+            if (!remainder.isEmpty())
+                remainder = bufferData.getHandler().insertItem(remainder, false);
             return remainder;
         } else {
             return new ItemStack(traveller.data.getCompoundTag("stack"));

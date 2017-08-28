@@ -79,14 +79,13 @@ public abstract class TileNetworkMember extends TileEntity {
         return this.isJammed;
     }
 
-    public void unJam(){
-
-    }
-
     public void setJammed(boolean jammed) {
         this.isJammed = jammed;
     }
 
+    public void unJam() {
+
+    }
 
     @Override
     protected void setWorldCreate(World worldIn) {
