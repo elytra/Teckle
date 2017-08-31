@@ -379,9 +379,9 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             return (T) probeCapability;
         }
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
-            if (Objects.equals(facing, getFacing()))
+            if (Objects.equals(facing, outputTile.getCapabilityFace()))
                 return (T) outputTile;
-            else if (Objects.equals(facing, getFacing().getOpposite()))
+            else if (Objects.equals(facing, inputTile.getCapabilityFace()))
                 return (T) inputTile;
         }
         return super.getCapability(capability, facing);

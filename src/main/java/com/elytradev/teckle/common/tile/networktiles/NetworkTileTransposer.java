@@ -42,7 +42,7 @@ public class NetworkTileTransposer extends WorldNetworkTile {
     @Override
     public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
         this.setPos(pos);
-        return new WorldNetworkEntryPoint(network, pos, getCapabilityFace());
+        return new WorldNetworkEntryPoint(network, pos, getCapabilityFace(), getOutputFace());
     }
 
     @Override
@@ -69,6 +69,8 @@ public class NetworkTileTransposer extends WorldNetworkTile {
             IBlockState thisState = getWorld().getBlockState(getPos());
             if (thisState.getBlock() instanceof BlockTransposer) {
                 cachedFace = thisState.getValue(BlockTransposer.FACING);
+                if (getNode() instanceof WorldNetworkEntryPoint)
+                    ((WorldNetworkEntryPoint) getNode()).setOutputFace(cachedFace);
             }
         }
 

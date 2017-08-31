@@ -415,7 +415,7 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
                 data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network",
                         "All",
                         networkTile.getNode().getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""),
-                        networkTile.getNode().getNetwork().getNodePositions().size())));
+                        networkTile.getNode().getNetwork().getNodes().size())));
 
             List<ItemStack> stacks = new ArrayList<>();
             for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {

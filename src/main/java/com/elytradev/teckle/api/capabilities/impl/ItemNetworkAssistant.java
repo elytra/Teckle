@@ -20,6 +20,7 @@ import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
@@ -149,7 +150,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
                         neighbourNetworkTile.setNode(thisNetworkTile.getNode().getNetwork().getNode(neighbourTile.getPos(), capabilityFace));
                     }
                 } else {
-                    if (!thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
+                    if (!thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourTile.getPos(), capabilityFace)) {
                         thisNetworkTile.getNode().getNetwork().registerNode(new ItemNetworkEndpoint(thisNetworkTile.getNode().getNetwork(), neighbourTile.getPos(), capabilityFace));
                     }
                 }
@@ -167,9 +168,11 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
 
         BlockPos posDiff = pos.subtract(neighbourPos);
         EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+        if (!CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, capabilityFace.getOpposite()))
+            return;
         WorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, capabilityFace.getOpposite());
 
-        if (thisNetworkTile == null || thisNetworkTile.getNode() == null) {
+        if (thisNetworkTile.getNode() == null) {
             onNodePlaced(world, pos);
             return;
         }
@@ -222,6 +225,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
             if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, facing)) {
                 WorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
                 if (thisNetworkTile.getNode() != null && !(i > -1 && thisNetworkTile.getCapabilityFace() == null)) {
+                    TeckleMod.LOG.debug("Found networktile on {} it is being removed.", thisNetworkTile.getNode().getNetwork());
                     thisNetworkTile.getNode().getNetwork().unregisterNodeAtPosition(pos, facing);
                     thisNetworkTile.getNode().getNetwork().validateNetwork();
                     thisNetworkTile.setNode(null);
@@ -233,11 +237,15 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
     @Nonnull
     @Override
     public ItemStack insertData(WorldNetworkEntryPoint entryPoint, BlockPos insertInto, ItemStack insertData, ImmutableMap<String, NBTBase> additionalData, BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate, boolean networksInsertionOnly, boolean simulate) {
+        if (entryPoint == null)
+            return insertData.copy();
+
         ItemStack remaining = insertData.copy();
         IWorldNetwork network = entryPoint.getNetwork();
         World world = entryPoint.getNetwork().getWorld();
+        EnumFacing insertFace = entryPoint.getOutputFace().getOpposite();
         if (entryPoint != null && network != null
-                && network.isNodePresent(insertInto, entryPoint.getCapabilityFace().getOpposite())) {
+                && network.isNodePresent(insertInto, insertFace)) {
             NBTTagCompound tagCompound = new NBTTagCompound();
             tagCompound.setTag("stack", insertData.serializeNBT());
             additionalData.forEach(tagCompound::setTag);
@@ -255,7 +263,6 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
         if (!remaining.isEmpty() && !networksInsertionOnly) {
             if (world.getTileEntity(insertInto) != null) {
                 TileEntity insertionTile = world.getTileEntity(insertInto);
-                EnumFacing insertFace = entryPoint.getNetworkTile().getOutputFace().getOpposite();
                 if (insertionTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, insertFace)) {
                     IItemHandler insertionHandler = insertionTile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, insertFace);
 

@@ -157,7 +157,6 @@ public abstract class WorldNetworkTile implements INBTSerializable<NBTTagCompoun
      * @param node the node to set to.
      */
     public void setNode(WorldNetworkNode node) {
-        TeckleMod.LOG.debug("Set node to {}", node);
         this.node = node;
     }
 

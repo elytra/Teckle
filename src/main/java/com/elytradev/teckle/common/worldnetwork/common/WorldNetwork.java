@@ -407,17 +407,21 @@ public class WorldNetwork implements IWorldNetwork {
         compound.setUniqueId("id", id);
 
         // Serialize nodes first.
-        compound.setInteger("nCount", networkNodes.size());
+        int serialized = 0;
+        compound.setInteger("nCount", getNodes().size());
         List<NodeContainer> nodes = getNodes();
         for (int i = 0; i < nodes.size(); i++) {
             compound.setLong("n" + i, nodes.get(i).getPos().toLong());
             compound.setInteger("nF" + i, nodes.get(i).getFacing() == null ? -1 : nodes.get(i).getFacing().getIndex());
             if (nodes.get(i).getNetworkTile() != null) {
                 compound.setTag("nT" + i, nodes.get(i).getNetworkTile().serializeData(new NBTTagCompound()));
+                serialized++;
             } else {
                 compound.setTag("nN" + i, nodes.get(i).getNode().serializeNBT());
+                serialized++;
             }
         }
+        TeckleMod.LOG.debug("Serialized {} nodes. Expected {}", serialized, nodes.size());
 
         // Serialize travellers.
         int tCount = 0;
@@ -437,6 +441,8 @@ public class WorldNetwork implements IWorldNetwork {
         this.id = compound.getUniqueId("id");
         WorldNetworkDatabase.registerWorldNetwork(this);
 
+        int deserialized = 0;
+        int expected = compound.getInteger("nCount");
         for (int i = 0; i < compound.getInteger("nCount"); i++) {
             BlockPos pos = BlockPos.fromLong(compound.getLong("n" + i));
             EnumFacing face = compound.getInteger("nF" + i) > -1 ? EnumFacing.values()[compound.getInteger("nF" + i)] : null;
@@ -451,9 +457,12 @@ public class WorldNetwork implements IWorldNetwork {
             } else if (compound.hasKey("nN" + i)) {
                 node = WorldNetworkNode.create(this, pos, face, compound.getCompoundTag("nN" + i));
             }
-            if (node != null)
+            if (node != null) {
                 registerNode(node);
+                deserialized++;
+            }
         }
+        TeckleMod.LOG.debug("Deserialized {} nodes, expected: {}", deserialized, expected);
 
         List<WorldNetworkTraveller> deserializedTravellers = new ArrayList<>();
         for (int i = 0; i < compound.getInteger("tCount"); i++) {
@@ -463,16 +472,18 @@ public class WorldNetwork implements IWorldNetwork {
             deserializedTravellers.add(traveller);
         }
 
-        //for (PositionData positionData : Lists.newArrayList(networkNodes.values())) {
-        //    positionData.getNodeContainers(getNetworkID()).stream().map(NodeContainer::getNode)
-        //            .filter(node -> node.getNetworkTile() != null).map(WorldNetworkNode::getNetworkTile)
-        //            .forEach(t -> t.networkReloaded(this));
-        //}
-
+        int failures = 0;
         for (WorldNetworkTraveller traveller : deserializedTravellers) {
-            traveller.genPath(true);
-            this.registerTraveller(traveller, true);
+            try {
+                traveller.genPath(true);
+                this.registerTraveller(traveller, true);
+            } catch (Exception e) {
+                failures++;
+                TeckleMod.LOG.error("Failed to load traveller {}", traveller.data);
+                e.printStackTrace();
+            }
         }
+        TeckleMod.LOG.debug("Failed to load {} out of {} travellers.", failures, deserializedTravellers.size());
     }
 }
 

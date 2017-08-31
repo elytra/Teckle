@@ -40,12 +40,13 @@ public class PositionData {
 
         // Clear stray data.
         dimensionPool.get(position).nodeContainers.keySet().removeIf(uuid -> !WorldNetworkDatabase.getNetworkDB(dimension).isNetworkPresent(uuid));
+        //dimensionPool.get(position).nodeContainers.values().removeIf(List::isEmpty);
 
         return dimensionPool.get(position);
     }
 
     public List<NodeContainer> getNodeContainers(UUID key) {
-        return nodeContainers.get(key);
+        return nodeContainers.getOrDefault(key, Collections.emptyList());
     }
 
     public boolean add(NodeContainer container) {
@@ -67,7 +68,9 @@ public class PositionData {
         if (!nodeContainers.containsKey(key))
             nodeContainers.put(key, Lists.newArrayList());
 
-        return nodeContainers.get(key).remove(nodeContainer);
+        boolean result = nodeContainers.get(key).remove(nodeContainer);
+        nodeContainers.values().removeIf(List::isEmpty);
+        return result;
     }
 
     public Set<UUID> networkIDS() {

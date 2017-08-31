@@ -77,6 +77,10 @@ public class NodeContainer {
         return getNode().getNetworkTile();
     }
 
+    public boolean hasNetworkTile() {
+        return getNode().getNetworkTile() != null;
+    }
+
     /**
      * Determines if the container is valid, checks if the position is a negative y.
      *

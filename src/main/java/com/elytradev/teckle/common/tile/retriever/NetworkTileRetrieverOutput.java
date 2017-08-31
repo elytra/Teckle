@@ -77,7 +77,7 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
 
     @Override
     public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-        return new WorldNetworkEntryPoint(network, pos, getCapabilityFace());
+        return new WorldNetworkEntryPoint(network, pos, getCapabilityFace(), getOutputFace());
     }
 
     @Override
@@ -101,6 +101,8 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
             IBlockState thisState = getWorld().getBlockState(getPos());
             if (Objects.equals(thisState.getBlock(), TeckleObjects.blockRetriever)) {
                 cachedFace = thisState.getValue(BlockRetriever.FACING);
+                if (getNode() instanceof WorldNetworkEntryPoint)
+                    ((WorldNetworkEntryPoint) getNode()).setOutputFace(cachedFace);
             }
         }
 
@@ -189,7 +191,7 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
             }
             ItemStack extractedStack = ItemStack.EMPTY;
             if (!selectedExtractionData.isEmpty()) {
-                WorldNetworkEntryPoint entryPoint = new WorldNetworkEntryPoint(usedNode.realNode.getNetwork(), usedNode.realNode.getPosition(), usedNode.faceFrom);
+                WorldNetworkEntryPoint entryPoint = new WorldNetworkEntryPoint(usedNode.realNode.getNetwork(), usedNode.realNode.getPosition(), usedNode.faceFrom, getOutputFace());
                 BlockPos insertInto = entryPoint.getPosition().offset(usedNode.faceFrom);
                 ImmutableMap<String, NBTBase> additionalData = getColour() != null ? ImmutableMap.of("colour", new NBTTagInt(getColour().getMetadata())) : ImmutableMap.of();
                 BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate =
