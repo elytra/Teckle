@@ -166,9 +166,21 @@ public class TeckleObjects {
                 'W', Blocks.PLANKS,
                 'C', Blocks.CRAFTING_TABLE,
                 'R', Items.REDSTONE);
+
+        // A few variant recipes
         registerShapedRecipe(registry, new ItemStack(itemBlade), "I  ", " S ",
                 'I', Items.IRON_INGOT,
                 'S', Items.STICK);
+        registerShapedRecipe(registry, new ItemStack(itemBlade), "  I", " S ",
+                'I', Items.IRON_INGOT,
+                'S', Items.STICK);
+        registerShapedRecipe(registry, new ItemStack(itemBlade), "  I", " S ",
+                'I', Items.IRON_INGOT,
+                'S', Items.STICK);
+        registerShapedRecipe(registry, new ItemStack(itemBlade), "   ", " I ", "  S",
+                'I', Items.IRON_INGOT,
+                'S', Items.STICK);
+
         registerShapedRecipe(registry, new ItemStack(blockSortingMachine), "IWI", "BFB", "IRI",
                 'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.BLUE.getMetadata()),
                 'I', new ItemStack(Items.IRON_INGOT),
