@@ -115,7 +115,7 @@ public class WorldNetworkPath implements Marshallable {
         try {
             currentNode = path.get(index).realNode;
         } catch (Exception e) {
-            TeckleMod.LOG.error("Failed to get next node in path on " + FMLCommonHandler.instance().getEffectiveSide());
+            TeckleMod.LOG.warn("Failed to get next node in path on " + FMLCommonHandler.instance().getEffectiveSide());
         }
         return currentNode != null ? currentNode : WorldNetworkNode.NONE;
     }

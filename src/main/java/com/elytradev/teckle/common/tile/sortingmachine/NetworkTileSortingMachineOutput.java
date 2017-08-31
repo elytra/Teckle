@@ -51,7 +51,7 @@ public class NetworkTileSortingMachineOutput extends NetworkTileSortingMachineBa
 
     @Override
     public WorldNetworkNode createNode(IWorldNetwork network, BlockPos pos) {
-        return new WorldNetworkEntryPoint(network, pos, getCapabilityFace());
+        return new WorldNetworkEntryPoint(network, pos, getCapabilityFace(), getOutputFace());
     }
 
     @Override
@@ -83,6 +83,8 @@ public class NetworkTileSortingMachineOutput extends NetworkTileSortingMachineBa
             IBlockState thisState = getWorld().getBlockState(getPos());
             if (Objects.equals(thisState.getBlock(), TeckleObjects.blockSortingMachine)) {
                 cachedFace = thisState.getValue(BlockSortingMachine.FACING);
+                if (getNode() instanceof WorldNetworkEntryPoint)
+                    ((WorldNetworkEntryPoint) getNode()).setOutputFace(cachedFace);
             }
         }
 

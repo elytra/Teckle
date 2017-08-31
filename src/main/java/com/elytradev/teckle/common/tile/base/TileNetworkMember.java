@@ -110,7 +110,7 @@ public abstract class TileNetworkMember extends TileEntity {
                     data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network",
                             faceName,
                             node.getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""),
-                            networkTileAtPosition.getNode().getNetwork().getNodePositions().size())));
+                            networkTileAtPosition.getNode().getNetwork().getNodes().size())));
 
                 if (!node.getTravellers().isEmpty()) {
                     data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.traveller.data")));

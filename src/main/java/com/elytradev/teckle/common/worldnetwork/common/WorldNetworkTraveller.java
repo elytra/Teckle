@@ -208,7 +208,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
      * @return
      */
     public boolean genInitialPath() {
-        BlockPos startPos = this.entryPoint.getPosition().add(entryPoint.getCapabilityFace().getDirectionVec());
+        BlockPos startPos = this.entryPoint.getPosition().add(entryPoint.getOutputFace().getDirectionVec());
         if (!network.isNodePresent(startPos))
             return false;
 
@@ -216,7 +216,7 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
         List<BlockPos> iteratedPositions = new ArrayList<>();
         HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();
 
-        nodeStack.add(new PathNode(null, network.getNode(startPos, entryPoint.getCapabilityFace().getOpposite()), entryPoint.getCapabilityFace().getOpposite()));
+        nodeStack.add(new PathNode(null, network.getNode(startPos, entryPoint.getOutputFace().getOpposite()), entryPoint.getOutputFace().getOpposite()));
         while (!nodeStack.isEmpty()) {
             PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
             for (EnumFacing direction : EnumFacing.VALUES) {
@@ -472,16 +472,21 @@ public class WorldNetworkTraveller implements ITickable, INBTSerializable<NBTTag
     @Override
     public void deserializeNBT(NBTTagCompound nbt) {
         EnumFacing entryPointFace = nbt.getInteger("entrypointface") > -1 ? EnumFacing.values()[nbt.getInteger("entrypointface")] : null;
-        EnumFacing curNodeFace = nbt.getInteger("curnodeface") > -1 ? EnumFacing.values()[nbt.getInteger("curnodeface")] : null;
         EnumFacing prevNodeFace = nbt.getInteger("prevnodeface") > -1 ? EnumFacing.values()[nbt.getInteger("prevnodeface")] : null;
+        EnumFacing curNodeFace = nbt.getInteger("curnodeface") > -1 ? EnumFacing.values()[nbt.getInteger("curnodeface")] : null;
         EnumFacing nextNodeFace = nbt.getInteger("nextnodeface") > -1 ? EnumFacing.values()[nbt.getInteger("nextnodeface")] : null;
+
+        BlockPos entryPointPos = BlockPos.fromLong(nbt.getLong("entrypoint"));
+        BlockPos prevNodePos = BlockPos.fromLong(nbt.getLong("prevnode"));
+        BlockPos curNodePos = BlockPos.fromLong(nbt.getLong("curnode"));
+        BlockPos nextNodePos = BlockPos.fromLong(nbt.getLong("nextnode"));
 
         travelledDistance = nbt.getFloat("travelled");
         data = nbt.getCompoundTag("data");
-        entryPoint = (WorldNetworkEntryPoint) network.getNode(BlockPos.fromLong(nbt.getLong("entrypoint")), entryPointFace);
-        currentNode = network.getNode(BlockPos.fromLong(nbt.getLong("curnode")), curNodeFace);
-        previousNode = network.getNode(BlockPos.fromLong(nbt.getLong("prevnode")), prevNodeFace);
-        nextNode = network.getNode(BlockPos.fromLong(nbt.getLong("nextnode")), nextNodeFace);
+        entryPoint = (WorldNetworkEntryPoint) network.getNode(entryPointPos, entryPointFace);
+        previousNode = network.getNode(prevNodePos, prevNodeFace);
+        currentNode = network.getNode(curNodePos, curNodeFace);
+        nextNode = network.getNode(nextNodePos, nextNodeFace);
 
         for (int i = 0; i < nbt.getInteger("tried"); i++) {
             EnumFacing triedCF = nbt.getInteger("triedcf" + i) > -1 ? EnumFacing.values()[nbt.getInteger("triedcf")] : null;

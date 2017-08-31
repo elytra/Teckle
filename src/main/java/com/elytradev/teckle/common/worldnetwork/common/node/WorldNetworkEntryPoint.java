@@ -38,10 +38,13 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         }
     };
 
-    public WorldNetworkEntryPoint(IWorldNetwork network, BlockPos position, EnumFacing capabilityFace) {
+    private EnumFacing outputFace = EnumFacing.DOWN;
+
+    public WorldNetworkEntryPoint(IWorldNetwork network, BlockPos position, EnumFacing capabilityFace, EnumFacing outputFace) {
         this.setNetwork(network);
         this.setPosition(position);
         this.setCapabilityFace(capabilityFace);
+        this.setOutputFace(outputFace);
 
         this.getEndpoint().setPosition(this.getPosition());
         this.getEndpoint().setNetwork(this.getNetwork());
@@ -61,8 +64,15 @@ public class WorldNetworkEntryPoint extends WorldNetworkNode {
         return WorldNetworkTraveller.NONE;
     }
 
+    public EnumFacing getOutputFace() {
+        return outputFace;
+    }
+
+    public void setOutputFace(EnumFacing outputFace) {
+        this.outputFace = outputFace;
+    }
+
     public WorldNetworkEndpoint getEndpoint() {
         return endpoint;
     }
-
 }

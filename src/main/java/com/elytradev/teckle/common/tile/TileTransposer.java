@@ -131,6 +131,8 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             TeckleMod.LOG.error("Exception follows, {}", e);
             TeckleMod.LOG.error("Here's some useful debug info, {}", debugInfo);
             TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
+
+            e.printStackTrace();
         }
         cooldown = TeckleMod.CONFIG.transposerCooldown;
         return result;
@@ -275,9 +277,9 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
-        tag.setUniqueId("buffer", bufferID);
-
         if (FMLCommonHandler.instance().getEffectiveSide().isServer() && !(this instanceof TileFilter)) {
+            tag.setUniqueId("buffer", bufferData.getId());
+
             tag.setInteger("databaseID", getWorld().provider.getDimension());
             if (getNetworkTile().getNode() == null)
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
@@ -291,7 +293,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         super.readFromNBT(tag);
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer() && !(this instanceof TileFilter)) {
-            if (tag.hasKey("buffer")) {
+            if (!tag.hasUniqueId("buffer")) {
                 validate();
                 bufferData.getHandler().deserializeNBT(tag.getCompoundTag("buffer"));
                 tag.removeTag("buffer");
@@ -370,7 +372,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                 data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network",
                         "All",
                         getNetworkTile().getNode().getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""),
-                        getNetworkTile().getNode().getNetwork().getNodePositions().size())));
+                        getNetworkTile().getNode().getNetwork().getNodes().size())));
 
             List<ItemStack> stacks = new ArrayList<>();
             for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {

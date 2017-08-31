@@ -18,9 +18,11 @@ package com.elytradev.teckle.common.worldnetwork.common;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.WorldSavedData;
@@ -33,6 +35,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -145,6 +148,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
     }
 
     private NBTTagCompound saveDatabase(NBTTagCompound databaseCompound) {
+        cleanAndUpdate(getWorld(), true, false);
         databaseCompound.setInteger("world", world.provider.getDimension());
         databaseCompound.setInteger("nCount", networks.size());
         List<IWorldNetwork> iWorldNetworks = networks.values().stream().collect(Collectors.toList());
@@ -161,6 +165,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
             databaseCompound.setUniqueId("rNN" + i, remappedNodes.get(i).getValue());
         }
 
+        TeckleMod.LOG.debug("Serialized networks in {}, total is {}", world.provider.getDimension(), networks.size());
         return databaseCompound;
     }
 
@@ -187,6 +192,8 @@ public class WorldNetworkDatabase extends WorldSavedData {
             EnumFacing nodeFace = nodeFaceIndex < 0 ? null : EnumFacing.values()[nodeFaceIndex];
             remappedNodes.put(new ImmutablePair<>(nodePos, nodeFace), newNetworkID);
         }
+
+        TeckleMod.LOG.debug("Deserialized networks in {}, total is {}", world.provider.getDimension(), networks.size());
     }
 
     /**
@@ -215,31 +222,28 @@ public class WorldNetworkDatabase extends WorldSavedData {
         if (networks.isEmpty() || !Objects.equals(world, e.world))
             return;
         boolean doSearch = this.cooldownTime <= 0;
-        List<IWorldNetwork> strayNetworks = new ArrayList<>();
-        for (IWorldNetwork network : networks.values()) {
-            if (doSearch) {
-                if (network.getNodes().isEmpty() || network.getNodes().stream().noneMatch(container -> container.getNetworkTile() != null)) {
-                    if (!strayNetworks.contains(network))
-                        strayNetworks.add(network);
-
-                    TeckleMod.LOG.debug("Found stray network " + network);
-                    continue;
-                }
-            }
-            if (Objects.equals(e.world, network.getWorld()))
-                network.update();
-        }
-
-        for (IWorldNetwork emptyNetwork : strayNetworks) {
-            TeckleMod.LOG.debug("Removing stray network " + emptyNetwork);
-            networks.remove(emptyNetwork.getNetworkID());
-        }
+        cleanAndUpdate(e.world, doSearch, true);
 
         if (this.cooldownTime <= 0) {
             this.cooldownTime = TeckleMod.CONFIG.databaseCleaningCooldown;
         } else {
             this.cooldownTime--;
         }
+    }
+
+    private void cleanAndUpdate(World world, boolean doSearch, boolean update) {
+        Predicate<IWorldNetwork> isStray = n -> n.getNodePositions().isEmpty()
+                || n.nodeStream().noneMatch(NodeContainer::hasNetworkTile);
+        if (doSearch) {
+            int sizePre = networks.size();
+            networks.values().stream().filter(isStray).forEach(n -> TeckleMod.LOG.debug("Removing {}", n));
+            networks.values().removeIf(isStray);
+            if (sizePre != networks.size())
+                TeckleMod.LOG.debug("Cleaned networks, initial size: {}, post size: {}, diff: {}", sizePre,
+                        networks.size(), sizePre - networks.size());
+        }
+        if (update)
+            networks.values().stream().filter(n -> Objects.equals(n.getWorld(), world)).forEach(ITickable::update);
     }
 
     @Override
