@@ -189,8 +189,12 @@ public class TeckleObjects {
                 'F', new ItemStack(blockFilter));
 
         for (EnumDyeColor color : EnumDyeColor.values()) {
+            String dyeName = "dye" + color.getUnlocalizedName().substring(0, 1).toUpperCase() + color.getUnlocalizedName().substring(1);
+            if (color == EnumDyeColor.SILVER)
+                dyeName = "dyeLightGray";
+
             registerShapedRecipe(registry, new ItemStack(itemPaintBrush, 1, color.getDyeDamage()),
-                    "D  ", " W ", "  S", 'D', "dye" + color.getUnlocalizedName().substring(0, 1).toUpperCase() + color.getUnlocalizedName().substring(1), 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
+                    "D  ", " W ", "  S", 'D', dyeName, 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
         }
         AlloyRecipes.getInstance().init();
     }
