@@ -9,6 +9,7 @@ import net.minecraft.world.storage.WorldSavedData;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.annotation.Nonnull;
@@ -30,7 +31,7 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
         super(DATA_NAME);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onWorldLoad(WorldEvent.Load e) {
         if (e.getWorld().isRemote)
             return;
