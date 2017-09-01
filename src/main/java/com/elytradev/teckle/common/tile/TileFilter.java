@@ -222,6 +222,9 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
     private ItemStack getExtractionData(EnumFacing facing) {
         ItemStack extractionData = ItemStack.EMPTY;
 
+        if (bufferData == null)
+            return extractionData;
+
         // Check if the buffer is empty first...
         int bufferSlot = -1;
         for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {

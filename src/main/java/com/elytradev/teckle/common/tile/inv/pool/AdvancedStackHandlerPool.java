@@ -153,21 +153,23 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
         if (FMLCommonHandler.instance().getEffectiveSide().isClient())
             return tag;
 
+        int skipped = 0;
         List<NBTTagCompound> entries = Lists.newArrayList();
         for (AdvancedStackHandlerEntry entry : registeredHandlers.values()) {
             World world = DimensionManager.getWorld(entry.getDimension());
             // sanity check, makes sure we don't save stuff if there's nothing at the position this handler is at.
             // not perfect but it gets the job done.
-            boolean skip = entry.getPos() != null && world.isBlockLoaded(entry.getPos()) && world.getTileEntity(entry.getPos()) == null;
-            if (!skip) {
-                entries.add(entry.serialize());
+            if (entry.getPos() != null && world.isBlockLoaded(entry.getPos()) && world.getTileEntity(entry.getPos()) == null) {
+                skipped++;
+                continue;
             }
+            entries.add(entry.serialize());
         }
         tag.setInteger("tags", entries.size());
         for (int i = 0; i < entries.size(); i++) {
             tag.setTag("e" + i, entries.get(i));
         }
-        TeckleMod.LOG.debug("Serialized {} stack handlers.", entries.size());
+        TeckleMod.LOG.debug("Serialized {} stack handlers, skipped {}", entries.size(), skipped);
         return tag;
     }
 }

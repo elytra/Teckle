@@ -170,6 +170,9 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
     private ItemStack getExtractionData(EnumFacing facing) {
         ItemStack extractionData = ItemStack.EMPTY;
 
+        if (bufferData == null)
+            return extractionData;
+
         // Check if the buffer is empty first...
         int bufferSlot = -1;
         for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {
@@ -302,7 +305,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                 this.bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
             }
 
-            UUID networkID = tag.hasKey("networkIDLeast") ? tag.getUniqueId("networkID") : null;
+            UUID networkID = tag.hasUniqueId("networkID") ? tag.getUniqueId("networkID") : null;
             int dimID = tag.getInteger("databaseID");
             if (networkID == null) {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);

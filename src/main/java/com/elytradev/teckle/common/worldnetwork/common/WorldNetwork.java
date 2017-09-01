@@ -65,7 +65,6 @@ public class WorldNetwork implements IWorldNetwork {
 
     @Override
     public void registerNode(WorldNetworkNode node) {
-        TeckleMod.LOG.debug(this + "/Registering a node, " + node);
         PositionData positionData = PositionData.getPositionData(getWorld().provider.getDimension(), node.getPosition());
         positionData.add(this, node);
         networkNodes.putIfAbsent(node.getPosition(), positionData);
@@ -78,7 +77,7 @@ public class WorldNetwork implements IWorldNetwork {
         if (node.hasNetworkTile() && node.getNetworkTile().listenToNetworkChange() && !listenerNodePositions.contains(node.getPosition())) {
             listenerNodePositions.add(node.getPosition());
         }
-        TeckleMod.LOG.debug(this + "/Registered node, " + node);
+        TeckleMod.LOG.debug("Registered {} to network {}", node, this);
     }
 
     /**
