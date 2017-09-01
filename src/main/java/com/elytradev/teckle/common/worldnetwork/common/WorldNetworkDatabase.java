@@ -182,6 +182,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
             WorldNetwork network = new WorldNetwork(world, null, true);
             network.deserializeNBT(compound.getCompoundTag("n" + i));
         }
+        TeckleMod.LOG.debug("Deserialized networks in {}, total is {}", world.provider.getDimension(), networks.size());
 
         if (!compound.hasKey("rnCount"))
             return;
@@ -193,8 +194,6 @@ public class WorldNetworkDatabase extends WorldSavedData {
             EnumFacing nodeFace = nodeFaceIndex < 0 ? null : EnumFacing.values()[nodeFaceIndex];
             remappedNodes.put(new ImmutablePair<>(nodePos, nodeFace), newNetworkID);
         }
-
-        TeckleMod.LOG.debug("Deserialized networks in {}, total is {}", world.provider.getDimension(), networks.size());
     }
 
     /**

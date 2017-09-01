@@ -48,6 +48,8 @@ public class WorldNetwork implements IWorldNetwork {
     private List<BlockPos> listenerNodePositions = new ArrayList<>();
     private List<WorldNetworkTraveller> travellersToUnregister = new ArrayList<>();
 
+    private Runnable loadTravellers = null;
+
     public WorldNetwork(World world, UUID id, boolean skipRegistration) {
         this.world = world;
         if (id == null) {
@@ -362,6 +364,11 @@ public class WorldNetwork implements IWorldNetwork {
 
     @Override
     public void update() {
+        if (loadTravellers != null) {
+            loadTravellers.run();
+            loadTravellers = null;
+        }
+
         travellers.values().forEach(WorldNetworkTraveller::update);
         for (WorldNetworkTraveller traveller : travellersToUnregister) {
             if (traveller == null)
@@ -463,26 +470,29 @@ public class WorldNetwork implements IWorldNetwork {
         }
         TeckleMod.LOG.debug("Deserialized {} nodes, expected: {}", deserialized, expected);
 
-        List<WorldNetworkTraveller> deserializedTravellers = new ArrayList<>();
-        for (int i = 0; i < compound.getInteger("tCount"); i++) {
-            WorldNetworkTraveller traveller = new WorldNetworkTraveller(new NBTTagCompound());
-            traveller.network = this;
-            traveller.deserializeNBT(compound.getCompoundTag("t" + i));
-            deserializedTravellers.add(traveller);
-        }
-
-        int failures = 0;
-        for (WorldNetworkTraveller traveller : deserializedTravellers) {
-            try {
-                traveller.genPath(true);
-                this.registerTraveller(traveller, true);
-            } catch (Exception e) {
-                failures++;
-                TeckleMod.LOG.error("Failed to load traveller {}", traveller.data);
-                e.printStackTrace();
+        // very quality code
+        loadTravellers = () -> {
+            List<WorldNetworkTraveller> deserializedTravellers = new ArrayList<>();
+            for (int i = 0; i < compound.getInteger("tCount"); i++) {
+                WorldNetworkTraveller traveller = new WorldNetworkTraveller(new NBTTagCompound());
+                traveller.network = WorldNetwork.this;
+                traveller.deserializeNBT(compound.getCompoundTag("t" + i));
+                deserializedTravellers.add(traveller);
             }
-        }
-        TeckleMod.LOG.debug("Failed to load {} out of {} travellers.", failures, deserializedTravellers.size());
+
+            int failures = 0;
+            for (WorldNetworkTraveller traveller : deserializedTravellers) {
+                try {
+                    traveller.genPath(true);
+                    registerTraveller(traveller, true);
+                } catch (Exception e) {
+                    failures++;
+                    TeckleMod.LOG.error("Failed to load traveller {}", traveller.data);
+                    e.printStackTrace();
+                }
+            }
+            TeckleMod.LOG.debug("Failed to load {} out of {} travellers.", failures, deserializedTravellers.size());
+        };
     }
 }
 
