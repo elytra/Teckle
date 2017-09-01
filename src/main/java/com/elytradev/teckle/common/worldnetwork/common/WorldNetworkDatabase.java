@@ -19,6 +19,7 @@ package com.elytradev.teckle.common.worldnetwork.common;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -243,7 +244,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
                         networks.size(), sizePre - networks.size());
         }
         if (update)
-            networks.values().stream().filter(n -> Objects.equals(n.getWorld(), world)).forEach(ITickable::update);
+            Lists.newArrayList(networks.values()).stream().filter(n -> Objects.equals(n.getWorld(), world)).forEach(ITickable::update);
     }
 
     @Override

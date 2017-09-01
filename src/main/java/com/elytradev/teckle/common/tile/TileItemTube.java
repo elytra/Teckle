@@ -108,7 +108,7 @@ public class TileItemTube extends TileNetworkMember {
         this.colour = !tag.hasKey("colour") ? null : EnumDyeColor.byMetadata(tag.getInteger("colour"));
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            UUID networkID = tag.hasKey("networkIDLeast") ? tag.getUniqueId("networkID") : null;
+            UUID networkID = tag.hasUniqueId("networkID") ? tag.getUniqueId("networkID") : null;
             int dimID = tag.getInteger("databaseID");
             if (networkID == null) {
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
