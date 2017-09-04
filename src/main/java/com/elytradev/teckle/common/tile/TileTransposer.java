@@ -281,6 +281,8 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         if (FMLCommonHandler.instance().getEffectiveSide().isServer() && !(this instanceof TileFilter)) {
+            if(bufferData == null)
+                validate();
             tag.setUniqueId("buffer", bufferData.getId());
 
             tag.setInteger("databaseID", getWorld().provider.getDimension());

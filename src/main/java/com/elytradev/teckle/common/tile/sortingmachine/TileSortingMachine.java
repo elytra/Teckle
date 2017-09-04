@@ -353,10 +353,13 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             }
         }
         tag.setTag("colours", coloursTag);
-        tag.setUniqueId("buffer", bufferID);
-        tag.setUniqueId("filter", filterID);
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            if(bufferData == null || filterData == null)
+                validate();
+            tag.setUniqueId("buffer", bufferData.getId());
+            tag.setUniqueId("filter", filterData.getId());
+
             tag.setInteger("databaseID", getWorld().provider.getDimension());
             if (inputTile.getNode() == null || outputTile.getNode() == null)
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
