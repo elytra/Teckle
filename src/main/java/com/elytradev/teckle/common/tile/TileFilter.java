@@ -339,10 +339,13 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
         } else {
             tag.removeTag("colour");
         }
-        tag.setUniqueId("buffer", bufferID);
-        tag.setUniqueId("filter", filterID);
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            if(bufferData == null || filterData == null)
+                validate();
+            tag.setUniqueId("buffer", bufferData.getId());
+            tag.setUniqueId("filter", filterData.getId());
+
             tag.setInteger("databaseID", getWorld().provider.getDimension());
             if (networkTile.getNode() == null)
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
