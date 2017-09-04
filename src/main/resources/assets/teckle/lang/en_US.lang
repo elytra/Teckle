@@ -3,6 +3,7 @@ itemGroup.teckle=Teckle
 tile.teckle.tube.item.name=Item Tube
 tile.teckle.filter.name=Item Filter
 tile.teckle.transposer.name=Transposer
+tile.teckle.retriever.name=Retriever (NOT IMPLEMENTED - DO NOT PLACE)
 tile.teckle.sortingmachine.name=Sorting Machine
 tile.teckle.fabricator.name=Fabricator
 tile.teckle.alloyfurnace.name=Alloy Furnace
