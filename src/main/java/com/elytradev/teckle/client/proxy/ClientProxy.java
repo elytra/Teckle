@@ -175,6 +175,6 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void handleMissingOres(String m) {
         // FML doesn't seem to work properly but this will still cause the game to exit for now.
-        throw new MissingOreExceptionClient(m, new MissingOreException(m));
+        throw new MissingOreExceptionClient(m, new MissingOreException(m.replaceAll("\n", "")));
     }
 }

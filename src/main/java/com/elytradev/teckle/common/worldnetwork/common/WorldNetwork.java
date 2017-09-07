@@ -35,6 +35,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -111,13 +112,25 @@ public class WorldNetwork implements IWorldNetwork {
             List<NodeContainer> removedNodeContainers = positionData.getNodeContainers(this.getNetworkID()).stream()
                     .filter(nodeContainer -> faceMatches(face, nodeContainer.getFacing()) && nodeContainer.getPos().equals(nodePosition))
                     .collect(Collectors.toList());
+
+            // Tell the removed node that everything else was removed.
+            removedNodeContainers.stream().filter(nC -> nC.getNetworkTile() != null && nC.getNetworkTile().listenToNetworkChange())
+                    .forEach(removedContainer -> networkNodes.values().stream()
+                            .flatMap((Function<PositionData, Stream<NodeContainer>>) posData -> posData.getNodeContainers(getNetworkID()).stream())
+                            .forEach(nodeContainer -> {
+                                if (!Objects.equals(removedContainer, nodeContainer))
+                                    removedContainer.getNetworkTile().onNodeRemoved(nodeContainer.getNode());
+                            }));
+            // Clean position data of any garbage data just in case.
             positionData.removeIf(getNetworkID(), nodeContainer -> faceMatches(face, nodeContainer.getFacing()) && nodeContainer.getPos().equals(nodePosition));
+            // Notify listeners of the removed node.
             removedNodeContainers.forEach(removedContainer -> listenerNodePositions.stream().map(networkNodes::get).flatMap(pD -> pD.getNodeContainers(getNetworkID()).stream())
                     .filter(nodeContainer -> nodeContainer.getNode() != null && nodeContainer.getNode().getNetworkTile().listenToNetworkChange())
                     .forEach(nodeContainer -> nodeContainer.getNode().getNetworkTile().onNodeRemoved(removedContainer.getNode())));
+            //Actually remove the nodes from the position data.
             removedNodeContainers.forEach(removed -> positionData.removeNodeContainer(getNetworkID(), removed));
 
-            // Clean position data of any old stuff.
+            // Clean positiondata map of empty positions.
             networkNodes.values().removeIf(posData -> posData.getNodeContainers(getNetworkID()).isEmpty());
             checkListeners();
         }
@@ -237,6 +250,11 @@ public class WorldNetwork implements IWorldNetwork {
         WorldNetwork mergedNetwork = new WorldNetwork(this.world, null);
         this.transferNetworkData(mergedNetwork);
         otherNetwork.transferNetworkData(mergedNetwork);
+        mergedNetwork.listenerNodePositions.stream().flatMap((Function<BlockPos, Stream<NodeContainer>>)
+                blockPos -> mergedNetwork.getNodeContainersAtPosition(blockPos).stream()
+                        .filter(nC -> nC.hasNetworkTile() && nC.getNetworkTile().listenToNetworkChange())).forEach(nodeContainer ->
+                mergedNetwork.nodeStream().filter(streamedContainer -> streamedContainer != nodeContainer)
+                        .forEach(streamedContainer -> nodeContainer.getNetworkTile().onNodeAdded(streamedContainer.getNode())));
         TeckleMod.LOG.debug("Completed merge, resulted in " + mergedNetwork);
         return mergedNetwork;
     }
@@ -256,7 +274,7 @@ public class WorldNetwork implements IWorldNetwork {
             any.ifPresent(blockPosEnumFacingPair -> networkDB.getRemappedNodes().remove(blockPosEnumFacingPair));
             if (!node.isLoaded()) {
                 networkDB.getRemappedNodes().put(new MutablePair<>(node.getPosition(), node.getCapabilityFace()), to.getNetworkID());
-                TeckleMod.LOG.debug("marking node as remapped " + node.getPosition());
+                TeckleMod.LOG.debug("Marking node as remapped " + node.getPosition());
             }
 
             this.unregisterNode(node);

@@ -130,10 +130,10 @@ public class TeckleObjects {
 
         boolean foundMatchingOres = foundSilver && foundTin && foundCopper;
         if (!foundMatchingOres && !TeckleMod.INDEV && !TeckleMod.CONFIG.skipOreChecks) {
-            String additionalData = (foundSilver ? "Found " : "Couldn't find ") + "silver ingots. ";
-            additionalData += (foundTin ? "Found " : "Couldn't find ") + "tin ingots. ";
-            additionalData += (foundCopper ? "Found " : "Couldn't find ") + "copper ingots.";
-            TeckleMod.PROXY.handleMissingOres("Teckle is missing ores, Tin, Silver, and Copper must be present to run. " + additionalData);
+            String additionalData = "\n" + "Silver ingots " + (foundSilver ? "✔" : "✘");
+            additionalData += "\n" + "Tin ingots " + (foundTin ? "✔" : "✘");
+            additionalData += "\n" + "Copper ingots " + (foundCopper ? "✔" : "✘");
+            TeckleMod.PROXY.handleMissingOres("Tin, Silver, and Copper must be present to run. " + additionalData);
         }
     }
 
