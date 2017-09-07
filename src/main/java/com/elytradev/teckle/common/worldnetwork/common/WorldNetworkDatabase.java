@@ -167,7 +167,8 @@ public class WorldNetworkDatabase extends WorldSavedData {
             databaseCompound.setUniqueId("rNN" + i, remappedNodes.get(i).getValue());
         }
 
-        TeckleMod.LOG.debug("Serialized networks in {}, total is {}", world.provider.getDimension(), networks.size());
+        if (!networks.isEmpty())
+            TeckleMod.LOG.debug("Serialized networks in {}, total is {}", world.provider.getDimension(), networks.size());
         return databaseCompound;
     }
 

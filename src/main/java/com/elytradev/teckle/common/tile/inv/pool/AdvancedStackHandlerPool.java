@@ -22,6 +22,7 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
     private static final HashMap<Integer, AdvancedStackHandlerPool> FALLBACK_POOLS = Maps.newHashMap();
 
     private Map<UUID, AdvancedStackHandlerEntry> registeredHandlers = Maps.newHashMap();
+    private int dimension = 0;
 
     public AdvancedStackHandlerPool(String name) {
         super(name);
@@ -59,12 +60,14 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
     public static AdvancedStackHandlerPool getPool(Integer dim) {
         if (!DIMENSION_POOLS.containsKey(dim)) {
             DIMENSION_POOLS.put(dim, new AdvancedStackHandlerPool());
+            DIMENSION_POOLS.get(dim).dimension = dim;
             if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
                 getSavedPool(DimensionManager.getWorld(dim));
             }
         }
         if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
             FALLBACK_POOLS.put(dim, new AdvancedStackHandlerPool());
+            FALLBACK_POOLS.get(dim).dimension = dim;
             return FALLBACK_POOLS.get(dim);
         }
         return DIMENSION_POOLS.get(dim);
@@ -170,7 +173,8 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
         for (int i = 0; i < entries.size(); i++) {
             tag.setTag("e" + i, entries.get(i));
         }
-        TeckleMod.LOG.debug("Serialized {} stack handlers, skipped {}", entries.size(), skipped);
+        if (entries.size() != 0)
+            TeckleMod.LOG.debug("Serialized {} stack handlers in {}, skipped {}", entries.size(), this.dimension, skipped);
         return tag;
     }
 }

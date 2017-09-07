@@ -30,7 +30,6 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 
 import java.util.Objects;
 
-
 public class CommonProxy {
 
     public void registerRenderers(LoaderState.ModState state) {
