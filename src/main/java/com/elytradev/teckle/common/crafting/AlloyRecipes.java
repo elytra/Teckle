@@ -124,10 +124,14 @@ public class AlloyRecipes {
                 if (data != null) {
                     List<Tuple<Object, Integer>> inputs = Lists.newArrayList();
                     boolean failed = false;
-                    for (int i = 0; i < data.inputs.length; i++) {
-                        String input = data.inputs[i];
-                        int inputMeta = i < data.inputsMeta.length ? data.inputsMeta[i] : 0;
-                        int inputCount = i < data.inputsCount.length ? data.inputsCount[i] : 1;
+                    for (int i = 0; i < data.getInputs().length; i++) {
+                        String input = data.getInputs()[i];
+                        // if theres two instances of ':' it has a meta defined.
+                        boolean definedMeta = input.indexOf(":") != input.lastIndexOf(":");
+                        int inputMeta = definedMeta ? Integer.valueOf(input.substring(input.lastIndexOf(":") + 1)) : 0;
+                        int inputCount = i < data.getInputsCount().length ? data.getInputsCount()[i] : 1;
+                        input = definedMeta ? input.substring(0, input.lastIndexOf(":")) : input;
+
                         if (input.contains(":")) {
                             // Normal registry name.
                             Item item = Item.REGISTRY.getObject(new ResourceLocation(input));
@@ -145,20 +149,26 @@ public class AlloyRecipes {
                     if (failed)
                         continue;
 
-                    ItemStack output = null;
-                    if (data.output.contains(":")) {
+                    ItemStack outputStack = null;
+                    String output = data.getOutput();
+                    // if theres two instances of ':' it has a meta defined.
+                    boolean definedMeta = output.indexOf(":") != output.lastIndexOf(":");
+                    int outputMeta = definedMeta ? Integer.valueOf(output.substring(output.lastIndexOf(":") + 1)) : 0;
+                    int outputCount = data.getOutputCount() <= 0 ? 1 : data.getOutputCount();
+                    output = definedMeta ? output.substring(0, output.lastIndexOf(":")) : output;
+                    if (output.contains(":")) {
                         // Normal registry name.
-                        Item item = Item.REGISTRY.getObject(new ResourceLocation(data.output));
-                        output = new ItemStack(item, data.outputCount, data.outputMeta);
+                        Item item = Item.REGISTRY.getObject(new ResourceLocation(output));
+                        outputStack = new ItemStack(item, outputCount, outputMeta);
                     } else {
                         TeckleMod.LOG.error("Failed to load alloy recipe, invalid output data." +
-                                " Name:{}, Meta:{}, Count:{}", data.output, data.outputMeta, data.outputCount);
+                                " Name:{}, Meta:{}, Count:{}", output, outputMeta, outputCount);
                         continue;
                     }
 
                     Tuple<Object, Integer>[] inputsArray = new Tuple[inputs.size()];
                     inputsArray = inputs.toArray(inputsArray);
-                    AlloyRecipe loadedRecipe = new AlloyRecipe(output, inputsArray);
+                    AlloyRecipe loadedRecipe = new AlloyRecipe(outputStack, inputsArray);
                     recipes.add(loadedRecipe);
                 }
             }
@@ -169,18 +179,15 @@ public class AlloyRecipes {
 
     private void plantExampleRecipe(File alloyRecipeFolder) {
         // Writes a small demo recipe with an underscore in the name so it doesn't load.
-        // TODO: HJSON support
+        // TODO: HJSON support?
         RecipeData testData = new RecipeData();
-        testData.inputs = new String[]{"ingotIron", "ingotGold"};
-        testData.inputsCount = new int[]{1, 1};
-        testData.inputsMeta = new int[]{0, 0};
-        testData.output = Items.BLAZE_ROD.getRegistryName().toString();
+        testData.setInputs(new String[]{"ingotIron:0", "ingotGold:0"});
+        testData.setInputsCount(new int[]{1, 1});
+        testData.setOutput(Items.BLAZE_ROD.getRegistryName().toString());
         try {
             File demoRecipe = new File(alloyRecipeFolder, "_demorecipe.json");
-            if (!demoRecipe.exists()) {
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                Files.write(demoRecipe.toPath(), gson.toJson(testData, RecipeData.class).getBytes());
-            }
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            Files.write(demoRecipe.toPath(), gson.toJson(testData, RecipeData.class).getBytes());
         } catch (Exception e) {
             // Not that big of a problem...
         }
@@ -190,14 +197,51 @@ public class AlloyRecipes {
         return new AlloyRecipe(furnaceRecipe.getValue(), new Tuple<>(furnaceRecipe.getKey(), null));
     }
 
+    /**
+     * Data that we deserialize from JSON, uses getters and setters to prevent null results on certain optional vars.
+     */
     public class RecipeData {
         private String output = "";
-        private int outputMeta = 0;
         private int outputCount = 1;
 
-        private String[] inputs;
-        private int[] inputsMeta;
-        private int[] inputsCount;
+        private String[] inputs = new String[0];
+        private int[] inputsCount = new int[0];
+
+        public String getOutput() {
+            return output;
+        }
+
+        public void setOutput(String output) {
+            this.output = output;
+        }
+
+        public int getOutputCount() {
+            return outputCount;
+        }
+
+        public void setOutputCount(int outputCount) {
+            this.outputCount = outputCount;
+        }
+
+        public String[] getInputs() {
+            if (inputs == null)
+                return new String[0];
+            return inputs;
+        }
+
+        public void setInputs(String[] inputs) {
+            this.inputs = inputs;
+        }
+
+        public int[] getInputsCount() {
+            if (inputsCount == null)
+                return new int[0];
+            return inputsCount;
+        }
+
+        public void setInputsCount(int[] inputsCount) {
+            this.inputsCount = inputsCount;
+        }
     }
 
     public void clear() {
