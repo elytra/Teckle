@@ -8,6 +8,8 @@ import java.io.File;
 
 public class TeckleConfiguration extends ConcreteConfig {
 
+    public File configFolder;
+
     @ConfigValue(type = Property.Type.INTEGER, category = "oregen")
     public int nikoliteCount = 8, nikoliteSize = 8, nikoliteMinHeight = 0, nikoliteMaxHeight = 16;
 
@@ -26,5 +28,6 @@ public class TeckleConfiguration extends ConcreteConfig {
 
     protected TeckleConfiguration(File configFile, String modID) {
         super(configFile, modID);
+        this.configFolder = configFile.getParentFile();
     }
 }

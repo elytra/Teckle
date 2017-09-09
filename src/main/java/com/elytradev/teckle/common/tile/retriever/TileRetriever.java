@@ -144,8 +144,6 @@ public class TileRetriever extends TileLitNetworkMember {
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
         this.cachedFace = EnumFacing.values()[tag.getInteger("cachedFace")];
-        this.outputTile.setColour(tag.getInteger("colour") < 0 ? null
-                : EnumDyeColor.byMetadata(tag.getInteger("colour")));
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             int dimID = tag.getInteger("databaseID");
@@ -158,6 +156,10 @@ public class TileRetriever extends TileLitNetworkMember {
                 loadNetworkTile(tag, "outputTileID", getFacing(), NetworkTileRetrieverOutput.class);
             }
         }
+
+        if (this.outputTile != null)
+            this.outputTile.setColour(tag.getInteger("colour") < 0 ? null
+                    : EnumDyeColor.byMetadata(tag.getInteger("colour")));
     }
 
     protected boolean loadNetworkTile(NBTTagCompound tag, String tileIDKey, EnumFacing tileFace, Class<? extends WorldNetworkTile> tileType) {

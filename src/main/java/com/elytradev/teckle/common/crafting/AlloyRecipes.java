@@ -20,11 +20,21 @@ import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.item.ItemIngot;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
+import com.google.common.io.Resources;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Tuple;
+import net.minecraftforge.oredict.OreDictionary;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -98,10 +108,96 @@ public class AlloyRecipes {
         // Adds all the vanilla recipes to the alloy furnace.
         if (TeckleMod.CONFIG.importFurnaceRecipes)
             recipes.addAll(FurnaceRecipes.instance().getSmeltingList().entrySet().stream().map(this::convertFurnaceRecipe).collect(Collectors.toList()));
+
+        File recipeFolder = new File(TeckleMod.CONFIG.configFolder, "alloyrecipes");
+        recipeFolder.mkdirs();
+
+        for (File file : recipeFolder.listFiles()) {
+            if (file.isFile() && !file.isHidden() && !file.getName().startsWith("_")
+                    && file.getName().toLowerCase().endsWith(".json")) {
+                RecipeData data = null;
+                try {
+                    data = new Gson().fromJson(Resources.toString(file.toURI().toURL(), Charsets.UTF_8), RecipeData.class);
+                } catch (Exception e) {
+                    TeckleMod.LOG.error("Failed to load alloy recipe. File {}", file.toString());
+                }
+                if (data != null) {
+                    List<Tuple<Object, Integer>> inputs = Lists.newArrayList();
+                    boolean failed = false;
+                    for (int i = 0; i < data.inputs.length; i++) {
+                        String input = data.inputs[i];
+                        int inputMeta = i < data.inputsMeta.length ? data.inputsMeta[i] : 0;
+                        int inputCount = i < data.inputsCount.length ? data.inputsCount[i] : 1;
+                        if (input.contains(":")) {
+                            // Normal registry name.
+                            Item item = Item.REGISTRY.getObject(new ResourceLocation(input));
+                            inputs.add(new Tuple<>(new ItemStack(item, inputCount, inputMeta), null));
+                        } else if (OreDictionary.doesOreNameExist(input)) {
+                            // Oredict name.
+                            inputs.add(new Tuple<>(input, inputCount));
+                        } else {
+                            TeckleMod.LOG.error("Failed to load alloy recipe, invalid input data." +
+                                    " Name:{}, Meta:{}, Count:{}", input, inputMeta, inputCount);
+                            failed = true;
+                            break;
+                        }
+                    }
+                    if (failed)
+                        continue;
+
+                    ItemStack output = null;
+                    if (data.output.contains(":")) {
+                        // Normal registry name.
+                        Item item = Item.REGISTRY.getObject(new ResourceLocation(data.output));
+                        output = new ItemStack(item, data.outputCount, data.outputMeta);
+                    } else {
+                        TeckleMod.LOG.error("Failed to load alloy recipe, invalid output data." +
+                                " Name:{}, Meta:{}, Count:{}", data.output, data.outputMeta, data.outputCount);
+                        continue;
+                    }
+
+                    Tuple<Object, Integer>[] inputsArray = new Tuple[inputs.size()];
+                    inputsArray = inputs.toArray(inputsArray);
+                    AlloyRecipe loadedRecipe = new AlloyRecipe(output, inputsArray);
+                    recipes.add(loadedRecipe);
+                }
+            }
+        }
+        plantExampleRecipe(recipeFolder);
+    }
+
+
+    private void plantExampleRecipe(File alloyRecipeFolder) {
+        // Writes a small demo recipe with an underscore in the name so it doesn't load.
+        // TODO: HJSON support
+        RecipeData testData = new RecipeData();
+        testData.inputs = new String[]{"ingotIron", "ingotGold"};
+        testData.inputsCount = new int[]{1, 1};
+        testData.inputsMeta = new int[]{0, 0};
+        testData.output = Items.BLAZE_ROD.getRegistryName().toString();
+        try {
+            File demoRecipe = new File(alloyRecipeFolder, "_demorecipe.json");
+            if (!demoRecipe.exists()) {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                Files.write(demoRecipe.toPath(), gson.toJson(testData, RecipeData.class).getBytes());
+            }
+        } catch (Exception e) {
+            // Not that big of a problem...
+        }
     }
 
     private AlloyRecipe convertFurnaceRecipe(Map.Entry<ItemStack, ItemStack> furnaceRecipe) {
         return new AlloyRecipe(furnaceRecipe.getValue(), new Tuple<>(furnaceRecipe.getKey(), null));
+    }
+
+    public class RecipeData {
+        private String output = "";
+        private int outputMeta = 0;
+        private int outputCount = 1;
+
+        private String[] inputs;
+        private int[] inputsMeta;
+        private int[] inputsCount;
     }
 
     public void clear() {
