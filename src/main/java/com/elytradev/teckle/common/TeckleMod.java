@@ -36,6 +36,8 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
+import java.io.File;
+
 import static com.elytradev.teckle.common.TeckleMod.*;
 
 @Mod(modid = MOD_ID, name = MOD_NAME, version = MOD_VER, guiFactory = GUI_FACTORY)
@@ -67,8 +69,16 @@ public class TeckleMod {
     public void onPreInit(FMLPreInitializationEvent e) {
         PROXY.registerHandlers();
         LOG = new TeckleLog(e.getModLog());
-        CONFIG = new TeckleConfiguration(e.getSuggestedConfigurationFile(), MOD_ID);
+
+        //Move config file if it exists.
+        File teckleFolder = new File(e.getModConfigurationDirectory(), "teckle");
+        teckleFolder.mkdirs();
+        if (e.getSuggestedConfigurationFile().exists()) {
+            e.getSuggestedConfigurationFile().renameTo(new File(teckleFolder, "teckle.cfg"));
+        }
+        CONFIG = new TeckleConfiguration(new File(teckleFolder, "teckle.cfg"), MOD_ID);
         CONFIG.loadConfig();
+
         MinecraftForge.EVENT_BUS.register(OBJECTS);
         OBJECTS.preInit(e);
         CapabilityWorldNetworkTile.register();

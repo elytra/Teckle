@@ -169,6 +169,7 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
                     new ItemStack(traveller.data.getCompoundTag("stack")), additionalData, false, false);
             if (!remainder.isEmpty())
                 remainder = bufferData.getHandler().insertItem(remainder, false);
+            setTriggered();
             return remainder;
         } else {
             return new ItemStack(traveller.data.getCompoundTag("stack"));

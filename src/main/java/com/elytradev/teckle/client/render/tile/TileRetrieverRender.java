@@ -21,10 +21,10 @@ public class TileRetrieverRender extends TileNetworkMemberRenderer<TileRetriever
     public void render(TileRetriever te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         super.render(te, x, y, z, partialTicks, destroyStage, alpha);
         IBlockState blockState = te.getWorld().getBlockState(te.getPos());
-        if (blockState.getBlock() != TeckleObjects.blockSortingMachine || !te.isLit() && !te.isJammed())
+        if (blockState.getBlock() != TeckleObjects.blockRetriever || !te.isLit() && !te.isJammed())
             return;
 
-        EnumFacing pointTo = blockState.getValue(BlockSortingMachine.FACING);
+        EnumFacing pointTo = blockState.getValue(BlockRetriever.FACING);
         if (mouthOverlay == null || blinkenLightsOverlay == null) {
             mouthOverlay = new ModelMachineOverlay(this.getClass(), "teckle:blocks/retrievermouth", false);
             blinkenLightsOverlay = new ModelMachineOverlay(this.getClass(), "teckle:blocks/retrieverblinkenlights", true);

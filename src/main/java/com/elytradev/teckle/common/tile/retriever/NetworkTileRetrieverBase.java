@@ -37,6 +37,12 @@ public abstract class NetworkTileRetrieverBase extends WorldNetworkTile {
         this.otherTile = otherTile;
     }
 
+    public void setTriggered() {
+        if (getWorld().isBlockLoaded(getPos())) {
+            ((TileRetriever) getTileEntity()).setTriggered();
+        }
+    }
+
     public NetworkTileRetrieverOutput getOutputTile() {
         if (otherTile == null)
             findOtherTile();
