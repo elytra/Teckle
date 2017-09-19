@@ -21,6 +21,7 @@ import com.elytradev.concrete.resgen.IResourceHolder;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.tile.TileItemTube;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
@@ -70,13 +71,16 @@ public class ItemPaintbrush extends Item implements IResourceHolder {
             return EnumActionResult.FAIL;
         }
 
-        if (Objects.equals(worldIn.getBlockState(pos).getBlock(), TeckleObjects.blockItemTube)) {
+        IBlockState blockState = worldIn.getBlockState(pos);
+        if (Objects.equals(blockState.getBlock(), TeckleObjects.blockItemTube)) {
             TileItemTube tubeItem = (TileItemTube) worldIn.getTileEntity(pos);
 
             if (tubeItem != null) {
                 tubeItem.setColour(EnumDyeColor.byDyeDamage(getMetadata(itemstack)));
                 worldIn.notifyBlockUpdate(pos, worldIn.getBlockState(pos), worldIn.getBlockState(pos), 4);
             }
+        } else if (blockState.getBlock().recolorBlock(worldIn, pos, facing, EnumDyeColor.byDyeDamage(getMetadata(itemstack)))) {
+            return EnumActionResult.SUCCESS;
         }
 
         return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
