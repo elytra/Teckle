@@ -42,10 +42,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.EnumDyeColor;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.*;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
@@ -76,6 +73,7 @@ public class TeckleObjects {
     public static BlockRetriever blockRetriever;
     public static BlockAlloyFurnace blockAlloyFurnace;
     public static BlockNikoliteOre blockNikoliteOre;
+    public static BlockCompacted blockCompacted;
     public static BlockFabricator blockFabricator;
 
     public static ItemPaintbrush itemPaintBrush;
@@ -228,6 +226,15 @@ public class TeckleObjects {
 
         blockNikoliteOre = new BlockNikoliteOre();
         registerBlock(registry, "nikolite_ore", blockNikoliteOre);
+
+        blockCompacted = new BlockCompacted(Material.IRON);
+        registerBlock(registry, "compacted_metal", blockCompacted, false);
+        ItemColored itemCompacted = new ItemColored(blockCompacted, true);
+        itemCompacted.setSubtypeNames(new String[]{"brass", "redalloy", "bluealloy"});
+        itemCompacted.setRegistryName(MOD_ID, "compacted_metal");
+        itemCompacted.setCreativeTab(creativeTab);
+        itemCompacted.setUnlocalizedName("teckle.compacted_metal");
+        itemBlocksToRegister.add(itemCompacted);
     }
 
     @SubscribeEvent
@@ -263,7 +270,7 @@ public class TeckleObjects {
 
         OreDictionary.registerOre("coal", Items.COAL); // Nothing to see here, move along.
         OreDictionary.registerOre("dustNikolite", new ItemStack(itemNikolite, 1));
-        OreDictionary.registerOre("dyeBlue", new ItemStack(itemNikolite, 1));
+        OreDictionary.registerOre("dyeCyan", new ItemStack(itemNikolite, 1));
         OreDictionary.registerOre("oreNikolite", new ItemStack(blockNikoliteOre, 1));
     }
 

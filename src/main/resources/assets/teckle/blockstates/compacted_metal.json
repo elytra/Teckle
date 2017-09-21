@@ -1,0 +1,19 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "textures": {
+      "all": "teckle:blocks/bluealloy_block"
+    },
+    "transform": "forge:default-block",
+    "model": "block/cube_all"
+  },
+  "variants": {
+    "ingot": {
+      "redalloy": {
+        "textures": {
+          "all": "teckle:blocks/redalloy_block"
+        }
+      }
+    }
+  }
+}
