@@ -20,10 +20,7 @@ import com.elytradev.teckle.common.block.*;
 import com.elytradev.teckle.common.crafting.AlloyRecipes;
 import com.elytradev.teckle.common.crafting.RecipeSlice;
 import com.elytradev.teckle.common.handlers.PaintbrushRecipe;
-import com.elytradev.teckle.common.item.ItemBlade;
-import com.elytradev.teckle.common.item.ItemIngot;
-import com.elytradev.teckle.common.item.ItemPaintbrush;
-import com.elytradev.teckle.common.item.ItemSiliconWafer;
+import com.elytradev.teckle.common.item.*;
 import com.elytradev.teckle.common.tile.*;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileFilter;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileItemTube;
@@ -42,7 +39,10 @@ import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.*;
+import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
@@ -195,6 +195,22 @@ public class TeckleObjects {
                     "D  ", " W ", "  S", 'D', dyeName, 'S', "stickWood", 'W', new ItemStack(Blocks.WOOL));
         }
         AlloyRecipes.getInstance().init();
+
+        registerCompactedIngotRecipe(registry, ItemIngot.IngotType.RED_ALLOY);
+        registerCompactedIngotRecipe(registry, ItemIngot.IngotType.BLUE_ALLOY);
+    }
+
+    private void registerCompactedIngotRecipe(IForgeRegistry<IRecipe> registry, ItemIngot.IngotType ingotType) {
+        registerShapedRecipe(registry,
+                new ItemStack(blockCompacted, 1, ingotType.getMetadata()),
+                "XXX",
+                "XXX",
+                "XXX",
+                'X', new ItemStack(itemIngot, 1, ingotType.getMetadata()));
+
+        registerShapelessRecipe(registry,
+                new ItemStack(itemIngot, 9, ingotType.getMetadata()),
+                new ItemStack(blockCompacted, 1, ingotType.getMetadata()));
     }
 
     @SubscribeEvent
@@ -229,7 +245,7 @@ public class TeckleObjects {
 
         blockCompacted = new BlockCompacted(Material.IRON);
         registerBlock(registry, "compacted_metal", blockCompacted, false);
-        ItemColored itemCompacted = new ItemColored(blockCompacted, true);
+        ItemCompacted itemCompacted = new ItemCompacted(blockCompacted, true);
         itemCompacted.setSubtypeNames(new String[]{"brass", "redalloy", "bluealloy"});
         itemCompacted.setRegistryName(MOD_ID, "compacted_metal");
         itemCompacted.setCreativeTab(creativeTab);
