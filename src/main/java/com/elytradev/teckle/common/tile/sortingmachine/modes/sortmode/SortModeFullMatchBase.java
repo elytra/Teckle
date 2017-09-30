@@ -55,7 +55,7 @@ public abstract class SortModeFullMatchBase extends SortMode {
             }
             BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getOutputTile().getOutputFace());
             ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
-            ItemStack result = (ItemStack) sortingMachine.getNetworkAssistant(ItemStack.class)
+            ItemStack result = sortingMachine.getNetworkAssistant(ItemStack.class)
                     .insertData((WorldNetworkEntryPoint) sortingMachine.getOutputTile().getNode(), insertInto,
                             travellerStack, collect, false, false);
 
@@ -103,9 +103,7 @@ public abstract class SortModeFullMatchBase extends SortMode {
     }
 
     protected boolean gatherRequiredStacks(TileSortingMachine sortingMachine, List<SlotData> stacksToPush, Map<SlotData, ItemStack> slotsToExtract) {
-        for (int i = 0; i < stacksLeftToSatisfy.size(); i++) {
-            ItemStack stackToSatisfy = stacksLeftToSatisfy.get(i);
-
+        for (ItemStack stackToSatisfy : stacksLeftToSatisfy) {
             Optional<SlotData> matchingSlotData = stacksToPush.stream().filter(slotData -> stackToSatisfy.isItemEqual(slotData.getStack())
                     && slotData.getStack().getCount() > 0).findFirst();
 
@@ -169,8 +167,6 @@ public abstract class SortModeFullMatchBase extends SortMode {
                 selectedStackInSlot = new SlotData(pushStackHandler, slot);
                 compartmentSlot++;
                 break;
-            } else {
-                continue;
             }
         }
 

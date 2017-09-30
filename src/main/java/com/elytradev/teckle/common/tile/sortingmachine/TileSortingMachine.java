@@ -176,11 +176,8 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
-        if (oldState.getBlock() == newSate.getBlock()) {
-            return false;
-        }
+        return oldState.getBlock() != newSate.getBlock() && super.shouldRefresh(world, pos, oldState, newSate);
 
-        return super.shouldRefresh(world, pos, oldState, newSate);
     }
 
     @Override
@@ -345,9 +342,9 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         tag.setInteger("defaultRoute", this.defaultRoute.getMetadata());
         tag.setInteger("cachedFace", this.outputTile.getOutputFace().getIndex());
         NBTTagList coloursTag = new NBTTagList();
-        for (int i = 0; i < this.colours.length; i++) {
-            if (this.colours[i] != null) {
-                coloursTag.appendTag(new NBTTagInt(this.colours[i].getMetadata()));
+        for (EnumDyeColor colour : this.colours) {
+            if (colour != null) {
+                coloursTag.appendTag(new NBTTagInt(colour.getMetadata()));
             } else {
                 coloursTag.appendTag(new NBTTagInt(-1));
             }

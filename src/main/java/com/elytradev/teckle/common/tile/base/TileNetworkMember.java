@@ -69,9 +69,7 @@ public abstract class TileNetworkMember extends TileEntity {
     @Override
     public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
         if (capability == null) return false;
-        if (capability == TeckleMod.PROBE_CAPABILITY) {
-            return true;
-        }
+        if (capability == TeckleMod.PROBE_CAPABILITY) return true;
         return super.hasCapability(capability, facing);
     }
 

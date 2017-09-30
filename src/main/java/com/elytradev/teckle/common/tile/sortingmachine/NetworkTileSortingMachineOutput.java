@@ -59,21 +59,14 @@ public class NetworkTileSortingMachineOutput extends NetworkTileSortingMachineBa
         if (Objects.equals(traveller.getEntryPoint().getPosition(), getPos()))
             return true;
 
-        if (Objects.equals(from, getOutputFace().getOpposite())) {
-            // Allows use of filters for filtering items already in tubes. Not really a good reason to do this but it was possible in RP2 so it's possible in Teckle.
-            return getSortMode().canAcceptTraveller(this, traveller, from);
-        }
-        return false;
+        // Allows use of filters for filtering items already in tubes.
+        // Not really a good reason to do this but it was possible in RP2 so it's possible in Teckle.
+        return Objects.equals(from, getOutputFace().getOpposite())
+                && getSortMode().canAcceptTraveller(this, traveller, from);
     }
 
     @Override
     public boolean canConnectTo(EnumFacing side) {
-        return Objects.equals(side, getOutputFace());
-    }
-
-
-    @Override
-    public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
         return Objects.equals(side, getOutputFace());
     }
 

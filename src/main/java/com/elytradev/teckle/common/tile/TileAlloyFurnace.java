@@ -102,7 +102,7 @@ public class TileAlloyFurnace extends TileEntity implements ITickable, IElementP
 
         Optional<AlloyRecipe> recipe = AlloyRecipes.getInstance().getRecipes().stream().filter(alloyRecipe -> !alloyRecipe.matches(topInputHandler).isEmpty())
                 .findFirst();
-        this.activeRecipe = recipe.isPresent() ? recipe.get() : null;
+        this.activeRecipe = recipe.orElse(null);
     }
 
     @Override
@@ -126,11 +126,8 @@ public class TileAlloyFurnace extends TileEntity implements ITickable, IElementP
 
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
-        if (oldState.getBlock() == newSate.getBlock()) {
-            return false;
-        }
+        return oldState.getBlock() != newSate.getBlock() && super.shouldRefresh(world, pos, oldState, newSate);
 
-        return super.shouldRefresh(world, pos, oldState, newSate);
     }
 
     private void checkFuel() {
@@ -173,8 +170,8 @@ public class TileAlloyFurnace extends TileEntity implements ITickable, IElementP
 
                 if (recipe.isPresent() && (bottomHandler.getStackInSlot(0).isEmpty() || ItemHandlerHelper.canItemStacksStack(recipe.get().getCraftingResult(), bottomHandler.getStackInSlot(0)))) {
                     List<ItemStack> matching = recipe.get().matches(topInputHandler);
-                    for (int i = 0; i < matching.size(); i++) {
-                        ItemStack stack = matching.get(i).copy();
+                    for (ItemStack aMatching : matching) {
+                        ItemStack stack = aMatching.copy();
                         for (int j = 0; j < topInputHandler.getSlots(); j++) {
                             ItemStack stackInSlot = topInputHandler.getStackInSlot(j);
                             if (stackInSlot.isEmpty())

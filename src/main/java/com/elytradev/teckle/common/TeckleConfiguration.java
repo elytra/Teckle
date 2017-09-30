@@ -26,8 +26,8 @@ public class TeckleConfiguration extends ConcreteConfig {
             " WARNING: Alloy Recipes are currently hardcoded and no system is currently im place to remove them without another mod interaction!")
     public boolean skipOreChecks = false;
 
-    protected TeckleConfiguration(File configFile, String modID) {
-        super(configFile, modID);
+    protected TeckleConfiguration(File configFile) {
+        super(configFile, TeckleMod.MOD_ID);
         this.configFolder = configFile.getParentFile();
     }
 }

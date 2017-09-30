@@ -24,7 +24,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -39,9 +38,8 @@ public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
         TileEntity endPointTile = getNetwork().getWorld().getTileEntity(getPosition());
 
         if (endPointTile != null) {
-            ICapabilityProvider endPointCapabilityProvider = endPointTile;
-            if (endPointCapabilityProvider.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from)) {
-                IItemHandler itemHandler = endPointCapabilityProvider.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from);
+            if (endPointTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from)) {
+                IItemHandler itemHandler = endPointTile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from);
 
                 ItemStack dataStack = new ItemStack(traveller.data.getCompoundTag("stack")).copy();
                 for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
@@ -65,9 +63,8 @@ public class ItemNetworkEndpoint extends WorldNetworkEndpoint {
         TileEntity endPointTile = getNetwork().getWorld().getTileEntity(getPosition());
 
         if (endPointTile != null) {
-            ICapabilityProvider endPointCapabilityProvider = endPointTile;
-            if (endPointCapabilityProvider.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from)) {
-                IItemHandler itemHandler = endPointCapabilityProvider.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from);
+            if (endPointTile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from)) {
+                IItemHandler itemHandler = endPointTile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, from);
 
                 ItemStack dataStack = new ItemStack(traveller.data.getCompoundTag("stack"));
                 ItemStack initialStack = dataStack.copy();

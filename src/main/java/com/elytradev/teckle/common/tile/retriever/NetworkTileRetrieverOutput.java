@@ -90,10 +90,6 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
         return Objects.equals(side, getOutputFace());
     }
 
-    @Override
-    public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-        return Objects.equals(side, getOutputFace());
-    }
 
     @Override
     public EnumFacing getOutputFace() {

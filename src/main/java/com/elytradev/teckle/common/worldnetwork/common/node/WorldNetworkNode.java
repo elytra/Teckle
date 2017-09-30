@@ -78,17 +78,12 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
     }
 
     public boolean isLoaded() {
-        if (getNetwork() == null || getNetwork().getWorld() == null)
-            return false;
-        return getNetwork().getWorld().isBlockLoaded(getPosition());
+        return getNetwork() != null && getNetwork().getWorld() != null
+                && getNetwork().getWorld().isBlockLoaded(getPosition());
     }
 
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        if (getNetworkTile() != null) {
-            return getNetworkTile().canAcceptTraveller(traveller, from);
-        } else {
-            return true;
-        }
+        return getNetworkTile() == null || getNetworkTile().canAcceptTraveller(traveller, from);
     }
 
     /**
@@ -97,11 +92,7 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
      * Used to determine if this node can be connected to from the given side.
      */
     public boolean canConnectTo(EnumFacing side) {
-        if (getNetworkTile() != null) {
-            return getNetworkTile().canConnectTo(side);
-        } else {
-            return true;
-        }
+        return getNetworkTile() == null || getNetworkTile().canConnectTo(side);
     }
 
     @Nullable

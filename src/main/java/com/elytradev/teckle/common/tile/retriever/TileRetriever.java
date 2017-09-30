@@ -101,11 +101,8 @@ public class TileRetriever extends TileLitNetworkMember {
 
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
-        if (oldState.getBlock() == newSate.getBlock()) {
-            return false;
-        }
+        return oldState.getBlock() != newSate.getBlock() && super.shouldRefresh(world, pos, oldState, newSate);
 
-        return super.shouldRefresh(world, pos, oldState, newSate);
     }
 
     @Override

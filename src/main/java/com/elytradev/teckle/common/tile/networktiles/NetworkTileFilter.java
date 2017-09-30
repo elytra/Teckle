@@ -46,11 +46,6 @@ public class NetworkTileFilter extends NetworkTileTransposer {
     }
 
     @Override
-    public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-        return Objects.equals(side, getOutputFace());
-    }
-
-    @Override
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
         if (Objects.equals(traveller.getEntryPoint().getPosition(), this.getPos()))
             return true;

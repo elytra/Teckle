@@ -76,7 +76,7 @@ public class TeckleMod {
         if (e.getSuggestedConfigurationFile().exists()) {
             e.getSuggestedConfigurationFile().renameTo(new File(teckleFolder, "teckle.cfg"));
         }
-        CONFIG = new TeckleConfiguration(new File(teckleFolder, "teckle.cfg"), MOD_ID);
+        CONFIG = new TeckleConfiguration(new File(teckleFolder, "teckle.cfg"));
         CONFIG.loadConfig();
 
         MinecraftForge.EVENT_BUS.register(OBJECTS);

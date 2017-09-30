@@ -3,7 +3,6 @@ package com.elytradev.teckle.client.render.tile;
 import com.elytradev.teckle.client.render.model.ModelMachineOverlay;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockRetriever;
-import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.tile.retriever.TileRetriever;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;

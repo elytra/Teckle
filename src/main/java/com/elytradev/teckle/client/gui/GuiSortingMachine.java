@@ -128,9 +128,9 @@ public class GuiSortingMachine extends GuiContainer {
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(-guiLeft, -guiTop, 0);
-        for (int i = 0; i < buttonList.size(); i++) {
-            if (buttonList.get(i) instanceof IHoverable) {
-                ((IHoverable) buttonList.get(i)).drawHover(mc, mouseX, mouseY);
+        for (GuiButton aButtonList : buttonList) {
+            if (aButtonList instanceof IHoverable) {
+                ((IHoverable) aButtonList).drawHover(mc, mouseX, mouseY);
             }
         }
         GlStateManager.popMatrix();

@@ -152,11 +152,8 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
         direction = direction.getOpposite();
 
         TileEntity tileEntity = getWorld().getTileEntity(position);
-        if (tileEntity != null && tileEntity.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction)) {
-            return true;
-        }
+        return tileEntity != null && tileEntity.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction);
 
-        return false;
     }
 
     public ItemStack acceptTraveller(WorldNetworkTraveller traveller) {

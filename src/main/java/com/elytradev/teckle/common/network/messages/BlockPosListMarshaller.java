@@ -44,8 +44,8 @@ public class BlockPosListMarshaller implements Marshaller<ArrayList<BlockPos>> {
     public void marshal(ByteBuf out, ArrayList<BlockPos> blockPoss) {
         ByteBufUtils.writeVarInt(out, blockPoss.size(), 3);
 
-        for (int i = 0; i < blockPoss.size(); i++) {
-            out.writeLong(blockPoss.get(i).toLong());
+        for (BlockPos blockPos : blockPoss) {
+            out.writeLong(blockPos.toLong());
         }
     }
 }

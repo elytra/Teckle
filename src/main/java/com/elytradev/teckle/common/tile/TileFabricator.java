@@ -221,10 +221,8 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
         if (capability == null) return false;
-
-        if (Objects.equals(capability, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)) {
+        if (Objects.equals(capability, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY))
             return true;
-        }
 
         return super.hasCapability(capability, facing);
     }

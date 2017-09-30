@@ -63,9 +63,7 @@ public class CapabilityWorldNetworkAssistantHolder {
 
             @Override
             public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-                if (capability == null)
-                    return false;
-                return capability == NETWORK_ASSISTANT_HOLDER_CAPABILITY;
+                return capability != null && capability == NETWORK_ASSISTANT_HOLDER_CAPABILITY;
             }
 
             @Nullable

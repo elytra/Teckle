@@ -269,11 +269,8 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
 
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
-        if (oldState.getBlock() == newSate.getBlock()) {
-            return false;
-        }
+        return oldState.getBlock() != newSate.getBlock() && super.shouldRefresh(world, pos, oldState, newSate);
 
-        return super.shouldRefresh(world, pos, oldState, newSate);
     }
 
     @Override
@@ -341,7 +338,7 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
         }
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            if(bufferData == null || filterData == null)
+            if (bufferData == null || filterData == null)
                 validate();
             tag.setUniqueId("buffer", bufferData.getId());
             tag.setUniqueId("filter", filterData.getId());

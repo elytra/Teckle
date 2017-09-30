@@ -46,16 +46,10 @@ public class NetworkTileTransposer extends WorldNetworkTile {
     }
 
     @Override
-    public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-        return Objects.equals(side, getOutputFace());
-    }
-
-    @Override
     public boolean canAcceptTraveller(WorldNetworkTraveller traveller, EnumFacing from) {
-        if (Objects.equals(traveller.getEntryPoint().getPosition(), this.getPos()))
-            return true;
+        return Objects.equals(traveller.getEntryPoint().getPosition(), this.getPos())
+                || Objects.equals(from, getOutputFace().getOpposite()) && !this.isPowered();
 
-        return Objects.equals(from, getOutputFace().getOpposite()) && !this.isPowered();
     }
 
     @Override
@@ -88,7 +82,8 @@ public class NetworkTileTransposer extends WorldNetworkTile {
     }
 
     private boolean isPowered() {
-        if (getWorld() != null && getWorld().isBlockLoaded(getPos()) && Objects.equals(getWorld().getBlockState(getPos()).getBlock(), TeckleObjects.blockTransposer)) {
+        if (getWorld() != null && getWorld().isBlockLoaded(getPos())
+                && Objects.equals(getWorld().getBlockState(getPos()).getBlock(), TeckleObjects.blockTransposer)) {
             return getWorld().getBlockState(getPos()).getValue(BlockTransposer.TRIGGERED).booleanValue();
         }
         return false;

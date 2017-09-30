@@ -60,7 +60,6 @@ public class NetworkTileItemTube extends WorldNetworkTile {
         if (this.getColour() != null && traveller.data.hasKey("colour")) {
             return Objects.equals(this.getColour(), EnumDyeColor.byMetadata(traveller.data.getInteger("colour")));
         }
-
         return true;
     }
 
@@ -92,10 +91,8 @@ public class NetworkTileItemTube extends WorldNetworkTile {
                     BlockPos neighbourPos = getPos().offset(side);
                     Optional<IMultipartContainer> optionalContainer = MultipartHelper.getContainer(getWorld(), neighbourPos);
 
-                    if (optionalContainer.isPresent()) {
-                        IMultipartContainer container = optionalContainer.get();
-
-                        for (Map.Entry<IPartSlot, ? extends IPartInfo> iPartSlotEntry : container.getParts().entrySet()) {
+                    optionalContainer.ifPresent(multipartContainer -> {
+                        for (Map.Entry<IPartSlot, ? extends IPartInfo> iPartSlotEntry : multipartContainer.getParts().entrySet()) {
                             IPartSlot slot = iPartSlotEntry.getKey();
 
                             if (slot.getFaceAccess(side) == EnumSlotAccess.NONE) {
@@ -103,7 +100,7 @@ public class NetworkTileItemTube extends WorldNetworkTile {
                                 break;
                             }
                         }
-                    }
+                    });
                 }
             }
         } else {

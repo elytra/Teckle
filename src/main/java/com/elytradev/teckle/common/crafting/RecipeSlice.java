@@ -43,9 +43,7 @@ public class RecipeSlice extends ShapelessOreRecipe {
 
         this.visibleIngredients = NonNullList.create();
         this.visibleIngredients.add(Ingredient.fromItem(TeckleObjects.itemBlade));
-        for (Ingredient ingredient : super.getIngredients()) {
-            this.visibleIngredients.add(ingredient);
-        }
+        this.visibleIngredients.addAll(super.getIngredients());
     }
 
     @Override

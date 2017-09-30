@@ -162,7 +162,7 @@ public class WorldNetwork implements IWorldNetwork {
         }
 
         Optional<NodeContainer> matching = stream.findFirst();
-        return matching.isPresent() ? matching.get().getNode() : null;
+        return matching.map(NodeContainer::getNode).orElse(null);
     }
 
     @Override
