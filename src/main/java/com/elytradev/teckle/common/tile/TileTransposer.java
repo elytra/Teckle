@@ -120,19 +120,17 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             }
 
         } catch (NullPointerException e) {
-            boolean bool = getNetworkTile() == null;
-            String debugInfo = "NTile " + (bool ? "null" : getNetworkTile().toString());
-            bool = bool || getNetworkTile().getNode() == null;
-            debugInfo += " node " + (bool ? "null" : getNetworkTile().getNode().toString());
-            bool = bool || getNetworkTile().getNode().getNetwork() == null;
-            debugInfo += " network " + (bool ? "null" : getNetworkTile().getNode().getNetwork().toString());
-            TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
+            boolean nullCheck = getNetworkTile() == null;
+            String debugInfo = "NTile " + (nullCheck ? "null" : getNetworkTile().toString());
+            nullCheck = nullCheck || getNetworkTile().getNode() == null;
+            debugInfo += " node " + (nullCheck ? "null" : getNetworkTile().getNode().toString());
+            nullCheck = nullCheck || getNetworkTile().getNode().getNetwork() == null;
+            debugInfo += " network " + (nullCheck ? "null" : getNetworkTile().getNode().getNetwork().toString());
+            TeckleMod.LOG.error("****************Teckle Encountered An Error*******************");
             TeckleMod.LOG.error("Caught NPE in tryPush!, {}", this);
-            TeckleMod.LOG.error("Exception follows, {}", e);
             TeckleMod.LOG.error("Here's some useful debug info, {}", debugInfo);
-            TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
-
             e.printStackTrace();
+            TeckleMod.LOG.error("**************************************************************");
         }
         cooldown = TeckleMod.CONFIG.transposerCooldown;
         return result;

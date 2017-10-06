@@ -173,17 +173,17 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
 
             }
         } catch (NullPointerException e) {
-            boolean bool = networkTile == null;
-            String debugInfo = "NTile " + (bool ? "null" : networkTile.toString());
-            bool = bool || networkTile.getNode() == null;
-            debugInfo += " node " + (bool ? "null" : networkTile.getNode().toString());
-            bool = bool || networkTile.getNode().getNetwork() == null;
-            debugInfo += " network " + (bool ? "null" : networkTile.getNode().getNetwork().toString());
-            TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
+            boolean nullCheck = networkTile == null;
+            String debugInfo = "NTile " + (nullCheck ? "null" : networkTile.toString());
+            nullCheck = nullCheck || networkTile.getNode() == null;
+            debugInfo += " node " + (nullCheck ? "null" : networkTile.getNode().toString());
+            nullCheck = nullCheck || networkTile.getNode().getNetwork() == null;
+            debugInfo += " network " + (nullCheck ? "null" : networkTile.getNode().getNetwork().toString());
+            TeckleMod.LOG.error("****************Teckle Encountered An Error*******************");
             TeckleMod.LOG.error("Caught NPE in tryPush!, {}", this);
-            e.printStackTrace();
             TeckleMod.LOG.error("Here's some useful debug info, {}", debugInfo);
-            TeckleMod.LOG.error("****************OH SHIT TECKLE BROKE*******************");
+            e.printStackTrace();
+            TeckleMod.LOG.error("**************************************************************");
         }
         cooldown = TeckleMod.CONFIG.filterCooldown;
         return result;
