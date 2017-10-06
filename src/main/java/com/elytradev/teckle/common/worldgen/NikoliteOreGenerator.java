@@ -29,8 +29,9 @@ import net.minecraftforge.fml.common.IWorldGenerator;
 
 import java.util.Random;
 
+
 /**
- * Created by darkevilmac on 4/21/2017.
+ * Just a simple ore generator based on redstone, generates nikolite ore in the world.
  */
 public class NikoliteOreGenerator implements IWorldGenerator {
     private WorldGenMinable nikoliteGen;

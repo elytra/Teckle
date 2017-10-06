@@ -9,6 +9,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
+/**
+ * Sends a message to clients whenever a tile lights up, used on the sorting machine and the retriever.
+ */
 @ReceivedOn(Side.CLIENT)
 public class TileLitMessage extends Message {
 

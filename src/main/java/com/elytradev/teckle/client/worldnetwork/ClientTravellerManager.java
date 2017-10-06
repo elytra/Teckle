@@ -41,6 +41,7 @@ public class ClientTravellerManager {
         if (Objects.equals(e.phase, TickEvent.Phase.END) || Minecraft.getMinecraft().world == null || Minecraft.getMinecraft().isGamePaused())
             return;
 
+        // Move the travellers between tiles and increase their travelled distance.
         for (DummyNetworkTraveller traveller : travellers.values()) {
             if (traveller.travelledDistance >= 1) {
                 if (traveller.nextNode.isEndpoint() || traveller.nextNode == WorldNetworkNode.NONE) {
@@ -66,6 +67,7 @@ public class ClientTravellerManager {
             traveller.travelledDistance += (1F / 10F);
         }
 
+        // Remove any queued travellers.
         for (UUID id : travellersToRemove) {
             DummyNetworkTraveller traveller = travellers.get(id);
             if (traveller == null)
@@ -91,6 +93,13 @@ public class ClientTravellerManager {
         }
     }
 
+    /**
+     * Remove a traveller from the manager.
+     *
+     * @param data      the traveller data
+     * @param immediate whether the traveller should be immediately destroyed,
+     *                  or if it should enter the queue for the next tick.
+     */
     public static void removeTraveller(NBTTagCompound data, boolean immediate) {
         if (!immediate) {
             travellersToRemove.add(data.getUniqueId("id"));
@@ -109,6 +118,13 @@ public class ClientTravellerManager {
         }
     }
 
+    /**
+     * Add a traveller to the manager.
+     *
+     * @param key   the tag for the traveller.
+     * @param value the traveller itself.
+     * @return the traveller.
+     */
     public static DummyNetworkTraveller put(NBTTagCompound key, DummyNetworkTraveller value) {
         World clientWorld = Minecraft.getMinecraft().world;
         TileEntity tileAtCur = clientWorld.getTileEntity(value.currentNode.getPosition());
@@ -119,7 +135,16 @@ public class ClientTravellerManager {
         return travellers.put(key.getUniqueId("id"), value);
     }
 
+    /**
+     * Get a traveller based on its UUID.
+     *
+     * @param key the uuid of the traveller
+     * @return the traveller if present.
+     */
     public static DummyNetworkTraveller get(UUID key) {
+        if (!travellers.containsKey(key))
+            return null;
+
         return travellers.get(key);
     }
 }

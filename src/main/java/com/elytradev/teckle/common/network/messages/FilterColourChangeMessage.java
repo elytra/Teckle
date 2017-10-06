@@ -28,7 +28,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * Created by darkevilmac on 4/12/2017.
+ * Changes the colour on a filter.
  */
 @ReceivedOn(Side.SERVER)
 public class FilterColourChangeMessage extends Message {

@@ -28,7 +28,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * Created by darkevilmac on 5/10/17.
+ * Sent by clients to the server to set the fake slots for the fabricator.
  */
 @ReceivedOn(Side.SERVER)
 public class FabricatorTemplateMessage extends Message {

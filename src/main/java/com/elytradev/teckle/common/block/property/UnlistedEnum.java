@@ -28,8 +28,7 @@ import java.util.Map;
  */
 public class UnlistedEnum<T extends Enum<T> & IStringSerializable> implements IUnlistedProperty<T> {
     private final ImmutableSet<T> allowedValues;
-    private final Map<String, T> nameToValue = Maps.newHashMap();
-    String name;
+    private String name;
     private Class<T> valueClass;
 
     public UnlistedEnum(String name, Class<T> valueClass) {
@@ -40,11 +39,12 @@ public class UnlistedEnum<T extends Enum<T> & IStringSerializable> implements IU
         for (T t : allowedValues) {
             String s = t.getName();
 
-            if (this.nameToValue.containsKey(s)) {
+            Map<String, T> nameToValue = Maps.newHashMap();
+            if (nameToValue.containsKey(s)) {
                 throw new IllegalArgumentException("Multiple values have the same key \'" + s + "\'");
             }
 
-            this.nameToValue.put(s, t);
+            nameToValue.put(s, t);
         }
     }
 

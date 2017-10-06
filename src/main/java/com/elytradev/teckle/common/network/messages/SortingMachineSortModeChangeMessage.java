@@ -28,10 +28,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
+/**
+ * Handles any changes to a sorting machine sort mode on the server.
+ */
 @ReceivedOn(Side.SERVER)
 public class SortingMachineSortModeChangeMessage extends Message {
 
-    @MarshalledAs("i8")
+    @MarshalledAs("int")
     public int sortModeID;
     public BlockPos sortingMachinePos;
 

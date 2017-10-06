@@ -1,9 +1,11 @@
 package com.elytradev.teckle.common.tile.inv.pool;
 
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.WorldSavedData;
 import net.minecraftforge.common.DimensionManager;
@@ -13,6 +15,7 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class AdvancedStackHandlerPool extends WorldSavedData {
@@ -82,6 +85,27 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
         }
 
         return data;
+    }
+
+    /**
+     * Get or create a pool entry and id with a size given.
+     *
+     * @param knownID     the id to search for if already known, null to generate a new entry.
+     * @param pos         the position associated with the stack handler entry.
+     * @param handlerSize the size of the stackhandler.
+     * @return the handler.
+     */
+    public AdvancedStackHandlerEntry getOrCreatePoolEntry(@Nullable UUID knownID, @Nonnull BlockPos pos, int handlerSize) {
+        AdvancedStackHandlerEntry entryOut = null;
+        if (knownID == null) {
+            if (entryOut == null) {
+                entryOut = new AdvancedStackHandlerEntry(UUID.randomUUID(), dimension, pos, new AdvancedItemStackHandler(handlerSize));
+            }
+        } else {
+            entryOut = AdvancedStackHandlerPool.getPool(dimension).get(knownID);
+        }
+
+        return entryOut;
     }
 
     @Override

@@ -34,7 +34,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import java.util.Objects;
 
 /**
- * Created by darkevilmac on 3/31/2017.
+ * Adds or removes travellers and their paths to the client.
  */
 @ReceivedOn(Side.CLIENT)
 public class TravellerDataMessage extends Message {

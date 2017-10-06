@@ -27,7 +27,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * Created by darkevilmac on 4/20/2017.
+ * Used to set misc fields on the alloy furnace for clients.
  */
 @ReceivedOn(Side.CLIENT)
 public class AlloyFurnaceMessage extends Message {

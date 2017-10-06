@@ -12,10 +12,13 @@ import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.Objects;
 
+/**
+ * Handles debug messages for developers, currently just for me.
+ */
 @ReceivedOn(Side.CLIENT)
 public class DebugReceiverMessage extends Message {
 
-    public static boolean active;
+    public static boolean ACTIVE;
     @MarshalledAs("string")
     public String message = "";
 
@@ -30,7 +33,7 @@ public class DebugReceiverMessage extends Message {
 
     @Override
     protected void handle(EntityPlayer receiver) {
-        if (receiver != null && Objects.equals(receiver.getGameProfile().getName(), "darkevilmac") && active) {
+        if (receiver != null && Objects.equals(receiver.getGameProfile().getName(), "darkevilmac") && ACTIVE) {
             Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new TextComponentString(message));
         }
     }

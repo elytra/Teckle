@@ -11,7 +11,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * Created by darkevilmac on 5/25/17.
+ * Handles any change of the default route colour for the sorting machine on the server.
  */
 @ReceivedOn(Side.SERVER)
 public class SortingMachineDefaultRouteChangeMessage extends Message {

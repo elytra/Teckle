@@ -25,7 +25,6 @@ import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.block.BlockTransposer;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
-import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileTransposer;
@@ -50,6 +49,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -70,14 +70,10 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
     @Override
     public void validate() {
-        if (bufferID == null) {
-            if (bufferData == null) {
-                bufferData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(9));
-            }
-            bufferID = bufferData.getId();
-        } else {
-            bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
-        }
+        AdvancedStackHandlerPool pool = AdvancedStackHandlerPool.getPool(world);
+        this.bufferData = pool.getOrCreatePoolEntry(bufferID, getPos(), 9);
+        this.bufferID = bufferData.getId();
+
         if (getNetworkTile() == null)
             this.setNetworkTile(new NetworkTileTransposer(this));
 
@@ -86,6 +82,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
         this.tileEntityInvalid = false;
     }
+
 
     /**
      * Attempt to push to our network, by pulling from our input position.
@@ -148,8 +145,22 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
     private boolean attemptInsertion(TileEntity potentialInsertionTile, WorldNetworkEntryPoint thisNode, ItemStack extractionData) {
         IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
-        ItemStack remaining = networkAssistant.insertData(thisNode, potentialInsertionTile.getPos(), extractionData, ImmutableMap.of(), false, false).copy();
+        ItemStack remaining = networkAssistant.insertData(thisNode, potentialInsertionTile.getPos(), extractionData,
+                ImmutableMap.of(), false, false).copy();
 
+        remaining = reinsertOrDrop(remaining);
+
+        return remaining.isEmpty();
+    }
+
+    /**
+     * Try and insert any remainder into the internal buffer,
+     * if there's anything that cant fit then drop it to the world.
+     *
+     * @param remaining the current remainder.
+     * @return the result of the insertion or drop.
+     */
+    protected ItemStack reinsertOrDrop(ItemStack remaining) {
         if (!remaining.isEmpty()) {
             for (int i = 0; i < bufferData.getHandler().getSlots() && !remaining.isEmpty(); i++) {
                 remaining = bufferData.getHandler().insertItem(i, remaining, false);
@@ -161,10 +172,15 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                 DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
             }
         }
-
-        return remaining.isEmpty();
+        return remaining;
     }
 
+    /**
+     * Determine the data that will be sent as a traveller or dropped from the output.
+     *
+     * @param facing the output face.
+     * @return the stack to use.
+     */
     private ItemStack getExtractionData(EnumFacing facing) {
         ItemStack extractionData = ItemStack.EMPTY;
 
@@ -232,14 +248,19 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         pullItemEntities(isPowered());
     }
 
+    /**
+     * Checks for any items in front of the input face of the block and then inserts them into the buffer.
+     *
+     * @param increaseDistance determines if an extended distance is used.
+     */
     protected void pullItemEntities(boolean increaseDistance) {
-        boolean canFitItems = world.isAirBlock(pos.add(getNetworkTile().getOutputFace().getOpposite().getDirectionVec())) && canFitItemsInBuffer();
-        if (canFitItems) {
-            List<EntityItem> itemsToPickup = getItemsInBlockPos(pos.add(getNetworkTile().getOutputFace().getOpposite().getDirectionVec()));
-            if (increaseDistance && world.isAirBlock(pos.add(getNetworkTile().getOutputFace().getOpposite().getDirectionVec())
-                    .add(getNetworkTile().getOutputFace().getOpposite().getDirectionVec())))
-                itemsToPickup.addAll(getItemsInBlockPos(pos.add(getNetworkTile().getOutputFace().getOpposite().getDirectionVec())
-                        .add(getNetworkTile().getOutputFace().getOpposite().getDirectionVec())));
+        Vec3i inputVec = getNetworkTile().getOutputFace().getOpposite().getDirectionVec();
+        BlockPos neighbourPos = pos.add(inputVec);
+        boolean canGatherItems = world.isAirBlock(neighbourPos) && canFitItemsInBuffer();
+        if (canGatherItems) {
+            List<EntityItem> itemsToPickup = getItemsInBlockPos(neighbourPos);
+            if (increaseDistance && world.isAirBlock(neighbourPos.add(inputVec)))
+                itemsToPickup.addAll(getItemsInBlockPos(neighbourPos.add(inputVec)));
 
             for (EntityItem entityItem : itemsToPickup) {
                 ItemStack entityStack = entityItem.getItem().copy();
@@ -253,8 +274,8 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                     world.removeEntity(entityItem);
                 }
 
-                canFitItems = canFitItemsInBuffer();
-                if (!canFitItems)
+                canGatherItems = canFitItemsInBuffer();
+                if (!canGatherItems)
                     break;
             }
         }
@@ -276,7 +297,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         if (FMLCommonHandler.instance().getEffectiveSide().isServer() && !(this instanceof TileFilter)) {
-            if(bufferData == null)
+            if (bufferData == null)
                 validate();
             tag.setUniqueId("buffer", bufferData.getId());
 

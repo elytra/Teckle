@@ -6,12 +6,8 @@ import com.elytradev.teckle.common.tile.inv.SlotData;
 import com.elytradev.teckle.common.tile.sortingmachine.NetworkTileSortingMachineBase;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
-import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.items.IItemHandler;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -31,7 +27,9 @@ public abstract class SortModeFullMatchBase extends SortMode {
         super(id, unlocalizedName, type);
     }
 
-    protected ItemStack handleAcceptedTraveller(NetworkTileSortingMachineBase sortingMachine, WorldNetworkTraveller traveller, ItemStack travellerStack, Optional<ItemStack> matchingStack) {
+    protected ItemStack handleAcceptedTraveller(NetworkTileSortingMachineBase sortingMachine,
+                                                WorldNetworkTraveller traveller, ItemStack travellerStack,
+                                                Optional<ItemStack> matchingStack) {
         if (matchingStack.isPresent()) {
             ItemStack toInsert = travellerStack.copy();
             toInsert.setCount(matchingStack.get().getCount());
@@ -47,26 +45,11 @@ public abstract class SortModeFullMatchBase extends SortMode {
 
             return remainder;
         } else if (!sortingMachine.getDefaultRoute().isBlocked()) {
-            WorldNetworkTraveller travellerCopy = traveller.clone();
-            if (sortingMachine.getDefaultRoute().isColoured()) {
-                travellerCopy.data.setInteger("colour", sortingMachine.getDefaultRoute().getColour().getMetadata());
-            } else {
-                travellerCopy.data.removeTag("colour");
-            }
-            BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getOutputTile().getOutputFace());
-            ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
-            ItemStack result = sortingMachine.getNetworkAssistant(ItemStack.class)
-                    .insertData((WorldNetworkEntryPoint) sortingMachine.getOutputTile().getNode(), insertInto,
-                            travellerStack, collect, false, false);
-
-            if (result.isEmpty() || result.getCount() != travellerStack.getCount()) {
-                sortingMachine.setTriggered();
-            }
-
-            return result;
+            return defaultRouteStack(sortingMachine, traveller, travellerStack);
         }
         return null;
     }
+
 
     protected void genStacksToSatisfy(AdvancedItemStackHandler buffer, List<IItemHandler> compartmentHandlers) {
         if (stacksLeftToSatisfy.isEmpty()) {

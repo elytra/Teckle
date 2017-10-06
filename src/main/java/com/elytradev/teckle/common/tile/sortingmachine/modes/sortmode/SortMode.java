@@ -21,11 +21,16 @@ import com.elytradev.teckle.common.tile.sortingmachine.NetworkTileSortingMachine
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 
 public abstract class SortMode implements INBTSerializable {
@@ -80,10 +85,10 @@ public abstract class SortMode implements INBTSerializable {
     /**
      * Check if the traveller can enter the machine.
      *
-     * @param sortingMachine the sorting machine.
-     * @param traveller
-     * @param from
-     * @return
+     * @param sortingMachine one of the sorting machine network tiles.
+     * @param traveller      the traveller to check.
+     * @param from           the face the traveller is from.
+     * @return true if the traveller can be accepted and false otherwise.
      */
     public abstract boolean canAcceptTraveller(NetworkTileSortingMachineBase sortingMachine, WorldNetworkTraveller traveller, EnumFacing from);
 
@@ -95,6 +100,10 @@ public abstract class SortMode implements INBTSerializable {
      */
     public abstract int selectorPosition(TileSortingMachine sortingMachine);
 
+    /**
+     * Called once a tick (20x/second)
+     * @param sortingMachine the sorting machine.
+     */
     public abstract void onTick(TileSortingMachine sortingMachine);
 
     public String getUnlocalizedName() {
@@ -104,10 +113,43 @@ public abstract class SortMode implements INBTSerializable {
     /**
      * Accept the given traveller if the machine is set to inline mode.
      *
-     * @param sortingMachine
+     * @param sortingMachine one of the sorting machine network tiles.
      * @param traveller      the traveller to accept.
      * @param from           the side the traveller is to be injected into.
-     * @return true if the entire traveller is accepted, false otherwise.
+     * @return the remaining traveller stack.
      */
-    public abstract ItemStack acceptTraveller(NetworkTileSortingMachineBase sortingMachine, WorldNetworkTraveller traveller, EnumFacing from);
+    public abstract ItemStack acceptTraveller(NetworkTileSortingMachineBase sortingMachine,
+                                              WorldNetworkTraveller traveller,
+                                              EnumFacing from);
+
+    /**
+     * Handles a traveller and it's itemstack when a default route is present.
+     *
+     * @param sortingMachine one of the sorting machine network tiles.
+     * @param traveller      the traveller to accept.
+     * @param travellerStack the stack associated with the traveller.
+     * @return the remaining stack.
+     */
+    protected ItemStack defaultRouteStack(NetworkTileSortingMachineBase sortingMachine,
+                                          WorldNetworkTraveller traveller,
+                                          ItemStack travellerStack) {
+        WorldNetworkTraveller travellerCopy = traveller.clone();
+        if (sortingMachine.getDefaultRoute().isColoured()) {
+            travellerCopy.data.setInteger("colour", sortingMachine.getDefaultRoute().getColour().getMetadata());
+        } else {
+            travellerCopy.data.removeTag("colour");
+        }
+        BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getOutputTile().getOutputFace());
+        ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream()
+                .collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
+        ItemStack result = sortingMachine.getNetworkAssistant(ItemStack.class)
+                .insertData((WorldNetworkEntryPoint) sortingMachine.getOutputTile().getNode(), insertInto,
+                        travellerStack, collect, false, false);
+
+        if (result.isEmpty() || result.getCount() != travellerStack.getCount()) {
+            sortingMachine.setTriggered();
+        }
+
+        return result;
+    }
 }

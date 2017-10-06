@@ -27,14 +27,11 @@ import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.block.BlockFilter;
 import com.elytradev.teckle.common.container.ContainerFilter;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
-import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileFilter;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileTransposer;
-import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
-import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.google.common.collect.ImmutableList;
@@ -81,22 +78,13 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
 
     @Override
     public void validate() {
-        if (filterID == null) {
-            if (filterData == null) {
-                filterData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(9));
-            }
-            filterID = filterData.getId();
-        } else {
-            filterData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(filterID);
-        }
-        if (bufferID == null) {
-            if (bufferData == null) {
-                bufferData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(9));
-            }
-            bufferID = bufferData.getId();
-        } else {
-            bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
-        }
+        AdvancedStackHandlerPool pool = AdvancedStackHandlerPool.getPool(world);
+        this.bufferData = pool.getOrCreatePoolEntry(bufferID, getPos(), 9);
+        this.bufferID = bufferData.getId();
+
+        this.filterData = pool.getOrCreatePoolEntry(filterID, getPos(), 9);
+        this.filterID = filterData.getId();
+
         if (networkTile == null)
             this.networkTile = new NetworkTileFilter(this);
 
@@ -202,19 +190,10 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
     private boolean attemptInsertion(TileEntity potentialInsertionTile, WorldNetworkEntryPoint thisNode, ItemStack extractionData) {
         IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
         ImmutableMap<String, NBTBase> additionalData = colour == null ? ImmutableMap.of() : ImmutableMap.of("colour", new NBTTagInt(colour.getMetadata()));
-        ItemStack remaining = networkAssistant.insertData(thisNode, potentialInsertionTile.getPos(), extractionData, additionalData, false, false).copy();
+        ItemStack remaining = networkAssistant.insertData(thisNode, potentialInsertionTile.getPos(), extractionData,
+                additionalData, false, false).copy();
 
-        if (!remaining.isEmpty()) {
-            for (int i = 0; i < bufferData.getHandler().getSlots() && !remaining.isEmpty(); i++) {
-                remaining = bufferData.getHandler().insertItem(i, remaining, false);
-            }
-
-            if (!remaining.isEmpty()) {
-                WorldNetworkTraveller fakeTravellerToDrop = new WorldNetworkTraveller(new NBTTagCompound());
-                remaining.writeToNBT(fakeTravellerToDrop.data.getCompoundTag("stack"));
-                DropActions.ITEMSTACK.getSecond().dropToWorld(fakeTravellerToDrop);
-            }
-        }
+        remaining = reinsertOrDrop(remaining);
 
         return remaining.isEmpty();
     }
@@ -237,11 +216,11 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
         if (bufferSlot != -1) {
             extractionData = bufferData.getHandler().extractItem(bufferSlot, 8, false);
         } else {
-            if (world.getTileEntity(pos.offset(facing.getOpposite())) != null && world.getTileEntity(pos.offset(facing.getOpposite()))
+            BlockPos inputPos = pos.offset(facing.getOpposite());
+            if (world.getTileEntity(inputPos) != null && world.getTileEntity(inputPos)
                     .hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
                 IItemHandler itemHandler = world.getTileEntity(pos.offset(facing.getOpposite()))
                         .getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
-
 
                 if (filterData.getHandler().stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
                     for (ItemStack stack : filterData.getHandler().getStacks()) {
@@ -251,9 +230,11 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
                             continue;
 
                         for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
-                            ItemStack extractTest = itemHandler.extractItem(slot, stack.getCount() > 1 ? stack.getCount() : stack.getMaxStackSize(), true);
-                            if (Objects.equals(extractTest.getItem(), stack.getItem()) && extractTest.getMetadata() == stack.getMetadata()) {
-                                extractionData = itemHandler.extractItem(slot, stack.getCount() > 1 ? stack.getCount() : stack.getMaxStackSize(), false);
+                            int countToExtract = stack.getCount() > 1 ? stack.getCount() : stack.getMaxStackSize();
+                            ItemStack extractTest = itemHandler.extractItem(slot, countToExtract, true);
+                            boolean metaMatches = extractTest.getMetadata() == stack.getMetadata();
+                            if (metaMatches && Objects.equals(extractTest.getItem(), stack.getItem())) {
+                                extractionData = itemHandler.extractItem(slot, countToExtract, false);
                             }
                         }
                     }
@@ -270,7 +251,6 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
         return oldState.getBlock() != newSate.getBlock() && super.shouldRefresh(world, pos, oldState, newSate);
-
     }
 
     @Override
@@ -293,6 +273,7 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             if (tag.hasKey("filterData")) {
+                // Handles legacy inventories that were stored directly on tiles.
                 validate();
                 filterData.getHandler().deserializeNBT(tag.getCompoundTag("filterData"));
                 bufferData.getHandler().deserializeNBT(tag.getCompoundTag("buffer"));
@@ -312,7 +293,8 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
             } else {
                 WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
                 Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
-                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), networkTile.getCapabilityFace())).findAny();
+                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(),
+                                networkTile.getCapabilityFace())).findAny();
                 if (any.isPresent()) {
                     networkID = networkDB.getRemappedNodes().remove(any.get());
                     TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);

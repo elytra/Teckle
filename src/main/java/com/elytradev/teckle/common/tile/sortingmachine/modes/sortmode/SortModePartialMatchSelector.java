@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Created by darkevilmac on 5/22/17.
+ * The partial match selector mode. Sort when any item set in the current compartment is available.
  */
 public class SortModePartialMatchSelector extends SortMode {
 
@@ -85,12 +85,12 @@ public class SortModePartialMatchSelector extends SortMode {
             }
         }
         AdvancedItemStackHandler bufferClone = sortingMachine.bufferData.getHandler().copy();
-        // Confirm the buffer can fit everything before attempting actual insertion into the real thing. ( ͡° ͜ʖ ͡°)
+        // Confirm the buffer can fit everything before attempting actual insertion into the real thing.
         for (Map.Entry<SlotData, Integer> slotCountEntry : slotsToExtract.entrySet()) {
             SlotData slotData = slotCountEntry.getKey();
             Integer count = slotCountEntry.getValue();
 
-            // If it didn't fit ( ͡° ͜ʖ ͡°), return false.
+            // If it didn't fit, return false.
             if (!bufferClone.insertItem(slotData.extract(count, true), false).isEmpty()) {
                 return false;
             }
@@ -111,10 +111,10 @@ public class SortModePartialMatchSelector extends SortMode {
     /**
      * Check if the traveller can enter the machine.
      *
-     * @param sortingMachine the sorting machine.
-     * @param traveller
-     * @param from
-     * @return
+     * @param sortingMachine one of the sorting machine network tiles.
+     * @param traveller      the traveller to check.
+     * @param from           the face the traveller is from.
+     * @return true if the traveller can be accepted and false otherwise.
      */
     @Override
     public boolean canAcceptTraveller(NetworkTileSortingMachineBase sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
@@ -203,6 +203,11 @@ public class SortModePartialMatchSelector extends SortMode {
         return selectorPosition;
     }
 
+    /**
+     * Called once a tick (20x/second)
+     *
+     * @param sortingMachine the sorting machine.
+     */
     @Override
     public void onTick(TileSortingMachine sortingMachine) {
         if (coolDown > 0) {
@@ -212,6 +217,7 @@ public class SortModePartialMatchSelector extends SortMode {
 
         coolDown = 5;
 
+        // Do some checks to see if this tick should actually perform anything.
         if (!sortingMachine.getPullMode().isPaused())
             return;
 
@@ -232,8 +238,6 @@ public class SortModePartialMatchSelector extends SortMode {
         ItemStack selectedStack = ItemStack.EMPTY;
         SlotData selectedSlotData = null;
         ItemStack selectedCompartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
-
-        Stream<ItemStack> bufferStream = ItemStream.createItemStream(sortingMachine.bufferData.getHandler());
 
         ItemStack selectedCompartmentStackClone = selectedCompartmentStack;
         if (selectedCompartmentStack.isEmpty()
@@ -272,7 +276,8 @@ public class SortModePartialMatchSelector extends SortMode {
             }
         }
 
-        bufferStream = ItemStream.createItemStream(sortingMachine.bufferData.getHandler());
+        // Create a stream from the items in the buffer.
+        Stream<ItemStack> bufferStream = ItemStream.createItemStream(sortingMachine.bufferData.getHandler());
         if (selectedCompartmentStack.isEmpty() && bufferStream.allMatch(stack -> stack.isEmpty() ||
                 ItemStream.createItemStream(compartmentHandler).noneMatch(tStack -> tStack.isItemEqual(stack)))) {
             compartmentSlot = 0;
@@ -281,9 +286,15 @@ public class SortModePartialMatchSelector extends SortMode {
         }
 
         if (selectedSlotData == null) {
-            Optional<SlotData> matchingSlotData = sortingMachine.getStacksToPush(false).stream().filter(slotData -> !slotData.getStack().isEmpty())
-                    .filter(slotData -> slotData.getStack().isItemEqual(compartmentHandler.getStackInSlot(compartmentSlot))
-                            && slotData.getStack().getCount() >= compartmentHandler.getStackInSlot(compartmentSlot).getCount()).findFirst();
+            // Find the first slot matching the selected compartment.
+            Optional<SlotData> matchingSlotData = sortingMachine.getStacksToPush(false).stream().filter
+                    (slotData -> {
+                        ItemStack slotStack = slotData.getStack();
+                        ItemStack compartmentStack = compartmentHandler.getStackInSlot(compartmentSlot);
+                        return !slotStack.isEmpty()
+                                && slotStack.isItemEqual(compartmentStack)
+                                && slotStack.getCount() >= compartmentStack.getCount();
+                    }).findFirst();
 
             if (matchingSlotData.isPresent()) {
                 selectedSlotData = matchingSlotData.get();
@@ -295,8 +306,11 @@ public class SortModePartialMatchSelector extends SortMode {
             }
         }
 
-        sortingMachine.addToNetwork(selectedSlotData.itemHandler, selectedSlotData.slot, selectedStack.getCount(),
-                compartmentColour != null ? ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata())) : ImmutableMap.of());
+        // Add what we found to the network.
+        ImmutableMap<String, NBTBase> additionalData = compartmentColour == null ? ImmutableMap.of()
+                : ImmutableMap.of("colour", new NBTTagInt(compartmentColour.getMetadata()));
+        sortingMachine.addToNetwork(selectedSlotData.itemHandler, selectedSlotData.slot,
+                selectedStack.getCount(), additionalData);
 
         // If the buffer has been emptied move the selector.
         bufferStream = ItemStream.createItemStream(sortingMachine.bufferData.getHandler());
@@ -307,6 +321,11 @@ public class SortModePartialMatchSelector extends SortMode {
         }
     }
 
+    /**
+     * Determines the selector position for the compartments.
+     *
+     * @param sortingMachine the sorting machine.
+     */
     private void chooseSelectorPosition(TileSortingMachine sortingMachine) {
         for (int i = selectorPosition + 1; i < 8; i++) {
             IItemHandler selectedCompartmentHandler = sortingMachine.getCompartmentHandlers().get(i);
@@ -334,10 +353,10 @@ public class SortModePartialMatchSelector extends SortMode {
     /**
      * Accept the given traveller if the machine is set to inline mode.
      *
-     * @param sortingMachine
+     * @param sortingMachine one of the network tiles for the sorting machine.
      * @param traveller      the traveller to accept.
      * @param from           the side the traveller is to be injected into.
-     * @return true if the entire traveller is accepted, false otherwise.
+     * @return the remaining traveller stack
      */
     @Override
     public ItemStack acceptTraveller(NetworkTileSortingMachineBase sortingMachine, WorldNetworkTraveller traveller, EnumFacing from) {
@@ -346,11 +365,15 @@ public class SortModePartialMatchSelector extends SortMode {
         }
 
         ItemStack travellerStack = new ItemStack(traveller.data.getCompoundTag("stack"));
-        List<ItemStack> stacksThatSatisfy = ItemStream.createItemStream(sortingMachine.getCompartmentHandlers().get(selectorPosition)).filter(s -> !s.isEmpty()).collect(Collectors.toList());
+        IItemHandler compartmentHandler = sortingMachine.getCompartmentHandlers().get(selectorPosition);
+        // Gather any stacks that aren't empty.
+        List<ItemStack> stacksThatSatisfy = ItemStream.createItemStream(compartmentHandler).filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
 
         Optional<ItemStack> matchingStack = stacksThatSatisfy.stream().filter(stack -> stack.isItemEqual(travellerStack)
                 && travellerStack.getCount() >= stack.getCount()).findFirst();
         if (matchingStack.isPresent() && !sortingMachine.getPullMode().isPaused()) {
+            //
             ItemStack toInsert = travellerStack.copy();
             toInsert.setCount(matchingStack.get().getCount());
             ItemStack remainder = travellerStack.copy();
@@ -361,21 +384,7 @@ public class SortModePartialMatchSelector extends SortMode {
 
             return remainder;
         } else if (!sortingMachine.getDefaultRoute().isBlocked()) {
-            WorldNetworkTraveller travellerCopy = traveller.clone();
-            if (sortingMachine.getDefaultRoute().isColoured()) {
-                travellerCopy.data.setInteger("colour", sortingMachine.getDefaultRoute().getColour().getMetadata());
-            } else {
-                travellerCopy.data.removeTag("colour");
-            }
-            BlockPos insertInto = sortingMachine.getPos().offset(sortingMachine.getOutputTile().getOutputFace());
-            ImmutableMap<String, NBTBase> collect = ImmutableMap.copyOf(travellerCopy.data.getKeySet().stream().collect(Collectors.toMap(o -> o, o -> travellerCopy.data.getTag(o))));
-            ItemStack result = sortingMachine.getNetworkAssistant(ItemStack.class).insertData((WorldNetworkEntryPoint) sortingMachine.getOutputTile().getNode(),
-                    insertInto, travellerStack, collect, false, false);
-
-            if (result.isEmpty() || result.getCount() != travellerStack.getCount()) {
-                sortingMachine.setTriggered();
-            }
-            return result;
+            return defaultRouteStack(sortingMachine, traveller, travellerStack);
         }
 
         return null;

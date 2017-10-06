@@ -28,6 +28,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
+/**
+ * Handles any changes in the pull mode of a sorting machine on the server.
+ */
 @ReceivedOn(Side.SERVER)
 public class SortingMachinePullModeChangeMessage extends Message {
 

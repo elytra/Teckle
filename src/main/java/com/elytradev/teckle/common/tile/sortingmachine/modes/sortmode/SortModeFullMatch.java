@@ -300,9 +300,7 @@ public class SortModeFullMatch extends SortModeFullMatchBase {
         }
         Optional<ItemStack> matchingStack = stacksLeftToSatisfy.stream().filter(stack -> stack.isItemEqual(travellerStack)).findFirst();
         ItemStack remainder = handleAcceptedTraveller(sortingMachine, traveller, travellerStack, matchingStack);
-        if (remainder != null) return remainder;
-
-        return null;
+        return remainder;
     }
 
 

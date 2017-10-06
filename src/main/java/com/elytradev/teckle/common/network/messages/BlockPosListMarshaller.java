@@ -23,6 +23,9 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import java.util.ArrayList;
 
+/**
+ * Simple block position list marshaller, holding onto this in case it comes in handy.
+ */
 public class BlockPosListMarshaller implements Marshaller<ArrayList<BlockPos>> {
 
     public static final String MARSHALLER_NAME = "com.elytradev.teckle.common.network.messages.BlockPosListMarshaller";

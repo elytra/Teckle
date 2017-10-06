@@ -9,6 +9,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
+/**
+ * Handles jam messages for clients.
+ */
 @ReceivedOn(Side.CLIENT)
 public class JamStatusMessage extends Message {
 

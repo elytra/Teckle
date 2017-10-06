@@ -39,9 +39,7 @@ public class WorldNetworkPath implements Marshallable {
 
     private List<PathNode> path;
     private int index = -1;
-    private WorldNetworkTraveller traveller;
-    private WorldNetworkNode startNode;
-    private EndpointData endNode;
+
 
     // Default constructor to calm concrete down.
     public WorldNetworkPath() {
@@ -52,9 +50,6 @@ public class WorldNetworkPath implements Marshallable {
     private WorldNetworkPath(WorldNetworkTraveller traveller, EndpointData endNode) {
         path = new ArrayList<>();
         index = -1;
-
-        this.traveller = traveller;
-        this.endNode = endNode;
     }
 
     /**

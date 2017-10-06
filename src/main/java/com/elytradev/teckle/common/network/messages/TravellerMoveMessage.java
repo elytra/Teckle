@@ -32,7 +32,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import java.util.UUID;
 
 /**
- * Created by darkevilmac on 4/9/2017.
+ * Handles changes in a travellers path on the client.
  */
 @ReceivedOn(Side.CLIENT)
 public class TravellerMoveMessage extends Message {
@@ -64,9 +64,7 @@ public class TravellerMoveMessage extends Message {
         path.setIndex(pathIndex);
         DummyNetworkTraveller traveller = new DummyNetworkTraveller(data, path);
         traveller.travelledDistance = travelledDistance;
-        if (pathIndex < 0) {
-
-        } else {
+        if (pathIndex > 0) {
             traveller.previousNode = path.prev();
             traveller.currentNode = path.next();
             traveller.nextNode = path.next();
