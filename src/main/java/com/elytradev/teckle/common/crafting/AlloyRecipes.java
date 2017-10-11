@@ -197,6 +197,10 @@ public class AlloyRecipes {
         return new AlloyRecipe(furnaceRecipe.getValue(), new Tuple<>(furnaceRecipe.getKey(), null));
     }
 
+    public void clear() {
+        recipes.clear();
+    }
+
     /**
      * Data that we deserialize from JSON, uses getters and setters to prevent null results on certain optional vars.
      */
@@ -242,9 +246,5 @@ public class AlloyRecipes {
         public void setInputsCount(int[] inputsCount) {
             this.inputsCount = inputsCount;
         }
-    }
-
-    public void clear() {
-        recipes.clear();
     }
 }

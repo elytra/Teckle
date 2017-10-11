@@ -116,7 +116,7 @@ public class NetworkTileItemTube extends WorldNetworkTile {
 
     @Override
     public void networkReloaded(IWorldNetwork network) {
-        List<TileEntity> neighbourNodes = ItemNetworkAssistant.getPotentialNeighbourNodes(this, getWorld(), getPos(), true);
+        List<TileEntity> neighbourNodes = ItemNetworkAssistant.getPotentialNeighbourNodes(this, true);
         for (TileEntity neighbourTile : neighbourNodes) {
             BlockPos posDiff = getPos().subtract(neighbourTile.getPos());
             EnumFacing capabilityFace = WorldNetworkTraveller.getFacingFromVector(posDiff);

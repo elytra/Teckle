@@ -66,6 +66,7 @@ public class ContainerAlloyFurnace extends Container {
         }
     }
 
+    @Override
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
 
@@ -84,6 +85,7 @@ public class ContainerAlloyFurnace extends Container {
         return alloyFurnace.isUsableByPlayer(player);
     }
 
+    @Override
     public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.inventorySlots.get(index);

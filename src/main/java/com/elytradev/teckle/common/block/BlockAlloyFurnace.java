@@ -53,6 +53,12 @@ public class BlockAlloyFurnace extends BlockContainer {
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(LIT, false));
     }
 
+    @Override
+    public int getLightValue(IBlockState state) {
+        return state.getValue(LIT) ? (int) (15.0F * 0.875F) : 0;
+    }
+
+    @Override
     public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
         this.setDefaultFacing(worldIn, pos, state);
     }
@@ -79,6 +85,7 @@ public class BlockAlloyFurnace extends BlockContainer {
         }
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
     public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand) {
         if (stateIn.getValue(LIT)) {
@@ -112,6 +119,7 @@ public class BlockAlloyFurnace extends BlockContainer {
         }
     }
 
+    @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         if (!playerIn.isSneaking()) {
             TileEntity tileentity = worldIn.getTileEntity(pos);
@@ -124,18 +132,22 @@ public class BlockAlloyFurnace extends BlockContainer {
         return false;
     }
 
+    @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
         return new TileAlloyFurnace();
     }
 
+    @Override
     public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
         return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
     }
 
+    @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
     }
 
+    @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
         if (worldIn.getTileEntity(pos) instanceof TileAlloyFurnace) {
             TileAlloyFurnace alloyFurnace = (TileAlloyFurnace) worldIn.getTileEntity(pos);
@@ -146,10 +158,12 @@ public class BlockAlloyFurnace extends BlockContainer {
         super.breakBlock(worldIn, pos, state);
     }
 
+    @Override
     public EnumBlockRenderType getRenderType(IBlockState state) {
         return EnumBlockRenderType.MODEL;
     }
 
+    @Override
     public IBlockState getStateFromMeta(int meta) {
         EnumFacing front = EnumFacing.getFront(meta & 7);
         if (front.getAxis() == EnumFacing.Axis.Y) {
@@ -158,6 +172,7 @@ public class BlockAlloyFurnace extends BlockContainer {
         return this.getDefaultState().withProperty(FACING, front).withProperty(LIT, (meta & 8) > 0);
     }
 
+    @Override
     public int getMetaFromState(IBlockState state) {
         int i = 0;
         i = i | state.getValue(FACING).getIndex();
@@ -169,14 +184,17 @@ public class BlockAlloyFurnace extends BlockContainer {
         return i;
     }
 
+    @Override
     public IBlockState withRotation(IBlockState state, Rotation rot) {
         return state.withProperty(FACING, rot.rotate(state.getValue(FACING)));
     }
 
+    @Override
     public IBlockState withMirror(IBlockState state, Mirror mirrorIn) {
         return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
     }
 
+    @Override
     protected BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, FACING, LIT);
     }

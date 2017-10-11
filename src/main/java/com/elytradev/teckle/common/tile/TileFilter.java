@@ -135,6 +135,7 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
      *
      * @return true if a push occurred, false otherwise.
      */
+    @Override
     public boolean tryPush() {
         boolean result = false;
         if (cooldown > 0)
@@ -333,6 +334,7 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
         return super.writeToNBT(tag);
     }
 
+    @Override
     public List<EntityItem> getItemsInBlockPos(BlockPos pos) {
         return world.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(pos.getX() - 0.5, pos.getY() - 0.5, pos.getZ() - 0.5, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5));
     }
@@ -386,6 +388,7 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
         return new GuiFilter(this, player);
     }
 
+    @Override
     public boolean isPowered() {
         return world.getBlockState(pos).getValue(BlockFilter.TRIGGERED);
     }

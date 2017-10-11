@@ -108,6 +108,7 @@ public class ItemSiliconWafer extends Item implements IResourceHolder {
             return this.name;
         }
 
+        @Override
         public String getName() {
             return this.name;
         }

@@ -159,7 +159,7 @@ public class ClientProxy extends CommonProxy {
         for (int i = 0; i < ItemIngot.IngotType.values().length; i++) {
             ItemIngot.IngotType ingotType = ItemIngot.IngotType.values()[i];
 
-            ModelResourceLocation resourceLocation = new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN  + ingotType.getName(), "inventory");
+            ModelResourceLocation resourceLocation = new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + ingotType.getName(), "inventory");
             ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(TeckleObjects.blockCompacted), i, resourceLocation);
         }
     }

@@ -102,6 +102,7 @@ public abstract class SortMode implements INBTSerializable {
 
     /**
      * Called once a tick (20x/second)
+     *
      * @param sortingMachine the sorting machine.
      */
     public abstract void onTick(TileSortingMachine sortingMachine);

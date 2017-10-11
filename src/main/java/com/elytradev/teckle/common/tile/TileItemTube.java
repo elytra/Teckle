@@ -149,6 +149,7 @@ public class TileItemTube extends TileNetworkMember {
         return super.writeToNBT(tag);
     }
 
+    @Override
     public void setWorld(World worldIn) {
         super.setWorld(worldIn);
         if (getNetworkTile() != null)

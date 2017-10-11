@@ -24,6 +24,7 @@ import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.block.property.UnlistedBool;
 import com.elytradev.teckle.common.block.property.UnlistedEnum;
+import com.elytradev.teckle.common.helper.CapabilityHelper;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.google.common.collect.Maps;
 import net.minecraft.block.BlockContainer;
@@ -47,7 +48,6 @@ import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.items.CapabilityItemHandler;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -252,7 +252,7 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
 
         boolean canConnect = false;
         if (tileAtPos != null) {
-            if (tileAtPos.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)) {
+            if (CapabilityHelper.isItemHandler(tileAtPos, side)) {
                 canConnect = true;
             }
 

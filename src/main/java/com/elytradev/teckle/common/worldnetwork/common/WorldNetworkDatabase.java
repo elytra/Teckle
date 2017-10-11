@@ -103,9 +103,10 @@ public class WorldNetworkDatabase extends WorldSavedData {
             DIMENSION_DATABASES.put(network.getWorld().provider.getDimension(), new WorldNetworkDatabase(network.getWorld()));
             getSavedDatabase(network.getWorld());
         }
-        DIMENSION_DATABASES.get(network.getWorld().provider.getDimension()).networks.put(network.getNetworkID(), network);
+        WorldNetworkDatabase networkDB = getNetworkDB(network.getWorld());
+        networkDB.networks.put(network.getNetworkID(), network);
 
-        TeckleMod.LOG.debug("Registered new network, total is now {}", DIMENSION_DATABASES.get(network.getWorld().provider.getDimension()).networks.size());
+        TeckleMod.LOG.debug("Registered new network, total is now {}", networkDB.networks.size());
     }
 
     /**

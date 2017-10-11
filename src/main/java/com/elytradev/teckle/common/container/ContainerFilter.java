@@ -57,6 +57,7 @@ public class ContainerFilter extends Container {
         return filter.isUsableByPlayer(player);
     }
 
+    @Override
     public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.inventorySlots.get(index);

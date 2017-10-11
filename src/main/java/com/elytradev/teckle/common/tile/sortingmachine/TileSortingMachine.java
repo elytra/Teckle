@@ -352,7 +352,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         tag.setTag("colours", coloursTag);
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            if(bufferData == null || filterData == null)
+            if (bufferData == null || filterData == null)
                 validate();
             tag.setUniqueId("buffer", bufferData.getId());
             tag.setUniqueId("filter", filterData.getId());
@@ -570,6 +570,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             return this.meta;
         }
 
+        @Override
         public String getName() {
             return "defaultroute." + this.name;
         }
