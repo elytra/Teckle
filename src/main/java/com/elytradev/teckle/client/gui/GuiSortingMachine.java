@@ -16,7 +16,7 @@
 
 package com.elytradev.teckle.client.gui;
 
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
 import com.elytradev.teckle.common.network.messages.SortingMachineColourChangeMessage;
 import com.elytradev.teckle.common.network.messages.SortingMachineDefaultRouteChangeMessage;
@@ -225,7 +225,7 @@ public class GuiSortingMachine extends GuiContainer {
                 }
                 new SortingMachineSortModeChangeMessage(sortingMachine.getSortMode().getID(), sortingMachine.getPos()).sendToServer();
             } catch (Exception e) {
-                TeckleMod.LOG.error("Failed to change mode type in sortingmachine gui, ", e);
+                TeckleLog.error("Failed to change mode type in sortingmachine gui, ", e);
             }
         } else if (button instanceof GuiSortModeSelector) {
             // Actually change the sort mode.
@@ -241,7 +241,7 @@ public class GuiSortingMachine extends GuiContainer {
             try {
                 sortingMachine.setSortMode(SortMode.SORT_MODES.get(selectedMode).newInstance());
             } catch (Exception e) {
-                TeckleMod.LOG.error("Failed to change sort mode in sortingmachine gui, ", e);
+                TeckleLog.error("Failed to change sort mode in sortingmachine gui, ", e);
             }
 
             new SortingMachineSortModeChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();
@@ -275,7 +275,7 @@ public class GuiSortingMachine extends GuiContainer {
             try {
                 sortingMachine.setPullMode(PullMode.PULL_MODES.get(selectedMode).newInstance());
             } catch (Exception e) {
-                TeckleMod.LOG.error("Failed to change pull mode in sortingmachine gui, ", e);
+                TeckleLog.error("Failed to change pull mode in sortingmachine gui, ", e);
             }
 
             new SortingMachinePullModeChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();

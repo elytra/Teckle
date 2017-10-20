@@ -1,7 +1,7 @@
 package com.elytradev.teckle.common.worldnetwork.common;
 
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
@@ -31,20 +31,20 @@ public class NetworkTileRegistry {
         NBTTagCompound receivedData = msg.getNBTValue();
         ResourceLocation tileKey = new ResourceLocation(msg.getSender(), receivedData.getString("id"));
         if (REGISTRY.containsKey(tileKey)) {
-            TeckleMod.LOG.warn("A mod attempted to register a network tile with the same id twice, it will be skipped.");
+            TeckleLog.warn("A mod attempted to register a network tile with the same id twice, it will be skipped.");
             return;
         }
         Class<?> tileClass;
         try {
             tileClass = Class.forName(receivedData.getString("class"));
         } catch (ClassNotFoundException exception) {
-            TeckleMod.LOG.error("Attempted to register custom network tile from a mod with the id {}", msg.getSender());
-            TeckleMod.LOG.error("Failed to get class for network tile with name {}", receivedData.getString("class"));
+            TeckleLog.error("Attempted to register custom network tile from a mod with the id {}", msg.getSender());
+            TeckleLog.error("Failed to get class for network tile with name {}", receivedData.getString("class"));
             exception.printStackTrace();
             return;
         }
         if (!WorldNetworkTile.class.isAssignableFrom(tileClass)) {
-            TeckleMod.LOG.error("Tried to register a world network tile via IMC but received a class that does not extend WorldNetworkTile, it will be skipped. Mod: {}, Class: {}", msg.getSender(), tileClass.getName());
+            TeckleLog.error("Tried to register a world network tile via IMC but received a class that does not extend WorldNetworkTile, it will be skipped. Mod: {}, Class: {}", msg.getSender(), tileClass.getName());
             return;
         }
 
@@ -52,12 +52,12 @@ public class NetworkTileRegistry {
     }
 
     public static void registerNetworkTile(ResourceLocation id, Class<? extends WorldNetworkTile> clazz) {
-        TeckleMod.LOG.info("Registering a network tile with the following key {}", id);
+        TeckleLog.info("Registering a network tile with the following key {}", id);
 
         try {
             clazz.getConstructor(World.class, BlockPos.class, EnumFacing.class);
         } catch (NoSuchMethodException e) {
-            TeckleMod.LOG.error("Tried to register a world network tile but received a class that does not have a constructor matching (World, BlockPos, EnumFacing), it will be skipped. Mod: {}, Class: {}", id.getResourceDomain(), clazz.getName());
+            TeckleLog.error("Tried to register a world network tile but received a class that does not have a constructor matching (World, BlockPos, EnumFacing), it will be skipped. Mod: {}, Class: {}", id.getResourceDomain(), clazz.getName());
         }
 
         REGISTRY.putObject(id, clazz);

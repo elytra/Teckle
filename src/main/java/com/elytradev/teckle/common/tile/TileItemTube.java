@@ -18,7 +18,7 @@ package com.elytradev.teckle.common.tile;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.networktiles.NetworkTileItemTube;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
@@ -118,7 +118,7 @@ public class TileItemTube extends TileNetworkMember {
                         .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), getNetworkTile().getCapabilityFace())).findAny();
                 if (any.isPresent()) {
                     networkID = networkDB.getRemappedNodes().remove(any.get());
-                    TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+                    TeckleLog.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
                 }
 
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);

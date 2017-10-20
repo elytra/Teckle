@@ -25,10 +25,11 @@ import com.elytradev.teckle.common.worldgen.NikoliteOreGenerator;
 import com.elytradev.teckle.common.worldnetwork.common.NetworkTileRegistry;
 import mcmultipart.api.multipart.IMultipartTile;
 import net.minecraft.launchwrapper.Launch;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLInterModComms;
@@ -36,22 +37,21 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-import java.io.File;
-
 import static com.elytradev.teckle.common.TeckleMod.*;
 
 @Mod(modid = MOD_ID, name = MOD_NAME, version = MOD_VER, guiFactory = GUI_FACTORY)
 public class TeckleMod {
     public static final String MOD_ID = "teckle";
     public static final String MOD_NAME = "Teckle";
-    public static final String MOD_VER = "%TVER%";
+    public static final String MOD_VER = "%VERSION%";
     public static final String GUI_FACTORY = "com.elytradev.teckle.client.gui.TeckleGUIFactory";
     public static final String RESOURCE_DOMAIN = "teckle:";
 
-    public static final TeckleObjects OBJECTS = new TeckleObjects();
+    public static TeckleObjects OBJECTS;
     public static boolean INDEV = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
     public static TeckleConfiguration CONFIG;
-    @Mod.Instance()
+
+    @Instance
     public static TeckleMod INSTANCE;
 
     @CapabilityInject(IProbeDataProvider.class)
@@ -60,26 +60,16 @@ public class TeckleMod {
     @CapabilityInject(IMultipartTile.class)
     public static Capability<?> MULTIPART_CAPABILITY;
 
-    public static TeckleLog LOG;
-
-    @SidedProxy(serverSide = "com.elytradev.teckle.common.proxy.CommonProxy", clientSide = "com.elytradev.teckle.client.proxy.ClientProxy")
+    @SidedProxy(serverSide = "com.elytradev.teckle.common.proxy.CommonProxy",
+            clientSide = "com.elytradev.teckle.client.proxy.ClientProxy")
     public static CommonProxy PROXY;
 
-    @Mod.EventHandler
+    @EventHandler
     public void onPreInit(FMLPreInitializationEvent e) {
         PROXY.registerHandlers();
-        LOG = new TeckleLog(e.getModLog());
+        CONFIG = TeckleConfiguration.createConfig(e);
+        OBJECTS = new TeckleObjects();
 
-        //Move config file if it exists.
-        File teckleFolder = new File(e.getModConfigurationDirectory(), "teckle");
-        teckleFolder.mkdirs();
-        if (e.getSuggestedConfigurationFile().exists()) {
-            e.getSuggestedConfigurationFile().renameTo(new File(teckleFolder, "teckle.cfg"));
-        }
-        CONFIG = new TeckleConfiguration(new File(teckleFolder, "teckle.cfg"));
-        CONFIG.loadConfig();
-
-        MinecraftForge.EVENT_BUS.register(OBJECTS);
         OBJECTS.preInit(e);
         CapabilityWorldNetworkTile.register();
         CapabilityWorldNetworkAssistantHolder.register();
@@ -89,19 +79,19 @@ public class TeckleMod {
         PROXY.registerRenderers(e.getModState());
     }
 
-    @Mod.EventHandler
+    @EventHandler
     public void onInit(FMLInitializationEvent e) {
         OBJECTS.init(e);
         PROXY.registerRenderers(e.getModState());
     }
 
-    @Mod.EventHandler
+    @EventHandler
     public void onPostInit(FMLPostInitializationEvent e) {
         OBJECTS.postInit(e);
         PROXY.registerRenderers(e.getModState());
     }
 
-    @Mod.EventHandler
+    @EventHandler
     public void onIMCsReceived(FMLInterModComms.IMCEvent e) {
         NetworkTileRegistry.handleIMCEvent(e);
     }

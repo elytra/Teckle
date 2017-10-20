@@ -16,7 +16,7 @@
 
 package com.elytradev.teckle.common.worldnetwork.common;
 
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Tuple;
@@ -47,11 +47,11 @@ public class DropActions {
             debugInfo += " network " + (bool ? "null" : traveller.network.toString());
             bool = bool || traveller.network.getWorld() == null;
             debugInfo += " world " + (bool ? "null" : traveller.network.getWorld().toString());
-            TeckleMod.LOG.error("****************Caught exception when dropping itemstack*******");
-            TeckleMod.LOG.error("Caught NPE in DropActions!, {}", traveller);
-            TeckleMod.LOG.error("Exception follows, {}", npe);
-            TeckleMod.LOG.error("Here's some useful debug info, {}", debugInfo);
-            TeckleMod.LOG.error("***************************************************************");
+            TeckleLog.error("****************Caught exception when dropping itemstack*******");
+            TeckleLog.error("Caught NPE in DropActions!, {}", traveller);
+            TeckleLog.error("Exception follows, {}", npe);
+            TeckleLog.error("Here's some useful debug info, {}", debugInfo);
+            TeckleLog.error("***************************************************************");
         }
     });
 

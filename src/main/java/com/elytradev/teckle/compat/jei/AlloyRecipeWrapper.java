@@ -1,6 +1,6 @@
 package com.elytradev.teckle.compat.jei;
 
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.crafting.AlloyRecipe;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.recipe.IRecipeWrapper;
@@ -27,7 +27,7 @@ public class AlloyRecipeWrapper implements IRecipeWrapper {
             ingredients.setInputLists(ItemStack.class, inputLists);
             ingredients.setOutput(ItemStack.class, recipeOutput);
         } catch (RuntimeException e) {
-            TeckleMod.LOG.error("Failed to get ingredients for recipe wrapper. {} {}", recipe, e);
+            TeckleLog.error("Failed to get ingredients for recipe wrapper. {} {}", recipe, e);
         }
     }
 

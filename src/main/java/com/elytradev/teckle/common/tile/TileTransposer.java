@@ -22,6 +22,7 @@ import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.block.BlockTransposer;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
@@ -123,11 +124,11 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             debugInfo += " node " + (nullCheck ? "null" : getNetworkTile().getNode().toString());
             nullCheck = nullCheck || getNetworkTile().getNode().getNetwork() == null;
             debugInfo += " network " + (nullCheck ? "null" : getNetworkTile().getNode().getNetwork().toString());
-            TeckleMod.LOG.error("****************Teckle Encountered An Error*******************");
-            TeckleMod.LOG.error("Caught NPE in tryPush!, {}", this);
-            TeckleMod.LOG.error("Here's some useful debug info, {}", debugInfo);
+            TeckleLog.error("****************Teckle Encountered An Error*******************");
+            TeckleLog.error("Caught NPE in tryPush!, {}", this);
+            TeckleLog.error("Here's some useful debug info, {}", debugInfo);
             e.printStackTrace();
-            TeckleMod.LOG.error("**************************************************************");
+            TeckleLog.error("**************************************************************");
         }
         cooldown = TeckleMod.CONFIG.transposerCooldown;
         return result;
@@ -333,7 +334,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                         .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), getNetworkTile().getCapabilityFace())).findAny();
                 if (any.isPresent()) {
                     networkID = networkDB.getRemappedNodes().remove(any.get());
-                    TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+                    TeckleLog.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
                 }
 
                 IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);

@@ -25,6 +25,7 @@ import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.client.gui.GuiSortingMachine;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockSortingMachine;
@@ -281,7 +282,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
                     getOutputTile().getSortMode().deserializeNBT(tag.getCompoundTag("sortmode"));
                     getOutputTile().getPullMode().deserializeNBT(tag.getCompoundTag("pullmode"));
                 } catch (Exception e) {
-                    TeckleMod.LOG.warn("Failed to deserialize pull mode and sort mode, they will be reset to default. Caught: {}", e);
+                    TeckleLog.warn("Failed to deserialize pull mode and sort mode, they will be reset to default. Caught: {}", e);
                     getOutputTile().setSortMode(new SortModeAnyStack());
                     getOutputTile().setPullMode(new PullModeSingleStep());
                 }
@@ -319,7 +320,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
                     .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), inputTile.getCapabilityFace())).findAny();
             if (any.isPresent()) {
                 networkID = networkDB.getRemappedNodes().remove(any.get());
-                TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+                TeckleLog.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
             }
 
             IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);

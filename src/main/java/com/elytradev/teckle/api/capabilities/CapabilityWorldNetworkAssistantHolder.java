@@ -17,6 +17,7 @@
 package com.elytradev.teckle.api.capabilities;
 
 import com.elytradev.teckle.api.capabilities.impl.WorldNetworkAssistantHolder;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleMod;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -57,7 +58,7 @@ public class CapabilityWorldNetworkAssistantHolder {
     @SuppressWarnings({"deprecation", "unused"}) // forge docs specify using this instead...
     @SubscribeEvent
     public static void attachWorldEvent(AttachCapabilitiesEvent<World> e) {
-        TeckleMod.LOG.info("Attached assistant holder to {}", e.getObject());
+        TeckleLog.info("Attached assistant holder to {}", e.getObject());
         e.addCapability(CAPABILITY_PROVIDER_NAME, new ICapabilityProvider() {
             public IWorldNetworkAssistantHolder assistantHolder;
 

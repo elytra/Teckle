@@ -17,7 +17,7 @@
 package com.elytradev.teckle.common.worldnetwork.common.pathing;
 
 import com.elytradev.concrete.network.Marshallable;
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.worldnetwork.common.DummyWorldNetworkEndpoint;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -110,7 +110,7 @@ public class WorldNetworkPath implements Marshallable {
         try {
             currentNode = path.get(index).realNode;
         } catch (Exception e) {
-            TeckleMod.LOG.warn("Failed to get next node in path on " + FMLCommonHandler.instance().getEffectiveSide());
+            TeckleLog.warn("Failed to get next node in path on " + FMLCommonHandler.instance().getEffectiveSide());
         }
         return currentNode != null ? currentNode : WorldNetworkNode.NONE;
     }

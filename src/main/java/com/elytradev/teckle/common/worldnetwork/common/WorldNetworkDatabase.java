@@ -17,6 +17,7 @@
 package com.elytradev.teckle.common.worldnetwork.common;
 
 import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
 import com.google.common.collect.Lists;
@@ -106,7 +107,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
         WorldNetworkDatabase networkDB = getNetworkDB(network.getWorld());
         networkDB.networks.put(network.getNetworkID(), network);
 
-        TeckleMod.LOG.debug("Registered new network, total is now {}", networkDB.networks.size());
+        TeckleLog.debug("Registered new network, total is now {}", networkDB.networks.size());
     }
 
     /**
@@ -169,7 +170,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
         }
 
         if (!networks.isEmpty())
-            TeckleMod.LOG.debug("Serialized networks in {}, total is {}", world.provider.getDimension(), networks.size());
+            TeckleLog.debug("Serialized networks in {}, total is {}", world.provider.getDimension(), networks.size());
         return databaseCompound;
     }
 
@@ -185,7 +186,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
             WorldNetwork network = new WorldNetwork(world, null, true);
             network.deserializeNBT(compound.getCompoundTag("n" + i));
         }
-        TeckleMod.LOG.debug("Deserialized networks in {}, total is {}", world.provider.getDimension(), networks.size());
+        TeckleLog.debug("Deserialized networks in {}, total is {}", world.provider.getDimension(), networks.size());
 
         if (!compound.hasKey("rnCount"))
             return;
@@ -239,10 +240,10 @@ public class WorldNetworkDatabase extends WorldSavedData {
                 || n.nodeStream().noneMatch(NodeContainer::hasNetworkTile);
         if (doSearch) {
             int sizePre = networks.size();
-            networks.values().stream().filter(isStray).forEach(n -> TeckleMod.LOG.debug("Removing {}", n));
+            networks.values().stream().filter(isStray).forEach(n -> TeckleLog.debug("Removing {}", n));
             networks.values().removeIf(isStray);
             if (sizePre != networks.size())
-                TeckleMod.LOG.debug("Cleaned networks, initial size: {}, post size: {}, diff: {}", sizePre,
+                TeckleLog.debug("Cleaned networks, initial size: {}, post size: {}, diff: {}", sizePre,
                         networks.size(), sizePre - networks.size());
         }
         if (update)

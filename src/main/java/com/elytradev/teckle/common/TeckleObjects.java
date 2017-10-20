@@ -45,6 +45,7 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -75,28 +76,27 @@ public class TeckleObjects {
     public static BlockNikoliteOre blockNikoliteOre;
     public static BlockCompacted blockCompacted;
     public static BlockFabricator blockFabricator;
-
     public static ItemPaintbrush itemPaintBrush;
     public static ItemBlade itemBlade;
     public static Item itemNikolite;
     public static Item itemSiliconBoule;
     public static ItemSiliconWafer itemSiliconWafer;
     public static ItemIngot itemIngot;
-
     public static CreativeTabs creativeTab = new CreativeTabs(MOD_ID) {
         @Override
         public ItemStack getTabIconItem() {
             return new ItemStack(itemPaintBrush, 1, new Random().nextInt(15));
         }
     };
-
     public static HashMap<String, Block> registeredBlocks;
     public static HashMap<String, Item> registeredItems;
-
     public static List<Object> skipItemMesh;
     public static String REGISTRY_PREFIX = MOD_ID.toLowerCase();
     private static List<Item> itemBlocksToRegister;
     private int recipeID = 0;
+    public TeckleObjects() {
+        MinecraftForge.EVENT_BUS.register(this);
+    }
 
     public void preInit(FMLPreInitializationEvent e) {
         NetworkTileRegistry.setup();
@@ -335,7 +335,7 @@ public class TeckleObjects {
             itemBlocksToRegister.add(itemBlock);
             TeckleObjects.registeredBlocks.put(id, block);
         } catch (Exception e) {
-            TeckleMod.LOG.error("Caught exception while registering " + block, e);
+            TeckleLog.error("Caught exception while registering " + block, e);
         }
     }
 

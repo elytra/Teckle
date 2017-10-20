@@ -16,7 +16,7 @@
 
 package com.elytradev.teckle;
 
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 
 import java.util.Random;
 
@@ -43,6 +43,6 @@ public class CorrelatedHint {
     static {
         int index = new Random().nextInt(nonsense.length);
 
-        TeckleMod.LOG.info("Why don't we just go " + nonsense[index]);
+        TeckleLog.info("Why don't we just go " + nonsense[index]);
     }
 }

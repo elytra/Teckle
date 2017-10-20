@@ -18,7 +18,7 @@ package com.elytradev.teckle.api.capabilities;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.worldnetwork.common.NetworkTileRegistry;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
@@ -59,7 +59,7 @@ public abstract class WorldNetworkTile implements INBTSerializable<NBTTagCompoun
         this.setWorld(world);
         this.setPos(pos);
         this.setCapabilityFace(face);
-        TeckleMod.LOG.debug("Created a network tile, {} {} {}", world, pos, false);
+        TeckleLog.debug("Created a network tile, {} {} {}", world, pos, false);
     }
 
     @Nullable
@@ -71,10 +71,10 @@ public abstract class WorldNetworkTile implements INBTSerializable<NBTTagCompoun
             Constructor<? extends WorldNetworkTile> constructor = tileClazz.getConstructor(World.class, BlockPos.class, EnumFacing.class);
             createdTile = constructor.newInstance(network.getWorld(), pos, face);
         } catch (NoSuchMethodException e) {
-            TeckleMod.LOG.error("Unable to find constructor with world parameter for {}, the network tile will not be created...", tileClazz.getName());
+            TeckleLog.error("Unable to find constructor with world parameter for {}, the network tile will not be created...", tileClazz.getName());
             return null;
         } catch (Exception e) {
-            TeckleMod.LOG.error("Failed to instantiate {}, the network tile will be skipped.", tileClazz.getName());
+            TeckleLog.error("Failed to instantiate {}, the network tile will be skipped.", tileClazz.getName());
             e.printStackTrace();
             return null;
         }

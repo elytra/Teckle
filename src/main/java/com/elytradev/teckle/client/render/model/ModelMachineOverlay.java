@@ -1,6 +1,6 @@
 package com.elytradev.teckle.client.render.model;
 
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -63,7 +63,7 @@ public class ModelMachineOverlay {
                         DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()));
             }
         } catch (Exception e) {
-            TeckleMod.LOG.error("Failed to load model {} for machine overlay, {}", modelLocation, e);
+            TeckleLog.error("Failed to load model {} for machine overlay, {}", modelLocation, e);
         }
     }
 

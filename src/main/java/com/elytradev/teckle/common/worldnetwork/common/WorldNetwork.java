@@ -18,7 +18,7 @@ package com.elytradev.teckle.common.worldnetwork.common;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.network.messages.TravellerDataMessage;
 import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
 import com.elytradev.teckle.common.worldnetwork.common.node.PositionData;
@@ -80,7 +80,7 @@ public class WorldNetwork implements IWorldNetwork {
         if (node.hasNetworkTile() && node.getNetworkTile().listenToNetworkChange() && !listenerNodePositions.contains(node.getPosition())) {
             listenerNodePositions.add(node.getPosition());
         }
-        TeckleMod.LOG.debug("Registered {} to network {}", node, this);
+        TeckleLog.debug("Registered {} to network {}", node, this);
     }
 
     /**
@@ -106,7 +106,7 @@ public class WorldNetwork implements IWorldNetwork {
 
     @Override
     public void unregisterNodeAtPosition(BlockPos nodePosition, EnumFacing face) {
-        TeckleMod.LOG.debug(this + "/Unregistering a node at, " + nodePosition);
+        TeckleLog.debug(this + "/Unregistering a node at, " + nodePosition);
         if (networkNodes.containsKey(nodePosition)) {
             PositionData positionData = networkNodes.get(nodePosition);
             List<NodeContainer> removedNodeContainers = positionData.getNodeContainers(this.getNetworkID()).stream()
@@ -134,7 +134,7 @@ public class WorldNetwork implements IWorldNetwork {
             networkNodes.values().removeIf(posData -> posData.getNodeContainers(getNetworkID()).isEmpty());
             checkListeners();
         }
-        TeckleMod.LOG.debug(this + "/Unregistered node at, " + nodePosition);
+        TeckleLog.debug(this + "/Unregistered node at, " + nodePosition);
     }
 
     /**
@@ -245,7 +245,7 @@ public class WorldNetwork implements IWorldNetwork {
     @Override
     public WorldNetwork merge(IWorldNetwork otherNetwork) {
         int expectedSize = networkNodes.size() + otherNetwork.getNodes().size();
-        TeckleMod.LOG.debug("Performing a merge of " + this + " and " + otherNetwork
+        TeckleLog.debug("Performing a merge of " + this + " and " + otherNetwork
                 + "\n Expecting a node count of " + expectedSize);
         WorldNetwork mergedNetwork = new WorldNetwork(this.world, null);
         this.transferNetworkData(mergedNetwork);
@@ -255,7 +255,7 @@ public class WorldNetwork implements IWorldNetwork {
                         .filter(nC -> nC.hasNetworkTile() && nC.getNetworkTile().listenToNetworkChange())).forEach(nodeContainer ->
                 mergedNetwork.nodeStream().filter(streamedContainer -> streamedContainer != nodeContainer)
                         .forEach(streamedContainer -> nodeContainer.getNetworkTile().onNodeAdded(streamedContainer.getNode())));
-        TeckleMod.LOG.debug("Completed merge, resulted in " + mergedNetwork);
+        TeckleLog.debug("Completed merge, resulted in " + mergedNetwork);
         return mergedNetwork;
     }
 
@@ -274,7 +274,7 @@ public class WorldNetwork implements IWorldNetwork {
             any.ifPresent(blockPosEnumFacingPair -> networkDB.getRemappedNodes().remove(blockPosEnumFacingPair));
             if (!node.isLoaded()) {
                 networkDB.getRemappedNodes().put(new MutablePair<>(node.getPosition(), node.getCapabilityFace()), to.getNetworkID());
-                TeckleMod.LOG.debug("Marking node as remapped " + node.getPosition());
+                TeckleLog.debug("Marking node as remapped " + node.getPosition());
             }
 
             this.unregisterNode(node);
@@ -290,7 +290,7 @@ public class WorldNetwork implements IWorldNetwork {
     public void validateNetwork() {
         // Perform flood fill to validate all nodes are connected. Choose an arbitrary node to start from.
 
-        TeckleMod.LOG.debug("Performing a network validation.");
+        TeckleLog.debug("Performing a network validation.");
         List<List<NodeContainer>> networks = new ArrayList<>();
         HashMap<BlockPos, PositionData> uncheckedPositions = new HashMap<>();
         // Clean position data of any old stuff, just makes sure we don't try and iterate forever.
@@ -314,7 +314,7 @@ public class WorldNetwork implements IWorldNetwork {
             }
             travellersToUnregister.clear();
 
-            TeckleMod.LOG.debug("Splitting a network...");
+            TeckleLog.debug("Splitting a network...");
             //Start from 1, leave 0 as this network.
             for (int networkNum = 1; networkNum < networks.size(); networkNum++) {
                 List<NodeContainer> newNetworkData = networks.get(networkNum);
@@ -340,9 +340,9 @@ public class WorldNetwork implements IWorldNetwork {
             }
         }
 
-        TeckleMod.LOG.debug("Finished validation, resulted in " + networks.size() + " networks.\n Network sizes follow.");
+        TeckleLog.debug("Finished validation, resulted in " + networks.size() + " networks.\n Network sizes follow.");
         for (List n : networks) {
-            TeckleMod.LOG.debug(n.size());
+            TeckleLog.debug(n.size());
         }
     }
 
@@ -360,7 +360,7 @@ public class WorldNetwork implements IWorldNetwork {
         iteratedPositions.add(startAt);
         while (!posStack.isEmpty()) {
             BlockPos pos = posStack.remove(0);
-            TeckleMod.LOG.debug("Added " + pos + " to out.");
+            TeckleLog.debug("Added " + pos + " to out.");
             out.addAll(remainingPositions.get(pos).getNodeContainers(getNetworkID()));
 
             for (EnumFacing direction : EnumFacing.VALUES) {
@@ -445,7 +445,7 @@ public class WorldNetwork implements IWorldNetwork {
                 serialized++;
             }
         }
-        TeckleMod.LOG.debug("Serialized {} nodes. Expected {}", serialized, nodes.size());
+        TeckleLog.debug("Serialized {} nodes. Expected {}", serialized, nodes.size());
 
         // Serialize travellers.
         int tCount = 0;
@@ -486,7 +486,7 @@ public class WorldNetwork implements IWorldNetwork {
                 deserialized++;
             }
         }
-        TeckleMod.LOG.debug("Deserialized {} nodes, expected: {}", deserialized, expected);
+        TeckleLog.debug("Deserialized {} nodes, expected: {}", deserialized, expected);
 
         // very quality code
         loadTravellers = () -> {
@@ -505,11 +505,11 @@ public class WorldNetwork implements IWorldNetwork {
                     registerTraveller(traveller, true);
                 } catch (Exception e) {
                     failures++;
-                    TeckleMod.LOG.error("Failed to load traveller {}", traveller.data);
+                    TeckleLog.error("Failed to load traveller {}", traveller.data);
                     e.printStackTrace();
                 }
             }
-            TeckleMod.LOG.debug("Failed to load {} out of {} travellers.", failures, deserializedTravellers.size());
+            TeckleLog.debug("Failed to load {} out of {} travellers.", failures, deserializedTravellers.size());
         };
     }
 }

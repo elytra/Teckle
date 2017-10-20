@@ -20,7 +20,7 @@ import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.concrete.network.annotation.field.MarshalledAs;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
@@ -58,7 +58,7 @@ public class SortingMachinePullModeChangeMessage extends Message {
             try {
                 sortingMachine.setPullMode(PullMode.PULL_MODES.get(pullModeID).newInstance());
             } catch (Exception e) {
-                TeckleMod.LOG.error("Failed to instantiate pull mode from packet.");
+                TeckleLog.error("Failed to instantiate pull mode from packet.");
             }
             sortingMachine.markDirty();
         }

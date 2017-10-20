@@ -20,7 +20,7 @@ import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.helper.CapabilityHelper;
 import com.elytradev.teckle.common.worldnetwork.common.DropActions;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetwork;
@@ -246,7 +246,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
                 WorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getTileNetworked(tile, facing);
                 if (thisNetworkTile.getNode() != null && !(i > -1 && thisNetworkTile.getCapabilityFace() == null)) {
                     IWorldNetwork network = thisNetworkTile.getNode().getNetwork();
-                    TeckleMod.LOG.debug("Found networktile on {} it is being removed.", network);
+                    TeckleLog.debug("Found networktile on {} it is being removed.", network);
                     thisNetworkTile.getNode().getNetwork().unregisterNodeAtPosition(pos, facing);
                     thisNetworkTile.getNode().getNetwork().validateNetwork();
                     thisNetworkTile.setNode(null);

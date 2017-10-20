@@ -1,6 +1,6 @@
 package com.elytradev.teckle.common.tile.inv.pool;
 
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -126,7 +126,7 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
     }
 
     public AdvancedStackHandlerEntry put(UUID key, AdvancedStackHandlerEntry value) {
-        TeckleMod.LOG.debug("Added handler to pool {}", value);
+        TeckleLog.debug("Added handler to pool {}", value);
         return registeredHandlers.put(key, value);
     }
 
@@ -173,7 +173,7 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
             AdvancedStackHandlerEntry advancedStackHandlerEntry = AdvancedStackHandlerEntry.create(entryCompound);
             registeredHandlers.put(advancedStackHandlerEntry.getId(), advancedStackHandlerEntry);
         }
-        TeckleMod.LOG.debug("Deserialized {} stack handlers.", tag.getInteger("tags"));
+        TeckleLog.debug("Deserialized {} stack handlers.", tag.getInteger("tags"));
     }
 
     @Override
@@ -198,7 +198,7 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
             tag.setTag("e" + i, entries.get(i));
         }
         if (entries.size() != 0)
-            TeckleMod.LOG.debug("Serialized {} stack handlers in {}, skipped {}", entries.size(), this.dimension, skipped);
+            TeckleLog.debug("Serialized {} stack handlers in {}, skipped {}", entries.size(), this.dimension, skipped);
         return tag;
     }
 }

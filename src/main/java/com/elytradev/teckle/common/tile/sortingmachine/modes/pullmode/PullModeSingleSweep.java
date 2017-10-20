@@ -16,7 +16,7 @@
 
 package com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode;
 
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModeFullMatchSelector;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModePartialMatchSelector;
@@ -50,7 +50,7 @@ public class PullModeSingleSweep extends PullMode {
             try {
                 sortingMachine.setPullMode(PullMode.SINGLE_STEP.newInstance());
             } catch (Exception e) {
-                TeckleMod.LOG.error("Failed to change pull mode due to incompatibility with sort mode.", e);
+                TeckleLog.error("Failed to change pull mode due to incompatibility with sort mode.", e);
             }
             return;
         }

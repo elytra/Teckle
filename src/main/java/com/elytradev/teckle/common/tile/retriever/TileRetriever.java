@@ -3,7 +3,7 @@ package com.elytradev.teckle.common.tile.retriever;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockRetriever;
 import com.elytradev.teckle.common.tile.TileLitNetworkMember;
@@ -171,7 +171,7 @@ public class TileRetriever extends TileLitNetworkMember {
                     .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), inputTile.getCapabilityFace())).findAny();
             if (any.isPresent()) {
                 networkID = networkDB.getRemappedNodes().remove(any.get());
-                TeckleMod.LOG.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+                TeckleLog.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
             }
 
             IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);

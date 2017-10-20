@@ -19,7 +19,7 @@ package com.elytradev.teckle.common.worldnetwork.common.node;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -66,10 +66,10 @@ public class WorldNetworkNode implements INBTSerializable<NBTTagCompound> {
             Constructor<? extends WorldNetworkNode> constructor = tileClazz.getConstructor(IWorldNetwork.class, BlockPos.class, EnumFacing.class);
             createdTile = constructor.newInstance(network, pos, face);
         } catch (NoSuchMethodException e) {
-            TeckleMod.LOG.error("Unable to find constructor matching (IWorldNetwork, BlockPos, EnumFacing) {}, the network tile will not be created...", tileClazz.getName());
+            TeckleLog.error("Unable to find constructor matching (IWorldNetwork, BlockPos, EnumFacing) {}, the network tile will not be created...", tileClazz.getName());
             return null;
         } catch (Exception e) {
-            TeckleMod.LOG.error("Failed to instantiate {}, the network node will be skipped.", tileClazz.getName());
+            TeckleLog.error("Failed to instantiate {}, the network node will be skipped.", tileClazz.getName());
             e.printStackTrace();
             return null;
         }

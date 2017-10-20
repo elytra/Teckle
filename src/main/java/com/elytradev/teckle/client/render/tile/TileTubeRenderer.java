@@ -19,7 +19,7 @@ package com.elytradev.teckle.client.render.tile;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import net.minecraft.client.Minecraft;
@@ -149,7 +149,7 @@ public class TileTubeRenderer extends TileEntitySpecialRenderer<TileItemTube> {
             IModel unbakedModel = ModelLoaderRegistry.getModel(new ResourceLocation("teckle", "block/tube.item_colour"));
             itemColourModel = unbakedModel.bake(TRSRTransformation.identity(), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter());
         } catch (Exception e) {
-            TeckleMod.LOG.error("Failed to load item outline model! {}", e);
+            TeckleLog.error("Failed to load item outline model! {}", e);
         }
 
         return itemColourModel;

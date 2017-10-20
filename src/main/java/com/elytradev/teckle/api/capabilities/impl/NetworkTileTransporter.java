@@ -18,7 +18,7 @@ package com.elytradev.teckle.api.capabilities.impl;
 
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -76,7 +76,7 @@ public abstract class NetworkTileTransporter extends WorldNetworkTile {
         try {
             return nodeClazz.getConstructor(IWorldNetwork.class, BlockPos.class, EnumFacing.class).newInstance(network, pos, getCapabilityFace());
         } catch (Exception e) {
-            TeckleMod.LOG.error("Failed to instantiate a WorldNetworkNode for class {}", nodeClazz, e);
+            TeckleLog.error("Failed to instantiate a WorldNetworkNode for class {}", nodeClazz, e);
         }
 
         return null;

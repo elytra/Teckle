@@ -1,6 +1,6 @@
 package com.elytradev.teckle.client.render.model;
 
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelRotation;
@@ -52,7 +52,7 @@ public class TubeModel implements IModel {
                 legModelsNode.put(facing, buildLegModel(rotations, unbakedLegNodeModel, unbakedLegNodeModelInside, facing));
             }
         } catch (Exception e) {
-            TeckleMod.LOG.error("Failed to load tube model data, things will work but won't look very nice.", e);
+            TeckleLog.error("Failed to load tube model data, things will work but won't look very nice.", e);
         }
     }
 

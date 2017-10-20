@@ -16,6 +16,7 @@
 
 package com.elytradev.teckle.common.crafting;
 
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.item.ItemIngot;
@@ -119,7 +120,7 @@ public class AlloyRecipes {
                 try {
                     data = new Gson().fromJson(Resources.toString(file.toURI().toURL(), Charsets.UTF_8), RecipeData.class);
                 } catch (Exception e) {
-                    TeckleMod.LOG.error("Failed to load alloy recipe. File {}", file.toString());
+                    TeckleLog.error("Failed to load alloy recipe. File {}", file.toString());
                 }
                 if (data != null) {
                     List<Tuple<Object, Integer>> inputs = Lists.newArrayList();
@@ -140,7 +141,7 @@ public class AlloyRecipes {
                             // Oredict name.
                             inputs.add(new Tuple<>(input, inputCount));
                         } else {
-                            TeckleMod.LOG.error("Failed to load alloy recipe, invalid input data." +
+                            TeckleLog.error("Failed to load alloy recipe, invalid input data." +
                                     " Name:{}, Meta:{}, Count:{}", input, inputMeta, inputCount);
                             failed = true;
                             break;
@@ -161,7 +162,7 @@ public class AlloyRecipes {
                         Item item = Item.REGISTRY.getObject(new ResourceLocation(output));
                         outputStack = new ItemStack(item, outputCount, outputMeta);
                     } else {
-                        TeckleMod.LOG.error("Failed to load alloy recipe, invalid output data." +
+                        TeckleLog.error("Failed to load alloy recipe, invalid output data." +
                                 " Name:{}, Meta:{}, Count:{}", output, outputMeta, outputCount);
                         continue;
                     }

@@ -16,7 +16,7 @@
 
 package com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode;
 
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.tile.sortingmachine.NetworkTileSortingMachineBase;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
@@ -56,7 +56,7 @@ public abstract class SortMode implements INBTSerializable {
                 sortMode.newInstance();
             }
         } catch (Exception e) {
-            TeckleMod.LOG.error("Failed to instantiate sort modes.", e);
+            TeckleLog.error("Failed to instantiate sort modes.", e);
         }
     }
 

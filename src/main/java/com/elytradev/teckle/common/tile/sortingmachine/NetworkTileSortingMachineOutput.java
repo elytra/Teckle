@@ -1,7 +1,7 @@
 package com.elytradev.teckle.common.tile.sortingmachine;
 
 import com.elytradev.teckle.api.IWorldNetwork;
-import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
@@ -170,7 +170,7 @@ public class NetworkTileSortingMachineOutput extends NetworkTileSortingMachineBa
             this.sortMode.deserializeNBT(tag.getCompoundTag("sortmode"));
             this.pullMode.deserializeNBT(tag.getCompoundTag("pullmode"));
         } catch (Exception e) {
-            TeckleMod.LOG.warn("Failed to deserialize pull mode and sort mode, they will be reset to default. Caught: {}", e);
+            TeckleLog.warn("Failed to deserialize pull mode and sort mode, they will be reset to default. Caught: {}", e);
             this.sortMode = new SortModeAnyStack();
             this.pullMode = new PullModeSingleStep();
         }
