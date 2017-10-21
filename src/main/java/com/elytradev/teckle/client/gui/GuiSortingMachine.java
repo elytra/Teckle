@@ -16,6 +16,8 @@
 
 package com.elytradev.teckle.client.gui;
 
+import com.elytradev.teckle.client.gui.base.GuiTeckle;
+import com.elytradev.teckle.client.gui.base.GuiTeckleButton;
 import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
 import com.elytradev.teckle.common.network.messages.SortingMachineColourChangeMessage;
@@ -26,11 +28,8 @@ import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModeType;
-import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.passive.EntitySheep;
@@ -39,16 +38,12 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 
 import javax.vecmath.Point2i;
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
-public class GuiSortingMachine extends GuiContainer {
+public class GuiSortingMachine extends GuiTeckle {
 
-    public static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation("teckle", "textures/gui/sortingmachine.png");
     public EntityPlayer player;
     public TileSortingMachine sortingMachine;
-    protected int lastClick = -1;
 
     public GuiSortingMachine(TileSortingMachine tileSortingMachine, EntityPlayer player) {
         super(new ContainerSortingMachine(tileSortingMachine, player));
@@ -60,46 +55,21 @@ public class GuiSortingMachine extends GuiContainer {
     }
 
     @Override
-    public void initGui() {
-        super.initGui();
-
-        buttonList.clear();
+    public void registerButtons() {
         for (int i = 0; i < 8; i++) {
             int xS = 10 + ((i & 3) * 40);
             int yS = 61 + (i > 3 ? 62 : 0);
 
-            buttonList.add(new GuiColourPicker(i, i, guiLeft + xS, guiTop + yS));
+            addButton(new GuiColourPicker(i, i, guiLeft + xS, guiTop + yS));
         }
 
-        buttonList.add(new GuiSortTypeSelector(8, guiLeft + 10, guiTop + 134));
-        buttonList.add(new GuiSortModeSelector(9, guiLeft + 40, guiTop + 134));
-        buttonList.add(new GuiDefaultRouteSelector(10, guiLeft + 64, guiTop + 137));
+        addButton(new GuiSortTypeSelector(8, guiLeft + 10, guiTop + 134));
+        addButton(new GuiSortModeSelector(9, guiLeft + 40, guiTop + 134));
+        addButton(new GuiDefaultRouteSelector(10, guiLeft + 64, guiTop + 137));
 
         if (sortingMachine.getSource() != null) {
-            buttonList.add(new GuiPullModeSelector(11, guiLeft + 150, guiTop + 130));
+            addButton(new GuiPullModeSelector(11, guiLeft + 150, guiTop + 130));
         }
-    }
-
-    @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        this.drawDefaultBackground();
-        super.drawScreen(mouseX, mouseY, partialTicks);
-        this.renderHoveredToolTip(mouseX, mouseY);
-    }
-
-    /**
-     * Draws the background layer of this container (behind the items).
-     *
-     * @param partialTicks
-     * @param mouseX
-     * @param mouseY
-     */
-    @Override
-    protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-        GlStateManager.color(1, 1, 1);
-        Minecraft.getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
-        drawTexturedModalRect((width - xSize) / 2, (height - ySize) / 2, 0, 0, xSize, ySize);
-        GlStateManager.enableLighting();
     }
 
     /**
@@ -122,55 +92,52 @@ public class GuiSortingMachine extends GuiContainer {
                 posY += 60;
             }
 
-            Minecraft.getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
+            Minecraft.getMinecraft().getTextureManager().bindTexture(getBackgroundTexture());
             this.drawTexturedModalRect(posX, posY, textureX, textureY, 40, 57);
         }
 
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(-guiLeft, -guiTop, 0);
-        for (GuiButton aButtonList : buttonList) {
-            if (aButtonList instanceof IHoverable) {
-                ((IHoverable) aButtonList).drawHover(mc, mouseX, mouseY);
-            }
-        }
-        GlStateManager.popMatrix();
+        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        this.lastClick = mouseButton;
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+    public ResourceLocation getBackgroundTexture() {
+        return new ResourceLocation("teckle", "textures/gui/sortingmachine.png");
+    }
 
-        //copied from guiscreen, used to detect right clicks on templates
-        if (mouseButton == 1) {
-            List<GuiButton> rightClickButtons = Lists.newArrayListWithExpectedSize(9);
-            for (int i = 0; i < 8; i++) {
-                rightClickButtons.add(buttonList.get(i));
-            }
-            if (buttonList.size() >= 11)
-                rightClickButtons.add(buttonList.get(10));
-            for (GuiButton guibutton : rightClickButtons) {
-                if (guibutton.mousePressed(this.mc, mouseX, mouseY)) {
-                    net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Pre event = new net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Pre(this, guibutton, this.buttonList);
-                    if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event))
-                        break;
-                    guibutton = event.getButton();
-                    guibutton.playPressSound(this.mc.getSoundHandler());
-                    this.actionPerformed(guibutton);
-                    if (this.equals(this.mc.currentScreen))
-                        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Post(this, event.getButton(), this.buttonList));
+    public class GuiColourPicker extends GuiTeckleButton {
+
+        public int colourIndex = 0;
+
+        public GuiColourPicker(int buttonId, int colourIndex, int x, int y) {
+            super(buttonId, x, y, 36, 5, "");
+            this.colourIndex = colourIndex;
+            this.enableSecondaryClick();
+        }
+
+        @Override
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+            if (this.visible) {
+                mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
+                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                int yOffset = 5;
+                int xOffset = 176;
+                this.drawTexturedModalRect(this.x, this.y, xOffset, yOffset, this.width, this.height);
+
+                if (GuiSortingMachine.this.sortingMachine.colours[colourIndex] != null) {
+                    float[] sheepColour = EntitySheep.getDyeRgb(GuiSortingMachine.this.sortingMachine.colours[colourIndex]);
+                    GlStateManager.pushMatrix();
+                    GlStateManager.color(sheepColour[0], sheepColour[1], sheepColour[2]);
+                    this.drawTexturedModalRect(this.x + 1, this.y + 1, xOffset + 1, yOffset - 4, this.width - 2, this.height - 2);
+                    GlStateManager.popMatrix();
                 }
             }
         }
-    }
 
-    @Override
-    protected void actionPerformed(GuiButton button) {
-        if (button instanceof GuiColourPicker) {
+        @Override
+        public void performAction(int mouseX, int mouseY, int mouseButton) {
             // Adjust the colour of a compartment.
-            GuiColourPicker colourPicker = (GuiColourPicker) button;
-            EnumDyeColor colour = sortingMachine.colours[colourPicker.colourIndex];
-            if (lastClick != 1) {
+            EnumDyeColor colour = sortingMachine.colours[this.colourIndex];
+            if (mouseButton != 1) {
                 if (colour == null) {
                     colour = EnumDyeColor.byMetadata(0);
                 } else {
@@ -192,129 +159,16 @@ public class GuiSortingMachine extends GuiContainer {
                 }
             }
 
-            sortingMachine.colours[colourPicker.colourIndex] = colour;
-            new SortingMachineColourChangeMessage(sortingMachine.getPos(), colourPicker.colourIndex, colour).sendToServer();
-        } else if (button instanceof GuiDefaultRouteSelector) {
-            // Adjust the default route.
-            TileSortingMachine.DefaultRoute defaultRoute = sortingMachine.defaultRoute;
-            int selectedMode = defaultRoute.getMetadata();
-
-            if (lastClick != 1) {
-                if (selectedMode < TileSortingMachine.DefaultRoute.values().length - 1) {
-                    selectedMode++;
-                } else if (selectedMode == TileSortingMachine.DefaultRoute.values().length - 1) {
-                    selectedMode = 0;
-                }
-            } else {
-                if (selectedMode > 0) {
-                    selectedMode--;
-                } else if (selectedMode == 0) {
-                    selectedMode = TileSortingMachine.DefaultRoute.values().length - 1;
-                }
-            }
-
-            sortingMachine.defaultRoute = TileSortingMachine.DefaultRoute.byMetadata(selectedMode);
-            new SortingMachineDefaultRouteChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();
-        } else if (button instanceof GuiSortTypeSelector) {
-            // Change the sort type, and the mode to match.
-            try {
-                if (sortingMachine.getSortMode().type == SortModeType.COMPARTMENT) {
-                    sortingMachine.setSortMode(SortModeType.SLOT.getDefaultMode().newInstance());
-                } else {
-                    sortingMachine.setSortMode(SortModeType.COMPARTMENT.getDefaultMode().newInstance());
-                }
-                new SortingMachineSortModeChangeMessage(sortingMachine.getSortMode().getID(), sortingMachine.getPos()).sendToServer();
-            } catch (Exception e) {
-                TeckleLog.error("Failed to change mode type in sortingmachine gui, ", e);
-            }
-        } else if (button instanceof GuiSortModeSelector) {
-            // Actually change the sort mode.
-            int selectedMode = sortingMachine.getSortMode().getID();
-            SortModeType sortModeType = sortingMachine.getSortMode().type;
-
-            if (selectedMode < sortModeType.maxID()) {
-                selectedMode++;
-            } else if (selectedMode == sortModeType.maxID()) {
-                selectedMode = sortModeType.minID();
-            }
-
-            try {
-                sortingMachine.setSortMode(SortMode.SORT_MODES.get(selectedMode).newInstance());
-            } catch (Exception e) {
-                TeckleLog.error("Failed to change sort mode in sortingmachine gui, ", e);
-            }
-
-            new SortingMachineSortModeChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();
-        } else if (button instanceof GuiPullModeSelector) {
-            // Change the pull mode.
-            if (sortingMachine.getSource() == null) {
-                buttonList.remove(button);
-                return;
-            }
-            int selectedMode = sortingMachine.getPullMode().getID();
-
-            if (selectedMode < PullMode.PULL_MODES.size() - 1) {
-                selectedMode++;
-            } else if (selectedMode == PullMode.PULL_MODES.size() - 1) {
-                selectedMode = 0;
-            }
-
-            if (PullMode.PULL_MODES.get(selectedMode) == PullMode.SINGLE_SWEEP) {
-                // Prevent us from using an invalid pull mode if possible.
-                if (sortingMachine.getSortMode().getClass() == SortMode.SLOT_ANY_STACK
-                        || sortingMachine.getSortMode().getClass() == SortMode.SLOT_FULL_STACK
-                        || sortingMachine.getSortMode().getClass() == SortMode.COMPARTMENT_FULL_MATCH) {
-                    if (selectedMode < PullMode.PULL_MODES.size() - 1) {
-                        selectedMode++;
-                    } else if (selectedMode == PullMode.PULL_MODES.size() - 1) {
-                        selectedMode = 0;
-                    }
-                }
-            }
-
-            try {
-                sortingMachine.setPullMode(PullMode.PULL_MODES.get(selectedMode).newInstance());
-            } catch (Exception e) {
-                TeckleLog.error("Failed to change pull mode in sortingmachine gui, ", e);
-            }
-
-            new SortingMachinePullModeChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();
+            sortingMachine.colours[this.colourIndex] = colour;
+            new SortingMachineColourChangeMessage(sortingMachine.getPos(), this.colourIndex, colour).sendToServer();
         }
     }
 
-    public class GuiColourPicker extends GuiButton {
-
-        public int colourIndex = 0;
-
-        public GuiColourPicker(int buttonId, int colourIndex, int x, int y) {
-            super(buttonId, x, y, 36, 5, "");
-            this.colourIndex = colourIndex;
-        }
-
-        @Override
-        public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
-            if (this.visible) {
-                mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/sortingmachine.png"));
-                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-                int yOffset = 5;
-                int xOffset = 176;
-                this.drawTexturedModalRect(this.x, this.y, xOffset, yOffset, this.width, this.height);
-
-                if (GuiSortingMachine.this.sortingMachine.colours[colourIndex] != null) {
-                    float[] sheepColour = EntitySheep.getDyeRgb(GuiSortingMachine.this.sortingMachine.colours[colourIndex]);
-                    GlStateManager.pushMatrix();
-                    GlStateManager.color(sheepColour[0], sheepColour[1], sheepColour[2]);
-                    this.drawTexturedModalRect(this.x + 1, this.y + 1, xOffset + 1, yOffset - 4, this.width - 2, this.height - 2);
-                    GlStateManager.popMatrix();
-                }
-            }
-        }
-    }
-
-    public class GuiDefaultRouteSelector extends GuiButton implements IHoverable {
+    public class GuiDefaultRouteSelector extends GuiTeckleButton {
 
         public GuiDefaultRouteSelector(int buttonId, int x, int y) {
             super(buttonId, x, y, 9, 9, "");
+            this.enableSecondaryClick();
         }
 
         @Override
@@ -356,9 +210,33 @@ public class GuiSortingMachine extends GuiContainer {
                 }
             }
         }
+
+        @Override
+        public void performAction(int mouseX, int mouseY, int mouseButton) {
+            // Adjust the default route.
+            TileSortingMachine.DefaultRoute defaultRoute = sortingMachine.defaultRoute;
+            int selectedMode = defaultRoute.getMetadata();
+
+            if (mouseButton != 1) {
+                if (selectedMode < TileSortingMachine.DefaultRoute.values().length - 1) {
+                    selectedMode++;
+                } else if (selectedMode == TileSortingMachine.DefaultRoute.values().length - 1) {
+                    selectedMode = 0;
+                }
+            } else {
+                if (selectedMode > 0) {
+                    selectedMode--;
+                } else if (selectedMode == 0) {
+                    selectedMode = TileSortingMachine.DefaultRoute.values().length - 1;
+                }
+            }
+
+            sortingMachine.defaultRoute = TileSortingMachine.DefaultRoute.byMetadata(selectedMode);
+            new SortingMachineDefaultRouteChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();
+        }
     }
 
-    public class GuiSortTypeSelector extends GuiButton implements IHoverable {
+    public class GuiSortTypeSelector extends GuiTeckleButton {
 
         public GuiSortTypeSelector(int buttonId, int x, int y) {
             super(buttonId, x, y, 16, 16, "");
@@ -397,9 +275,24 @@ public class GuiSortingMachine extends GuiContainer {
                 }
             }
         }
+
+        @Override
+        public void performAction(int mouseX, int mouseY, int mouseButton) {
+            // Change the sort type, and the mode to match.
+            try {
+                if (sortingMachine.getSortMode().type == SortModeType.COMPARTMENT) {
+                    sortingMachine.setSortMode(SortModeType.SLOT.getDefaultMode().newInstance());
+                } else {
+                    sortingMachine.setSortMode(SortModeType.COMPARTMENT.getDefaultMode().newInstance());
+                }
+                new SortingMachineSortModeChangeMessage(sortingMachine.getSortMode().getID(), sortingMachine.getPos()).sendToServer();
+            } catch (Exception e) {
+                TeckleLog.error("Failed to change mode type in sortingmachine gui, ", e);
+            }
+        }
     }
 
-    public class GuiSortModeSelector extends GuiButton implements IHoverable {
+    public class GuiSortModeSelector extends GuiTeckleButton {
 
         public GuiSortModeSelector(int buttonId, int x, int y) {
             super(buttonId, x, y, 16, 16, "");
@@ -445,9 +338,30 @@ public class GuiSortingMachine extends GuiContainer {
                 }
             }
         }
+
+        @Override
+        public void performAction(int mouseX, int mouseY, int mouseButton) {
+            // Actually change the sort mode.
+            int selectedMode = sortingMachine.getSortMode().getID();
+            SortModeType sortModeType = sortingMachine.getSortMode().type;
+
+            if (selectedMode < sortModeType.maxID()) {
+                selectedMode++;
+            } else if (selectedMode == sortModeType.maxID()) {
+                selectedMode = sortModeType.minID();
+            }
+
+            try {
+                sortingMachine.setSortMode(SortMode.SORT_MODES.get(selectedMode).newInstance());
+            } catch (Exception e) {
+                TeckleLog.error("Failed to change sort mode in sortingmachine gui, ", e);
+            }
+
+            new SortingMachineSortModeChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();
+        }
     }
 
-    public class GuiPullModeSelector extends GuiButton implements IHoverable {
+    public class GuiPullModeSelector extends GuiTeckleButton {
 
         public GuiPullModeSelector(int buttonId, int x, int y) {
             super(buttonId, x, y, 16, 16, "");
@@ -486,6 +400,43 @@ public class GuiSortingMachine extends GuiContainer {
                             I18n.format(sortingMachine.getPullMode().getUnlocalizedName() + ".tooltip")), mouseX, mouseY);
                 }
             }
+        }
+
+        @Override
+        public void performAction(int mouseX, int mouseY, int mouseButton) {
+            // Change the pull mode.
+            if (sortingMachine.getSource() == null) {
+                buttonList.remove(this);
+                return;
+            }
+            int selectedMode = sortingMachine.getPullMode().getID();
+
+            if (selectedMode < PullMode.PULL_MODES.size() - 1) {
+                selectedMode++;
+            } else if (selectedMode == PullMode.PULL_MODES.size() - 1) {
+                selectedMode = 0;
+            }
+
+            if (PullMode.PULL_MODES.get(selectedMode) == PullMode.SINGLE_SWEEP) {
+                // Prevent us from using an invalid pull mode if possible.
+                if (sortingMachine.getSortMode().getClass() == SortMode.SLOT_ANY_STACK
+                        || sortingMachine.getSortMode().getClass() == SortMode.SLOT_FULL_STACK
+                        || sortingMachine.getSortMode().getClass() == SortMode.COMPARTMENT_FULL_MATCH) {
+                    if (selectedMode < PullMode.PULL_MODES.size() - 1) {
+                        selectedMode++;
+                    } else if (selectedMode == PullMode.PULL_MODES.size() - 1) {
+                        selectedMode = 0;
+                    }
+                }
+            }
+
+            try {
+                sortingMachine.setPullMode(PullMode.PULL_MODES.get(selectedMode).newInstance());
+            } catch (Exception e) {
+                TeckleLog.error("Failed to change pull mode in sortingmachine gui, ", e);
+            }
+
+            new SortingMachinePullModeChangeMessage(selectedMode, sortingMachine.getPos()).sendToServer();
         }
     }
 }

@@ -16,24 +16,20 @@
 
 package com.elytradev.teckle.client.gui;
 
+import com.elytradev.teckle.client.gui.base.GuiTeckle;
+import com.elytradev.teckle.client.gui.base.GuiTeckleButton;
 import com.elytradev.teckle.common.container.ContainerFilter;
 import com.elytradev.teckle.common.network.messages.FilterColourChangeMessage;
 import com.elytradev.teckle.common.tile.TileFilter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 
-/**
- * Created by darkevilmac on 4/12/2017.
- */
-public class GuiFilter extends GuiContainer {
+public class GuiFilter extends GuiTeckle {
 
-    public static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation("teckle", "textures/gui/filter.png");
     public final TileFilter filter;
     private GuiColourPicker colourPicker;
 
@@ -43,50 +39,21 @@ public class GuiFilter extends GuiContainer {
     }
 
     @Override
-    public void initGui() {
-        super.initGui();
-
-        buttonList.clear();
+    public void registerButtons() {
         colourPicker = new GuiColourPicker(1, guiLeft + 115, guiTop + 61);
-        buttonList.add(colourPicker);
+        addButton(colourPicker);
     }
 
     @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        this.drawDefaultBackground();
-        super.drawScreen(mouseX, mouseY, partialTicks);
-        this.renderHoveredToolTip(mouseX, mouseY);
+    public ResourceLocation getBackgroundTexture() {
+        return new ResourceLocation("teckle", "textures/gui/filter.png");
     }
 
-    @Override
-    protected void drawGuiContainerBackgroundLayer(float var1, int var2, int var3) {
-        GlStateManager.color(1, 1, 1);
-        Minecraft.getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
-        drawTexturedModalRect((width - xSize) / 2, (height - ySize) / 2, 0, 0, xSize, ySize);
-        GlStateManager.enableLighting();
-    }
-
-    @Override
-    protected void actionPerformed(GuiButton button) {
-        if (button == colourPicker) {
-            if (filter.colour == null) {
-                filter.colour = EnumDyeColor.byMetadata(0);
-            } else {
-                if (filter.colour.getMetadata() == 15) {
-                    filter.colour = null;
-                } else {
-                    filter.colour = EnumDyeColor.byMetadata(filter.colour.getMetadata() + 1);
-                }
-            }
-
-            new FilterColourChangeMessage(filter.getPos(), filter.colour).sendToServer();
-        }
-    }
-
-    public class GuiColourPicker extends GuiButton {
+    public class GuiColourPicker extends GuiTeckleButton {
 
         public GuiColourPicker(int buttonId, int x, int y) {
             super(buttonId, x, y, 9, 9, "");
+            this.enableSecondaryClick();
         }
 
         @Override
@@ -106,6 +73,33 @@ public class GuiFilter extends GuiContainer {
                     GlStateManager.popMatrix();
                 }
             }
+        }
+
+        @Override
+        public void performAction(int mouseX, int mouseY, int mouseButton) {
+            if (mouseButton != 1) {
+                if (filter.colour == null) {
+                    filter.colour = EnumDyeColor.byMetadata(0);
+                } else {
+                    if (filter.colour.getMetadata() == 15) {
+                        filter.colour = null;
+                    } else {
+                        filter.colour = EnumDyeColor.byMetadata(filter.colour.getMetadata() + 1);
+                    }
+                }
+            } else {
+                if (filter.colour == null) {
+                    filter.colour = EnumDyeColor.byMetadata(15);
+                } else {
+                    if (filter.colour.getMetadata() == 0) {
+                        filter.colour = null;
+                    } else {
+                        filter.colour = EnumDyeColor.byMetadata(filter.colour.getMetadata() - 1);
+                    }
+                }
+            }
+
+            new FilterColourChangeMessage(filter.getPos(), filter.colour).sendToServer();
         }
     }
 }
