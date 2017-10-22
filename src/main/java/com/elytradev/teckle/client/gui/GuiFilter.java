@@ -19,6 +19,7 @@ package com.elytradev.teckle.client.gui;
 import com.elytradev.teckle.client.gui.base.GuiTeckle;
 import com.elytradev.teckle.client.gui.base.GuiTeckleButton;
 import com.elytradev.teckle.common.container.ContainerFilter;
+import com.elytradev.teckle.common.helper.ColourHelper;
 import com.elytradev.teckle.common.network.messages.FilterColourChangeMessage;
 import com.elytradev.teckle.common.tile.TileFilter;
 import net.minecraft.client.Minecraft;
@@ -50,7 +51,6 @@ public class GuiFilter extends GuiTeckle {
     }
 
     public class GuiColourPicker extends GuiTeckleButton {
-
         public GuiColourPicker(int buttonId, int x, int y) {
             super(buttonId, x, y, 9, 9, "");
             this.enableSecondaryClick();
@@ -77,29 +77,9 @@ public class GuiFilter extends GuiTeckle {
 
         @Override
         public void performAction(int mouseX, int mouseY, int mouseButton) {
-            if (mouseButton != 1) {
-                if (filter.colour == null) {
-                    filter.colour = EnumDyeColor.byMetadata(0);
-                } else {
-                    if (filter.colour.getMetadata() == 15) {
-                        filter.colour = null;
-                    } else {
-                        filter.colour = EnumDyeColor.byMetadata(filter.colour.getMetadata() + 1);
-                    }
-                }
-            } else {
-                if (filter.colour == null) {
-                    filter.colour = EnumDyeColor.byMetadata(15);
-                } else {
-                    if (filter.colour.getMetadata() == 0) {
-                        filter.colour = null;
-                    } else {
-                        filter.colour = EnumDyeColor.byMetadata(filter.colour.getMetadata() - 1);
-                    }
-                }
-            }
-
-            new FilterColourChangeMessage(filter.getPos(), filter.colour).sendToServer();
+            EnumDyeColor colour = ColourHelper.cycleColour(filter.colour, mouseButton == 1);
+            filter.colour = colour;
+            new FilterColourChangeMessage(filter.getPos(), colour).sendToServer();
         }
     }
 }

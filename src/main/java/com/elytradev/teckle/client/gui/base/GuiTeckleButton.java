@@ -23,13 +23,12 @@ public abstract class GuiTeckleButton extends GuiButton {
 
     private boolean acceptsSecondaryClick = false;
 
-    public GuiTeckleButton(int buttonId, int x, int y, String buttonText) {
-        super(buttonId, x, y, buttonText);
-    }
-
     public GuiTeckleButton(int buttonId, int x, int y, int widthIn, int heightIn, String buttonText) {
         super(buttonId, x, y, widthIn, heightIn, buttonText);
-        this.acceptsSecondaryClick = acceptsSecondaryClick;
+    }
+
+    public GuiTeckleButton(int buttonId, int x, int y, String buttonText) {
+        super(buttonId, x, y, buttonText);
     }
 
     public void drawHover(Minecraft mc, int mouseX, int mouseY) {

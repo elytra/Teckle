@@ -3,10 +3,13 @@ package com.elytradev.teckle.common.tile.retriever;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
+import com.elytradev.teckle.client.gui.GuiRetriever;
 import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockRetriever;
+import com.elytradev.teckle.common.container.ContainerRetriever;
 import com.elytradev.teckle.common.tile.TileLitNetworkMember;
+import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
@@ -31,7 +34,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-public class TileRetriever extends TileLitNetworkMember {
+public class TileRetriever extends TileLitNetworkMember implements IElementProvider {
 
     public NetworkTileRetrieverOutput outputTile;
     public NetworkTileRetrieverInput inputTile;
@@ -220,4 +223,37 @@ public class TileRetriever extends TileLitNetworkMember {
         outputTile.onPulse();
     }
 
+    public EnumDyeColor getColour() {
+        return outputTile.getColour();
+    }
+
+    public void setColour(EnumDyeColor colour) {
+        outputTile.setColour(colour);
+    }
+
+    public boolean useSelector() {
+        return outputTile.useSelector();
+    }
+
+    public void setUseSelector(boolean useSelector) {
+        outputTile.useSelector = useSelector;
+    }
+
+    public boolean matchCount() {
+        return outputTile.matchCount;
+    }
+
+    public void setMatchCount(boolean matchCount) {
+        outputTile.matchCount = matchCount;
+    }
+
+    @Override
+    public Object getServerElement(EntityPlayer player) {
+        return new ContainerRetriever(this, player);
+    }
+
+    @Override
+    public Object getClientElement(EntityPlayer player) {
+        return new GuiRetriever(this, player);
+    }
 }

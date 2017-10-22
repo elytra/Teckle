@@ -124,7 +124,8 @@ public class BlockRetriever extends BlockContainer {
         if (!playerIn.isSneaking()) {
             TileEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity != null) {
-                playerIn.openGui(TeckleMod.INSTANCE, TeckleGuiHandler.ElementType.ELEMENT_PROVIDER.caseNumber, worldIn, pos.getX(), pos.getY(), pos.getZ());
+                int caseNumber = TeckleGuiHandler.ElementType.ELEMENT_PROVIDER.caseNumber;
+                playerIn.openGui(TeckleMod.INSTANCE, caseNumber, worldIn, pos.getX(), pos.getY(), pos.getZ());
                 return true;
             }
         }

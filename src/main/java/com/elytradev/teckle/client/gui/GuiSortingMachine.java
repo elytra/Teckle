@@ -20,6 +20,7 @@ import com.elytradev.teckle.client.gui.base.GuiTeckle;
 import com.elytradev.teckle.client.gui.base.GuiTeckleButton;
 import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.container.ContainerSortingMachine;
+import com.elytradev.teckle.common.helper.ColourHelper;
 import com.elytradev.teckle.common.network.messages.SortingMachineColourChangeMessage;
 import com.elytradev.teckle.common.network.messages.SortingMachineDefaultRouteChangeMessage;
 import com.elytradev.teckle.common.network.messages.SortingMachinePullModeChangeMessage;
@@ -136,29 +137,7 @@ public class GuiSortingMachine extends GuiTeckle {
         @Override
         public void performAction(int mouseX, int mouseY, int mouseButton) {
             // Adjust the colour of a compartment.
-            EnumDyeColor colour = sortingMachine.colours[this.colourIndex];
-            if (mouseButton != 1) {
-                if (colour == null) {
-                    colour = EnumDyeColor.byMetadata(0);
-                } else {
-                    if (colour.getMetadata() == 15) {
-                        colour = null;
-                    } else {
-                        colour = EnumDyeColor.byMetadata(colour.getMetadata() + 1);
-                    }
-                }
-            } else {
-                if (colour == null) {
-                    colour = EnumDyeColor.byMetadata(15);
-                } else {
-                    if (colour.getMetadata() == 0) {
-                        colour = null;
-                    } else {
-                        colour = EnumDyeColor.byMetadata(colour.getMetadata() - 1);
-                    }
-                }
-            }
-
+            EnumDyeColor colour = ColourHelper.cycleColour(sortingMachine.colours[colourIndex], mouseButton == 1);
             sortingMachine.colours[this.colourIndex] = colour;
             new SortingMachineColourChangeMessage(sortingMachine.getPos(), this.colourIndex, colour).sendToServer();
         }

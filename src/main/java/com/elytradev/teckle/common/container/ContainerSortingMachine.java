@@ -25,9 +25,6 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 
-/**
- * Created by darkevilmac on 5/17/17.
- */
 public class ContainerSortingMachine extends Container {
 
     public EntityPlayer player;
