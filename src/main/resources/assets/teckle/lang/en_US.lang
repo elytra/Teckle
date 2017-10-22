@@ -62,6 +62,16 @@ pullmode.auto.tooltip=Automatically pulse when items are available.
 pullmode.singlestep.tooltip=Attempt to satisfy the current compartment on redstone pulse, if no compartment is selected then pull.
 pullmode.singlesweep.tooltip=Sweep through all compartments on redstone pulse.
 
+retrievermode.matchcount=Match Count
+retrievermode.ignorecount=Ignore Count
+retrievermode.matchcount.tooltip=Match the stack size of a filter item when retrieving.
+retrievermode.ignorecount.tooltip=Ignore the stack size of a filter item and retrieve the max amount.
+
+retrievermode.selector=Selector Enabled
+retrievermode.noselector=Selector Disabled
+retrievermode.selector.tooltip=Satisfy the current filter item before the next.
+retrievermode.noselector.tooltip=Satisfy whatever filter item is available.
+
 defaultroute.white=Default Route: White
 defaultroute.orange=Default Route: Orange
 defaultroute.magenta=Default Route: Magenta

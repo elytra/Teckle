@@ -51,4 +51,12 @@ public abstract class GuiTeckleButton extends GuiButton {
         return this;
     }
 
+
+    public void checkHovered(int mouseX, int mouseY) {
+        this.hovered = mouseX >= this.x
+                && mouseY >= this.y
+                && mouseX < this.x + this.width
+                && mouseY < this.y + this.height;
+    }
+
 }
