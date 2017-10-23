@@ -38,6 +38,25 @@ public class GuiRetriever extends GuiTeckle {
         return new ResourceLocation("teckle", "textures/gui/retriever.png");
     }
 
+
+    @Override
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        if (retriever.useSelector()) {
+            mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/retriever.png"));
+            int x = 61;
+            int y = 16;
+            int xOffset = 176;
+            int yOffset = 57;
+
+            x += (retriever.getSelectorPosition() % 3) * 18;
+            y += (retriever.getSelectorPosition() / 3) * 18;
+
+            this.drawTexturedModalRect(x, y, xOffset, yOffset, 18, 18);
+        }
+
+        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+    }
+
     private void drawButtonBase(GuiTeckleButton b, Minecraft mc, int mouseX, int mouseY) {
         b.checkHovered(mouseX, mouseY);
         mc.getTextureManager().bindTexture(new ResourceLocation("teckle", "textures/gui/retriever.png"));

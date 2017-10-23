@@ -256,4 +256,8 @@ public class TileRetriever extends TileLitNetworkMember implements IElementProvi
     public Object getClientElement(EntityPlayer player) {
         return new GuiRetriever(this, player);
     }
+
+    public int getSelectorPosition() {
+        return outputTile.selectorPosition;
+    }
 }

@@ -49,7 +49,6 @@ public class ContainerFabricator extends Container {
             }
         }
 
-
         if (player != null)
             bindPlayerInventory(player.inventory);
     }
