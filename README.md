@@ -1,3 +1,5 @@
+![Lines of Code](https://tokei.rs/b1/github/elytra/Teckle?category=code)
+
 ![Logo](https://raw.githubusercontent.com/elytra/Teckle/master/src/main/resources/assets/teckle/Logo.png)
 
 [>> Downloads <<](https://github.com/elytra/Teckle/releases)
