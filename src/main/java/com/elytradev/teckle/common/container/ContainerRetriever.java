@@ -1,5 +1,6 @@
 package com.elytradev.teckle.common.container;
 
+import com.elytradev.teckle.common.network.messages.RetrieverSelectorMessage;
 import com.elytradev.teckle.common.tile.retriever.TileRetriever;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -12,6 +13,7 @@ public class ContainerRetriever extends Container {
 
     public TileRetriever retriever;
     public EntityPlayer player;
+    private int selectorPos = -1;
 
     public ContainerRetriever(TileRetriever retriever, EntityPlayer player) {
         this.retriever = retriever;
@@ -35,6 +37,7 @@ public class ContainerRetriever extends Container {
             addSlotToContainer(new Slot(inventoryplayer, i, 8 + i * 18, 142));
         }
     }
+
     @Override
     public boolean canInteractWith(EntityPlayer player) {
         return retriever.isUsableByPlayer(player);
@@ -71,5 +74,15 @@ public class ContainerRetriever extends Container {
         }
 
         return stackSlotCopy;
+    }
+
+    @Override
+    public void detectAndSendChanges() {
+        super.detectAndSendChanges();
+
+        if (selectorPos != retriever.getSelectorPosition()) {
+            this.selectorPos = retriever.getSelectorPosition();
+            new RetrieverSelectorMessage(selectorPos, retriever.getPos()).sendToAllWatching(retriever);
+        }
     }
 }

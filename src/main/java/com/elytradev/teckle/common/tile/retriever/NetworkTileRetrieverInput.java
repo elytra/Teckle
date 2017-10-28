@@ -1,9 +1,11 @@
 package com.elytradev.teckle.common.tile.retriever;
 
 import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockRetriever;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
+import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.EndpointData;
@@ -48,11 +50,14 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
     public void setNode(WorldNetworkNode node) {
         if (!Objects.equals(node, this.getNode())) {
             super.setNode(node);
-            if (getNode() != null)
-                getNode().getNetwork().getNodes().stream().filter(nodeContainer -> nodeContainer.getNode().isEndpoint())
-                        .filter(nodeContainer -> sourceNodes.stream()
-                                .noneMatch(pN -> Objects.equals(pN.realNode, nodeContainer.getNode())))
-                        .forEach(nodeContainer -> onNodeAdded(nodeContainer.getNode()));
+            if (getNode() != null) {
+                IWorldNetwork network = getNode().getNetwork();
+                for (NodeContainer nodeContainer : network.getNodes()) {
+                    if (nodeContainer.getNode().isEndpoint()) {
+                        onNodeAdded(nodeContainer.getNode());
+                    }
+                }
+            }
         } else {
             super.setNode(node);
         }
@@ -84,40 +89,37 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
     @Override
     public void onNodeAdded(WorldNetworkNode addedNode) {
         // Only add if it's not already present, and has IO for transfer of items.
-        if (addedNode.isEndpoint() && sourceNodes.stream().noneMatch(pN -> pN.realNode.equals(addedNode))) {
-            IWorldNetwork network = this.getNode().getNetwork();
+        boolean nodePresent = sourceNodes.stream().anyMatch(pathNode -> pathNode.realNode.equals(addedNode));
+        TeckleLog.info("Source node added {} {}", addedNode, nodePresent);
+        if (addedNode.isEndpoint()) {
             List<PathNode> nodeStack = new ArrayList<>();
             List<BlockPos> iteratedPositions = new ArrayList<>();
             HashMap<BlockPos, HashMap<EnumFacing, EndpointData>> endpoints = new HashMap<>();
+            IWorldNetwork network = getNode().getNetwork();
 
-            nodeStack.add(new PathNode(null, this.getNode(), null));
-            while (!nodeStack.isEmpty() && endpoints.size() < 6) {
+            nodeStack.add(new PathNode(null, getNode(), null));
+            while (!nodeStack.isEmpty()) {
                 PathNode pathNode = nodeStack.remove(nodeStack.size() - 1);
                 for (EnumFacing direction : EnumFacing.VALUES) {
                     BlockPos neighbourPos = pathNode.realNode.getPosition().add(direction.getDirectionVec());
-                    if (!network.isNodePresent(neighbourPos) || neighbourPos.equals(this.getNode().getPosition()) ||
+                    if (!network.isNodePresent(neighbourPos, direction.getOpposite()) ||
                             iteratedPositions.contains(neighbourPos) ||
-                            (endpoints.containsKey(neighbourPos) && endpoints.get(neighbourPos).containsKey(direction.getOpposite()))) {
+                            (endpoints.containsKey(neighbourPos) &&
+                                    endpoints.get(neighbourPos).containsKey(direction.getOpposite()))) {
                         continue;
                     }
-
                     WorldNetworkNode neighbourNode = network.getNode(neighbourPos, direction.getOpposite());
-                    if (isValidSourceNode(neighbourPos, direction)) {
+                    if (Objects.equals(addedNode, neighbourNode)) {
                         if (!endpoints.containsKey(neighbourPos)) {
                             endpoints.put(neighbourPos, new HashMap<>());
                         }
-                        endpoints.get(neighbourPos).put(direction.getOpposite(),
-                                new EndpointData(new PathNode(pathNode, neighbourNode, direction.getOpposite()),
-                                        direction.getOpposite()));
-                    } else {
-                        if (neighbourNode.canConnectTo(direction.getOpposite())) {
-                            nodeStack.add(new PathNode(pathNode, neighbourNode, direction.getOpposite()));
-                            iteratedPositions.add(neighbourPos);
-                        }
-                    }
+                        PathNode pN = new PathNode(pathNode, network.getNode(neighbourPos, direction.getOpposite()), direction.getOpposite());
+                        endpoints.get(neighbourPos).put(direction.getOpposite(), new EndpointData(pN, direction.getOpposite()));
 
-                    if (endpoints.size() < 6) {
-                        break;
+                        TeckleLog.info("Source node added PASS {}", neighbourNode);
+                    } else if (network.getNode(neighbourPos, direction.getOpposite()).canConnectTo(direction.getOpposite())) {
+                        nodeStack.add(new PathNode(pathNode, network.getNode(neighbourPos, direction.getOpposite()), direction.getOpposite()));
+                        iteratedPositions.add(neighbourPos);
                     }
                 }
             }
@@ -129,6 +131,10 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
                         sourceNodes.add(endpointData.node);
                     }
                 }
+            }
+
+            for (PathNode sourceNode : sourceNodes) {
+                TeckleLog.info("SN " + sourceNode.realNode.toString());
             }
         }
     }
@@ -154,7 +160,6 @@ public class NetworkTileRetrieverInput extends NetworkTileRetrieverBase {
 
         TileEntity tileEntity = getWorld().getTileEntity(position);
         return tileEntity != null && tileEntity.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction);
-
     }
 
     public ItemStack acceptTraveller(WorldNetworkTraveller traveller) {

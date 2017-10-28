@@ -35,9 +35,11 @@ public class TeckleNetworking {
 
         registerMessage(FilterColourChangeMessage.class);
         registerMessage(FabricatorTemplateMessage.class);
+
         registerMessage(RetrieverColourChangeMessage.class);
         registerMessage(RetrieverSelectorModeChangeMessage.class);
         registerMessage(RetrieverMatchCountMessage.class);
+        registerMessage(RetrieverSelectorMessage.class);
 
         registerMessage(SortingMachineColourChangeMessage.class);
         registerMessage(SortingMachineSortModeChangeMessage.class);

@@ -93,7 +93,7 @@ public class BlockSortingMachine extends BlockContainer {
     @Override
     public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
         EnumFacing direction = EnumFacing.getDirectionFromEntityLiving(pos, placer);
-
+        if (placer != null && placer.isSneaking()) direction = direction.getOpposite();
         return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer, hand).withProperty(FACING, direction);
     }
 

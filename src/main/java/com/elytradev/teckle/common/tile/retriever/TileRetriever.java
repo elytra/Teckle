@@ -260,4 +260,8 @@ public class TileRetriever extends TileLitNetworkMember implements IElementProvi
     public int getSelectorPosition() {
         return outputTile.selectorPosition;
     }
+
+    public void setSelectorPos(int selectorPos) {
+        this.outputTile.selectorPosition = selectorPos;
+    }
 }

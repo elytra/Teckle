@@ -149,7 +149,7 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
             getSourceNodes().toArray(nodes);
             SlotData selectedExtractionData = null;
             PathNode usedNode = null;
-            for (int i = roundRobinTicker; i < nodes.length; i++) {
+            for (int i = 0; i < nodes.length; i++) {
                 PathNode node = usedNode = nodes[i];
                 IItemHandler nodeItemHandler;
                 TileEntity tile = getWorld().getTileEntity(node.realNode.getPosition());
@@ -172,29 +172,17 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
                         }
                     }
                 }
-                if (!selectedExtractionData.isEmpty()) {
-                    if (node.cost <= getSourceNodes().firstEntry().getElement().cost) {
-                        if (i + 1 < nodes.length && nodes[i + 1].cost == node.cost) {
-                            roundRobinTicker++;
-                        } else {
-                            roundRobinTicker = 0;
-                        }
-                    } else {
-                        roundRobinTicker = 0;
-                    }
-                    break;
-                }
             }
             ItemStack extractedStack = ItemStack.EMPTY;
             if (!selectedExtractionData.isEmpty()) {
-                WorldNetworkEntryPoint entryPoint = new WorldNetworkEntryPoint(usedNode.realNode.getNetwork(), usedNode.realNode.getPosition(), usedNode.faceFrom, getOutputFace());
+                WorldNetworkEntryPoint entryPoint = new WorldNetworkEntryPoint(usedNode.realNode.getNetwork(),
+                        usedNode.realNode.getPosition(),
+                        usedNode.faceFrom, usedNode.faceFrom);
                 BlockPos insertInto = entryPoint.getPosition().offset(usedNode.faceFrom);
-                ImmutableMap<String, NBTBase> additionalData = getColour() != null ? ImmutableMap.of("colour", new NBTTagInt(getColour().getMetadata())) : ImmutableMap.of();
-                BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate =
-                        (worldNetworkNode, facing) ->
-                                (Objects.equals(worldNetworkNode.getPosition(), getPos()) &&
-                                        Objects.equals(worldNetworkNode.getCapabilityFace(), getInputTile().getCapabilityFace())
-                                        || (Objects.equals(entryPoint.getPosition(), worldNetworkNode.getPosition())));
+                ImmutableMap<String, NBTBase> additionalData = getColour() != null ?
+                        ImmutableMap.of("colour", new NBTTagInt(getColour().getMetadata())) : ImmutableMap.of();
+                BiPredicate<WorldNetworkNode, EnumFacing> endpointPredicate = (worldNetworkNode, facing) -> worldNetworkNode.getPosition().equals(getPos()) &&
+                        worldNetworkNode.getCapabilityFace().equals(getInputTile().getCapabilityFace());
                 extractedStack = selectedExtractionData.extract(countToExtract, false);
                 ItemStack insertionResult = getNetworkAssistant(ItemStack.class).insertData(entryPoint, insertInto,
                         extractedStack, additionalData, endpointPredicate,
@@ -205,8 +193,10 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
 
             if (selectedExtractionData.isEmpty()) {
                 roundRobinTicker = 0;
-            } else if (useSelector) {
-                incrementSelector();
+            } else {
+                if (useSelector) {
+                    incrementSelector();
+                }
             }
         }
     }
