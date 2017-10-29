@@ -174,7 +174,7 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
                 }
             }
             ItemStack extractedStack = ItemStack.EMPTY;
-            if (!selectedExtractionData.isEmpty()) {
+            if (selectedExtractionData != null && !selectedExtractionData.isEmpty()) {
                 WorldNetworkEntryPoint entryPoint = new WorldNetworkEntryPoint(usedNode.realNode.getNetwork(),
                         usedNode.realNode.getPosition(),
                         usedNode.faceFrom, usedNode.faceFrom);
@@ -187,14 +187,9 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
                 ItemStack insertionResult = getNetworkAssistant(ItemStack.class).insertData(entryPoint, insertInto,
                         extractedStack, additionalData, endpointPredicate,
                         true, false);
-                if (!insertionResult.isEmpty())
+                if (!insertionResult.isEmpty()) {
                     selectedExtractionData.itemHandler.insertItem(selectedExtractionData.slot, insertionResult, false);
-            }
-
-            if (selectedExtractionData.isEmpty()) {
-                roundRobinTicker = 0;
-            } else {
-                if (useSelector) {
+                } else {
                     incrementSelector();
                 }
             }
