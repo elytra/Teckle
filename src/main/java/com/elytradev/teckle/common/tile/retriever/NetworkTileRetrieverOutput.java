@@ -160,16 +160,17 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
 
                 for (int slot = 0; slot < nodeItemHandler.getSlots(); slot++) {
                     ItemStack testExtraction = nodeItemHandler.extractItem(slot, countToExtract, true);
+                    if (testExtraction.isEmpty())
+                        continue;
+
                     if (!filterItem.isEmpty()) {
                         if (ItemHandlerHelper.canItemStacksStack(testExtraction, filterItem)) {
                             selectedExtractionData = new SlotData(nodeItemHandler, slot);
                             break;
                         }
                     } else {
-                        if (!testExtraction.isEmpty()) {
-                            selectedExtractionData = new SlotData(nodeItemHandler, slot);
-                            break;
-                        }
+                        selectedExtractionData = new SlotData(nodeItemHandler, slot);
+                        break;
                     }
                 }
             }
