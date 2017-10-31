@@ -278,7 +278,8 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
             if (simulate)
                 entryPoint.getNetwork().unregisterTraveller(traveller, true, false);
             if (Objects.equals(traveller, WorldNetworkTraveller.NONE) || traveller == null) {
-                return remaining.copy();
+                if (networksInsertionOnly)
+                    return remaining.copy();
             } else {
                 traveller.dropActions.put(DropActions.ITEMSTACK.getFirst(), DropActions.ITEMSTACK.getSecond());
                 remaining = ItemStack.EMPTY;
