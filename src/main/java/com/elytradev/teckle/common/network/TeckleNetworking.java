@@ -29,6 +29,8 @@ public class TeckleNetworking {
     public static final NetworkContext NETWORK = NetworkContext.forChannel(TeckleMod.MOD_ID);
 
     public static void setupNetwork() {
+        registerMessage(DebugReceiverMessage.class);
+
         registerMessage(TravellerDataMessage.class);
         registerMessage(TravellerMoveMessage.class);
         registerMessage(AlloyFurnaceMessage.class);
