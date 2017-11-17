@@ -79,22 +79,26 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
 
     @Override
     public void validate() {
-        AdvancedStackHandlerPool pool = AdvancedStackHandlerPool.getPool(world);
-        this.bufferData = pool.getOrCreatePoolEntry(bufferID, getPos(), 9);
-        this.bufferID = bufferData.getId();
+        try {
+            AdvancedStackHandlerPool pool = AdvancedStackHandlerPool.getPool(world);
+            this.bufferData = pool.getOrCreatePoolEntry(bufferID, getPos(), 9);
+            this.bufferID = bufferData.getId();
 
-        this.filterData = pool.getOrCreatePoolEntry(filterID, getPos(), 9);
-        this.filterID = filterData.getId();
+            this.filterData = pool.getOrCreatePoolEntry(filterID, getPos(), 9);
+            this.filterID = filterData.getId();
 
-        if (networkTile == null)
-            this.networkTile = new NetworkTileFilter(this);
+            if (networkTile == null)
+                this.networkTile = new NetworkTileFilter(this);
 
-        this.networkTile.filterData = this.filterData;
-        this.networkTile.bufferData = this.bufferData;
-        this.networkTile.filterID = this.filterID;
-        this.networkTile.bufferID = this.bufferID;
+            this.networkTile.filterData = this.filterData;
+            this.networkTile.bufferData = this.bufferData;
+            this.networkTile.filterID = this.filterID;
+            this.networkTile.bufferID = this.bufferID;
 
-        this.tileEntityInvalid = false;
+            this.tileEntityInvalid = false;
+        } catch (Exception e) {
+            TeckleLog.error("Failed to validate transposer. {}", e);
+        }
     }
 
     @Override

@@ -71,17 +71,21 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
 
     @Override
     public void validate() {
-        AdvancedStackHandlerPool pool = AdvancedStackHandlerPool.getPool(world);
-        this.bufferData = pool.getOrCreatePoolEntry(bufferID, getPos(), 9);
-        this.bufferID = bufferData.getId();
+        try {
+            AdvancedStackHandlerPool pool = AdvancedStackHandlerPool.getPool(world);
+            this.bufferData = pool.getOrCreatePoolEntry(bufferID, getPos(), 9);
+            this.bufferID = bufferData.getId();
 
-        if (getNetworkTile() == null)
-            this.setNetworkTile(new NetworkTileTransposer(this));
+            if (getNetworkTile() == null)
+                this.setNetworkTile(new NetworkTileTransposer(this));
 
-        this.getNetworkTile().bufferData = this.bufferData;
-        this.getNetworkTile().bufferID = this.bufferID;
+            this.getNetworkTile().bufferData = this.bufferData;
+            this.getNetworkTile().bufferID = this.bufferID;
 
-        this.tileEntityInvalid = false;
+            this.tileEntityInvalid = false;
+        } catch (Exception e) {
+            TeckleLog.error("Failed to validate transposer. {}", e);
+        }
     }
 
 

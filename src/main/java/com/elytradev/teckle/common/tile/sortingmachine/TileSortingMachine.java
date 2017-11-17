@@ -97,41 +97,46 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
 
     @Override
     public void validate() {
-        if (filterID == null) {
-            if (filterData == null) {
-                filterData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(48));
+        try {
+
+            if (filterID == null) {
+                if (filterData == null) {
+                    filterData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(48));
+                }
+                filterID = filterData.getId();
+            } else {
+                filterData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(filterID);
             }
-            filterID = filterData.getId();
-        } else {
-            filterData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(filterID);
-        }
-        if (bufferID == null) {
-            if (bufferData == null) {
-                bufferData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(32));
+            if (bufferID == null) {
+                if (bufferData == null) {
+                    bufferData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(32));
+                }
+                bufferID = bufferData.getId();
+            } else {
+                bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
             }
-            bufferID = bufferData.getId();
-        } else {
-            bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
+            if (this.inputTile == null)
+                this.inputTile = new NetworkTileSortingMachineInput(this);
+            if (this.outputTile == null)
+                this.outputTile = new NetworkTileSortingMachineOutput(this);
+
+            this.inputTile.filterData = this.filterData;
+            this.inputTile.bufferData = this.bufferData;
+            this.inputTile.filterID = this.filterID;
+            this.inputTile.bufferID = this.bufferID;
+
+            this.outputTile.filterData = this.filterData;
+            this.outputTile.bufferData = this.bufferData;
+            this.outputTile.filterID = this.filterID;
+            this.outputTile.bufferID = this.bufferID;
+
+            this.inputTile.setOtherTile(outputTile);
+            this.outputTile.setOtherTile(inputTile);
+
+            this.tileEntityInvalid = false;
+        } catch (Exception e) {
+            TeckleLog.error("Failed to validate sortingmachine. {}", e);
         }
-        if (this.inputTile == null)
-            this.inputTile = new NetworkTileSortingMachineInput(this);
-        if (this.outputTile == null)
-            this.outputTile = new NetworkTileSortingMachineOutput(this);
-
-        this.inputTile.filterData = this.filterData;
-        this.inputTile.bufferData = this.bufferData;
-        this.inputTile.filterID = this.filterID;
-        this.inputTile.bufferID = this.bufferID;
-
-        this.outputTile.filterData = this.filterData;
-        this.outputTile.bufferData = this.bufferData;
-        this.outputTile.filterID = this.filterID;
-        this.outputTile.bufferID = this.bufferID;
-
-        this.inputTile.setOtherTile(outputTile);
-        this.outputTile.setOtherTile(inputTile);
-
-        this.tileEntityInvalid = false;
     }
 
     @Override
