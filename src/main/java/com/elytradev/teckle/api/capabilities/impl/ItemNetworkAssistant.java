@@ -110,89 +110,97 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
 
     @Override
     public void onNodePlaced(World world, BlockPos pos) {
-        if (world.isRemote)
-            return;
+        try {
+            if (world.isRemote)
+                return;
 
-        List<WorldNetworkTile> handledTiles = Lists.newArrayList();
-        for (EnumFacing facing : EnumFacing.VALUES) {
-            WorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
-            if (thisNetworkTile == null || handledTiles.contains(thisNetworkTile))
-                continue;
+            List<WorldNetworkTile> handledTiles = Lists.newArrayList();
+            for (EnumFacing facing : EnumFacing.VALUES) {
+                WorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
+                if (thisNetworkTile == null || handledTiles.contains(thisNetworkTile))
+                    continue;
 
-            handledTiles.add(thisNetworkTile);
-            List<IWorldNetwork> neighbourNetworks = getNeighbourNetworks(thisNetworkTile, world, pos);
-            if (!neighbourNetworks.isEmpty()) {
-                // Found neighbour networks, join the network or merge.
-                IWorldNetwork network = neighbourNetworks.remove(0);
-                thisNetworkTile.setNode(thisNetworkTile.createNode(network, pos));
-                network.registerNode(thisNetworkTile.getNode());
+                handledTiles.add(thisNetworkTile);
+                List<IWorldNetwork> neighbourNetworks = getNeighbourNetworks(thisNetworkTile, world, pos);
+                if (!neighbourNetworks.isEmpty()) {
+                    // Found neighbour networks, join the network or merge.
+                    IWorldNetwork network = neighbourNetworks.remove(0);
+                    thisNetworkTile.setNode(thisNetworkTile.createNode(network, pos));
+                    network.registerNode(thisNetworkTile.getNode());
 
-                while (!neighbourNetworks.isEmpty()) {
-                    network = network.merge(neighbourNetworks.remove(0));
-                }
-            } else {
-                // No neighbours, make a new network.
-                WorldNetwork network = new WorldNetwork(world, null);
-                WorldNetworkDatabase.registerWorldNetwork(network);
-                WorldNetworkNode node = thisNetworkTile.createNode(network, pos);
-                network.registerNode(node);
-                if (world.getTileEntity(pos) != null) {
-                    thisNetworkTile.setNode(node);
-                }
-            }
-
-            //Check for possible neighbour nodes...
-            List<TileEntity> neighbourNodes = getPotentialNeighbourNodes(thisNetworkTile, false);
-            for (TileEntity neighbourTile : neighbourNodes) {
-                BlockPos posDiff = pos.subtract(neighbourTile.getPos());
-                EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
-
-                if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos(), capabilityFace)) {
-                    if (!thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
-                        WorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
-                        thisNetworkTile.getNode().getNetwork().registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().getNetwork(), neighbourTile.getPos()));
-                        neighbourNetworkTile.setNode(thisNetworkTile.getNode().getNetwork().getNode(neighbourTile.getPos(), capabilityFace));
+                    while (!neighbourNetworks.isEmpty()) {
+                        network = network.merge(neighbourNetworks.remove(0));
                     }
                 } else {
-                    if (!thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourTile.getPos(), capabilityFace)) {
-                        thisNetworkTile.getNode().getNetwork().registerNode(new ItemNetworkEndpoint(thisNetworkTile.getNode().getNetwork(), neighbourTile.getPos(), capabilityFace));
+                    // No neighbours, make a new network.
+                    WorldNetwork network = new WorldNetwork(world, null);
+                    WorldNetworkDatabase.registerWorldNetwork(network);
+                    WorldNetworkNode node = thisNetworkTile.createNode(network, pos);
+                    network.registerNode(node);
+                    if (world.getTileEntity(pos) != null) {
+                        thisNetworkTile.setNode(node);
                     }
                 }
-            }
 
-            if (thisNetworkTile.getCapabilityFace() == null)
-                break;
+                //Check for possible neighbour nodes...
+                List<TileEntity> neighbourNodes = getPotentialNeighbourNodes(thisNetworkTile, false);
+                for (TileEntity neighbourTile : neighbourNodes) {
+                    BlockPos posDiff = pos.subtract(neighbourTile.getPos());
+                    EnumFacing capabilityFace = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+
+                    if (CapabilityWorldNetworkTile.isPositionNetworkTile(world, neighbourTile.getPos(), capabilityFace)) {
+                        if (!thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourTile.getPos())) {
+                            WorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, neighbourTile.getPos(), capabilityFace);
+                            thisNetworkTile.getNode().getNetwork().registerNode(neighbourNetworkTile.createNode(thisNetworkTile.getNode().getNetwork(), neighbourTile.getPos()));
+                            neighbourNetworkTile.setNode(thisNetworkTile.getNode().getNetwork().getNode(neighbourTile.getPos(), capabilityFace));
+                        }
+                    } else {
+                        if (!thisNetworkTile.getNode().getNetwork().isNodePresent(neighbourTile.getPos(), capabilityFace)) {
+                            thisNetworkTile.getNode().getNetwork().registerNode(new ItemNetworkEndpoint(thisNetworkTile.getNode().getNetwork(), neighbourTile.getPos(), capabilityFace));
+                        }
+                    }
+                }
+
+                if (thisNetworkTile.getCapabilityFace() == null)
+                    break;
+            }
+        } catch (Exception e) {
+            TeckleLog.error("damnit - onNodeNeighbourChange. {}", e);
         }
     }
 
     @Override
     public void onNodeNeighbourChange(World world, BlockPos pos, BlockPos neighbour) {
-        if (world.isRemote)
-            return;
+        try {
+            if (world.isRemote)
+                return;
 
-        BlockPos posDiff = pos.subtract(neighbour);
-        EnumFacing face = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
-        TileEntity tileEntity = world.getTileEntity(pos);
-        if (!CapabilityWorldNetworkTile.isTileNetworked(tileEntity, face.getOpposite()))
-            return;
-        WorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getTileNetworked(tileEntity, face.getOpposite());
+            BlockPos posDiff = pos.subtract(neighbour);
+            EnumFacing face = EnumFacing.getFacingFromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+            TileEntity tileEntity = world.getTileEntity(pos);
+            if (!CapabilityWorldNetworkTile.isTileNetworked(tileEntity, face.getOpposite()))
+                return;
+            WorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getTileNetworked(tileEntity, face.getOpposite());
 
-        if (thisNetworkTile.getNode() == null) {
-            onNodePlaced(world, pos);
-            return;
-        }
+            if (thisNetworkTile.getNode() == null) {
+                onNodePlaced(world, pos);
+                return;
+            }
 
-        WorldNetworkNode node = thisNetworkTile.getNode();
-        IWorldNetwork network = node != null ? node.getNetwork() : null;
+            WorldNetworkNode node = thisNetworkTile.getNode();
+            IWorldNetwork network = node != null ? node.getNetwork() : null;
 
-        if (node == null || network == null) return;
+            if (node == null || network == null) return;
 
-        if (!network.isNodePresent(neighbour)) {
-            // Node not already present, check if we can add to network.
-            addNode(world, neighbour, face, thisNetworkTile);
-        } else {
-            // A node is present, check if it's still valid in this network.
-            checkNeighbourValidity(world, neighbour, face, thisNetworkTile);
+            if (!network.isNodePresent(neighbour)) {
+                // Node not already present, check if we can add to network.
+                addNode(world, neighbour, face, thisNetworkTile);
+            } else {
+                // A node is present, check if it's still valid in this network.
+                checkNeighbourValidity(world, neighbour, face, thisNetworkTile);
+            }
+        } catch (Exception e) {
+            TeckleLog.error("damnit - onNodeNeighbourChange. {}", e);
         }
     }
 
@@ -215,43 +223,51 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
     }
 
     private void addNode(World world, BlockPos neighbourPos, EnumFacing face, WorldNetworkTile networkTile) {
-        IWorldNetwork network = networkTile.getNode().getNetwork();
-        TileEntity neighbourTile = world.getTileEntity(neighbourPos);
-        if (neighbourTile != null) {
-            if (CapabilityHelper.isItemHandler(neighbourTile, face)) {
-                // Create endpoint and put it in the network.
-                ItemNetworkEndpoint nodeEndpoint = new ItemNetworkEndpoint(network, neighbourPos, face);
-                network.registerNode(nodeEndpoint);
-            } else if (CapabilityWorldNetworkTile.isTileNetworked(neighbourTile, face)) {
-                // Create node from network tile and put it in the network.
-                WorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getTileNetworked(neighbourTile, face);
-                if (neighbourNetworkTile.isValidNetworkMember(networkTile.getNode().getNetwork(), face)) {
-                    WorldNetworkNode neighbourNode = neighbourNetworkTile.createNode(network, neighbourTile.getPos());
-                    networkTile.getNode().getNetwork().registerNode(neighbourNode);
+        try {
+            IWorldNetwork network = networkTile.getNode().getNetwork();
+            TileEntity neighbourTile = world.getTileEntity(neighbourPos);
+            if (neighbourTile != null) {
+                if (CapabilityHelper.isItemHandler(neighbourTile, face)) {
+                    // Create endpoint and put it in the network.
+                    ItemNetworkEndpoint nodeEndpoint = new ItemNetworkEndpoint(network, neighbourPos, face);
+                    network.registerNode(nodeEndpoint);
+                } else if (CapabilityWorldNetworkTile.isTileNetworked(neighbourTile, face)) {
+                    // Create node from network tile and put it in the network.
+                    WorldNetworkTile neighbourNetworkTile = CapabilityWorldNetworkTile.getTileNetworked(neighbourTile, face);
+                    if (neighbourNetworkTile.isValidNetworkMember(networkTile.getNode().getNetwork(), face)) {
+                        WorldNetworkNode neighbourNode = neighbourNetworkTile.createNode(network, neighbourTile.getPos());
+                        networkTile.getNode().getNetwork().registerNode(neighbourNode);
+                    }
                 }
             }
+        } catch (Exception e) {
+            TeckleLog.error("damnit - addNode. {}", e);
         }
     }
 
     @Override
     public void onNodeBroken(World world, BlockPos pos) {
-        if (world.isRemote)
-            return;
+        try {
+            if (world.isRemote)
+                return;
 
-        // Check all faces including null to ensure that all nodes are removed properly.
-        for (int i = -1; i < EnumFacing.values().length; i++) {
-            EnumFacing facing = i > -1 ? EnumFacing.values()[i] : null;
-            TileEntity tile = world.getTileEntity(pos);
-            if (CapabilityWorldNetworkTile.isTileNetworked(tile, facing)) {
-                WorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getTileNetworked(tile, facing);
-                if (thisNetworkTile.getNode() != null && !(i > -1 && thisNetworkTile.getCapabilityFace() == null)) {
-                    IWorldNetwork network = thisNetworkTile.getNode().getNetwork();
-                    TeckleLog.debug("Found networktile on {} it is being removed.", network);
-                    thisNetworkTile.getNode().getNetwork().unregisterNodeAtPosition(pos, facing);
-                    thisNetworkTile.getNode().getNetwork().validateNetwork();
-                    thisNetworkTile.setNode(null);
+            // Check all faces including null to ensure that all nodes are removed properly.
+            for (int i = -1; i < EnumFacing.values().length; i++) {
+                EnumFacing facing = i > -1 ? EnumFacing.values()[i] : null;
+                TileEntity tile = world.getTileEntity(pos);
+                if (CapabilityWorldNetworkTile.isTileNetworked(tile, facing)) {
+                    WorldNetworkTile thisNetworkTile = CapabilityWorldNetworkTile.getTileNetworked(tile, facing);
+                    if (thisNetworkTile.getNode() != null && !(i > -1 && thisNetworkTile.getCapabilityFace() == null)) {
+                        IWorldNetwork network = thisNetworkTile.getNode().getNetwork();
+                        TeckleLog.debug("Found networktile on {} it is being removed.", network);
+                        thisNetworkTile.getNode().getNetwork().unregisterNodeAtPosition(pos, facing);
+                        thisNetworkTile.getNode().getNetwork().validateNetwork();
+                        thisNetworkTile.setNode(null);
+                    }
                 }
             }
+        } catch (Exception e) {
+            TeckleLog.error("damnit - onNodeBroken. {}", e);
         }
     }
 
