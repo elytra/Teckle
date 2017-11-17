@@ -54,6 +54,7 @@ public class WorldNetworkDatabase extends WorldSavedData {
 
     private World world;
     private int cooldownTime = TeckleMod.CONFIG.databaseCleaningCooldown;
+    private boolean disabled = false;
 
     public WorldNetworkDatabase(World world) {
         super(NAME);
@@ -223,16 +224,29 @@ public class WorldNetworkDatabase extends WorldSavedData {
     }
 
     private void onTick(TickEvent.WorldTickEvent e) {
-        if (networks.isEmpty() || !Objects.equals(world, e.world))
+        if (this.disabled)
             return;
-        boolean doSearch = this.cooldownTime <= 0;
-        cleanAndUpdate(e.world, doSearch, true);
 
-        if (this.cooldownTime <= 0) {
-            this.cooldownTime = TeckleMod.CONFIG.databaseCleaningCooldown;
-        } else {
-            this.cooldownTime--;
+        try {
+            if (networks.isEmpty() || !Objects.equals(world, e.world))
+                return;
+            boolean doSearch = this.cooldownTime <= 0;
+            cleanAndUpdate(e.world, doSearch, true);
+
+            if (this.cooldownTime <= 0) {
+                this.cooldownTime = TeckleMod.CONFIG.databaseCleaningCooldown;
+            } else {
+                this.cooldownTime--;
+            }
+        } catch (Exception exception) {
+            TeckleLog.fatal("Caught exception in worldnetwork database, disabling database for this world to prevent a crash.");
+            exception.printStackTrace();
+            this.disable();
         }
+    }
+
+    private void disable() {
+        this.disabled = true;
     }
 
     private void cleanAndUpdate(World world, boolean doSearch, boolean update) {

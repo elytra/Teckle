@@ -276,6 +276,8 @@ public class TeckleObjects {
         registerItem(registry, "siliconwafer", itemSiliconWafer);
         skipItemMesh.add(itemSiliconWafer);
 
+        registerItem(registry, "elytralogo", new Item());
+
         itemIngot = new ItemIngot();
         registerItem(registry, "ingot", itemIngot);
         Arrays.stream(ItemIngot.IngotType.values()).forEach(ingotType ->
