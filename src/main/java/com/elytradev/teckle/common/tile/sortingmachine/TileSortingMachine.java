@@ -90,7 +90,6 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     public DefaultRoute defaultRoute = DefaultRoute.NONE;
     public EnumDyeColor[] colours = new EnumDyeColor[8];
 
-    @SideOnly(Side.CLIENT)
     private int selectorPos = -1;
     private List<IItemHandler> subHandlers;
     private NetworkTileSortingMachineOutput outputTile;
@@ -351,17 +350,16 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
             }
         }
         tag.setTag("colours", coloursTag);
-
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            if (bufferData == null || filterData == null)
+            if (bufferData == null || filterData == null) {
                 validate();
+            }
             tag.setUniqueId("buffer", bufferData.getId());
             tag.setUniqueId("filter", filterData.getId());
 
             tag.setInteger("databaseID", getWorld().provider.getDimension());
             if (inputTile.getNode() == null || outputTile.getNode() == null)
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-
             tag.setUniqueId("inputTileID", inputTile.getNode().getNetwork().getNetworkID());
             tag.setUniqueId("outputTileID", outputTile.getNode().getNetwork().getNetworkID());
         }
@@ -376,7 +374,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         if (capability == null) return null;
         if (capability == TeckleMod.PROBE_CAPABILITY) {
-            if (probeCapability == null) probeCapability = new TileSortingMachine.ProbeCapability();
+            if (probeCapability == null) probeCapability = new ProbeCapability();
             return (T) probeCapability;
         }
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
@@ -496,12 +494,10 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
         }
     }
 
-    @SideOnly(Side.CLIENT)
     public int getSelectorPos() {
         return selectorPos;
     }
 
-    @SideOnly(Side.CLIENT)
     public void setSelectorPos(int selectorPos) {
         this.selectorPos = selectorPos;
     }
