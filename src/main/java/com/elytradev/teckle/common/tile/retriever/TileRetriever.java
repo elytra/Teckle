@@ -1,10 +1,15 @@
 package com.elytradev.teckle.common.tile.retriever;
 
+import com.elytradev.probe.api.IProbeData;
+import com.elytradev.probe.api.IProbeDataProvider;
+import com.elytradev.probe.api.UnitDictionary;
+import com.elytradev.probe.api.impl.ProbeData;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.client.gui.GuiRetriever;
 import com.elytradev.teckle.common.TeckleLog;
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockRetriever;
 import com.elytradev.teckle.common.container.ContainerRetriever;
@@ -13,8 +18,13 @@ import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
+import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
@@ -24,15 +34,16 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class TileRetriever extends TileLitNetworkMember implements IElementProvider {
 
@@ -111,6 +122,10 @@ public class TileRetriever extends TileLitNetworkMember implements IElementProvi
     @Override
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         if (capability == null) return null;
+        if (capability == TeckleMod.PROBE_CAPABILITY) {
+            if (probeCapability == null) probeCapability = new ProbeCapability();
+            return (T) probeCapability;
+        }
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
             if (Objects.equals(facing, getFacing()))
                 return (T) outputTile;
@@ -263,5 +278,54 @@ public class TileRetriever extends TileLitNetworkMember implements IElementProvi
 
     public void setSelectorPos(int selectorPos) {
         this.outputTile.selectorPosition = selectorPos;
+    }
+
+    private final class ProbeCapability implements IProbeDataProvider {
+        @Override
+        public void provideProbeData(List<IProbeData> data) {
+            List<WorldNetworkNode> nodes = Lists.newArrayList();
+            for (EnumFacing facing : EnumFacing.VALUES) {
+                if (!CapabilityWorldNetworkTile.isPositionNetworkTile(world, pos, facing))
+                    continue;
+                WorldNetworkTile networkTileAtPosition = CapabilityWorldNetworkTile.getNetworkTileAtPosition(world, pos, facing);
+                WorldNetworkNode node = networkTileAtPosition.getNode();
+                String faceName = networkTileAtPosition.getCapabilityFace() == null ? "" : networkTileAtPosition.getCapabilityFace().getName();
+                faceName = faceName.substring(0, 1).toUpperCase() + faceName.substring(1, faceName.length());
+                if (node == null || nodes.contains(node))
+                    continue;
+
+                nodes.add(node);
+                if (TeckleMod.INDEV)
+                    data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.node.network",
+                            faceName,
+                            node.getNetwork().getNetworkID().toString().toUpperCase().replaceAll("-", ""),
+                            node.getNetwork().getNodePositions().size())));
+
+                if (!node.getTravellers().isEmpty()) {
+                    data.add(new ProbeData(new TextComponentTranslation("tooltip.teckle.traveller.data")));
+                }
+
+                for (WorldNetworkTraveller traveller : node.getTravellers()) {
+                    float distance = (float) traveller.activePath.getIndex() / (float) traveller.activePath.pathPositions().size() * 10F;
+                    distance += traveller.travelledDistance;
+                    distance -= 0.1F;
+                    distance = MathHelper.clamp(distance, 0F, 10F);
+                    if (distance > 0) {
+                        ItemStack stack = new ItemStack(traveller.data.getCompoundTag("stack"));
+                        data.add(new ProbeData(new TextComponentString(stack.getDisplayName()))
+                                .withInventory(ImmutableList.of(stack))
+                                .withBar(0, distance * 10, 100, UnitDictionary.PERCENT));
+                    }
+                }
+            }
+
+            List<ItemStack> stacks = new ArrayList<>();
+            for (int i = 0; i < bufferData.getHandler().getSlots(); i++) {
+                stacks.add(bufferData.getHandler().getStackInSlot(i));
+            }
+
+            ProbeData bufferData = new ProbeData(new TextComponentTranslation("tooltip.teckle.filter.buffer")).withInventory(ImmutableList.copyOf(stacks));
+            data.add(bufferData);
+        }
     }
 }

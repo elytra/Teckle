@@ -21,18 +21,22 @@ public class AdvancedStackHandlerEntry {
     private AdvancedItemStackHandler handler;
 
     public AdvancedStackHandlerEntry(UUID id, int dimension, BlockPos pos, AdvancedItemStackHandler handler) {
+        this(id, dimension, pos, handler, AdvancedStackHandlerPool.getPool(dimension));
+    }
+
+    public AdvancedStackHandlerEntry(UUID id, int dimension, BlockPos pos, AdvancedItemStackHandler handler, AdvancedStackHandlerPool pool) {
         this.setPos(pos);
         this.setId(id);
         this.setDimension(dimension);
         this.setHandler(handler);
-        AdvancedStackHandlerPool.getPool(dimension).put(id, this);
+        pool.put(id, this);
     }
 
-    public static AdvancedStackHandlerEntry create(NBTTagCompound tag) {
+    public static AdvancedStackHandlerEntry create(AdvancedStackHandlerPool pool, NBTTagCompound tag) {
         BlockPos pos = BlockPos.fromLong(tag.getLong("pos"));
         AdvancedItemStackHandler handler = new AdvancedItemStackHandler(tag.getInteger("handlerSize"));
         handler.deserializeNBT(tag.getCompoundTag("handler"));
-        return new AdvancedStackHandlerEntry(tag.getUniqueId("id"), tag.getInteger("dimension"), pos, handler);
+        return new AdvancedStackHandlerEntry(tag.getUniqueId("id"), tag.getInteger("dimension"), pos, handler, pool);
     }
 
     public NBTTagCompound serialize() {

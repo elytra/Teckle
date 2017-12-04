@@ -41,7 +41,7 @@ public class ItemSiliconWafer extends Item implements IResourceHolder {
 
     @Override
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> subItems) {
-        if (Objects.equals(tab, TeckleObjects.creativeTab)) {
+        if (Objects.equals(tab, TeckleObjects.creativeTab) || Objects.equals(tab, CreativeTabs.SEARCH)) {
             for (WaferType waferType : WaferType.values()) {
                 subItems.add(new ItemStack(this, 1, waferType.getMetadata()));
             }

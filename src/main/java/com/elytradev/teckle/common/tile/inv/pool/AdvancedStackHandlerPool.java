@@ -41,8 +41,7 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
             return;
 
         if (!DIMENSION_POOLS.containsKey(e.getWorld().provider.getDimension())) {
-            DIMENSION_POOLS.put(e.getWorld().provider.getDimension(), new AdvancedStackHandlerPool());
-            getSavedPool(e.getWorld());
+            DIMENSION_POOLS.put(e.getWorld().provider.getDimension(), getSavedPool(e.getWorld()));
         }
     }
 
@@ -62,11 +61,12 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
 
     public static AdvancedStackHandlerPool getPool(Integer dim) {
         if (!DIMENSION_POOLS.containsKey(dim)) {
-            DIMENSION_POOLS.put(dim, new AdvancedStackHandlerPool());
-            DIMENSION_POOLS.get(dim).dimension = dim;
+            AdvancedStackHandlerPool pool = new AdvancedStackHandlerPool();
             if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-                getSavedPool(DimensionManager.getWorld(dim));
+                pool = getSavedPool(DimensionManager.getWorld(dim));
             }
+            DIMENSION_POOLS.put(dim, pool);
+            DIMENSION_POOLS.get(dim).dimension = dim;
         }
         if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
             FALLBACK_POOLS.put(dim, new AdvancedStackHandlerPool());
@@ -79,9 +79,9 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
     private static AdvancedStackHandlerPool getSavedPool(World world) {
         AdvancedStackHandlerPool data = (AdvancedStackHandlerPool) world.getPerWorldStorage().getOrLoadData(AdvancedStackHandlerPool.class, DATA_NAME);
         if (data == null) {
-            data = AdvancedStackHandlerPool.getPool(world);
+            data = new AdvancedStackHandlerPool();
+            data.dimension = world.provider.getDimension();
             world.getPerWorldStorage().setData(DATA_NAME, data);
-            data.markDirty();
         }
 
         return data;
@@ -96,15 +96,12 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
      * @return the handler.
      */
     public AdvancedStackHandlerEntry getOrCreatePoolEntry(@Nullable UUID knownID, @Nonnull BlockPos pos, int handlerSize) {
-        AdvancedStackHandlerEntry entryOut = null;
+        AdvancedStackHandlerEntry entryOut;
         if (knownID == null) {
-            if (entryOut == null) {
-                entryOut = new AdvancedStackHandlerEntry(UUID.randomUUID(), dimension, pos, new AdvancedItemStackHandler(handlerSize));
-            }
+            entryOut = new AdvancedStackHandlerEntry(UUID.randomUUID(), dimension, pos, new AdvancedItemStackHandler(handlerSize));
         } else {
-            entryOut = AdvancedStackHandlerPool.getPool(dimension).get(knownID);
+            entryOut = this.get(knownID);
         }
-
         return entryOut;
     }
 
@@ -170,7 +167,7 @@ public class AdvancedStackHandlerPool extends WorldSavedData {
     public void readFromNBT(NBTTagCompound tag) {
         for (int i = 0; i < tag.getInteger("tags"); i++) {
             NBTTagCompound entryCompound = tag.getCompoundTag("e" + i);
-            AdvancedStackHandlerEntry advancedStackHandlerEntry = AdvancedStackHandlerEntry.create(entryCompound);
+            AdvancedStackHandlerEntry advancedStackHandlerEntry = AdvancedStackHandlerEntry.create(this, entryCompound);
             registeredHandlers.put(advancedStackHandlerEntry.getId(), advancedStackHandlerEntry);
         }
         TeckleLog.debug("Deserialized {} stack handlers.", tag.getInteger("tags"));

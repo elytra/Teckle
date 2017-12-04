@@ -319,11 +319,11 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
         super.readFromNBT(tag);
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer() && !(this instanceof TileFilter)) {
-            if (!tag.hasUniqueId("buffer")) {
+            if (tag.hasKey("buffer")) {
                 validate();
                 bufferData.getHandler().deserializeNBT(tag.getCompoundTag("buffer"));
                 tag.removeTag("buffer");
-            } else {
+            } else if (tag.hasUniqueId("buffer")) {
                 this.bufferID = tag.getUniqueId("buffer");
                 this.bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
             }
@@ -349,6 +349,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
                     }
                 }
             }
+            validate();
         }
     }
 

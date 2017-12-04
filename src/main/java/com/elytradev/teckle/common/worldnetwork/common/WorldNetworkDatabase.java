@@ -146,7 +146,6 @@ public class WorldNetworkDatabase extends WorldSavedData {
         if (data == null) {
             data = WorldNetworkDatabase.getNetworkDB(world);
             world.getPerWorldStorage().setData("tecklenetworks", data);
-            data.markDirty();
         }
 
         return data;

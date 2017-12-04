@@ -286,10 +286,15 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
                 tag.removeTag("filterData");
                 tag.removeTag("buffer");
             } else {
-                this.bufferID = tag.getUniqueId("buffer");
-                this.filterID = tag.getUniqueId("filter");
-                this.bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
-                this.filterData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(filterID);
+                AdvancedStackHandlerPool pool = AdvancedStackHandlerPool.getPool(world.provider.getDimension());
+                if (tag.hasUniqueId("buffer")) {
+                    this.bufferID = tag.getUniqueId("buffer");
+                    this.bufferData = pool.get(bufferID);
+                }
+                if(tag.hasUniqueId("filter")){
+                    this.filterID = tag.getUniqueId("filter");
+                    this.filterData = pool.get(filterID);
+                }
             }
 
             UUID networkID = tag.hasKey("networkIDLeast") ? tag.getUniqueId("networkID") : null;
@@ -314,6 +319,7 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
                     }
                 }
             }
+            validate();
         }
     }
 
@@ -336,6 +342,7 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
             tag.setUniqueId("networkID", networkTile.getNode().getNetwork().getNetworkID());
         }
+
         return super.writeToNBT(tag);
     }
 

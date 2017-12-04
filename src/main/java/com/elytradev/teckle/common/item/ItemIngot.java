@@ -45,7 +45,7 @@ public class ItemIngot extends Item implements IResourceHolder {
 
     @Override
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> subItems) {
-        if (Objects.equals(tab, TeckleObjects.creativeTab)) {
+        if (Objects.equals(tab, TeckleObjects.creativeTab) || Objects.equals(tab, CreativeTabs.SEARCH)) {
             for (ItemIngot.IngotType ingotType : ItemIngot.IngotType.values()) {
                 subItems.add(new ItemStack(this, 1, ingotType.getMetadata()));
             }

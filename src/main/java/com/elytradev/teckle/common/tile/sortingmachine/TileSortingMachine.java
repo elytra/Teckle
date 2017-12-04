@@ -98,7 +98,6 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     @Override
     public void validate() {
         try {
-
             if (filterID == null) {
                 if (filterData == null) {
                     filterData = new AdvancedStackHandlerEntry(UUID.randomUUID(), world.provider.getDimension(), pos, new AdvancedItemStackHandler(48));
@@ -300,15 +299,20 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
                 tag.removeTag("buffer");
             } else {
                 int dimID = tag.getInteger("databaseID");
-                this.bufferID = tag.getUniqueId("buffer");
-                this.filterID = tag.getUniqueId("filter");
-                this.bufferData = AdvancedStackHandlerPool.getPool(dimID).get(bufferID);
-                this.filterData = AdvancedStackHandlerPool.getPool(dimID).get(filterID);
+                if (tag.hasUniqueId("buffer")) {
+                    this.bufferID = tag.getUniqueId("buffer");
+                    this.bufferData = AdvancedStackHandlerPool.getPool(dimID).get(bufferID);
+                }
+                if (tag.hasUniqueId("filter")) {
+                    this.filterID = tag.getUniqueId("filter");
+                    this.filterData = AdvancedStackHandlerPool.getPool(dimID).get(filterID);
+                }
             }
 
             if (loadNetworkTile(tag, "inputTileID", getFacing().getOpposite(), NetworkTileSortingMachineInput.class)) {
                 loadNetworkTile(tag, "outputTileID", getFacing(), NetworkTileSortingMachineOutput.class);
             }
+            validate();
         }
     }
 

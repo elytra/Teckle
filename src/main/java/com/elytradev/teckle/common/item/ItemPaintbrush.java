@@ -46,7 +46,7 @@ public class ItemPaintbrush extends Item implements IResourceHolder {
 
     @Override
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
-        if (Objects.equals(tab, TeckleObjects.creativeTab)) {
+        if (Objects.equals(tab, TeckleObjects.creativeTab) || Objects.equals(tab, CreativeTabs.SEARCH)) {
             for (EnumDyeColor color : EnumDyeColor.values()) {
                 items.add(new ItemStack(this, 1, color.getDyeDamage()));
             }
