@@ -19,7 +19,7 @@ package com.elytradev.teckle.client.gui;
 import com.elytradev.teckle.client.gui.base.GuiTeckle;
 import com.elytradev.teckle.client.gui.base.GuiTeckleButton;
 import com.elytradev.teckle.common.container.ContainerFabricator;
-import com.elytradev.teckle.common.network.messages.FabricatorTemplateMessage;
+import com.elytradev.teckle.common.network.messages.serverbound.FabricatorTemplateMessage;
 import com.elytradev.teckle.common.tile.TileFabricator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;

@@ -1,32 +1,31 @@
-package com.elytradev.teckle.common.network.messages;
+package com.elytradev.teckle.common.network.messages.serverbound;
 
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.concrete.network.annotation.field.MarshalledAs;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
 import com.elytradev.teckle.common.network.TeckleNetworking;
+import com.elytradev.teckle.common.network.messages.TeckleMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * Created by darkevilmac on 5/31/17.
+ * Handles any change of the default route colour for the sorting machine on the server.
  */
-@ReceivedOn(Side.CLIENT)
-public class SortingMachineSelectorMessage extends Message {
+@ReceivedOn(Side.SERVER)
+public class SortingMachineDefaultRouteChangeMessage extends TeckleMessage {
 
     @MarshalledAs("i8")
-    public int selectorPos;
+    public int routeMetadata;
     public BlockPos sortingMachinePos;
 
-    public SortingMachineSelectorMessage(NetworkContext ctx) {
-        super(ctx);
+    public SortingMachineDefaultRouteChangeMessage(NetworkContext ctx) {
     }
 
-    public SortingMachineSelectorMessage(int selectorPos, BlockPos sortingMachinePos) {
-        super(TeckleNetworking.NETWORK);
-        this.selectorPos = selectorPos;
+    public SortingMachineDefaultRouteChangeMessage(int routeMetadata, BlockPos sortingMachinePos) {
+        this.routeMetadata = routeMetadata;
         this.sortingMachinePos = sortingMachinePos;
     }
 
@@ -37,7 +36,8 @@ public class SortingMachineSelectorMessage extends Message {
             if (!sortingMachine.isUsableByPlayer(sender))
                 return;
 
-            sortingMachine.setSelectorPos(selectorPos);
+            sortingMachine.defaultRoute = TileSortingMachine.DefaultRoute.byMetadata(routeMetadata);
+            sortingMachine.markDirty();
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.elytradev.teckle.common.block;
 
+import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
 import com.elytradev.teckle.common.tile.TileBeamQuarry;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
@@ -9,11 +11,12 @@ import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -23,7 +26,7 @@ public class BlockBeamQuarry extends BlockContainer {
     public static final PropertyDirection FACING = BlockHorizontal.FACING;
     public static final PropertyBool ACTIVE = PropertyBool.create("active");
 
-    protected BlockBeamQuarry(Material materialIn) {
+    public BlockBeamQuarry(Material materialIn) {
         super(materialIn);
 
         this.setHarvestLevel("pickaxe", 0);
@@ -34,27 +37,34 @@ public class BlockBeamQuarry extends BlockContainer {
 
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
+        worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()).withProperty(ACTIVE, false));
 
         if (!worldIn.isRemote) {
             TileEntity tileEntity = worldIn.getTileEntity(pos);
             if (tileEntity != null && tileEntity instanceof TileBeamQuarry) {
                 // set the default bounds of the quarry.
-                EnumFacing facing = placer.getHorizontalFacing();
-                EnumFacing relativeLeft = facing.rotateYCCW();
-                EnumFacing relativeRight = facing.rotateY();
-                BlockPos basePos = pos.offset(facing);
-                BlockPos min = basePos.add(relativeLeft.getDirectionVec().crossProduct(new Vec3i(4, 4, 4)));
-                BlockPos max = basePos.add(relativeRight.getDirectionVec().crossProduct(new Vec3i(4, 4, 4)));
-                max = max.add(facing.getDirectionVec().crossProduct(new Vec3i(8, 8, 8)));
-                ((TileBeamQuarry) tileEntity).setBounds(min, max);
+                ((TileBeamQuarry) tileEntity).setDimensions(placer.getHorizontalFacing(),4, 4, 8);
+                tileEntity.markDirty();
             }
         }
     }
 
     @Override
-    public BlockStateContainer getBlockState() {
-        return new BlockStateContainer(this, ACTIVE, FACING);
+    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        if (!playerIn.isSneaking()) {
+            TileEntity tileentity = worldIn.getTileEntity(pos);
+            if (tileentity != null) {
+                playerIn.openGui(TeckleMod.INSTANCE, TeckleGuiHandler.ElementType.ELEMENT_PROVIDER.caseNumber, worldIn, pos.getX(), pos.getY(), pos.getZ());
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, FACING, ACTIVE);
     }
 
     @Override

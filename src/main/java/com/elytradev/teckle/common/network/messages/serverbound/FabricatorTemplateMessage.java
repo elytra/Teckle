@@ -14,54 +14,48 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.network.messages;
+package com.elytradev.teckle.common.network.messages.serverbound;
 
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.concrete.network.annotation.field.MarshalledAs;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
-import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.network.TeckleNetworking;
-import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
-import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;
+import com.elytradev.teckle.common.network.messages.TeckleMessage;
+import com.elytradev.teckle.common.tile.TileFabricator;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * Handles any changes to a sorting machine sort mode on the server.
+ * Sent by clients to the server to set the fake slots for the fabricator.
  */
 @ReceivedOn(Side.SERVER)
-public class SortingMachineSortModeChangeMessage extends Message {
+public class FabricatorTemplateMessage extends TeckleMessage {
 
-    @MarshalledAs("int")
-    public int sortModeID;
-    public BlockPos sortingMachinePos;
+    public BlockPos fabricatorPos;
+    @MarshalledAs("i8")
+    public int templateIndex;
+    public ItemStack stack;
 
-    public SortingMachineSortModeChangeMessage(NetworkContext ctx) {
-        super(ctx);
+    public FabricatorTemplateMessage(NetworkContext ctx) {
     }
 
-    public SortingMachineSortModeChangeMessage(int sortModeID, BlockPos sortingMachinePos) {
-        super(TeckleNetworking.NETWORK);
-        this.sortModeID = sortModeID;
-        this.sortingMachinePos = sortingMachinePos;
+    public FabricatorTemplateMessage(BlockPos fabricatorPos, ItemStack stack, int templateIndex) {
+        this.fabricatorPos = fabricatorPos;
+        this.stack = stack;
+        this.templateIndex = templateIndex;
     }
 
     @Override
     protected void handle(EntityPlayer sender) {
         if (sender != null && sender.world != null) {
-            TileSortingMachine sortingMachine = (TileSortingMachine) sender.world.getTileEntity(sortingMachinePos);
-
-            if (!sortingMachine.isUsableByPlayer(sender))
+            TileFabricator fabricator = (TileFabricator) sender.world.getTileEntity(fabricatorPos);
+            if (!fabricator.isUsableByPlayer(sender))
                 return;
-
-            try {
-                sortingMachine.setSortMode(SortMode.SORT_MODES.get(sortModeID).newInstance());
-            } catch (Exception e) {
-                TeckleLog.error("Failed to instantiate sort mode from packet.");
-            }
-            sortingMachine.markDirty();
+            fabricator.setTemplateSlot(templateIndex, stack);
+            fabricator.markDirty();
         }
     }
 }

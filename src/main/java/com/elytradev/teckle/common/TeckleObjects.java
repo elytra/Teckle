@@ -76,12 +76,15 @@ public class TeckleObjects {
     public static BlockNikoliteOre blockNikoliteOre;
     public static BlockCompacted blockCompacted;
     public static BlockFabricator blockFabricator;
+    public static BlockBeamQuarry blockBeamQuarry;
+
     public static ItemPaintbrush itemPaintBrush;
     public static ItemBlade itemBlade;
     public static Item itemNikolite;
     public static Item itemSiliconBoule;
     public static ItemSiliconWafer itemSiliconWafer;
     public static ItemIngot itemIngot;
+
     public static CreativeTabs creativeTab = new CreativeTabs(MOD_ID) {
         @Override
         public ItemStack getTabIconItem() {
@@ -94,6 +97,7 @@ public class TeckleObjects {
     public static String REGISTRY_PREFIX = MOD_ID.toLowerCase();
     private static List<Item> itemBlocksToRegister;
     private int recipeID = 0;
+
     public TeckleObjects() {
         MinecraftForge.EVENT_BUS.register(this);
     }
@@ -111,6 +115,7 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileFabricator.class, "teckleFabricator");
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
         GameRegistry.registerTileEntity(TileRetriever.class, "teckleRetriever");
+        GameRegistry.registerTileEntity(TileBeamQuarry.class, "teckleRetriever");
 
         NetworkTileRegistry.registerNetworkTile("teckle", "itemTube", NetworkTileItemTube.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "filter", NetworkTileFilter.class);
@@ -242,6 +247,9 @@ public class TeckleObjects {
 
         blockNikoliteOre = new BlockNikoliteOre();
         registerBlock(registry, "nikolite_ore", blockNikoliteOre);
+
+        blockBeamQuarry = new BlockBeamQuarry(Material.IRON);
+        registerBlock(registry, "beamquarry", blockBeamQuarry);
 
         blockCompacted = new BlockCompacted(Material.IRON);
         registerBlock(registry, "compacted_metal", blockCompacted, false);

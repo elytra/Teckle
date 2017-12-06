@@ -17,8 +17,8 @@
 package com.elytradev.teckle.common.worldnetwork.common;
 
 import com.elytradev.teckle.api.IWorldNetwork;
-import com.elytradev.teckle.common.network.messages.TravellerDataMessage;
-import com.elytradev.teckle.common.network.messages.TravellerMoveMessage;
+import com.elytradev.teckle.common.network.messages.clientbound.TravellerDataMessage;
+import com.elytradev.teckle.common.network.messages.clientbound.TravellerMoveMessage;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEndpoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;

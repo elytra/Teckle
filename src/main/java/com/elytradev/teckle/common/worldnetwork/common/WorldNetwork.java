@@ -19,7 +19,7 @@ package com.elytradev.teckle.common.worldnetwork.common;
 import com.elytradev.teckle.api.IWorldNetwork;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.common.TeckleLog;
-import com.elytradev.teckle.common.network.messages.TravellerDataMessage;
+import com.elytradev.teckle.common.network.messages.clientbound.TravellerDataMessage;
 import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
 import com.elytradev.teckle.common.worldnetwork.common.node.PositionData;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;

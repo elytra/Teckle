@@ -20,7 +20,7 @@ import com.elytradev.teckle.client.gui.base.GuiTeckle;
 import com.elytradev.teckle.client.gui.base.GuiTeckleButton;
 import com.elytradev.teckle.common.container.ContainerFilter;
 import com.elytradev.teckle.common.helper.ColourHelper;
-import com.elytradev.teckle.common.network.messages.FilterColourChangeMessage;
+import com.elytradev.teckle.common.network.messages.serverbound.FilterColourChangeMessage;
 import com.elytradev.teckle.common.tile.TileFilter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;

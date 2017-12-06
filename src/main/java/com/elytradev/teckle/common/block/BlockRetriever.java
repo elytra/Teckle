@@ -4,7 +4,7 @@ import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistantHold
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
-import com.elytradev.teckle.common.network.messages.TileLitMessage;
+import com.elytradev.teckle.common.network.messages.clientbound.TileLitMessage;
 import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import com.elytradev.teckle.common.tile.retriever.TileRetriever;
 import net.minecraft.block.Block;

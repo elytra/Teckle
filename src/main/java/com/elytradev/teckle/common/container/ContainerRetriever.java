@@ -1,6 +1,6 @@
 package com.elytradev.teckle.common.container;
 
-import com.elytradev.teckle.common.network.messages.RetrieverSelectorMessage;
+import com.elytradev.teckle.common.network.messages.clientbound.RetrieverSelectorMessage;
 import com.elytradev.teckle.common.tile.retriever.TileRetriever;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;

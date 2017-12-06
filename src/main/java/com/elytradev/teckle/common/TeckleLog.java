@@ -1,6 +1,6 @@
 package com.elytradev.teckle.common;
 
-import com.elytradev.teckle.common.network.messages.DebugReceiverMessage;
+import com.elytradev.teckle.common.network.messages.clientbound.DebugReceiverMessage;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.launchwrapper.Launch;
 import org.apache.logging.log4j.LogManager;

@@ -16,7 +16,7 @@
 
 package com.elytradev.teckle.common.container;
 
-import com.elytradev.teckle.common.network.messages.SortingMachineSelectorMessage;
+import com.elytradev.teckle.common.network.messages.clientbound.SortingMachineSelectorMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;

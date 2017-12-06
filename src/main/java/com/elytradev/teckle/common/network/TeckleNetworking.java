@@ -19,7 +19,8 @@ package com.elytradev.teckle.common.network;
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.teckle.common.TeckleMod;
-import com.elytradev.teckle.common.network.messages.*;
+import com.elytradev.teckle.common.network.messages.clientbound.*;
+import com.elytradev.teckle.common.network.messages.serverbound.*;
 
 /**
  * Used for registering packets and storing a global network context for Teckle.
@@ -49,6 +50,11 @@ public class TeckleNetworking {
         registerMessage(SortingMachineDefaultRouteChangeMessage.class);
         registerMessage(SortingMachineSelectorMessage.class);
         registerMessage(TileLitMessage.class);
+
+        registerMessage(TileUpdateMessage.class);
+
+        registerMessage(ToggleQuarryMessage.class);
+        registerMessage(ChangeQuarryBoundsMessage.class);
     }
 
     private static void registerMessage(Class<? extends Message> clazz) {

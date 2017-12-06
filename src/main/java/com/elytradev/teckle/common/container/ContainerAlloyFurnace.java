@@ -16,7 +16,7 @@
 
 package com.elytradev.teckle.common.container;
 
-import com.elytradev.teckle.common.network.messages.AlloyFurnaceMessage;
+import com.elytradev.teckle.common.network.messages.clientbound.AlloyFurnaceMessage;
 import com.elytradev.teckle.common.tile.TileAlloyFurnace;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.network.messages;
+package com.elytradev.teckle.common.network;
 
 import com.elytradev.concrete.network.Marshaller;
 import io.netty.buffer.ByteBuf;
@@ -28,7 +28,7 @@ import java.util.ArrayList;
  */
 public class BlockPosListMarshaller implements Marshaller<ArrayList<BlockPos>> {
 
-    public static final String MARSHALLER_NAME = "com.elytradev.teckle.common.network.messages.BlockPosListMarshaller";
+    public static final String MARSHALLER_NAME = "com.elytradev.teckle.common.network.BlockPosListMarshaller";
     public static final BlockPosListMarshaller INSTANCE = new BlockPosListMarshaller();
 
     @Override

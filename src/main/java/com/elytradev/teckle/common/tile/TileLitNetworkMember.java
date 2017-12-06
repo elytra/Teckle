@@ -1,6 +1,6 @@
 package com.elytradev.teckle.common.tile;
 
-import com.elytradev.teckle.common.network.messages.TileLitMessage;
+import com.elytradev.teckle.common.network.messages.clientbound.TileLitMessage;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;

@@ -1,32 +1,31 @@
-package com.elytradev.teckle.common.network.messages;
+package com.elytradev.teckle.common.network.messages.clientbound;
 
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.concrete.network.annotation.field.MarshalledAs;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
 import com.elytradev.teckle.common.network.TeckleNetworking;
+import com.elytradev.teckle.common.network.messages.TeckleMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * Handles any change of the default route colour for the sorting machine on the server.
+ * Created by darkevilmac on 5/31/17.
  */
-@ReceivedOn(Side.SERVER)
-public class SortingMachineDefaultRouteChangeMessage extends Message {
+@ReceivedOn(Side.CLIENT)
+public class SortingMachineSelectorMessage extends TeckleMessage {
 
     @MarshalledAs("i8")
-    public int routeMetadata;
+    public int selectorPos;
     public BlockPos sortingMachinePos;
 
-    public SortingMachineDefaultRouteChangeMessage(NetworkContext ctx) {
-        super(ctx);
+    public SortingMachineSelectorMessage(NetworkContext ctx) {
     }
 
-    public SortingMachineDefaultRouteChangeMessage(int routeMetadata, BlockPos sortingMachinePos) {
-        super(TeckleNetworking.NETWORK);
-        this.routeMetadata = routeMetadata;
+    public SortingMachineSelectorMessage(int selectorPos, BlockPos sortingMachinePos) {
+        this.selectorPos = selectorPos;
         this.sortingMachinePos = sortingMachinePos;
     }
 
@@ -37,8 +36,7 @@ public class SortingMachineDefaultRouteChangeMessage extends Message {
             if (!sortingMachine.isUsableByPlayer(sender))
                 return;
 
-            sortingMachine.defaultRoute = TileSortingMachine.DefaultRoute.byMetadata(routeMetadata);
-            sortingMachine.markDirty();
+            sortingMachine.setSelectorPos(selectorPos);
         }
     }
 }

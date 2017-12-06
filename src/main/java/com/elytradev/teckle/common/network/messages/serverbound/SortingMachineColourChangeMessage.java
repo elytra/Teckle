@@ -14,13 +14,14 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.network.messages;
+package com.elytradev.teckle.common.network.messages.serverbound;
 
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.concrete.network.annotation.field.MarshalledAs;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
 import com.elytradev.teckle.common.network.TeckleNetworking;
+import com.elytradev.teckle.common.network.messages.TeckleMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
@@ -31,7 +32,7 @@ import net.minecraftforge.fml.relauncher.Side;
  * Created by darkevilmac on 5/22/17.
  */
 @ReceivedOn(Side.SERVER)
-public class SortingMachineColourChangeMessage extends Message {
+public class SortingMachineColourChangeMessage extends TeckleMessage {
 
     public BlockPos pos;
     @MarshalledAs("i8")
@@ -40,11 +41,9 @@ public class SortingMachineColourChangeMessage extends Message {
     public int colour;
 
     public SortingMachineColourChangeMessage(NetworkContext ctx) {
-        super(ctx);
     }
 
     public SortingMachineColourChangeMessage(BlockPos pos, int colourIndex, EnumDyeColor colour) {
-        super(TeckleNetworking.NETWORK);
         this.pos = pos;
         this.colourIndex = colourIndex;
         this.colour = colour == null ? -1 : colour.getMetadata();

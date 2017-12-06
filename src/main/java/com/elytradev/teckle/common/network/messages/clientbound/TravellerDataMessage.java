@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.network.messages;
+package com.elytradev.teckle.common.network.messages.clientbound;
 
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
@@ -23,6 +23,7 @@ import com.elytradev.concrete.network.annotation.type.ReceivedOn;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.network.TeckleNetworking;
+import com.elytradev.teckle.common.network.messages.TeckleMessage;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkNode;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.WorldNetworkPath;
@@ -37,7 +38,7 @@ import java.util.Objects;
  * Adds or removes travellers and their paths to the client.
  */
 @ReceivedOn(Side.CLIENT)
-public class TravellerDataMessage extends Message {
+public class TravellerDataMessage extends TeckleMessage {
 
     private static final BlockPos IMPOSSIBLEPOS = new BlockPos(0, -1, 0);
 
@@ -49,11 +50,9 @@ public class TravellerDataMessage extends Message {
     public Action action;
 
     public TravellerDataMessage(NetworkContext ctx) {
-        super(ctx);
     }
 
     public TravellerDataMessage(Action action, WorldNetworkTraveller traveller) {
-        super(TeckleNetworking.NETWORK);
         this.action = action;
         this.data = traveller.data;
         this.current = traveller.currentNode.getPosition();
@@ -68,7 +67,7 @@ public class TravellerDataMessage extends Message {
     }
 
     public TravellerDataMessage(Action action, WorldNetworkTraveller traveller, BlockPos current, BlockPos previous) {
-        super(TeckleNetworking.NETWORK);
+        super();
         this.action = action;
         this.data = traveller.data;
         this.current = current;

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.network.messages;
+package com.elytradev.teckle.common.network.messages.clientbound;
 
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
@@ -23,6 +23,7 @@ import com.elytradev.concrete.network.annotation.type.ReceivedOn;
 import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.client.worldnetwork.DummyNetworkTraveller;
 import com.elytradev.teckle.common.network.TeckleNetworking;
+import com.elytradev.teckle.common.network.messages.TeckleMessage;
 import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkTraveller;
 import com.elytradev.teckle.common.worldnetwork.common.pathing.WorldNetworkPath;
 import net.minecraft.entity.player.EntityPlayer;
@@ -35,7 +36,7 @@ import java.util.UUID;
  * Handles changes in a travellers path on the client.
  */
 @ReceivedOn(Side.CLIENT)
-public class TravellerMoveMessage extends Message {
+public class TravellerMoveMessage extends TeckleMessage {
 
     @MarshalledAs("int")
     public int pathIndex = -1;
@@ -44,11 +45,9 @@ public class TravellerMoveMessage extends Message {
 
 
     public TravellerMoveMessage(NetworkContext ctx) {
-        super(ctx);
     }
 
     public TravellerMoveMessage(WorldNetworkTraveller traveller) {
-        super(TeckleNetworking.NETWORK);
         this.path = traveller.activePath;
         this.pathIndex = this.path.getIndex() - 1;
         this.data = traveller.data;

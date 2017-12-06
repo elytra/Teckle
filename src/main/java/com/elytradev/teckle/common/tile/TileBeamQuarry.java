@@ -1,6 +1,11 @@
 package com.elytradev.teckle.common.tile;
 
+import com.elytradev.teckle.client.gui.GuiBeamQuarry;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.block.BlockBeamQuarry;
+import com.elytradev.teckle.common.container.ContainerBeamQuarry;
+import com.elytradev.teckle.common.network.messages.clientbound.TileUpdateMessage;
+import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.ItemStream;
 import net.minecraft.block.state.IBlockState;
@@ -10,21 +15,27 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.items.ItemHandlerHelper;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class TileBeamQuarry extends TileEntity implements ITickable {
+public class TileBeamQuarry extends TileEntity implements ITickable, IElementProvider {
 
-    public BlockPos min = pos, max = pos, cursor = pos;
-    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(16);
+    private BlockPos min = pos, max = pos, cursor = pos;
+    public int left, right, forward;
+    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(25);
     public AdvancedItemStackHandler junkSupply = new AdvancedItemStackHandler(12);
     public AdvancedItemStackHandler junkTypes = new AdvancedItemStackHandler(6);
 
@@ -35,6 +46,9 @@ public class TileBeamQuarry extends TileEntity implements ITickable {
         this.min = BlockPos.fromLong(tag.getLong("min"));
         this.max = BlockPos.fromLong(tag.getLong("max"));
         this.cursor = BlockPos.fromLong(tag.getLong("cursor"));
+        this.left = tag.getInteger("left");
+        this.right = tag.getInteger("right");
+        this.forward = tag.getInteger("forward");
 
         this.buffer.deserializeNBT(tag.getCompoundTag("buffer"));
         this.junkSupply.deserializeNBT(tag.getCompoundTag("junkSupply"));
@@ -46,6 +60,9 @@ public class TileBeamQuarry extends TileEntity implements ITickable {
         tag.setLong("min", this.min.toLong());
         tag.setLong("max", this.max.toLong());
         tag.setLong("cursor", this.cursor.toLong());
+        tag.setInteger("left", left);
+        tag.setInteger("right", right);
+        tag.setInteger("forward", forward);
 
         tag.setTag("buffer", this.buffer.serializeNBT());
         tag.setTag("junkSupply", this.junkSupply.serializeNBT());
@@ -55,11 +72,17 @@ public class TileBeamQuarry extends TileEntity implements ITickable {
     }
 
     @Override
+    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
+        return oldState.getBlock() != newState.getBlock()
+                || newState.getValue(BlockBeamQuarry.FACING) != oldState.getValue(BlockBeamQuarry.FACING);
+    }
+
+    @Override
     public void update() {
         //TODO: Power consumption and cooldown.
         if (isActive()) {
             // TODO: Remove, just for testing.
-            if (world.getTotalWorldTime() % 5 != 0)
+            if (world.isRemote || world.getTotalWorldTime() % 5 != 0)
                 return;
 
             if (cursor == pos) {
@@ -71,7 +94,7 @@ public class TileBeamQuarry extends TileEntity implements ITickable {
             if (!isStateValid(cursorState)) {
                 int xRange = Math.abs(min.getX() - max.getX()) + 1;
                 int zRange = Math.abs(min.getZ() - max.getZ()) + 1;
-                for (int y = cursor.getY(); y > 0 && !isStateValid(cursorState); y++) {
+                for (int y = cursor.getY(); y > 0 && !isStateValid(cursorState); y--) {
                     for (int x = 0; x < xRange && !isStateValid(cursorState); x++) {
                         for (int z = 0; z < zRange && !isStateValid(cursorState); z++) {
                             cursor = new BlockPos(min.getX() + x, y, min.getZ() + z);
@@ -102,12 +125,11 @@ public class TileBeamQuarry extends TileEntity implements ITickable {
                     world.spawnEntity(new EntityItem(world, pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1, item));
                 }
             }
-        } else {
+        } else if (world.isRemote) {
             // Show the border for the quarry area.
-            for (int x = min.getX(); x < max.getX(); x++) {
-                for (int z = min.getZ(); z < max.getZ(); z++) {
-                    world.spawnParticle(EnumParticleTypes.REDSTONE, true, x, pos.getY(), z, 0, 0, 0);
-                }
+            for (BlockPos dustPos : BlockPos.getAllInBox(new BlockPos(min.getX(), pos.getY(), min.getZ()),
+                    new BlockPos(max.getX(), pos.getY(), max.getZ()))) {
+                world.spawnParticle(EnumParticleTypes.REDSTONE, true, dustPos.getX() + 0.5, pos.getY(), dustPos.getZ() + 0.5, 0, 0, 0);
             }
         }
     }
@@ -137,14 +159,70 @@ public class TileBeamQuarry extends TileEntity implements ITickable {
      * @param min the minimum position mining will be restricted in.
      * @param max the maximum position mining will be restricted in.
      */
-    public void setBounds(BlockPos min, BlockPos max) {
+    private void setBounds(BlockPos min, BlockPos max) {
         this.min = min;
         this.max = max;
         this.cursor = min;
+
+        if (!world.isRemote) {
+            TeckleLog.info("Set to {} {}", min, max);
+            new TileUpdateMessage(world, pos).sendToAllWatching(this);
+        }
+    }
+
+    public void setDimensions(int left, int right, int forward) {
+        setDimensions(getFacing().getOpposite(), left, right, forward);
+    }
+
+    public void setDimensions(EnumFacing facing, int left, int right, int forward) {
+        BlockPos basePos = pos.offset(facing);
+        EnumFacing relativeLeft = facing.rotateYCCW();
+        EnumFacing relativeRight = facing.rotateY();
+        BlockPos min = basePos.offset(relativeLeft, left);
+        BlockPos max = basePos.offset(relativeRight, right);
+        max = max.offset(facing, forward);
+        this.setBounds(min, max);
+        this.left = left;
+        this.right = right;
+        this.forward = forward;
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        return this.writeToNBT(new NBTTagCompound());
+    }
+
+    @Nullable
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(pos, 0, getUpdateTag());
+    }
+
+    @Override
+    public void handleUpdateTag(NBTTagCompound tag) {
+        this.readFromNBT(tag);
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        this.readFromNBT(pkt.getNbtCompound());
     }
 
     public boolean isUsableByPlayer(EntityPlayer player) {
         return this.world.getTileEntity(this.pos) == this && player.getDistanceSq((double) this.pos.getX() + 0.5D, (double) this.pos.getY() + 0.5D, (double) this.pos.getZ() + 0.5D) <= 64.0D;
+    }
 
+    @Override
+    public Object getServerElement(EntityPlayer player) {
+        return new ContainerBeamQuarry(this, player);
+    }
+
+    @Override
+    public Object getClientElement(EntityPlayer player) {
+        return new GuiBeamQuarry(this, player);
+    }
+
+    public EnumFacing getFacing() {
+        return world.getBlockState(pos).getValue(BlockBeamQuarry.FACING);
     }
 }

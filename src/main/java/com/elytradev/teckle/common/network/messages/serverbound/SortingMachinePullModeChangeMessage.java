@@ -14,49 +14,52 @@
  *    limitations under the License.
  */
 
-package com.elytradev.teckle.common.network.messages;
+package com.elytradev.teckle.common.network.messages.serverbound;
 
 import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.concrete.network.annotation.field.MarshalledAs;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
+import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.network.TeckleNetworking;
-import com.elytradev.teckle.common.tile.TileFabricator;
+import com.elytradev.teckle.common.network.messages.TeckleMessage;
+import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import com.elytradev.teckle.common.tile.sortingmachine.modes.pullmode.PullMode;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * Sent by clients to the server to set the fake slots for the fabricator.
+ * Handles any changes in the pull mode of a sorting machine on the server.
  */
 @ReceivedOn(Side.SERVER)
-public class FabricatorTemplateMessage extends Message {
+public class SortingMachinePullModeChangeMessage extends TeckleMessage {
 
-    public BlockPos fabricatorPos;
     @MarshalledAs("i8")
-    public int templateIndex;
-    public ItemStack stack;
+    public int pullModeID;
+    public BlockPos sortingMachinePos;
 
-    public FabricatorTemplateMessage(NetworkContext ctx) {
-        super(ctx);
-    }
+    public SortingMachinePullModeChangeMessage(NetworkContext ctx) {
+            }
 
-    public FabricatorTemplateMessage(BlockPos fabricatorPos, ItemStack stack, int templateIndex) {
-        super(TeckleNetworking.NETWORK);
-        this.fabricatorPos = fabricatorPos;
-        this.stack = stack;
-        this.templateIndex = templateIndex;
+    public SortingMachinePullModeChangeMessage(int pullModeID, BlockPos sortingMachinePos) {
+        this.pullModeID = pullModeID;
+        this.sortingMachinePos = sortingMachinePos;
     }
 
     @Override
     protected void handle(EntityPlayer sender) {
         if (sender != null && sender.world != null) {
-            TileFabricator fabricator = (TileFabricator) sender.world.getTileEntity(fabricatorPos);
-            if (!fabricator.isUsableByPlayer(sender))
+            TileSortingMachine sortingMachine = (TileSortingMachine) sender.world.getTileEntity(sortingMachinePos);
+            if (!sortingMachine.isUsableByPlayer(sender))
                 return;
-            fabricator.setTemplateSlot(templateIndex, stack);
-            fabricator.markDirty();
+
+            try {
+                sortingMachine.setPullMode(PullMode.PULL_MODES.get(pullModeID).newInstance());
+            } catch (Exception e) {
+                TeckleLog.error("Failed to instantiate pull mode from packet.");
+            }
+            sortingMachine.markDirty();
         }
     }
 }
