@@ -7,11 +7,14 @@ import com.elytradev.teckle.common.network.messages.clientbound.TileUpdateMessag
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.ItemStream;
+import com.google.common.collect.Lists;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -25,9 +28,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import net.minecraftforge.items.ItemHandlerHelper;
+import org.apache.commons.lang3.tuple.MutablePair;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,7 +45,9 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
     public int left, right, forward;
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(25);
     public AdvancedItemStackHandler junkSupply = new AdvancedItemStackHandler(12);
-    public AdvancedItemStackHandler junkTypes = new AdvancedItemStackHandler(6);
+    public AdvancedItemStackHandler junkTypes = new AdvancedItemStackHandler(6).withInsertCheck((integer, itemStack) -> itemStack.getItem() instanceof ItemBlock);
+
+    private ArrayList<MutablePair<BlockPos, Boolean>> stairPositions = Lists.newArrayList();
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
@@ -83,8 +91,7 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
     public void update() {
         //TODO: Power consumption and cooldown.
         if (isActive()) {
-            // TODO: Remove, just for testing.
-            if (world.isRemote /*|| world.getTotalWorldTime() % 5 != 0*/)
+            if (world.isRemote)
                 return;
 
             if (getCursor() == pos) {
@@ -145,8 +152,33 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
                 startZ = 0;
             }
             startX = 0;
+
+
+            if (!ItemStream.createItemStream(junkSupply).allMatch(ItemStack::isEmpty)) {
+                int finalY = y;
+                stairPositions.stream().filter(s -> s.getLeft().getY() >= finalY && !s.getRight()).forEachOrdered(s -> {
+                    Optional<ItemStack> any = ItemStream.createItemStream(junkSupply).filter(i -> !i.isEmpty()).findAny();
+                    if (any.isPresent()) {
+                        world.setBlockState(s.getLeft(), Block.getBlockFromItem(any.get().getItem()).getStateFromMeta(any.get().getMetadata()));
+                        any.get().shrink(1);
+                        s.setRight(true);
+                    }
+                });
+            }
         }
-        //TODO: Recheck, or deactivate.
+
+        // Recheck to confirm everything is clear, then deactivate the quarry if it is.
+        List<BlockPos> stairBlockPositions = stairPositions.stream().map(MutablePair::getLeft).collect(Collectors.toList());
+        for (BlockPos p : BlockPos.getAllInBox(min, max)) {
+            if (stairBlockPositions.contains(p))
+                continue;
+
+            if (isStateValid(world.getBlockState(p))) {
+                cursor = p;
+                return;
+            }
+        }
+        world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockBeamQuarry.ACTIVE, false));
     }
 
     private boolean isNegative(int i) {
@@ -185,6 +217,39 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
 
         if (!world.isRemote) {
             new TileUpdateMessage(world, pos).sendToAllWatching(this);
+        }
+
+        generateStairPositions();
+    }
+
+    private void generateStairPositions() {
+        if (world.isRemote)
+            return;
+
+        stairPositions.clear();
+        BlockPos currentPos = pos.offset(getFacing().getOpposite()).subtract(new Vec3i(0, 1, 0));
+        EnumFacing offsetFace = getFacing().rotateY();
+        int xMin, xMax;
+        int zMin, zMax;
+        xMin = this.min.getX() < this.max.getX() ? this.min.getX() : this.max.getX();
+        xMax = this.min.getX() < this.max.getX() ? this.max.getX() : this.min.getX();
+        zMin = this.min.getZ() < this.max.getZ() ? this.min.getZ() : this.max.getZ();
+        zMax = this.min.getZ() < this.max.getZ() ? this.max.getZ() : this.min.getZ();
+
+        for (int y = pos.getY() - 1; y > 0; y--) {
+            stairPositions.add(0, new MutablePair<>(currentPos, false));
+            BlockPos offsetPos = currentPos.offset(offsetFace);
+            if (offsetFace.getAxis() == EnumFacing.Axis.X) {
+                if (offsetPos.getX() > xMax || offsetPos.getX() < xMin) {
+                    offsetFace = offsetFace.rotateY();
+                }
+            } else {
+                if (offsetPos.getZ() > zMax || offsetPos.getZ() < zMin) {
+                    offsetFace = offsetFace.rotateY();
+                }
+            }
+            currentPos = currentPos.offset(offsetFace);
+            currentPos = new BlockPos(currentPos.getX(), y, currentPos.getZ());
         }
     }
 
@@ -251,4 +316,6 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
     public void setCursor(BlockPos cursor) {
         this.cursor = cursor;
     }
+
+
 }
