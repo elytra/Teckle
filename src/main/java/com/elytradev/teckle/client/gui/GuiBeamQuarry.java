@@ -65,6 +65,11 @@ public class GuiBeamQuarry extends GuiTeckle {
         this.leftOffset.setText(String.valueOf(beamQuarry.left));
         this.forwardOffset.setText(String.valueOf(beamQuarry.forward));
         this.rightOffset.setText(String.valueOf(beamQuarry.right));
+        if(beamQuarry.isActive()){
+            this.leftOffset.setEnabled(false);
+            this.forwardOffset.setEnabled(false);
+            this.rightOffset.setEnabled(false);
+        }
     }
 
     @Override

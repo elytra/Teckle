@@ -1,7 +1,6 @@
 package com.elytradev.teckle.common.tile;
 
 import com.elytradev.teckle.client.gui.GuiBeamQuarry;
-import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.block.BlockBeamQuarry;
 import com.elytradev.teckle.common.container.ContainerBeamQuarry;
 import com.elytradev.teckle.common.network.messages.clientbound.TileUpdateMessage;
@@ -23,6 +22,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import net.minecraftforge.items.ItemHandlerHelper;
 
@@ -33,7 +33,9 @@ import java.util.stream.Stream;
 
 public class TileBeamQuarry extends TileEntity implements ITickable, IElementProvider {
 
-    private BlockPos min = pos, max = pos, cursor = pos;
+    private BlockPos min = pos;
+    private BlockPos max = pos;
+    private BlockPos cursor = pos;
     public int left, right, forward;
     public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(25);
     public AdvancedItemStackHandler junkSupply = new AdvancedItemStackHandler(12);
@@ -45,7 +47,7 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
 
         this.min = BlockPos.fromLong(tag.getLong("min"));
         this.max = BlockPos.fromLong(tag.getLong("max"));
-        this.cursor = BlockPos.fromLong(tag.getLong("cursor"));
+        this.setCursor(BlockPos.fromLong(tag.getLong("cursor")));
         this.left = tag.getInteger("left");
         this.right = tag.getInteger("right");
         this.forward = tag.getInteger("forward");
@@ -59,7 +61,7 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         tag.setLong("min", this.min.toLong());
         tag.setLong("max", this.max.toLong());
-        tag.setLong("cursor", this.cursor.toLong());
+        tag.setLong("cursor", this.getCursor().toLong());
         tag.setInteger("left", left);
         tag.setInteger("right", right);
         tag.setInteger("forward", forward);
@@ -82,36 +84,25 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
         //TODO: Power consumption and cooldown.
         if (isActive()) {
             // TODO: Remove, just for testing.
-            if (world.isRemote || world.getTotalWorldTime() % 5 != 0)
+            if (world.isRemote /*|| world.getTotalWorldTime() % 5 != 0*/)
                 return;
 
-            if (cursor == pos) {
-                cursor = min;
+            if (getCursor() == pos) {
+                setCursor(min);
             }
 
             // Check the current cursor position for validity.
-            IBlockState cursorState = world.getBlockState(cursor);
+            IBlockState cursorState = world.getBlockState(getCursor());
             if (!isStateValid(cursorState)) {
-                int xRange = Math.abs(min.getX() - max.getX()) + 1;
-                int zRange = Math.abs(min.getZ() - max.getZ()) + 1;
-                for (int y = cursor.getY(); y > 0 && !isStateValid(cursorState); y--) {
-                    for (int x = 0; x < xRange && !isStateValid(cursorState); x++) {
-                        for (int z = 0; z < zRange && !isStateValid(cursorState); z++) {
-                            cursor = new BlockPos(min.getX() + x, y, min.getZ() + z);
-                            if (isStateValid(world.getBlockState(cursor))) {
-                                cursorState = world.getBlockState(cursor);
-                                break;
-                            }
-                        }
-                    }
-                }
+                adjustCursor();
+                cursorState = world.getBlockState(cursor);
             }
             // Mine the current cursor position.
             if (isStateValid(cursorState)) {
-                AxisAlignedBB dropBox = new AxisAlignedBB(cursor.getX(), cursor.getY(), cursor.getZ(),
-                        cursor.getX(), cursor.getY(), cursor.getZ());
+                AxisAlignedBB dropBox = new AxisAlignedBB(getCursor().getX() - 0.5, getCursor().getY() - 0.5, getCursor().getZ() - 0.5,
+                        getCursor().getX() + 0.5, getCursor().getY() + 0.5, getCursor().getZ() + 0.5);
                 dropBox = dropBox.expand(1.5, 1.5, 1.5);
-                world.destroyBlock(pos, true);
+                world.destroyBlock(getCursor(), true);
                 List<EntityItem> entityItems = world.getEntitiesWithinAABB(EntityItem.class, dropBox);
                 List<ItemStack> items = entityItems.stream().map(EntityItem::getItem).collect(Collectors.toList());
                 entityItems.forEach(Entity::setDead);
@@ -122,16 +113,44 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
                         item = junkSupply.insertItem(item, false);
                     }
                     item = buffer.insertItem(item, false);
-                    world.spawnEntity(new EntityItem(world, pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1, item));
+                    if (!item.isEmpty())
+                        world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, item));
                 }
             }
-        } else if (world.isRemote) {
+        }
+        if (world.isRemote) {
             // Show the border for the quarry area.
             for (BlockPos dustPos : BlockPos.getAllInBox(new BlockPos(min.getX(), pos.getY(), min.getZ()),
                     new BlockPos(max.getX(), pos.getY(), max.getZ()))) {
                 world.spawnParticle(EnumParticleTypes.REDSTONE, true, dustPos.getX() + 0.5, pos.getY(), dustPos.getZ() + 0.5, 0, 0, 0);
             }
         }
+    }
+
+    private void adjustCursor() {
+        int startX = Math.abs(cursor.subtract(min).getX());
+        int startZ = Math.abs(cursor.subtract(min).getZ());
+        BlockPos difference = max.subtract(min);
+
+        for (int y = cursor.getY(); y > 0; y--) {
+            boolean negativeX = isNegative(difference.getX());
+            for (int x = startX; x <= Math.abs(difference.getX()); x++) {
+                boolean negativeZ = isNegative(difference.getZ());
+                for (int z = startZ; z <= Math.abs(difference.getZ()); z++) {
+                    BlockPos cursorPos = min.add(negativeX ? -x : x, -min.getY() + y, negativeZ ? -z : z);
+                    setCursor(cursorPos);
+                    if (isStateValid(world.getBlockState(cursor)))
+                        return;
+                }
+                startZ = 0;
+            }
+            startX = 0;
+        }
+        //TODO: Recheck, or deactivate.
+    }
+
+    private boolean isNegative(int i) {
+        return i < 0;
     }
 
     /**
@@ -162,10 +181,9 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
     private void setBounds(BlockPos min, BlockPos max) {
         this.min = min;
         this.max = max;
-        this.cursor = min;
+        this.setCursor(min.add(new Vec3i(0, 4, 0)));
 
         if (!world.isRemote) {
-            TeckleLog.info("Set to {} {}", min, max);
             new TileUpdateMessage(world, pos).sendToAllWatching(this);
         }
     }
@@ -224,5 +242,13 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
 
     public EnumFacing getFacing() {
         return world.getBlockState(pos).getValue(BlockBeamQuarry.FACING);
+    }
+
+    public BlockPos getCursor() {
+        return cursor;
+    }
+
+    public void setCursor(BlockPos cursor) {
+        this.cursor = cursor;
     }
 }
