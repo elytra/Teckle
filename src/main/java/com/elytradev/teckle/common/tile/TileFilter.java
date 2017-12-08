@@ -291,7 +291,7 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
                     this.bufferID = tag.getUniqueId("buffer");
                     this.bufferData = pool.get(bufferID);
                 }
-                if(tag.hasUniqueId("filter")){
+                if (tag.hasUniqueId("filter")) {
                     this.filterID = tag.getUniqueId("filter");
                     this.filterData = pool.get(filterID);
                 }

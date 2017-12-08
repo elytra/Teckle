@@ -238,7 +238,6 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
         return oldState.getBlock() != newSate.getBlock() && super.shouldRefresh(world, pos, oldState, newSate);
-
     }
 
     @Override
@@ -309,6 +308,7 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             tag.setInteger("databaseID", getWorld().provider.getDimension());
             if (getNetworkTile().getNode() == null)
                 getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+
             tag.setUniqueId("networkID", getNetworkTile().getNode().getNetwork().getNetworkID());
         }
         return super.writeToNBT(tag);

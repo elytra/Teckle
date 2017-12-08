@@ -1,8 +1,13 @@
 package com.elytradev.teckle.common.block;
 
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistantHolder;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
+import com.elytradev.teckle.common.network.messages.clientbound.TileUpdateMessage;
 import com.elytradev.teckle.common.tile.TileBeamQuarry;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
@@ -12,12 +17,14 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -37,16 +44,22 @@ public class BlockBeamQuarry extends BlockContainer {
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()).withProperty(ACTIVE, false));
+    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
+        EnumFacing direction = EnumFacing.getDirectionFromEntityLiving(pos, placer);
+        if (placer != null && placer.isSneaking()) direction = direction.getOpposite();
+        return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer, hand).withProperty(FACING, direction).withProperty(ACTIVE, false);
+    }
 
+    @Override
+    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+        super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+
+        getNetworkHelper(worldIn).onNodePlaced(worldIn, pos);
         if (!worldIn.isRemote) {
             TileEntity tileEntity = worldIn.getTileEntity(pos);
-            if (tileEntity != null && tileEntity instanceof TileBeamQuarry) {
-                // set the default bounds of the quarry.
-                ((TileBeamQuarry) tileEntity).setDimensions(placer.getHorizontalFacing(),4, 4, 8);
-                tileEntity.markDirty();
-            }
+            if (tileEntity instanceof TileBeamQuarry)
+                ((TileBeamQuarry) tileEntity).setDimensions(4, 4, 8);
+            new TileUpdateMessage(worldIn, pos).sendToAllWatching(worldIn, pos);
         }
     }
 
@@ -94,10 +107,47 @@ public class BlockBeamQuarry extends BlockContainer {
         return i;
     }
 
+    @Override
+    public void onNeighborChange(IBlockAccess blockAccess, BlockPos pos, BlockPos neighbor) {
+        super.onNeighborChange(blockAccess, pos, neighbor);
+        TileEntity tile = blockAccess.getTileEntity(pos);
+
+        getNetworkHelper(tile.getWorld()).onNodeNeighbourChange(tile.getWorld(), pos, neighbor);
+    }
+
+    @Override
+    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+        TileEntity tileAtPos = worldIn.getTileEntity(pos);
+        if (tileAtPos != null && CapabilityWorldNetworkTile.isPositionNetworkTile(worldIn, pos, null)) {
+            getNetworkHelper(worldIn).onNodeBroken(worldIn, pos);
+
+            if (tileAtPos instanceof TileBeamQuarry) {
+                TileBeamQuarry beamQuarry = (TileBeamQuarry) worldIn.getTileEntity(pos);
+
+                // Vomit the buffer.
+                beamQuarry.bufferData.getHandler().stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+                // Vomit the junk supply.
+                beamQuarry.junkSupply.getHandler().stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+                // Vomit the junk types.
+                beamQuarry.junkTypes.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack));
+
+                AdvancedStackHandlerPool.getPool(worldIn).remove(beamQuarry.bufferData.getId());
+                AdvancedStackHandlerPool.getPool(worldIn).remove(beamQuarry.junkSupply.getId());
+            }
+        }
+
+        // Call super after we're done so we still have access to the tile.
+        super.breakBlock(worldIn, pos, state);
+    }
+
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
         return new TileBeamQuarry();
+    }
+
+    public IWorldNetworkAssistant<ItemStack> getNetworkHelper(World world) {
+        return world.getCapability(CapabilityWorldNetworkAssistantHolder.NETWORK_ASSISTANT_HOLDER_CAPABILITY, null).getAssistant(ItemStack.class);
     }
 
 }

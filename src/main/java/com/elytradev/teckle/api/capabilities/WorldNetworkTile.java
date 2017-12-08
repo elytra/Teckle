@@ -59,7 +59,7 @@ public abstract class WorldNetworkTile implements INBTSerializable<NBTTagCompoun
         this.setWorld(world);
         this.setPos(pos);
         this.setCapabilityFace(face);
-        TeckleLog.debug("Created a network tile, {} {} {}", world, pos, false);
+        TeckleLog.debug("Created a network tile, {} {} {} {}", world, pos, face, false);
     }
 
     @Nullable

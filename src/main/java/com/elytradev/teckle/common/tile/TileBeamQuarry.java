@@ -1,12 +1,26 @@
 package com.elytradev.teckle.common.tile;
 
+import com.elytradev.teckle.api.IWorldNetwork;
+import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
+import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
+import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.client.gui.GuiBeamQuarry;
+import com.elytradev.teckle.common.TeckleLog;
+import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockBeamQuarry;
 import com.elytradev.teckle.common.container.ContainerBeamQuarry;
 import com.elytradev.teckle.common.network.messages.clientbound.TileUpdateMessage;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
+import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.ItemStream;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerEntry;
+import com.elytradev.teckle.common.tile.inv.pool.AdvancedStackHandlerPool;
+import com.elytradev.teckle.common.tile.networktiles.NetworkTileBeamQuarry;
+import com.elytradev.teckle.common.worldnetwork.common.WorldNetworkDatabase;
+import com.elytradev.teckle.common.worldnetwork.common.node.NodeContainer;
+import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoint;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -19,7 +33,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
@@ -27,27 +40,67 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class TileBeamQuarry extends TileEntity implements ITickable, IElementProvider {
+public class TileBeamQuarry extends TileNetworkMember implements ITickable, IElementProvider {
 
     private BlockPos min = pos;
     private BlockPos max = pos;
     private BlockPos cursor = pos;
     public int left, right, forward;
-    public AdvancedItemStackHandler buffer = new AdvancedItemStackHandler(25);
-    public AdvancedItemStackHandler junkSupply = new AdvancedItemStackHandler(12);
-    public AdvancedItemStackHandler junkTypes = new AdvancedItemStackHandler(6).withInsertCheck((integer, itemStack) -> itemStack.getItem() instanceof ItemBlock);
+    public AdvancedStackHandlerEntry bufferData;
+    public AdvancedStackHandlerEntry junkSupply;
+    public UUID bufferID, junkSupplyID;
+    private EnumFacing facing;
+
+    public NetworkTileBeamQuarry leftNetworkTile, rightNetworkTile, topNetworkTile;
+
+    public AdvancedItemStackHandler junkTypes = new AdvancedItemStackHandler(6).withInsertCheck((integer, itemStack) -> itemStack.getItem() instanceof ItemBlock).withSlotLimit((i) -> 1);
 
     private ArrayList<MutablePair<BlockPos, Boolean>> stairPositions = Lists.newArrayList();
+
+    @Override
+    public void validate() {
+        try {
+            AdvancedStackHandlerPool pool = AdvancedStackHandlerPool.getPool(world);
+            this.bufferData = pool.getOrCreatePoolEntry(bufferID, getPos(), 25);
+            this.bufferID = bufferData.getId();
+            this.junkSupply = pool.getOrCreatePoolEntry(junkSupplyID, getPos(), 12);
+            this.junkSupplyID = junkSupply.getId();
+
+            if (leftNetworkTile == null || rightNetworkTile == null || topNetworkTile == null) {
+                this.leftNetworkTile = new NetworkTileBeamQuarry(this, getFacing().getOpposite().rotateYCCW());
+                this.rightNetworkTile = new NetworkTileBeamQuarry(this, getFacing().getOpposite().rotateY());
+                this.topNetworkTile = new NetworkTileBeamQuarry(this, EnumFacing.UP);
+            }
+            this.leftNetworkTile.junkSupply = this.junkSupply;
+            this.leftNetworkTile.junkSupplyID = this.junkSupplyID;
+            this.leftNetworkTile.bufferData = this.bufferData;
+            this.leftNetworkTile.bufferID = this.bufferID;
+            this.rightNetworkTile.junkSupply = this.junkSupply;
+            this.rightNetworkTile.junkSupplyID = this.junkSupplyID;
+            this.rightNetworkTile.bufferData = this.bufferData;
+            this.rightNetworkTile.bufferID = this.bufferID;
+            this.topNetworkTile.junkSupply = this.junkSupply;
+            this.topNetworkTile.junkSupplyID = this.junkSupplyID;
+            this.topNetworkTile.bufferData = this.bufferData;
+            this.topNetworkTile.bufferID = this.bufferID;
+
+            this.tileEntityInvalid = false;
+        } catch (Exception e) {
+            TeckleLog.error("Failed to validate beam quarry. {}", e);
+        }
+    }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
@@ -59,10 +112,53 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
         this.left = tag.getInteger("left");
         this.right = tag.getInteger("right");
         this.forward = tag.getInteger("forward");
+        this.facing = tag.getInteger("facing") > 0 ? EnumFacing.values()[tag.getInteger("facing")] : null;
 
-        this.buffer.deserializeNBT(tag.getCompoundTag("buffer"));
-        this.junkSupply.deserializeNBT(tag.getCompoundTag("junkSupply"));
-        this.junkTypes.deserializeNBT(tag.getCompoundTag("junkTypes"));
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            this.junkTypes.deserializeNBT(tag.getCompoundTag("junkTypes"));
+            this.bufferID = tag.getUniqueId("buffer");
+            this.bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
+            this.junkSupplyID = tag.getUniqueId("junkSupply");
+            this.junkSupply = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(junkSupplyID);
+
+            if (loadNetworkTile(tag, "leftTileID", getFacing().getOpposite().rotateYCCW(), NetworkTileBeamQuarry.class))
+                if (loadNetworkTile(tag, "rightTileID", getFacing().getOpposite().rotateY(), NetworkTileBeamQuarry.class))
+                    loadNetworkTile(tag, "topTileID", EnumFacing.UP, NetworkTileBeamQuarry.class);
+
+            validate();
+        }
+    }
+
+    protected boolean loadNetworkTile(NBTTagCompound tag, String tileIDKey, EnumFacing tileFace, Class<? extends WorldNetworkTile> tileType) {
+        UUID networkID = tag.hasUniqueId(tileIDKey) ? tag.getUniqueId(tileIDKey) : null;
+        int dimID = tag.getInteger("databaseID");
+        if (networkID == null) {
+            getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            return false;
+        } else {
+            WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
+            Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
+                    .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), tileFace)).findAny();
+            if (any.isPresent()) {
+                networkID = networkDB.getRemappedNodes().remove(any.get());
+                TeckleLog.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
+            }
+
+            IWorldNetwork network = WorldNetworkDatabase.getNetworkDB(dimID).get(networkID);
+            for (NodeContainer container : network.getNodeContainersAtPosition(pos)) {
+                if (Objects.equals(container.getFacing(), tileFace) && container.getNetworkTile() != null && tileType.isInstance(container.getNetworkTile())) {
+                    if (tileFace == EnumFacing.UP) {
+                        topNetworkTile = (NetworkTileBeamQuarry) container.getNetworkTile();
+                    } else if (tileFace == getFacing().getOpposite().rotateY()) {
+                        rightNetworkTile = (NetworkTileBeamQuarry) container.getNetworkTile();
+                    } else if (tileFace == getFacing().getOpposite().rotateYCCW()) {
+                        leftNetworkTile = (NetworkTileBeamQuarry) container.getNetworkTile();
+                    }
+                    break;
+                }
+            }
+        }
+        return true;
     }
 
     @Override
@@ -73,11 +169,23 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
         tag.setInteger("left", left);
         tag.setInteger("right", right);
         tag.setInteger("forward", forward);
+        tag.setInteger("facing", getFacing() == null ? -1 : getFacing().getIndex());
 
-        tag.setTag("buffer", this.buffer.serializeNBT());
-        tag.setTag("junkSupply", this.junkSupply.serializeNBT());
-        tag.setTag("junkTypes", this.junkTypes.serializeNBT());
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            if (bufferData == null || junkSupply == null)
+                validate();
+            tag.setTag("junkTypes", this.junkTypes.serializeNBT());
+            tag.setUniqueId("buffer", this.bufferData.getId());
+            tag.setUniqueId("junkSupply", this.junkSupply.getId());
 
+            tag.setInteger("databaseID", getWorld().provider.getDimension());
+
+            if (leftNetworkTile.getNode() == null || rightNetworkTile.getNode() == null || topNetworkTile == null)
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            tag.setUniqueId("leftTileID", leftNetworkTile.getNode().getNetwork().getNetworkID());
+            tag.setUniqueId("rightTileID", rightNetworkTile.getNode().getNetwork().getNetworkID());
+            tag.setUniqueId("topTileID", topNetworkTile.getNode().getNetwork().getNetworkID());
+        }
         return super.writeToNBT(tag);
     }
 
@@ -113,15 +221,16 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
                 List<EntityItem> entityItems = world.getEntitiesWithinAABB(EntityItem.class, dropBox);
                 List<ItemStack> items = entityItems.stream().map(EntityItem::getItem).collect(Collectors.toList());
                 entityItems.forEach(Entity::setDead);
-                for (ItemStack item : items) {
+                for (ItemStack stack : items) {
                     Stream<ItemStack> junkStream = ItemStream.createItemStream(junkTypes);
-                    ItemStack finalItem = item;
+                    ItemStack finalItem = stack;
                     if (junkStream.anyMatch(j -> ItemHandlerHelper.canItemStacksStack(finalItem, j))) {
-                        item = junkSupply.insertItem(item, false);
+                        stack = junkSupply.getHandler().insertItem(stack, false);
                     }
-                    item = buffer.insertItem(item, false);
-                    if (!item.isEmpty())
-                        world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, item));
+                    stack = tryPush(stack);
+                    stack = bufferData.getHandler().insertItem(stack, false);
+                    if (!stack.isEmpty())
+                        world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, stack));
                 }
             }
         }
@@ -154,10 +263,10 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
             startX = 0;
 
 
-            if (!ItemStream.createItemStream(junkSupply).allMatch(ItemStack::isEmpty)) {
+            if (!ItemStream.createItemStream(junkSupply.getHandler()).allMatch(ItemStack::isEmpty)) {
                 int finalY = y;
                 stairPositions.stream().filter(s -> s.getLeft().getY() >= finalY && !s.getRight()).forEachOrdered(s -> {
-                    Optional<ItemStack> any = ItemStream.createItemStream(junkSupply).filter(i -> !i.isEmpty()).findAny();
+                    Optional<ItemStack> any = ItemStream.createItemStream(junkSupply.getHandler()).filter(i -> !i.isEmpty()).findAny();
                     if (any.isPresent()) {
                         world.setBlockState(s.getLeft(), Block.getBlockFromItem(any.get().getItem()).getStateFromMeta(any.get().getMetadata()));
                         any.get().shrink(1);
@@ -185,6 +294,17 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
         return i < 0;
     }
 
+    public ItemStack tryPush(ItemStack stack) {
+        IWorldNetworkAssistant<ItemStack> networkAssistant = getNetworkAssistant(ItemStack.class);
+        if (!stack.isEmpty())
+            stack = networkAssistant.insertData((WorldNetworkEntryPoint) leftNetworkTile.getNode(),
+                    pos.offset(getFacing().getOpposite().rotateYCCW()), stack, ImmutableMap.of(), false, false);
+        if (!stack.isEmpty())
+            stack = networkAssistant.insertData((WorldNetworkEntryPoint) rightNetworkTile.getNode(),
+                    pos.offset(getFacing().getOpposite().rotateY()), stack, ImmutableMap.of(), false, false);
+        return stack;
+    }
+
     /**
      * Check if the state given is valid for mining or if the cursor needs to move.
      *
@@ -201,7 +321,9 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
      * @return true if the quarry can run, false otherwise.
      */
     public boolean isActive() {
-        return world.getBlockState(pos).getValue(BlockBeamQuarry.ACTIVE);
+        if (world.getBlockState(pos).getBlock() == TeckleObjects.blockBeamQuarry)
+            return world.getBlockState(pos).getValue(BlockBeamQuarry.ACTIVE);
+        return false;
     }
 
     /**
@@ -306,7 +428,45 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
     }
 
     public EnumFacing getFacing() {
-        return world.getBlockState(pos).getValue(BlockBeamQuarry.FACING);
+        if (world.isBlockLoaded(pos) && world.getBlockState(pos).getBlock() == TeckleObjects.blockBeamQuarry)
+            facing = world.getBlockState(pos).getValue(BlockBeamQuarry.FACING);
+        return facing;
+    }
+
+    @Override
+    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing capFace) {
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
+            if (capFace == null)
+                return false;
+            EnumFacing facing = getFacing();
+            if (capFace == EnumFacing.UP || (facing != null && capFace.getAxis() == facing.rotateY().getAxis())) {
+                return true;
+            }
+        }
+        return super.hasCapability(capability, facing);
+    }
+
+    @Nullable
+    @Override
+    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+        if (facing != null) {
+            if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+                if (facing == EnumFacing.UP) {
+                    return (T) junkSupply.getHandler();
+                } else if (facing.getAxis() == getFacing().rotateY().getAxis()) {
+                    return (T) bufferData.getHandler();
+                }
+            } else if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
+                if (facing == EnumFacing.UP) {
+                    return (T) topNetworkTile;
+                } else if (facing == getFacing().getOpposite().rotateY()) {
+                    return (T) rightNetworkTile;
+                } else if (facing == getFacing().getOpposite().rotateYCCW()) {
+                    return (T) leftNetworkTile;
+                }
+            }
+        }
+        return super.getCapability(capability, facing);
     }
 
     public BlockPos getCursor() {
@@ -316,6 +476,4 @@ public class TileBeamQuarry extends TileEntity implements ITickable, IElementPro
     public void setCursor(BlockPos cursor) {
         this.cursor = cursor;
     }
-
-
 }

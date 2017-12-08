@@ -16,12 +16,10 @@
 
 package com.elytradev.teckle.common.network.messages.serverbound;
 
-import com.elytradev.concrete.network.Message;
 import com.elytradev.concrete.network.NetworkContext;
 import com.elytradev.concrete.network.annotation.field.MarshalledAs;
 import com.elytradev.concrete.network.annotation.type.ReceivedOn;
 import com.elytradev.teckle.common.TeckleLog;
-import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.network.messages.TeckleMessage;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortMode;

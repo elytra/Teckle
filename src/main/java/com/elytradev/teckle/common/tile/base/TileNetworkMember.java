@@ -82,7 +82,6 @@ public abstract class TileNetworkMember extends TileEntity {
     }
 
     public void unJam() {
-
     }
 
     @Override
