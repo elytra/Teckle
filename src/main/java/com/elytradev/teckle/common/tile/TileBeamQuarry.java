@@ -11,6 +11,7 @@ import com.elytradev.teckle.common.block.BlockBeamQuarry;
 import com.elytradev.teckle.common.container.ContainerBeamQuarry;
 import com.elytradev.teckle.common.network.messages.clientbound.TileUpdateMessage;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
+import com.elytradev.teckle.common.tile.base.TeckleEnergyStorage;
 import com.elytradev.teckle.common.tile.base.TileNetworkMember;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
 import com.elytradev.teckle.common.tile.inv.ItemStream;
@@ -23,6 +24,7 @@ import com.elytradev.teckle.common.worldnetwork.common.node.WorldNetworkEntryPoi
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -41,6 +43,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -58,16 +62,18 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
     private BlockPos max = pos;
     private BlockPos cursor = pos;
     public int left, right, forward;
+    private ArrayList<MutablePair<BlockPos, Boolean>> stairPositions = Lists.newArrayList();
+    private List<BlockPos> particlePositions = Lists.newArrayList();
     public AdvancedStackHandlerEntry bufferData;
     public AdvancedStackHandlerEntry junkSupply;
     public UUID bufferID, junkSupplyID;
     private EnumFacing facing;
 
     public NetworkTileBeamQuarry leftNetworkTile, rightNetworkTile, topNetworkTile;
-
-    public AdvancedItemStackHandler junkTypes = new AdvancedItemStackHandler(6).withInsertCheck((integer, itemStack) -> itemStack.getItem() instanceof ItemBlock).withSlotLimit((i) -> 1);
-
-    private ArrayList<MutablePair<BlockPos, Boolean>> stairPositions = Lists.newArrayList();
+    public AdvancedItemStackHandler junkTypes = new AdvancedItemStackHandler(6)
+            .withInsertCheck((integer, itemStack) -> itemStack.getItem() instanceof ItemBlock)
+            .withSlotLimit((i) -> 1);
+    public TeckleEnergyStorage energyStorage = new TeckleEnergyStorage(256000, Integer.MAX_VALUE, 0);
 
     @Override
     public void validate() {
@@ -103,6 +109,35 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
     }
 
     @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound tag) {
+        tag.setLong("min", this.min.toLong());
+        tag.setLong("max", this.max.toLong());
+        tag.setLong("cursor", this.getCursor().toLong());
+        tag.setInteger("left", left);
+        tag.setInteger("right", right);
+        tag.setInteger("forward", forward);
+        tag.setInteger("facing", getFacing() == null ? -1 : getFacing().getIndex());
+        tag.setTag("energyStorage", energyStorage.serializeNBT());
+
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            if (bufferData == null || junkSupply == null)
+                validate();
+            tag.setTag("junkTypes", this.junkTypes.serializeNBT());
+            tag.setUniqueId("buffer", this.bufferData.getId());
+            tag.setUniqueId("junkSupply", this.junkSupply.getId());
+
+            tag.setInteger("databaseID", getWorld().provider.getDimension());
+
+            if (leftNetworkTile.getNode() == null || rightNetworkTile.getNode() == null || topNetworkTile == null)
+                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
+            tag.setUniqueId("leftTileID", leftNetworkTile.getNode().getNetwork().getNetworkID());
+            tag.setUniqueId("rightTileID", rightNetworkTile.getNode().getNetwork().getNetworkID());
+            tag.setUniqueId("topTileID", topNetworkTile.getNode().getNetwork().getNetworkID());
+        }
+        return super.writeToNBT(tag);
+    }
+
+    @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
 
@@ -113,6 +148,7 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
         this.right = tag.getInteger("right");
         this.forward = tag.getInteger("forward");
         this.facing = tag.getInteger("facing") > 0 ? EnumFacing.values()[tag.getInteger("facing")] : null;
+        this.energyStorage.deserializeNBT(tag.getCompoundTag("energyStorage"));
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             this.junkTypes.deserializeNBT(tag.getCompoundTag("junkTypes"));
@@ -120,6 +156,7 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
             this.bufferData = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(bufferID);
             this.junkSupplyID = tag.getUniqueId("junkSupply");
             this.junkSupply = AdvancedStackHandlerPool.getPool(world.provider.getDimension()).get(junkSupplyID);
+            this.generateStairPositions();
 
             if (loadNetworkTile(tag, "leftTileID", getFacing().getOpposite().rotateYCCW(), NetworkTileBeamQuarry.class))
                 if (loadNetworkTile(tag, "rightTileID", getFacing().getOpposite().rotateY(), NetworkTileBeamQuarry.class))
@@ -162,42 +199,12 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound tag) {
-        tag.setLong("min", this.min.toLong());
-        tag.setLong("max", this.max.toLong());
-        tag.setLong("cursor", this.getCursor().toLong());
-        tag.setInteger("left", left);
-        tag.setInteger("right", right);
-        tag.setInteger("forward", forward);
-        tag.setInteger("facing", getFacing() == null ? -1 : getFacing().getIndex());
-
-        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            if (bufferData == null || junkSupply == null)
-                validate();
-            tag.setTag("junkTypes", this.junkTypes.serializeNBT());
-            tag.setUniqueId("buffer", this.bufferData.getId());
-            tag.setUniqueId("junkSupply", this.junkSupply.getId());
-
-            tag.setInteger("databaseID", getWorld().provider.getDimension());
-
-            if (leftNetworkTile.getNode() == null || rightNetworkTile.getNode() == null || topNetworkTile == null)
-                getNetworkAssistant(ItemStack.class).onNodePlaced(world, pos);
-            tag.setUniqueId("leftTileID", leftNetworkTile.getNode().getNetwork().getNetworkID());
-            tag.setUniqueId("rightTileID", rightNetworkTile.getNode().getNetwork().getNetworkID());
-            tag.setUniqueId("topTileID", topNetworkTile.getNode().getNetwork().getNetworkID());
-        }
-        return super.writeToNBT(tag);
-    }
-
-    @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
-        return oldState.getBlock() != newState.getBlock()
-                || newState.getValue(BlockBeamQuarry.FACING) != oldState.getValue(BlockBeamQuarry.FACING);
+        return oldState.getBlock() != newState.getBlock();
     }
 
     @Override
     public void update() {
-        //TODO: Power consumption and cooldown.
         if (isActive()) {
             if (world.isRemote)
                 return;
@@ -213,10 +220,20 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
                 cursorState = world.getBlockState(cursor);
             }
             // Mine the current cursor position.
-            if (isStateValid(cursorState)) {
+            if (isStateValid(cursorState) && energyStorage.getEnergyStored() >= 100) {
                 AxisAlignedBB dropBox = new AxisAlignedBB(getCursor().getX() - 0.5, getCursor().getY() - 0.5, getCursor().getZ() - 0.5,
                         getCursor().getX() + 0.5, getCursor().getY() + 0.5, getCursor().getZ() + 0.5);
                 dropBox = dropBox.expand(1.5, 1.5, 1.5);
+                energyStorage.setEnergyStored(energyStorage.getEnergyStored() - 100);
+                if (cursorState.getBlock() instanceof IFluidBlock || cursorState.getBlock() instanceof BlockLiquid) {
+                    if (!ItemStream.createItemStream(junkSupply.getHandler()).allMatch(ItemStack::isEmpty)) {
+                        Optional<ItemStack> any = ItemStream.createItemStream(junkSupply.getHandler()).filter(i -> !i.isEmpty()).findAny();
+                        any.ifPresent(itemStack -> world.setBlockState(getCursor(),
+                                Block.getBlockFromItem(itemStack.getItem()).getStateFromMeta(itemStack.getMetadata())));
+                        any.get().shrink(1);
+                    }
+                    return;
+                }
                 world.destroyBlock(getCursor(), true);
                 List<EntityItem> entityItems = world.getEntitiesWithinAABB(EntityItem.class, dropBox);
                 List<ItemStack> items = entityItems.stream().map(EntityItem::getItem).collect(Collectors.toList());
@@ -233,12 +250,10 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
                         world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, stack));
                 }
             }
-        }
-        if (world.isRemote) {
+        } else if (world.isRemote) {
             // Show the border for the quarry area.
-            for (BlockPos dustPos : BlockPos.getAllInBox(new BlockPos(min.getX(), pos.getY(), min.getZ()),
-                    new BlockPos(max.getX(), pos.getY(), max.getZ()))) {
-                world.spawnParticle(EnumParticleTypes.REDSTONE, true, dustPos.getX() + 0.5, pos.getY(), dustPos.getZ() + 0.5, 0, 0, 0);
+            for (BlockPos particlePosition : particlePositions) {
+                world.spawnParticle(EnumParticleTypes.REDSTONE, true, particlePosition.getX() + 0.5, particlePosition.getY(), particlePosition.getZ() + 0.5, 0, 0, 0);
             }
         }
     }
@@ -262,8 +277,8 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
             }
             startX = 0;
 
-
             if (!ItemStream.createItemStream(junkSupply.getHandler()).allMatch(ItemStack::isEmpty)) {
+                // Place stairs
                 int finalY = y;
                 stairPositions.stream().filter(s -> s.getLeft().getY() >= finalY && !s.getRight()).forEachOrdered(s -> {
                     Optional<ItemStack> any = ItemStream.createItemStream(junkSupply.getHandler()).filter(i -> !i.isEmpty()).findAny();
@@ -273,6 +288,19 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
                         s.setRight(true);
                     }
                 });
+
+                // Fill any fluids in the walls
+                if (y - 1 > 0) {
+                    for (BlockPos borderPos : getBorderPositions(y - 1)) {
+                        Optional<ItemStack> any = ItemStream.createItemStream(junkSupply.getHandler()).filter(i -> !i.isEmpty()).findAny();
+                        IBlockState blockState = world.getBlockState(borderPos);
+                        if (any.isPresent()
+                                && (blockState.getBlock() instanceof IFluidBlock || blockState.getBlock() instanceof BlockLiquid)) {
+                            world.setBlockState(borderPos, Block.getBlockFromItem(any.get().getItem()).getStateFromMeta(any.get().getMetadata()));
+                            any.get().shrink(1);
+                        }
+                    }
+                }
             }
         }
 
@@ -340,8 +368,19 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
         if (!world.isRemote) {
             new TileUpdateMessage(world, pos).sendToAllWatching(this);
         }
-
         generateStairPositions();
+    }
+
+    /**
+     * Checks if the given position is within the bounds of the quarry.
+     *
+     * @param pos the position to check.
+     * @return true if the position is within the bounds, false otherwise.
+     */
+    public boolean isPosWithinBounds(BlockPos pos) {
+        return pos.getX() >= min.getX() && pos.getX() <= max.getX()
+                && pos.getY() >= min.getY() && pos.getY() <= max.getY()
+                && pos.getZ() >= min.getZ() && pos.getZ() <= max.getZ();
     }
 
     private void generateStairPositions() {
@@ -375,6 +414,38 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
         }
     }
 
+    private List<BlockPos> getBorderPositions(int yLevel) {
+        List<BlockPos> out = Lists.newArrayList();
+        BlockPos currentPos = new BlockPos(pos.getX(), yLevel, pos.getZ());
+        EnumFacing offsetFace = getFacing().rotateY();
+        int xMin, xMax;
+        int zMin, zMax;
+        xMin = (this.min.getX() < this.max.getX() ? this.min.getX() : this.max.getX()) - 1;
+        xMax = (this.min.getX() < this.max.getX() ? this.max.getX() : this.min.getX()) + 1;
+        zMin = (this.min.getZ() < this.max.getZ() ? this.min.getZ() : this.max.getZ()) - 1;
+        zMax = (this.min.getZ() < this.max.getZ() ? this.max.getZ() : this.min.getZ()) + 1;
+
+        int expectedSize = ((xMax - xMin + 1) + (zMax - zMin + 1)) * 2;
+
+        while (out.size() < expectedSize) {
+            out.add(0, currentPos);
+            BlockPos offsetPos = currentPos.offset(offsetFace);
+            if (offsetFace.getAxis() == EnumFacing.Axis.X) {
+                if (offsetPos.getX() > xMax || offsetPos.getX() < xMin) {
+                    offsetFace = offsetFace.rotateY();
+                }
+            } else {
+                if (offsetPos.getZ() > zMax || offsetPos.getZ() < zMin) {
+                    offsetFace = offsetFace.rotateY();
+                }
+            }
+            currentPos = currentPos.offset(offsetFace);
+            currentPos = new BlockPos(currentPos.getX(), yLevel, currentPos.getZ());
+        }
+
+        return out;
+    }
+
     public void setDimensions(int left, int right, int forward) {
         setDimensions(getFacing().getOpposite(), left, right, forward);
     }
@@ -406,6 +477,13 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
     @Override
     public void handleUpdateTag(NBTTagCompound tag) {
         this.readFromNBT(tag);
+
+        this.particlePositions = Lists.newArrayList();
+        Iterable<BlockPos> allInBox = BlockPos.getAllInBox(min.add(0, -min.getY(), 0), max.add(0, -max.getY(), 0));
+        for (BlockPos inBox : allInBox) {
+            BlockPos topSolidOrLiquidBlock = world.getTopSolidOrLiquidBlock(inBox);
+            this.particlePositions.add(topSolidOrLiquidBlock);
+        }
     }
 
     @Override
@@ -443,6 +521,8 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
                 return true;
             }
         }
+        if (capability == CapabilityEnergy.ENERGY && capFace != null && capFace != getFacing().getOpposite())
+            return true;
         return super.hasCapability(capability, facing);
     }
 
@@ -464,6 +544,9 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
                 } else if (facing == getFacing().getOpposite().rotateYCCW()) {
                     return (T) leftNetworkTile;
                 }
+            } else if (capability == CapabilityEnergy.ENERGY) {
+                if (facing != getFacing().getOpposite())
+                    return (T) energyStorage;
             }
         }
         return super.getCapability(capability, facing);

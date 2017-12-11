@@ -193,6 +193,12 @@ public class TeckleObjects {
                 'R', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()),
                 'F', new ItemStack(blockFilter));
 
+        registerShapedRecipe(registry, new ItemStack(blockBeamQuarry), "OWO", "IXI", "OWO",
+                'O', "blockBlueAlloy",
+                'W', "blockRedAlloy",
+                'X', new ItemStack(Items.DIAMOND_PICKAXE),
+                'I', "ingotBrass");
+
         for (EnumDyeColor color : EnumDyeColor.values()) {
             String dyeName = "dye" + color.getUnlocalizedName().substring(0, 1).toUpperCase() + color.getUnlocalizedName().substring(1);
             if (color == EnumDyeColor.SILVER)
@@ -260,6 +266,9 @@ public class TeckleObjects {
         itemCompacted.setRegistryName(MOD_ID, "compacted_metal");
         itemCompacted.setCreativeTab(creativeTab);
         itemCompacted.setUnlocalizedName("teckle.compacted_metal");
+        Arrays.stream(ItemIngot.IngotType.values()).forEach(ingotType ->
+                OreDictionary.registerOre(ingotType.getOreName().replace("ingot", "block"),
+                        new ItemStack(blockCompacted, 1, ingotType.getMetadata())));
         itemBlocksToRegister.add(itemCompacted);
     }
 

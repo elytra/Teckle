@@ -18,6 +18,7 @@ public class GuiBeamQuarry extends GuiTeckle {
 
     public final TileBeamQuarry beamQuarry;
     public final EntityPlayer player;
+    public final ContainerBeamQuarry container;
 
     public GuiTextField leftOffset, forwardOffset, rightOffset;
 
@@ -25,6 +26,7 @@ public class GuiBeamQuarry extends GuiTeckle {
         super(new ContainerBeamQuarry(tile, player));
         this.beamQuarry = tile;
         this.player = player;
+        this.container = (ContainerBeamQuarry) inventorySlots;
 
         this.xSize = 176;
         this.ySize = 232;
@@ -76,7 +78,7 @@ public class GuiBeamQuarry extends GuiTeckle {
     public void registerButtons() {
         super.registerButtons();
 
-        addButton(new GuiQuarryToggle(0, 10, 10, 64, 17, "ACTIVATE"));
+        addButton(new GuiQuarryToggle(0, guiLeft + 20, guiTop + 5, 64, 17, "ACTIVATE"));
     }
 
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
@@ -123,6 +125,8 @@ public class GuiBeamQuarry extends GuiTeckle {
 
         drawStringCentered(junkTypes, 141, 10, 4210752);
         drawStringCentered(junk, 141, 64, 4210752);
+
+        drawStringCentered(String.valueOf(beamQuarry.energyStorage.getEnergyStored()), 52, 40, 4210752);
     }
 
     public void drawStringCentered(String text, int x, int y, int colour) {

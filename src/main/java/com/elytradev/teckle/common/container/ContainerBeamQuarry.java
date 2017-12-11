@@ -4,12 +4,17 @@ import com.elytradev.teckle.common.tile.TileBeamQuarry;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.Slot;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerBeamQuarry extends Container {
     public final TileBeamQuarry beamQuarry;
     public final EntityPlayer player;
+
+    public int power;
 
     public ContainerBeamQuarry(TileBeamQuarry tile, EntityPlayer player) {
         this.beamQuarry = tile;
@@ -46,6 +51,24 @@ public class ContainerBeamQuarry extends Container {
         for (int i = 0; i < 9; i++) {
             addSlotToContainer(new Slot(inventoryplayer, i, 8 + i * 18, 208));
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void updateProgressBar(int id, int data) {
+        if (id == 0)
+            this.beamQuarry.energyStorage.setEnergyStored(data);
+        super.updateProgressBar(id, data);
+    }
+
+    @Override
+    public void detectAndSendChanges() {
+        super.detectAndSendChanges();
+
+        if (power != beamQuarry.energyStorage.getEnergyStored()) {
+            listeners.forEach(iContainerListener -> iContainerListener.sendWindowProperty(ContainerBeamQuarry.this, 0, power));
+        }
+        this.power = beamQuarry.energyStorage.getEnergyStored();
     }
 
     @Override

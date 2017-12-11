@@ -1,7 +1,6 @@
 package com.elytradev.teckle.common.block;
 
 import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkAssistantHolder;
-import com.elytradev.teckle.api.capabilities.CapabilityWorldNetworkTile;
 import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.handlers.TeckleGuiHandler;
@@ -45,8 +44,7 @@ public class BlockBeamQuarry extends BlockContainer {
 
     @Override
     public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
-        EnumFacing direction = EnumFacing.getDirectionFromEntityLiving(pos, placer);
-        if (placer != null && placer.isSneaking()) direction = direction.getOpposite();
+        EnumFacing direction = placer.getHorizontalFacing();
         return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer, hand).withProperty(FACING, direction).withProperty(ACTIVE, false);
     }
 
@@ -57,8 +55,9 @@ public class BlockBeamQuarry extends BlockContainer {
         getNetworkHelper(worldIn).onNodePlaced(worldIn, pos);
         if (!worldIn.isRemote) {
             TileEntity tileEntity = worldIn.getTileEntity(pos);
-            if (tileEntity instanceof TileBeamQuarry)
+            if (tileEntity instanceof TileBeamQuarry) {
                 ((TileBeamQuarry) tileEntity).setDimensions(4, 4, 8);
+            }
             new TileUpdateMessage(worldIn, pos).sendToAllWatching(worldIn, pos);
         }
     }
@@ -118,7 +117,7 @@ public class BlockBeamQuarry extends BlockContainer {
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
         TileEntity tileAtPos = worldIn.getTileEntity(pos);
-        if (tileAtPos != null && CapabilityWorldNetworkTile.isPositionNetworkTile(worldIn, pos, null)) {
+        if (tileAtPos != null) {
             getNetworkHelper(worldIn).onNodeBroken(worldIn, pos);
 
             if (tileAtPos instanceof TileBeamQuarry) {
