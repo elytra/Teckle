@@ -23,8 +23,10 @@ import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeChunkManager;
 
 import javax.annotation.Nullable;
 
@@ -44,7 +46,7 @@ public class BlockBeamQuarry extends BlockContainer {
 
     @Override
     public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
-        EnumFacing direction = placer.getHorizontalFacing();
+        EnumFacing direction = placer.getHorizontalFacing().getOpposite();
         return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer, hand).withProperty(FACING, direction).withProperty(ACTIVE, false);
     }
 
@@ -132,6 +134,13 @@ public class BlockBeamQuarry extends BlockContainer {
 
                 AdvancedStackHandlerPool.getPool(worldIn).remove(beamQuarry.bufferData.getId());
                 AdvancedStackHandlerPool.getPool(worldIn).remove(beamQuarry.junkSupply.getId());
+
+                if (!worldIn.isRemote) {
+                    ForgeChunkManager.Ticket ticket = ForgeChunkManager.requestTicket(TeckleMod.INSTANCE, worldIn, ForgeChunkManager.Type.NORMAL);
+                    for (ChunkPos chunkPos : ((TileBeamQuarry) tileAtPos).chunksInBounds()) {
+                        ForgeChunkManager.unforceChunk(ticket, chunkPos);
+                    }
+                }
             }
         }
 

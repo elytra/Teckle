@@ -6,6 +6,7 @@ import com.elytradev.teckle.api.capabilities.IWorldNetworkAssistant;
 import com.elytradev.teckle.api.capabilities.WorldNetworkTile;
 import com.elytradev.teckle.client.gui.GuiBeamQuarry;
 import com.elytradev.teckle.common.TeckleLog;
+import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.block.BlockBeamQuarry;
 import com.elytradev.teckle.common.container.ContainerBeamQuarry;
@@ -40,8 +41,10 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.fluids.IFluidBlock;
@@ -103,8 +106,26 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
             this.topNetworkTile.bufferID = this.bufferID;
 
             this.tileEntityInvalid = false;
+
+            if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+                ForgeChunkManager.Ticket ticket = ForgeChunkManager.requestTicket(TeckleMod.INSTANCE, world, ForgeChunkManager.Type.NORMAL);
+                for (ChunkPos chunkPos : chunksInBounds()) {
+                    ForgeChunkManager.forceChunk(ticket, chunkPos);
+                }
+            }
         } catch (Exception e) {
             TeckleLog.error("Failed to validate beam quarry. {}", e);
+        }
+    }
+
+    @Override
+    public void invalidate() {
+        super.invalidate();
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            ForgeChunkManager.Ticket ticket = ForgeChunkManager.requestTicket(TeckleMod.INSTANCE, world, ForgeChunkManager.Type.NORMAL);
+            for (ChunkPos chunkPos : chunksInBounds()) {
+                ForgeChunkManager.unforceChunk(ticket, chunkPos);
+            }
         }
     }
 
@@ -149,6 +170,10 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
         this.forward = tag.getInteger("forward");
         this.facing = tag.getInteger("facing") > 0 ? EnumFacing.values()[tag.getInteger("facing")] : null;
         this.energyStorage.deserializeNBT(tag.getCompoundTag("energyStorage"));
+
+        if (stairPositions.isEmpty()) {
+            generateStairPositions();
+        }
 
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
             this.junkTypes.deserializeNBT(tag.getCompoundTag("junkTypes"));
@@ -215,12 +240,12 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
 
             // Check the current cursor position for validity.
             IBlockState cursorState = world.getBlockState(getCursor());
-            if (!isStateValid(cursorState)) {
+            if (!isStateValid(getCursor(), cursorState)) {
                 adjustCursor();
                 cursorState = world.getBlockState(cursor);
             }
             // Mine the current cursor position.
-            if (isStateValid(cursorState) && energyStorage.getEnergyStored() >= 100) {
+            if (isStateValid(getCursor(), cursorState) && energyStorage.getEnergyStored() >= 100) {
                 AxisAlignedBB dropBox = new AxisAlignedBB(getCursor().getX() - 0.5, getCursor().getY() - 0.5, getCursor().getZ() - 0.5,
                         getCursor().getX() + 0.5, getCursor().getY() + 0.5, getCursor().getZ() + 0.5);
                 dropBox = dropBox.expand(1.5, 1.5, 1.5);
@@ -250,7 +275,7 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
                         world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, stack));
                 }
             }
-        } else if (world.isRemote) {
+        } else if (world.isRemote && world.getTotalWorldTime() % 3 == 0) {
             // Show the border for the quarry area.
             for (BlockPos particlePosition : particlePositions) {
                 world.spawnParticle(EnumParticleTypes.REDSTONE, true, particlePosition.getX() + 0.5, particlePosition.getY(), particlePosition.getZ() + 0.5, 0, 0, 0);
@@ -270,7 +295,7 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
                 for (int z = startZ; z <= Math.abs(difference.getZ()); z++) {
                     BlockPos cursorPos = min.add(negativeX ? -x : x, -min.getY() + y, negativeZ ? -z : z);
                     setCursor(cursorPos);
-                    if (isStateValid(world.getBlockState(cursor)))
+                    if (isStateValid(getCursor(), world.getBlockState(cursor)))
                         return;
                 }
                 startZ = 0;
@@ -306,16 +331,20 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
 
         // Recheck to confirm everything is clear, then deactivate the quarry if it is.
         List<BlockPos> stairBlockPositions = stairPositions.stream().map(MutablePair::getLeft).collect(Collectors.toList());
-        for (BlockPos p : BlockPos.getAllInBox(min, max)) {
+        for (BlockPos p : BlockPos.getAllInBox(min, new BlockPos(max.getX(), pos.getY() + 32, max.getZ()))) {
             if (stairBlockPositions.contains(p))
                 continue;
 
-            if (isStateValid(world.getBlockState(p))) {
+            if (isStateValid(p, world.getBlockState(p))) {
                 cursor = p;
                 return;
             }
         }
         world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockBeamQuarry.ACTIVE, false));
+        ForgeChunkManager.Ticket ticket = ForgeChunkManager.requestTicket(TeckleMod.INSTANCE, world, ForgeChunkManager.Type.NORMAL);
+        for (ChunkPos chunkPos : chunksInBounds()) {
+            ForgeChunkManager.unforceChunk(ticket, chunkPos);
+        }
     }
 
     private boolean isNegative(int i) {
@@ -339,8 +368,8 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
      * @param state the state to check.
      * @return true if the state can be mined, false otherwise.
      */
-    public boolean isStateValid(IBlockState state) {
-        return state.getBlock() != Blocks.AIR && state.getBlock() != Blocks.BEDROCK;
+    public boolean isStateValid(BlockPos pos, IBlockState state) {
+        return state.getBlock() != Blocks.AIR && state.getBlockHardness(world, pos) > 0;
     }
 
     /**
@@ -361,9 +390,18 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
      * @param max the maximum position mining will be restricted in.
      */
     private void setBounds(BlockPos min, BlockPos max) {
+        ForgeChunkManager.Ticket ticket = ForgeChunkManager.requestTicket(TeckleMod.INSTANCE, world, ForgeChunkManager.Type.NORMAL);
+        for (ChunkPos chunkPos : chunksInBounds()) {
+            ForgeChunkManager.unforceChunk(ticket, chunkPos);
+        }
+
         this.min = min;
         this.max = max;
-        this.setCursor(min.add(new Vec3i(0, 4, 0)));
+        this.setCursor(min.add(new Vec3i(0, 32, 0)));
+
+        for (ChunkPos chunkPos : chunksInBounds()) {
+            ForgeChunkManager.forceChunk(ticket, chunkPos);
+        }
 
         if (!world.isRemote) {
             new TileUpdateMessage(world, pos).sendToAllWatching(this);
@@ -558,5 +596,23 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
 
     public void setCursor(BlockPos cursor) {
         this.cursor = cursor;
+    }
+
+    public BlockPos getMin() {
+        return min;
+    }
+
+    public BlockPos getMax() {
+        return max;
+    }
+
+    public List<ChunkPos> chunksInBounds() {
+        List<ChunkPos> chunkPositions = Lists.newArrayList();
+        for (BlockPos blockPos : BlockPos.getAllInBox(min.add(0, -min.getY(), 0), max.add(0, -max.getY(), 0))) {
+            if (!chunkPositions.contains(new ChunkPos(blockPos.getX() >> 4, blockPos.getZ() >> 4))) {
+                chunkPositions.add(new ChunkPos(blockPos.getX() >> 4, blockPos.getZ() >> 4));
+            }
+        }
+        return chunkPositions;
     }
 }

@@ -155,7 +155,12 @@ public class GuiBeamQuarry extends GuiTeckle {
 
         @Override
         public void performAction(int mouseX, int mouseY, int mouseButton) {
-            new ToggleQuarryMessage(beamQuarry.getPos(), true).sendToServer();
+            if (!beamQuarry.isActive()) {
+                displayString = "DEACTIVATE";
+            } else {
+                displayString = "ACTIVATE";
+            }
+            new ToggleQuarryMessage(beamQuarry.getPos(), !beamQuarry.isActive()).sendToServer();
         }
     }
 

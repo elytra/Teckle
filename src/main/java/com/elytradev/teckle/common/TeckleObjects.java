@@ -266,9 +266,6 @@ public class TeckleObjects {
         itemCompacted.setRegistryName(MOD_ID, "compacted_metal");
         itemCompacted.setCreativeTab(creativeTab);
         itemCompacted.setUnlocalizedName("teckle.compacted_metal");
-        Arrays.stream(ItemIngot.IngotType.values()).forEach(ingotType ->
-                OreDictionary.registerOre(ingotType.getOreName().replace("ingot", "block"),
-                        new ItemStack(blockCompacted, 1, ingotType.getMetadata())));
         itemBlocksToRegister.add(itemCompacted);
     }
 
@@ -299,9 +296,7 @@ public class TeckleObjects {
 
         itemIngot = new ItemIngot();
         registerItem(registry, "ingot", itemIngot);
-        Arrays.stream(ItemIngot.IngotType.values()).forEach(ingotType ->
-                OreDictionary.registerOre(ingotType.getOreName(),
-                        new ItemStack(itemIngot, 1, ingotType.getMetadata())));
+
         skipItemMesh.add(itemIngot);
         itemBlocksToRegister.forEach(registry::register);
 
@@ -309,6 +304,15 @@ public class TeckleObjects {
         OreDictionary.registerOre("dustNikolite", new ItemStack(itemNikolite, 1));
         OreDictionary.registerOre("dyeCyan", new ItemStack(itemNikolite, 1));
         OreDictionary.registerOre("oreNikolite", new ItemStack(blockNikoliteOre, 1));
+        Arrays.stream(ItemIngot.IngotType.values()).forEach(ingotType -> {
+            OreDictionary.registerOre(ingotType.getOreName(),
+                    new ItemStack(itemIngot, 1, ingotType.getMetadata()));
+
+            if (ingotType != ItemIngot.IngotType.BRASS) {
+                OreDictionary.registerOre(ingotType.getOreName().replace("ingot", "block"),
+                        new ItemStack(blockCompacted, 1, ingotType.getMetadata()));
+            }
+        });
     }
 
     @SubscribeEvent

@@ -53,6 +53,7 @@ public class TeckleMod {
     public static final String GUI_FACTORY = "com.elytradev.teckle.client.gui.TeckleGUIFactory";
     public static final String RESOURCE_DOMAIN = "teckle:";
 
+
     public static TeckleObjects OBJECTS;
     public static boolean INDEV = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
     public static TeckleConfiguration CONFIG;
