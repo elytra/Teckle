@@ -29,6 +29,8 @@ import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.Mod;
@@ -52,7 +54,6 @@ public class TeckleMod {
     public static final String MOD_VER = "%VERSION%";
     public static final String GUI_FACTORY = "com.elytradev.teckle.client.gui.TeckleGUIFactory";
     public static final String RESOURCE_DOMAIN = "teckle:";
-
 
     public static TeckleObjects OBJECTS;
     public static boolean INDEV = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
@@ -96,6 +97,8 @@ public class TeckleMod {
     public void onPostInit(FMLPostInitializationEvent e) {
         OBJECTS.postInit(e);
         PROXY.registerRenderers(e.getModState());
+
+        ForgeChunkManager.setForcedChunkLoadingCallback(this, (tickets, world) -> {});
     }
 
     @EventHandler

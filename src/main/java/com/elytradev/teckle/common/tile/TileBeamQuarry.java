@@ -108,9 +108,11 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
             this.tileEntityInvalid = false;
 
             if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-                ForgeChunkManager.Ticket ticket = ForgeChunkManager.requestTicket(TeckleMod.INSTANCE, world, ForgeChunkManager.Type.NORMAL);
-                for (ChunkPos chunkPos : chunksInBounds()) {
-                    ForgeChunkManager.forceChunk(ticket, chunkPos);
+                if (!min.equals(max)) {
+                    ForgeChunkManager.Ticket ticket = ForgeChunkManager.requestTicket(TeckleMod.INSTANCE, world, ForgeChunkManager.Type.NORMAL);
+                    for (ChunkPos chunkPos : chunksInBounds()) {
+                        ForgeChunkManager.forceChunk(ticket, chunkPos);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -121,10 +123,12 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
     @Override
     public void invalidate() {
         super.invalidate();
-        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            ForgeChunkManager.Ticket ticket = ForgeChunkManager.requestTicket(TeckleMod.INSTANCE, world, ForgeChunkManager.Type.NORMAL);
-            for (ChunkPos chunkPos : chunksInBounds()) {
-                ForgeChunkManager.unforceChunk(ticket, chunkPos);
+        if (!min.equals(max)) {
+            if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+                ForgeChunkManager.Ticket ticket = ForgeChunkManager.requestTicket(TeckleMod.INSTANCE, world, ForgeChunkManager.Type.NORMAL);
+                for (ChunkPos chunkPos : chunksInBounds()) {
+                    ForgeChunkManager.unforceChunk(ticket, chunkPos);
+                }
             }
         }
     }
@@ -391,8 +395,10 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
      */
     private void setBounds(BlockPos min, BlockPos max) {
         ForgeChunkManager.Ticket ticket = ForgeChunkManager.requestTicket(TeckleMod.INSTANCE, world, ForgeChunkManager.Type.NORMAL);
-        for (ChunkPos chunkPos : chunksInBounds()) {
-            ForgeChunkManager.unforceChunk(ticket, chunkPos);
+        if (!this.min.equals(this.max)) {
+            for (ChunkPos chunkPos : chunksInBounds()) {
+                ForgeChunkManager.unforceChunk(ticket, chunkPos);
+            }
         }
 
         this.min = min;
@@ -608,10 +614,17 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
 
     public List<ChunkPos> chunksInBounds() {
         List<ChunkPos> chunkPositions = Lists.newArrayList();
-        for (BlockPos blockPos : BlockPos.getAllInBox(min.add(0, -min.getY(), 0), max.add(0, -max.getY(), 0))) {
-            if (!chunkPositions.contains(new ChunkPos(blockPos.getX() >> 4, blockPos.getZ() >> 4))) {
-                chunkPositions.add(new ChunkPos(blockPos.getX() >> 4, blockPos.getZ() >> 4));
-            }
+        int xMin, xMax;
+        int zMin, zMax;
+        xMin = (this.min.getX() < this.max.getX() ? this.min.getX() : this.max.getX()) - 1;
+        xMax = (this.min.getX() < this.max.getX() ? this.max.getX() : this.min.getX()) + 1;
+        zMin = (this.min.getZ() < this.max.getZ() ? this.min.getZ() : this.max.getZ()) - 1;
+        zMax = (this.min.getZ() < this.max.getZ() ? this.max.getZ() : this.min.getZ()) + 1;
+        for (BlockPos blockPos : BlockPos.getAllInBox(new BlockPos(xMin, 0, zMin), new BlockPos(xMax, 0, zMax))) {
+            if (chunkPositions.contains(new ChunkPos(blockPos)))
+                continue;
+
+            chunkPositions.add(new ChunkPos(blockPos));
         }
         return chunkPositions;
     }
