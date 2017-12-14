@@ -6,6 +6,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.SlotItemHandler;
@@ -74,5 +75,38 @@ public class ContainerBeamQuarry extends Container {
     @Override
     public boolean canInteractWith(EntityPlayer player) {
         return beamQuarry.isUsableByPlayer(player);
+    }
+
+    @Override
+    public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
+        ItemStack itemstack = ItemStack.EMPTY;
+        Slot slot = this.inventorySlots.get(index);
+
+        if (slot != null && slot.getHasStack()) {
+            ItemStack itemstack1 = slot.getStack();
+            itemstack = itemstack1.copy();
+
+            if (index < 43) {
+                if (!this.mergeItemStack(itemstack1, 43, 79, true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (!this.mergeItemStack(itemstack1, 0, 43, true)) {
+                return ItemStack.EMPTY;
+            }
+
+            if (itemstack1.isEmpty()) {
+                slot.putStack(ItemStack.EMPTY);
+            } else {
+                slot.onSlotChanged();
+            }
+
+            if (itemstack1.getCount() == itemstack.getCount()) {
+                return ItemStack.EMPTY;
+            }
+
+            slot.onTake(playerIn, itemstack1);
+        }
+
+        return itemstack;
     }
 }
