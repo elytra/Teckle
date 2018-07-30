@@ -458,6 +458,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
      * @return the list of all itemstacks available for sorting.
      */
     public List<SlotData> getStacksToPush(boolean skipBuffer) {
+        skipBuffer |= bufferData == null;
         List<SlotData> stacks = Lists.newArrayList();
 
         if (!skipBuffer && !bufferData.getHandler().stream().allMatch(ItemStack::isEmpty)) {
