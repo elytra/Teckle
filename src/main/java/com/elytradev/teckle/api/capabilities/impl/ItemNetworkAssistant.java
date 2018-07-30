@@ -172,7 +172,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
     @Override
     public void onNodeNeighbourChange(World world, BlockPos pos, BlockPos neighbour) {
         try {
-            if (world.isRemote)
+            if (world == null || world.isRemote)
                 return;
 
             BlockPos posDiff = pos.subtract(neighbour);
