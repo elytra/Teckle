@@ -57,8 +57,7 @@ public abstract class TileNetworkMember extends TileEntity {
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-        if (capability == null) return null;
+    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == TeckleMod.PROBE_CAPABILITY) {
             if (probeCapability == null) probeCapability = new ProbeCapability();
             return (T) probeCapability;
@@ -67,10 +66,8 @@ public abstract class TileNetworkMember extends TileEntity {
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-        if (capability == null) return false;
-        if (capability == TeckleMod.PROBE_CAPABILITY) return true;
-        return super.hasCapability(capability, facing);
+    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
+        return capability == TeckleMod.PROBE_CAPABILITY || super.hasCapability(capability, facing);
     }
 
     public boolean isJammed() {

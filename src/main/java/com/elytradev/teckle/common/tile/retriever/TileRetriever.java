@@ -41,6 +41,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -119,8 +120,7 @@ public class TileRetriever extends TileLitNetworkMember implements IElementProvi
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-        if (capability == null) return null;
+    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == TeckleMod.PROBE_CAPABILITY) {
             if (probeCapability == null) probeCapability = new ProbeCapability();
             return (T) probeCapability;
@@ -135,8 +135,7 @@ public class TileRetriever extends TileLitNetworkMember implements IElementProvi
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-        if (capability == null) return false;
+    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY
                 && (Objects.equals(facing, getFacing()) || Objects.equals(facing, getFacing().getOpposite())))
             return true;

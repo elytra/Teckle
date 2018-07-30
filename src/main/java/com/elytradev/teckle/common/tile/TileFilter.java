@@ -65,6 +65,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -356,8 +357,7 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-        if (capability == null) return null;
+    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == TeckleMod.PROBE_CAPABILITY) {
             if (probeCapability == null) probeCapability = new TileFilter.ProbeCapability();
             return (T) probeCapability;
@@ -368,11 +368,8 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-        if (capability == null) return false;
-        if (capability == TeckleMod.PROBE_CAPABILITY) return true;
-        if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) return true;
-        return super.hasCapability(capability, facing);
+    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
+        return capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY || super.hasCapability(capability, facing);
     }
 
     @Override

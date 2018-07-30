@@ -35,6 +35,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
@@ -164,21 +165,16 @@ public class TileItemTube extends TileNetworkMember {
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-        if (capability == null) {
-            return null;
-        } else if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
+    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
+        if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
             return (T) getNetworkTile();
         }
-
         return super.getCapability(capability, facing);
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-        if (capability == null) {
-            return false;
-        } else if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
+    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
+        if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
             return true;
         }
 

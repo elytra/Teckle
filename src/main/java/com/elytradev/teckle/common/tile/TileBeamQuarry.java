@@ -54,6 +54,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -556,7 +557,7 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing capFace) {
+    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing capFace) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
             if (capFace == null)
                 return false;
@@ -572,7 +573,7 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
 
     @Nullable
     @Override
-    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
         if (facing != null) {
             if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
                 if (facing == EnumFacing.UP) {

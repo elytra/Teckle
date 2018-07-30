@@ -76,6 +76,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -380,8 +381,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-        if (capability == null) return null;
+    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == TeckleMod.PROBE_CAPABILITY) {
             if (probeCapability == null) probeCapability = new ProbeCapability();
             return (T) probeCapability;
@@ -396,9 +396,7 @@ public class TileSortingMachine extends TileLitNetworkMember implements IElement
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-        if (capability == null) return false;
-        if (capability == TeckleMod.PROBE_CAPABILITY) return true;
+    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY
                 && (Objects.equals(facing, getFacing()) || Objects.equals(facing, getFacing().getOpposite())))
             return true;
