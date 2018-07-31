@@ -104,12 +104,12 @@ public class GuiSortingMachine extends GuiTeckle {
                 if (mouseX >= button.x && mouseX <= button.x + button.width) {
                     if (mouseY >= button.y && mouseY <= button.y + button.height) {
                         GlStateManager.pushMatrix();
-                        String text = "None";
+                        String text = I18n.format("tooltip.teckle.colorpicker.none");
                         EnumDyeColor color = GuiSortingMachine.this.sortingMachine.colours[((GuiColourPicker) button).colourIndex];
                         if (color != null) {
-                            text = color.getName();
+                            text = I18n.format("item.fireworksCharge." + color.getUnlocalizedName());
                         }
-                        drawHoveringText(text, mouseX-guiLeft, mouseY-guiTop);
+                        drawHoveringText(text, mouseX - guiLeft, mouseY - guiTop);
                         RenderHelper.disableStandardItemLighting();
                         GlStateManager.popMatrix();
                     }

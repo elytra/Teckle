@@ -39,6 +39,7 @@ item.teckle.siliconwafer.blue.name=Blue Doped Wafer
 tooltip.teckle.node.network=Network %s %s Size: %s
 tooltip.teckle.traveller.data=Travellers
 tooltip.teckle.filter.buffer=Buffer
+tooltip.teckle.colorpicker.none=None
 
 sortmodetype.compartment=Compartment
 sortmodetype.slot=Slot
