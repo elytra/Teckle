@@ -9,6 +9,12 @@ pipeline {
 			}
 		}
 		stage('Deploy') {
+			when {
+			    expression {
+			        GIT_BRANCH = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
+			        return GIT_BRANCH == '1.12'
+			    }
+			}
 			steps {
 				withCredentials([file(credentialsId: 'privateGradleNoSnapshotShadow', variable: 'PRIVATEGRADLE')]) {
 					sh '''
