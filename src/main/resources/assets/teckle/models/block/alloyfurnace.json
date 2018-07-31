@@ -3,6 +3,7 @@
     "textures": {
         "top": "teckle:blocks/alloyfurnace_top",
         "front": "teckle:blocks/alloyfurnace",
-        "side": "teckle:blocks/alloyfurnace_side"
+        "side": "teckle:blocks/alloyfurnace_side",
+        "down": "teckle:blocks/alloyfurnace_bottom"
     }
 }
