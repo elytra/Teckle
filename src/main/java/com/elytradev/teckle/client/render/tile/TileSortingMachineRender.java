@@ -11,7 +11,7 @@ import net.minecraft.util.math.Vec3d;
 
 public class TileSortingMachineRender extends TileNetworkMemberRenderer<TileSortingMachine> {
 
-    private ModelMachineOverlay mouthOverlay, blinkenLightsOverlay;
+    private ModelMachineOverlay lightOverlay;
 
     public TileSortingMachineRender() {
         super(BlockSortingMachine.FACING, "teckle:blocks/sortingmachineerror");
@@ -25,12 +25,10 @@ public class TileSortingMachineRender extends TileNetworkMemberRenderer<TileSort
             return;
 
         EnumFacing pointTo = blockState.getValue(BlockSortingMachine.FACING);
-        if (mouthOverlay == null || blinkenLightsOverlay == null) {
-            mouthOverlay = new ModelMachineOverlay(this.getClass(), "teckle:blocks/sortingmachinemouth", false);
-            blinkenLightsOverlay = new ModelMachineOverlay(this.getClass(), "teckle:blocks/sortingmachineblinkenlights", true);
+        if (lightOverlay == null) {
+            lightOverlay = new ModelMachineOverlay(this.getClass(), "teckle:blocks/sortingmachineside_on", true);
         }
-        mouthOverlay.render(getWorld(), new Vec3d(x, y, z), te.getPos(), blockState, pointTo);
-        blinkenLightsOverlay.render(getWorld(), new Vec3d(x, y, z), te.getPos(), blockState, pointTo);
+        lightOverlay.render(getWorld(), new Vec3d(x, y, z), te.getPos(), blockState, pointTo);
     }
 
 }

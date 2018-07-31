@@ -1,8 +1,9 @@
 {
     "parent": "block/orientable",
     "textures": {
-        "top": "blocks/brick",
+        "top": "teckle:blocks/alloyfurnace_top",
         "front": "teckle:blocks/alloyfurnace",
-        "side": "blocks/brick"
+        "side": "teckle:blocks/alloyfurnace_side",
+        "down": "teckle:blocks/alloyfurnace_bottom"
     }
 }

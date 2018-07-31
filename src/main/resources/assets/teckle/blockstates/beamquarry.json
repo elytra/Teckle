@@ -1,12 +1,27 @@
 {
     "forge_marker": 1,
     "defaults": {
-        "model": "teckle:beamquarry"
+        "model": "cube",
+        "textures": {
+            "particle": "teckle:blocks/beamquarry_top_inactive",
+            "down": "teckle:blocks/beamquarry_bottom",
+            "up": "teckle:blocks/beamquarry_top_inactive",
+            "north": "teckle:blocks/beamquarry_front_inactive",
+            "east": "teckle:blocks/beamquarry_side",
+            "south": "teckle:blocks/beamquarry_side",
+            "west": "teckle:blocks/beamquarry_side"
+        }
     },
     "variants": {
         "active": {
             "false": {},
-            "true": {}
+            "true": {
+                "textures": {
+                    "particle": "teckle:blocks/beamquarry_top",
+                    "up": "teckle:blocks/beamquarry_top",
+                    "north": "teckle:blocks/beamquarry_front"
+                }
+            }
         },
         "facing": {
             "north": {},
