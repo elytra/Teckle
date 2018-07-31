@@ -64,14 +64,12 @@ public class CapabilityWorldNetworkAssistantHolder {
 
             @Override
             public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-                return capability != null && capability == NETWORK_ASSISTANT_HOLDER_CAPABILITY;
+                return capability == NETWORK_ASSISTANT_HOLDER_CAPABILITY;
             }
 
             @Nullable
             @Override
             public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-                if (capability == null)
-                    return null;
                 if (capability == NETWORK_ASSISTANT_HOLDER_CAPABILITY) {
                     if (assistantHolder == null) assistantHolder = new WorldNetworkAssistantHolder();
                     return (T) assistantHolder;

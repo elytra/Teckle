@@ -87,9 +87,8 @@ public class NetworkTileRetrieverOutput extends NetworkTileRetrieverBase {
 
     @Override
     public boolean canConnectTo(EnumFacing side) {
-        return Objects.equals(side, getOutputFace());
+        return side == getOutputFace();
     }
-
 
     @Override
     public EnumFacing getOutputFace() {

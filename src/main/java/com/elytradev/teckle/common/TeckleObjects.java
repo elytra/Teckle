@@ -153,7 +153,7 @@ public class TeckleObjects {
         registry.register(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule).
                 setRegistryName(new ResourceLocation(TeckleMod.MOD_ID, "waferslicerecipe")));
 
-        
+
         // hmmmmmm :thinking:
         registerShapedRecipe(registry, new ItemStack(blockBeamQuarry), "OWO", "IXI", "OWO",
                 'O', "blockBlueAlloy",
@@ -257,7 +257,7 @@ public class TeckleObjects {
         registerItem(registry, "siliconwafer", itemSiliconWafer);
         skipItemMesh.add(itemSiliconWafer);
 
-        elytraLogo=new Item();
+        elytraLogo = new Item();
         registerItem(registry, "elytralogo", elytraLogo);
 
         itemIngot = new ItemIngot();

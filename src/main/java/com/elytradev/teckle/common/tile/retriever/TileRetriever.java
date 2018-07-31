@@ -126,9 +126,9 @@ public class TileRetriever extends TileLitNetworkMember implements IElementProvi
             return (T) probeCapability;
         }
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY) {
-            if (Objects.equals(facing, getFacing()))
+            if (facing == getFacing())
                 return (T) outputTile;
-            else if (Objects.equals(facing, getFacing().getOpposite()))
+            else if (facing == getFacing().getOpposite())
                 return (T) inputTile;
         }
         return super.getCapability(capability, facing);
@@ -137,13 +137,13 @@ public class TileRetriever extends TileLitNetworkMember implements IElementProvi
     @Override
     public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY
-                && (Objects.equals(facing, getFacing()) || Objects.equals(facing, getFacing().getOpposite())))
+                && facing == getFacing() || facing == getFacing().getOpposite())
             return true;
         return super.hasCapability(capability, facing);
     }
 
     public EnumFacing getFacing() {
-        if (getWorld() != null && getWorld().isBlockLoaded(getPos())) {
+        if (cachedFace == null && getWorld() != null && getWorld().isBlockLoaded(getPos())) {
             IBlockState thisState = getWorld().getBlockState(getPos());
             if (Objects.equals(thisState.getBlock(), TeckleObjects.blockRetriever)) {
                 cachedFace = thisState.getValue(BlockRetriever.FACING);

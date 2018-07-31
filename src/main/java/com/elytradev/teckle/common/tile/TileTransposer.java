@@ -61,7 +61,10 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public class TileTransposer extends TileNetworkMember implements ITickable {
 
@@ -336,7 +339,8 @@ public class TileTransposer extends TileNetworkMember implements ITickable {
             } else {
                 WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
                 Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
-                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), getNetworkTile().getCapabilityFace())).findAny();
+                        .filter(pair -> pair.getLeft() == getPos() && pair.getValue() == networkTile.getCapabilityFace())
+                        .findAny();
                 if (any.isPresent()) {
                     networkID = networkDB.getRemappedNodes().remove(any.get());
                     TeckleLog.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);

@@ -31,12 +31,11 @@ import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.Objects;
-
 public class ItemPaintbrush extends Item implements IResourceHolder {
 
     public ItemPaintbrush() {
         setMaxStackSize(1);
+        setCreativeTab(TeckleObjects.creativeTab);
     }
 
     @Override
@@ -46,7 +45,7 @@ public class ItemPaintbrush extends Item implements IResourceHolder {
 
     @Override
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
-        if (Objects.equals(tab, TeckleObjects.creativeTab) || Objects.equals(tab, CreativeTabs.SEARCH)) {
+        if (isInCreativeTab(tab)) {
             for (EnumDyeColor color : EnumDyeColor.values()) {
                 items.add(new ItemStack(this, 1, color.getDyeDamage()));
             }
@@ -72,7 +71,7 @@ public class ItemPaintbrush extends Item implements IResourceHolder {
         }
 
         IBlockState blockState = worldIn.getBlockState(pos);
-        if (Objects.equals(blockState.getBlock(), TeckleObjects.blockItemTube)) {
+        if (blockState.getBlock() == TeckleObjects.blockItemTube) {
             TileItemTube tubeItem = (TileItemTube) worldIn.getTileEntity(pos);
 
             if (tubeItem != null) {

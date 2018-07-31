@@ -48,7 +48,6 @@ import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class TileFabricator extends TileEntity implements ITickable, IElementProvider {
@@ -220,19 +219,14 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
 
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        if (capability == null) return false;
-        if (Objects.equals(capability, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY))
-            return true;
+        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
 
-        return super.hasCapability(capability, facing);
     }
 
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-        if (capability == null) return null;
-
-        if (Objects.equals(capability, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)) {
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             return (T) stackHandler;
         }
 

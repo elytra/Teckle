@@ -206,7 +206,7 @@ public class TileBreaker extends TileNetworkMember implements ITickable {
         } else {
             IBlockState state = world.getBlockState(pos.offset(facing.getOpposite()));
             state.getBlock().getDrops(extractionData, world, pos, state, 0);
-            world.destroyBlock(pos.offset(facing.getOpposite()),false);
+            world.destroyBlock(pos.offset(facing.getOpposite()), false);
         }
 
         return extractionData;

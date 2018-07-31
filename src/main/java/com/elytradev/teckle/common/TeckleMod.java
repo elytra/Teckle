@@ -23,13 +23,8 @@ import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.worldgen.NikoliteOreGenerator;
 import com.elytradev.teckle.common.worldnetwork.common.NetworkTileRegistry;
-import com.google.common.collect.Lists;
 import mcmultipart.api.multipart.IMultipartTile;
 import net.minecraft.launchwrapper.Launch;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -42,8 +37,6 @@ import net.minecraftforge.fml.common.event.FMLInterModComms;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-
-import java.util.List;
 
 import static com.elytradev.teckle.common.TeckleMod.*;
 
