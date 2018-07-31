@@ -205,7 +205,8 @@ public class TileBeamQuarry extends TileNetworkMember implements ITickable, IEle
         } else {
             WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
             Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
-                    .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(), tileFace)).findAny();
+                    .filter(pair -> pair.getLeft() == getPos() && pair.getValue() == tileFace)
+                    .findAny();
             if (any.isPresent()) {
                 networkID = networkDB.getRemappedNodes().remove(any.get());
                 TeckleLog.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);

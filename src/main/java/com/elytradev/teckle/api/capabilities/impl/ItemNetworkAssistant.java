@@ -293,7 +293,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
             traveller.setEndpointPredicate(endpointPredicate);
             if (simulate)
                 entryPoint.getNetwork().unregisterTraveller(traveller, true, false);
-            if (Objects.equals(traveller, WorldNetworkTraveller.NONE) || traveller == null) {
+            if (traveller==WorldNetworkTraveller.NONE) {
                 if (networksInsertionOnly)
                     return remaining.copy();
             } else {

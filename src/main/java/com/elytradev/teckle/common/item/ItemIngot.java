@@ -35,7 +35,7 @@ import java.util.Objects;
 public class ItemIngot extends Item implements IResourceHolder {
 
     public ItemIngot() {
-
+        setCreativeTab(TeckleObjects.creativeTab);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class ItemIngot extends Item implements IResourceHolder {
 
     @Override
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> subItems) {
-        if (Objects.equals(tab, TeckleObjects.creativeTab) || Objects.equals(tab, CreativeTabs.SEARCH)) {
+        if (isInCreativeTab(tab)) {
             for (ItemIngot.IngotType ingotType : ItemIngot.IngotType.values()) {
                 subItems.add(new ItemStack(this, 1, ingotType.getMetadata()));
             }

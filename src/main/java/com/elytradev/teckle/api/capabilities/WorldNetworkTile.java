@@ -35,7 +35,6 @@ import net.minecraftforge.common.util.INBTSerializable;
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
-import java.util.Objects;
 
 /**
  * Used to store node data on tiles.
@@ -142,7 +141,7 @@ public abstract class WorldNetworkTile implements INBTSerializable<NBTTagCompoun
      * @return true if can be added false otherwise.
      */
     public boolean isValidNetworkMember(IWorldNetwork network, EnumFacing side) {
-        return Objects.equals(side, getOutputFace());
+        return side == getOutputFace();
     }
 
     /**

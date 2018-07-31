@@ -26,7 +26,10 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Manages all travellers on this client, mostly for visuals.
@@ -38,7 +41,7 @@ public class ClientTravellerManager {
 
     @SubscribeEvent
     public static void onTickEvent(TickEvent.ClientTickEvent e) {
-        if (Objects.equals(e.phase, TickEvent.Phase.END) || Minecraft.getMinecraft().world == null || Minecraft.getMinecraft().isGamePaused())
+        if (e.phase==TickEvent.Phase.END || Minecraft.getMinecraft().world == null || Minecraft.getMinecraft().isGamePaused())
             return;
 
         // Move the travellers between tiles and increase their travelled distance.

@@ -224,10 +224,9 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
             extractionData = bufferData.getHandler().extractItem(bufferSlot, 8, false);
         } else {
             BlockPos inputPos = pos.offset(facing.getOpposite());
-            if (world.getTileEntity(inputPos) != null && world.getTileEntity(inputPos)
-                    .hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
-                IItemHandler itemHandler = world.getTileEntity(pos.offset(facing.getOpposite()))
-                        .getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
+            TileEntity tile = world.getTileEntity(inputPos);
+            if (tile != null && tile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
+                IItemHandler itemHandler = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
 
                 if (filterData.getHandler().stream().anyMatch(itemStack -> !itemStack.isEmpty())) {
                     for (ItemStack stack : filterData.getHandler().getStacks()) {
@@ -239,8 +238,7 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
                         for (int slot = 0; slot < itemHandler.getSlots() && extractionData.isEmpty(); slot++) {
                             int countToExtract = stack.getCount() > 1 ? stack.getCount() : stack.getMaxStackSize();
                             ItemStack extractTest = itemHandler.extractItem(slot, countToExtract, true);
-                            boolean metaMatches = extractTest.getMetadata() == stack.getMetadata();
-                            if (metaMatches && Objects.equals(extractTest.getItem(), stack.getItem())) {
+                            if (extractTest.isItemEqual(stack)) {
                                 extractionData = itemHandler.extractItem(slot, countToExtract, false);
                             }
                         }
@@ -305,8 +303,8 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
             } else {
                 WorldNetworkDatabase networkDB = WorldNetworkDatabase.getNetworkDB(dimID);
                 Optional<Pair<BlockPos, EnumFacing>> any = networkDB.getRemappedNodes().keySet().stream()
-                        .filter(pair -> Objects.equals(pair.getLeft(), getPos()) && Objects.equals(pair.getValue(),
-                                networkTile.getCapabilityFace())).findAny();
+                        .filter(pair -> pair.getLeft() == getPos() && pair.getValue() == networkTile.getCapabilityFace())
+                        .findAny();
                 if (any.isPresent()) {
                     networkID = networkDB.getRemappedNodes().remove(any.get());
                     TeckleLog.debug("Found a remapped network id for " + pos.toString() + " mapped id to " + networkID);
