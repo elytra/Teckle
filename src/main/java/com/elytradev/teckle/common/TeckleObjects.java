@@ -85,6 +85,7 @@ public class TeckleObjects {
     public static Item itemSiliconBoule;
     public static ItemSiliconWafer itemSiliconWafer;
     public static ItemIngot itemIngot;
+    public static Item elytraLogo;
 
     public static CreativeTabs creativeTab = new CreativeTabs(MOD_ID) {
         @Override
@@ -292,7 +293,8 @@ public class TeckleObjects {
         registerItem(registry, "siliconwafer", itemSiliconWafer);
         skipItemMesh.add(itemSiliconWafer);
 
-        registerItem(registry, "elytralogo", new Item());
+        elytraLogo=new Item();
+        registerItem(registry, "elytralogo", elytraLogo);
 
         itemIngot = new ItemIngot();
         registerItem(registry, "ingot", itemIngot);

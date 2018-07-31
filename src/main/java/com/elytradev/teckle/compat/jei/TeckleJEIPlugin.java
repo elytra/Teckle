@@ -40,6 +40,7 @@ public class TeckleJEIPlugin implements IModPlugin {
         HELPERS = registry.getJeiHelpers();
         registry.getRecipeTransferRegistry().addRecipeTransferHandler(new FabricatorRecipeTransferHandler(), VanillaRecipeCategoryUid.CRAFTING);
 
+        registry.getJeiHelpers().getIngredientBlacklist().addIngredientToBlacklist(new ItemStack(TeckleObjects.elytraLogo));
         registry.addRecipes(AlloyRecipes.getInstance().getRecipes(), ALLOYRECIPE_UID);
         registry.handleRecipes(AlloyRecipe.class, AlloyRecipeWrapper::new, ALLOYRECIPE_UID);
         registry.addRecipeCatalyst(new ItemStack(TeckleObjects.blockAlloyFurnace), ALLOYRECIPE_UID);
