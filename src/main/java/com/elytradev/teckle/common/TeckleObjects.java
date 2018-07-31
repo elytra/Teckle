@@ -22,10 +22,7 @@ import com.elytradev.teckle.common.crafting.RecipeSlice;
 import com.elytradev.teckle.common.handlers.PaintbrushRecipe;
 import com.elytradev.teckle.common.item.*;
 import com.elytradev.teckle.common.tile.*;
-import com.elytradev.teckle.common.tile.networktiles.NetworkTileBeamQuarry;
-import com.elytradev.teckle.common.tile.networktiles.NetworkTileFilter;
-import com.elytradev.teckle.common.tile.networktiles.NetworkTileItemTube;
-import com.elytradev.teckle.common.tile.networktiles.NetworkTileTransposer;
+import com.elytradev.teckle.common.tile.networktiles.*;
 import com.elytradev.teckle.common.tile.retriever.NetworkTileRetrieverInput;
 import com.elytradev.teckle.common.tile.retriever.NetworkTileRetrieverOutput;
 import com.elytradev.teckle.common.tile.retriever.TileRetriever;
@@ -78,6 +75,7 @@ public class TeckleObjects {
     public static BlockCompacted blockCompacted;
     public static BlockFabricator blockFabricator;
     public static BlockBeamQuarry blockBeamQuarry;
+    public static BlockBreaker blockBreaker;
 
     public static ItemPaintbrush itemPaintBrush;
     public static ItemBlade itemBlade;
@@ -118,6 +116,7 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
         GameRegistry.registerTileEntity(TileRetriever.class, "teckleRetriever");
         GameRegistry.registerTileEntity(TileBeamQuarry.class, "teckleBeamQuarry");
+        GameRegistry.registerTileEntity(TileBreaker.class, "teckleBreaker");
 
         NetworkTileRegistry.registerNetworkTile("teckle", "itemTube", NetworkTileItemTube.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "filter", NetworkTileFilter.class);
@@ -127,6 +126,7 @@ public class TeckleObjects {
         NetworkTileRegistry.registerNetworkTile("teckle", "retrieverIn", NetworkTileRetrieverInput.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "retrieverOut", NetworkTileRetrieverOutput.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "beamquarry", NetworkTileBeamQuarry.class);
+        NetworkTileRegistry.registerNetworkTile("teckle", "breaker", NetworkTileBreaker.class);
         NetworkNodeRegistry.registerNetworkNode("teckle", "itemendpoint", ItemNetworkEndpoint.class);
 
         // Crash if there's missing ores.
@@ -152,48 +152,9 @@ public class TeckleObjects {
         registry.register(new PaintbrushRecipe().setRegistryName(new ResourceLocation(TeckleMod.MOD_ID, "paintbrushrecipe")));
         registry.register(new RecipeSlice(new ItemStack(TeckleObjects.itemSiliconWafer, 16), 1, itemSiliconBoule).
                 setRegistryName(new ResourceLocation(TeckleMod.MOD_ID, "waferslicerecipe")));
-        registerShapedRecipe(registry, new ItemStack(blockAlloyFurnace), "BBB", "B B", "BBB",
-                'B', Blocks.BRICK_BLOCK);
-        registerShapedRecipe(registry, new ItemStack(blockItemTube, 8), "BGB",
-                'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()),
-                'G', Blocks.GLASS);
-        registerShapedRecipe(registry, new ItemStack(blockTransposer), "CCC", "WPW", "CRC",
-                'C', Blocks.COBBLESTONE,
-                'W', Blocks.PLANKS,
-                'P', Blocks.PISTON,
-                'R', Items.REDSTONE);
-        registerShapedRecipe(registry, new ItemStack(blockFilter), "CCC", "GPG", "CWC",
-                'C', Blocks.COBBLESTONE,
-                'G', Items.GOLD_INGOT,
-                'P', Blocks.PISTON,
-                'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()));
-        registerShapedRecipe(registry, new ItemStack(blockFabricator), "BBB", "WCW", "WRW",
-                'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BRASS.getMetadata()),
-                'W', Blocks.PLANKS,
-                'C', Blocks.CRAFTING_TABLE,
-                'R', Items.REDSTONE);
 
-        // A few variant recipes
-        registerShapedRecipe(registry, new ItemStack(itemBlade), "I  ", " S ",
-                'I', Items.IRON_INGOT,
-                'S', Items.STICK);
-        registerShapedRecipe(registry, new ItemStack(itemBlade), "  I", " S ",
-                'I', Items.IRON_INGOT,
-                'S', Items.STICK);
-        registerShapedRecipe(registry, new ItemStack(itemBlade), "  I", " S ",
-                'I', Items.IRON_INGOT,
-                'S', Items.STICK);
-        registerShapedRecipe(registry, new ItemStack(itemBlade), "   ", " I ", "  S",
-                'I', Items.IRON_INGOT,
-                'S', Items.STICK);
-
-        registerShapedRecipe(registry, new ItemStack(blockSortingMachine), "IWI", "BFB", "IRI",
-                'W', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.BLUE.getMetadata()),
-                'I', new ItemStack(Items.IRON_INGOT),
-                'B', new ItemStack(itemIngot, 1, ItemIngot.IngotType.BLUE_ALLOY.getMetadata()),
-                'R', new ItemStack(itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()),
-                'F', new ItemStack(blockFilter));
-
+        
+        // hmmmmmm :thinking:
         registerShapedRecipe(registry, new ItemStack(blockBeamQuarry), "OWO", "IXI", "OWO",
                 'O', "blockBlueAlloy",
                 'W', "blockRedAlloy",
@@ -259,6 +220,9 @@ public class TeckleObjects {
 
         blockBeamQuarry = new BlockBeamQuarry(Material.IRON);
         registerBlock(registry, "beamquarry", blockBeamQuarry);
+
+        blockBreaker = new BlockBreaker(Material.ROCK);
+        registerBlock(registry, "breaker", blockBreaker);
 
         blockCompacted = new BlockCompacted(Material.IRON);
         registerBlock(registry, "compacted_metal", blockCompacted, false);

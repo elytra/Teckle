@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IWI",
+    "BFB",
+    "IRI"
+  ],
+  "key": {
+    "W": {
+      "item": "teckle:siliconwafer",
+      "data": 2
+    },
+    "R": {
+      "item": "teckle:siliconwafer",
+      "data": 1
+    },
+    "I": {
+      "type": "forge:ore_dict",
+      "ore": "ingotIron"
+    },
+    "B": {
+      "type": "forge:ore_dict",
+      "ore": "ingotBlueAlloy"
+    },
+    "F": {
+      "item": "teckle:filter",
+      "data": 0
+    }
+  },
+  "result": {
+    "item": "teckle:sortingmachine",
+    "data": 0
+  }
+}
