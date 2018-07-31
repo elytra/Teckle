@@ -32,6 +32,7 @@ import com.elytradev.teckle.common.tile.sortingmachine.modes.sortmode.SortModeTy
 import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.entity.player.EntityPlayer;
@@ -98,6 +99,23 @@ public class GuiSortingMachine extends GuiTeckle {
         }
 
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        hoverableButtons.forEach(button -> {
+            if (button instanceof GuiColourPicker) {
+                if (mouseX >= button.x && mouseX <= button.x + button.width) {
+                    if (mouseY >= button.y && mouseY <= button.y + button.height) {
+                        GlStateManager.pushMatrix();
+                        String text = "None";
+                        EnumDyeColor color = GuiSortingMachine.this.sortingMachine.colours[((GuiColourPicker) button).colourIndex];
+                        if (color != null) {
+                            text = color.getName();
+                        }
+                        drawHoveringText(text, mouseX-guiLeft, mouseY-guiTop);
+                        RenderHelper.disableStandardItemLighting();
+                        GlStateManager.popMatrix();
+                    }
+                }
+            }
+        });
     }
 
     @Override
