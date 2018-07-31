@@ -17,7 +17,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 /**
  * Teckle MCMP addon, used to provide compat when MCMP is present.
@@ -44,7 +43,7 @@ public class TeckleMCMPAddon implements IMCMPAddon {
 
                 @Override
                 public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-                    return Objects.equals(capability, MCMPCapabilities.MULTIPART_TILE);
+                    return capability == MCMPCapabilities.MULTIPART_TILE;
                 }
 
                 @Nullable
