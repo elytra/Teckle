@@ -39,8 +39,8 @@ public class ItemPaintbrush extends Item implements IResourceHolder {
     }
 
     @Override
-    public String getUnlocalizedName(ItemStack stack) {
-        return super.getUnlocalizedName() + "." + EnumDyeColor.byDyeDamage(stack.getMetadata()).getUnlocalizedName();
+    public String getTranslationKey(ItemStack stack) {
+        return super.getTranslationKey() + "." + EnumDyeColor.byDyeDamage(stack.getMetadata()).getTranslationKey();
     }
 
     @Override

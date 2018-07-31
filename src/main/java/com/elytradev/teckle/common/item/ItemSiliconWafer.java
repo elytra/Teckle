@@ -34,8 +34,8 @@ public class ItemSiliconWafer extends Item implements IResourceHolder {
     }
 
     @Override
-    public String getUnlocalizedName(ItemStack stack) {
-        return super.getUnlocalizedName() + "." + WaferType.byMetadata(stack.getMetadata()).getName();
+    public String getTranslationKey(ItemStack stack) {
+        return super.getTranslationKey() + "." + WaferType.byMetadata(stack.getMetadata()).getName();
     }
 
     @Override

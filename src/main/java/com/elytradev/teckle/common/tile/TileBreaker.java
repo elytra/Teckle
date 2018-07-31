@@ -142,9 +142,9 @@ public class TileBreaker extends TileNetworkMember implements ITickable {
 
     private boolean ejectExtractionData(EnumFacing facing, ItemStack extractionData) {
         BlockSourceImpl coords = new BlockSourceImpl(world, pos);
-        double d0 = coords.getX() + 0.7D * (double) getNetworkTile().getOutputFace().getFrontOffsetX();
-        double d1 = coords.getY() + 0.7D * (double) getNetworkTile().getOutputFace().getFrontOffsetY();
-        double d2 = coords.getZ() + 0.7D * (double) getNetworkTile().getOutputFace().getFrontOffsetZ();
+        double d0 = coords.getX() + 0.7D * (double) getNetworkTile().getOutputFace().getXOffset();
+        double d1 = coords.getY() + 0.7D * (double) getNetworkTile().getOutputFace().getYOffset();
+        double d2 = coords.getZ() + 0.7D * (double) getNetworkTile().getOutputFace().getZOffset();
         BehaviorDefaultDispenseItem.doDispense(world, extractionData, 6, facing, new PositionImpl(d0, d1, d2));
 
         return true;

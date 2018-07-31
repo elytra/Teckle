@@ -28,7 +28,7 @@ import com.elytradev.teckle.client.worldnetwork.ClientTravellerManager;
 import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.TeckleMod;
 import com.elytradev.teckle.common.TeckleObjects;
-import com.elytradev.teckle.common.block.BlockItemTube;
+import com.elytradev.teckle.common.block.*;
 import com.elytradev.teckle.common.exception.MissingOreException;
 import com.elytradev.teckle.common.item.ItemIngot;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
@@ -37,6 +37,7 @@ import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.retriever.TileRetriever;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -45,6 +46,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
@@ -182,7 +184,6 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void handleMissingOres(String m) {
-        // FML doesn't seem to work properly but this will still cause the game to exit for now.
         throw new MissingOreExceptionClient(m, new MissingOreException(m.replaceAll("\n", "")));
     }
 }

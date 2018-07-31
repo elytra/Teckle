@@ -107,7 +107,7 @@ public class GuiSortingMachine extends GuiTeckle {
                         String text = I18n.format("tooltip.teckle.colorpicker.none");
                         EnumDyeColor color = GuiSortingMachine.this.sortingMachine.colours[((GuiColourPicker) button).colourIndex];
                         if (color != null) {
-                            text = I18n.format("item.fireworksCharge." + color.getUnlocalizedName());
+                            text = I18n.format("item.fireworksCharge." + color.getTranslationKey());
                         }
                         drawHoveringText(text, mouseX - guiLeft, mouseY - guiTop);
                         RenderHelper.disableStandardItemLighting();
@@ -268,7 +268,7 @@ public class GuiSortingMachine extends GuiTeckle {
 
             if (sortingMachine.getSortMode() != null) {
                 if (isMouseOver()) {
-                    GuiSortingMachine.this.drawHoveringText(ChatFormatting.BOLD + I18n.format(sortingMachine.getSortMode().type.getUnlocalizedName()), mouseX, mouseY);
+                    GuiSortingMachine.this.drawHoveringText(ChatFormatting.BOLD + I18n.format(sortingMachine.getSortMode().type.getTranslationKey()), mouseX, mouseY);
                 }
             }
         }
@@ -330,8 +330,8 @@ public class GuiSortingMachine extends GuiTeckle {
 
             if (sortingMachine.getSortMode() != null) {
                 if (isMouseOver()) {
-                    GuiSortingMachine.this.drawHoveringText(Arrays.asList(ChatFormatting.BOLD + I18n.format(sortingMachine.getSortMode().getUnlocalizedName()),
-                            I18n.format(sortingMachine.getSortMode().getUnlocalizedName() + ".tooltip")), mouseX, mouseY);
+                    GuiSortingMachine.this.drawHoveringText(Arrays.asList(ChatFormatting.BOLD + I18n.format(sortingMachine.getSortMode().getTranslationKey()),
+                            I18n.format(sortingMachine.getSortMode().getTranslationKey() + ".tooltip")), mouseX, mouseY);
                 }
             }
         }
@@ -393,8 +393,8 @@ public class GuiSortingMachine extends GuiTeckle {
 
             if (sortingMachine.getSortMode() != null) {
                 if (isMouseOver()) {
-                    GuiSortingMachine.this.drawHoveringText(Arrays.asList(ChatFormatting.BOLD + I18n.format(sortingMachine.getPullMode().getUnlocalizedName()),
-                            I18n.format(sortingMachine.getPullMode().getUnlocalizedName() + ".tooltip")), mouseX, mouseY);
+                    GuiSortingMachine.this.drawHoveringText(Arrays.asList(ChatFormatting.BOLD + I18n.format(sortingMachine.getPullMode().getTranslationKey()),
+                            I18n.format(sortingMachine.getPullMode().getTranslationKey() + ".tooltip")), mouseX, mouseY);
                 }
             }
         }

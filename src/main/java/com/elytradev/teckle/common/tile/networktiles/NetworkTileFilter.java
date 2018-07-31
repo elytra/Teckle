@@ -83,7 +83,7 @@ public class NetworkTileFilter extends NetworkTileTransposer {
 
     private boolean isPowered() {
         if (getWorld() != null && getWorld().isBlockLoaded(getPos()) && Objects.equals(getWorld().getBlockState(getPos()).getBlock(), TeckleObjects.blockFilter)) {
-            return getWorld().getBlockState(getPos()).getValue(BlockFilter.TRIGGERED).booleanValue();
+            return getWorld().getBlockState(getPos()).getValue(BlockFilter.TRIGGERED);
         }
         return false;
     }

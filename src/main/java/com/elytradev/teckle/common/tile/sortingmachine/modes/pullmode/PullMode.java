@@ -54,7 +54,7 @@ public abstract class PullMode implements INBTSerializable {
         return id;
     }
 
-    public String getUnlocalizedName() {
+    public String getTranslationKey() {
         return unlocalizedName;
     }
 

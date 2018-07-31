@@ -37,8 +37,8 @@ public class ItemIngot extends Item implements IResourceHolder {
     }
 
     @Override
-    public String getUnlocalizedName(ItemStack stack) {
-        return super.getUnlocalizedName() + "." + ItemIngot.IngotType.byMetadata(stack.getMetadata()).getName();
+    public String getTranslationKey(ItemStack stack) {
+        return super.getTranslationKey() + "." + ItemIngot.IngotType.byMetadata(stack.getMetadata()).getName();
     }
 
     @Override

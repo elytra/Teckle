@@ -89,7 +89,7 @@ public class BlockBeamQuarry extends BlockContainer {
 
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        EnumFacing front = EnumFacing.getFront(meta & 7);
+        EnumFacing front = EnumFacing.byIndex(meta & 7);
         if (front.getAxis() == EnumFacing.Axis.Y) {
             front = EnumFacing.NORTH;
         }
@@ -101,7 +101,7 @@ public class BlockBeamQuarry extends BlockContainer {
         int i = 0;
         i = i | state.getValue(FACING).getIndex();
 
-        if (state.getValue(ACTIVE).booleanValue()) {
+        if (state.getValue(ACTIVE)) {
             i |= 8;
         }
 

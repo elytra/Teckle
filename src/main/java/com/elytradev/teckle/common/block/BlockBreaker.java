@@ -68,7 +68,7 @@ public class BlockBreaker extends BlockContainer {
     public int getMetaFromState(IBlockState state) {
         int i = 0;
         i = i | state.getValue(FACING).getIndex();
-        if (state.getValue(TRIGGERED).booleanValue()) {
+        if (state.getValue(TRIGGERED)) {
             i |= 8;
         }
 
@@ -157,7 +157,7 @@ public class BlockBreaker extends BlockContainer {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public BlockRenderLayer getBlockLayer() {
+    public BlockRenderLayer getRenderLayer() {
         return BlockRenderLayer.SOLID;
     }
 }
