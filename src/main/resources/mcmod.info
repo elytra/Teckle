@@ -2,18 +2,20 @@
     {
         "modid": "teckle",
         "name": "Teckle",
-        "description": "A tech mod that actually updates. Maintained by darkevilmac",
+        "description": "A tech mod that actually updates. Maintained by TheCodedOne",
         "version": "${version}",
         "mcversion": "${mcversion}",
         "url": "",
         "updateUrl": "",
         "authorList": [
             "darkevilmac (Programming)",
+            "TheCodedOne (Programming)",
+            "CyanideX (Textures)",
             "unascribed (Textures)",
             "Falkreon (Textures)",
             "Elytra Team"
         ],
-        "credits": "",
+        "credits": "Some textures from CyanideX's Unity resource pack",
         "logoFile": "assets/teckle/Logo.png",
         "screenshots": [],
         "dependencies": []
