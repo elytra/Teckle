@@ -117,7 +117,7 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileFabricator.class, "teckleFabricator");
         GameRegistry.registerTileEntity(TileAlloyFurnace.class, "teckleAlloyFurnace");
         GameRegistry.registerTileEntity(TileRetriever.class, "teckleRetriever");
-        GameRegistry.registerTileEntity(TileBeamQuarry.class, "teckleRetriever");
+        GameRegistry.registerTileEntity(TileBeamQuarry.class, "teckleBeamQuarry");
 
         NetworkTileRegistry.registerNetworkTile("teckle", "itemTube", NetworkTileItemTube.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "filter", NetworkTileFilter.class);
