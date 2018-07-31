@@ -11,8 +11,8 @@ public class TubeModelLoader implements ICustomModelLoader {
 
     @Override
     public boolean accepts(ResourceLocation location) {
-        return location.getResourceDomain().equals("teckle")
-                && location.getResourcePath().endsWith("tube.item");
+        return location.getNamespace().equals("teckle")
+                && location.getPath().endsWith("tube.item");
     }
 
     @Override

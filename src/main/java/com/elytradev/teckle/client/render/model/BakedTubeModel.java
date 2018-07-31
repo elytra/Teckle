@@ -60,7 +60,7 @@ public class BakedTubeModel implements IBakedModel {
         List<IBakedModel> models = Lists.newArrayList();
         for (EnumFacing enumFacing : EnumFacing.values()) {
             UnlistedBool property = BlockItemTube.FACE_PROPERTIES.get(enumFacing);
-            if (state.getValue(property).booleanValue()) {
+            if (state.getValue(property)) {
                 models.add(sourceModels.get(enumFacing));
             }
         }

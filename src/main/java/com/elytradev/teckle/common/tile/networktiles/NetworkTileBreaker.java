@@ -84,7 +84,7 @@ public class NetworkTileBreaker extends WorldNetworkTile {
     private boolean isPowered() {
         if (getWorld() != null && getWorld().isBlockLoaded(getPos())
                 && Objects.equals(getWorld().getBlockState(getPos()).getBlock(), TeckleObjects.blockBreaker)) {
-            return getWorld().getBlockState(getPos()).getValue(BlockBreaker.TRIGGERED).booleanValue();
+            return getWorld().getBlockState(getPos()).getValue(BlockBreaker.TRIGGERED);
         }
         return false;
     }

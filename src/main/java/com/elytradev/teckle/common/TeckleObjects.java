@@ -86,8 +86,9 @@ public class TeckleObjects {
     public static Item elytraLogo;
 
     public static CreativeTabs creativeTab = new CreativeTabs(MOD_ID) {
+
         @Override
-        public ItemStack getTabIconItem() {
+        public ItemStack createIcon() {
             return new ItemStack(itemPaintBrush, 1, new Random().nextInt(15));
         }
     };
@@ -162,7 +163,7 @@ public class TeckleObjects {
                 'I', "ingotBrass");
 
         for (EnumDyeColor color : EnumDyeColor.values()) {
-            String dyeName = "dye" + color.getUnlocalizedName().substring(0, 1).toUpperCase() + color.getUnlocalizedName().substring(1);
+            String dyeName = "dye" + color.getTranslationKey().substring(0, 1).toUpperCase() + color.getTranslationKey().substring(1);
             if (color == EnumDyeColor.SILVER)
                 dyeName = "dyeLightGray";
 
@@ -230,7 +231,7 @@ public class TeckleObjects {
         itemCompacted.setSubtypeNames(new String[]{"brass", "redalloy", "bluealloy"});
         itemCompacted.setRegistryName(MOD_ID, "compacted_metal");
         itemCompacted.setCreativeTab(creativeTab);
-        itemCompacted.setUnlocalizedName("teckle.compacted_metal");
+        itemCompacted.setTranslationKey("teckle.compacted_metal");
         itemBlocksToRegister.add(itemCompacted);
     }
 
@@ -291,12 +292,12 @@ public class TeckleObjects {
     }
 
     private void registerShapedRecipe(IForgeRegistry<IRecipe> registry, ItemStack out, Object... input) {
-        ResourceLocation resourceLocation = new ResourceLocation(MOD_ID, out.getUnlocalizedName() + recipeID++);
+        ResourceLocation resourceLocation = new ResourceLocation(MOD_ID, out.getTranslationKey() + recipeID++);
         registry.register(new ShapedOreRecipe(resourceLocation, out, input).setRegistryName(resourceLocation));
     }
 
     private void registerShapelessRecipe(IForgeRegistry<IRecipe> registry, ItemStack out, Object... input) {
-        ResourceLocation resourceLocation = new ResourceLocation(MOD_ID, out.getUnlocalizedName() + recipeID++);
+        ResourceLocation resourceLocation = new ResourceLocation(MOD_ID, out.getTranslationKey() + recipeID++);
         registry.register(new ShapelessOreRecipe(resourceLocation, out, input).setRegistryName(resourceLocation));
     }
 
@@ -305,7 +306,7 @@ public class TeckleObjects {
     }
 
     private void registerBlock(IForgeRegistry<Block> registry, String id, Block block, boolean withItemBlock) {
-        block.setUnlocalizedName("teckle." + id);
+        block.setTranslationKey("teckle." + id);
         block.setRegistryName(REGISTRY_PREFIX, id);
         block.setCreativeTab(creativeTab);
         registry.register(block);
@@ -316,7 +317,7 @@ public class TeckleObjects {
 
     private void registerBlock(IForgeRegistry<Block> registry, String id, Block block, Class<? extends ItemBlock> itemBlockClass) {
         try {
-            block.setUnlocalizedName("teckle." + id);
+            block.setTranslationKey("teckle." + id);
             block.setRegistryName(REGISTRY_PREFIX, id);
             registry.register(block);
 
@@ -331,7 +332,7 @@ public class TeckleObjects {
     }
 
     private void registerItem(IForgeRegistry<Item> registry, String id, Item item) {
-        item.setUnlocalizedName("teckle." + id);
+        item.setTranslationKey("teckle." + id);
         item.setRegistryName(REGISTRY_PREFIX, id);
         item.setCreativeTab(creativeTab);
         registry.register(item);

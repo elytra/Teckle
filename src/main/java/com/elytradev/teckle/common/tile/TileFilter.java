@@ -189,9 +189,9 @@ public class TileFilter extends TileTransposer implements ITickable, IElementPro
 
     private boolean ejectExtractionData(EnumFacing facing, ItemStack extractionData) {
         BlockSourceImpl coords = new BlockSourceImpl(world, pos);
-        double d0 = coords.getX() + 0.7D * (double) networkTile.getOutputFace().getFrontOffsetX();
-        double d1 = coords.getY() + 0.7D * (double) networkTile.getOutputFace().getFrontOffsetY();
-        double d2 = coords.getZ() + 0.7D * (double) networkTile.getOutputFace().getFrontOffsetZ();
+        double d0 = coords.getX() + 0.7D * (double) networkTile.getOutputFace().getXOffset();
+        double d1 = coords.getY() + 0.7D * (double) networkTile.getOutputFace().getYOffset();
+        double d2 = coords.getZ() + 0.7D * (double) networkTile.getOutputFace().getZOffset();
         BehaviorDefaultDispenseItem.doDispense(world, extractionData, 6, facing, new PositionImpl(d0, d1, d2));
 
         return true;

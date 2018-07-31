@@ -165,7 +165,7 @@ public class BlockAlloyFurnace extends BlockContainer {
 
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        EnumFacing front = EnumFacing.getFront(meta & 7);
+        EnumFacing front = EnumFacing.byIndex(meta & 7);
         if (front.getAxis() == EnumFacing.Axis.Y) {
             front = EnumFacing.NORTH;
         }
@@ -177,7 +177,7 @@ public class BlockAlloyFurnace extends BlockContainer {
         int i = 0;
         i = i | state.getValue(FACING).getIndex();
 
-        if (state.getValue(LIT).booleanValue()) {
+        if (state.getValue(LIT)) {
             i |= 8;
         }
 

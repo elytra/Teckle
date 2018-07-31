@@ -37,6 +37,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -52,7 +53,7 @@ public abstract class TileNetworkMember extends TileEntity {
     private boolean isJammed = false;
 
     @Nullable
-    public IWorldNetworkAssistant getNetworkAssistant(@Nonnull Class type) {
+    public <T extends INBTSerializable> IWorldNetworkAssistant<T> getNetworkAssistant(@Nonnull Class<T> type) {
         return world.getCapability(CapabilityWorldNetworkAssistantHolder.NETWORK_ASSISTANT_HOLDER_CAPABILITY, null).getAssistant(type);
     }
 

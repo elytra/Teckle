@@ -84,7 +84,7 @@ public class NetworkTileTransposer extends WorldNetworkTile {
     private boolean isPowered() {
         if (getWorld() != null && getWorld().isBlockLoaded(getPos())
                 && Objects.equals(getWorld().getBlockState(getPos()).getBlock(), TeckleObjects.blockTransposer)) {
-            return getWorld().getBlockState(getPos()).getValue(BlockTransposer.TRIGGERED).booleanValue();
+            return getWorld().getBlockState(getPos()).getValue(BlockTransposer.TRIGGERED);
         }
         return false;
     }

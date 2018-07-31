@@ -281,8 +281,7 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
-    public BlockRenderLayer getBlockLayer() {
+    public BlockRenderLayer getRenderLayer() {
         return BlockRenderLayer.CUTOUT;
     }
 

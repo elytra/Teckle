@@ -107,7 +107,7 @@ public abstract class SortMode implements INBTSerializable {
      */
     public abstract void onTick(TileSortingMachine sortingMachine);
 
-    public String getUnlocalizedName() {
+    public String getTranslationKey() {
         return unlocalizedName;
     }
 

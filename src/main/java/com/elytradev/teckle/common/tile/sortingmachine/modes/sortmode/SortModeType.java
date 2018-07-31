@@ -78,7 +78,7 @@ public enum SortModeType {
         return maxID;
     }
 
-    public String getUnlocalizedName() {
+    public String getTranslationKey() {
         return unlocalizedName;
     }
 

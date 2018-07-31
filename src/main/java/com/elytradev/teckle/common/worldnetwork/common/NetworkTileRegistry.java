@@ -57,7 +57,7 @@ public class NetworkTileRegistry {
         try {
             clazz.getConstructor(World.class, BlockPos.class, EnumFacing.class);
         } catch (NoSuchMethodException e) {
-            TeckleLog.error("Tried to register a world network tile but received a class that does not have a constructor matching (World, BlockPos, EnumFacing), it will be skipped. Mod: {}, Class: {}", id.getResourceDomain(), clazz.getName());
+            TeckleLog.error("Tried to register a world network tile but received a class that does not have a constructor matching (World, BlockPos, EnumFacing), it will be skipped. Mod: {}, Class: {}", id.getNamespace(), clazz.getName());
         }
 
         REGISTRY.putObject(id, clazz);
