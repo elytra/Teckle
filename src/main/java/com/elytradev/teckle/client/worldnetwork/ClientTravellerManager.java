@@ -41,7 +41,7 @@ public class ClientTravellerManager {
 
     @SubscribeEvent
     public static void onTickEvent(TickEvent.ClientTickEvent e) {
-        if (e.phase==TickEvent.Phase.END || Minecraft.getMinecraft().world == null || Minecraft.getMinecraft().isGamePaused())
+        if (e.phase == TickEvent.Phase.END || Minecraft.getMinecraft().world == null || Minecraft.getMinecraft().isGamePaused())
             return;
 
         // Move the travellers between tiles and increase their travelled distance.

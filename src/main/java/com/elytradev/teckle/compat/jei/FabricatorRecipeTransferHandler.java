@@ -19,7 +19,6 @@ package com.elytradev.teckle.compat.jei;
 import com.elytradev.teckle.common.container.ContainerFabricator;
 import com.elytradev.teckle.common.network.messages.serverbound.FabricatorTemplateMessage;
 import com.elytradev.teckle.common.tile.TileFabricator;
-import mcp.MethodsReturnNonnullByDefault;
 import mezz.jei.api.gui.IGuiIngredient;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
@@ -28,7 +27,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Map;
 
 /**

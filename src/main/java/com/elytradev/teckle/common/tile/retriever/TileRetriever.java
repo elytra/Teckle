@@ -137,7 +137,7 @@ public class TileRetriever extends TileLitNetworkMember implements IElementProvi
     @Override
     public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
         if (capability == CapabilityWorldNetworkTile.NETWORK_TILE_CAPABILITY
-                && facing==getFacing() || facing==getFacing().getOpposite())
+                && facing == getFacing() || facing == getFacing().getOpposite())
             return true;
         return super.hasCapability(capability, facing);
     }

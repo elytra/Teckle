@@ -43,7 +43,6 @@ import net.minecraftforge.items.IItemHandler;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiPredicate;
 
 /**
@@ -293,7 +292,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
             traveller.setEndpointPredicate(endpointPredicate);
             if (simulate)
                 entryPoint.getNetwork().unregisterTraveller(traveller, true, false);
-            if (traveller==WorldNetworkTraveller.NONE) {
+            if (traveller == WorldNetworkTraveller.NONE) {
                 if (networksInsertionOnly)
                     return remaining.copy();
             } else {

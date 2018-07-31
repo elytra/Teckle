@@ -27,8 +27,6 @@ import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.Objects;
-
 public class ItemSiliconWafer extends Item implements IResourceHolder {
 
     public ItemSiliconWafer() {
