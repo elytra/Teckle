@@ -1,7 +1,10 @@
 {
     "forge_marker": 1,
     "defaults": {
-        "model": "teckle:alloyfurnace"
+        "model": "teckle:alloyfurnace",
+        "textures": {
+            "down":"teckle:blocks/alloyfurnace_bottom"
+        }
     },
     "variants": {
         "lit": {

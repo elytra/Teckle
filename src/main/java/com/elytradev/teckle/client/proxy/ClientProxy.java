@@ -36,6 +36,7 @@ import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.tile.TileItemTube;
 import com.elytradev.teckle.common.tile.retriever.TileRetriever;
 import com.elytradev.teckle.common.tile.sortingmachine.TileSortingMachine;
+import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;
@@ -58,6 +59,8 @@ import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.LoaderState;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+
+import java.util.List;
 
 
 public class ClientProxy extends CommonProxy {
@@ -165,13 +168,16 @@ public class ClientProxy extends CommonProxy {
         }
     }
 
+    private static final List<ResourceLocation> SPRITES = Lists.newArrayList(
+            new ResourceLocation(TeckleMod.MOD_ID, "blocks/sortingmachineside_on"),
+            new ResourceLocation(TeckleMod.MOD_ID, "blocks/sortingmachineside_blocked"),
+            new ResourceLocation(TeckleMod.MOD_ID, "blocks/retrieverside_on"),
+            new ResourceLocation(TeckleMod.MOD_ID, "blocks/retrieverside_blocked")
+    );
+
     @SubscribeEvent
     public void onStitch(TextureStitchEvent.Pre e) {
-        e.getMap().registerSprite(new ResourceLocation(TeckleMod.MOD_ID, "blocks/sortingmachineblinkenlights"));
-        e.getMap().registerSprite(new ResourceLocation(TeckleMod.MOD_ID, "blocks/sortingmachinemouth"));
-
-        e.getMap().registerSprite(new ResourceLocation(TeckleMod.MOD_ID, "blocks/retrieverblinkenlights"));
-        e.getMap().registerSprite(new ResourceLocation(TeckleMod.MOD_ID, "blocks/retrievermouth"));
+        SPRITES.forEach(e.getMap()::registerSprite);
     }
 
     @Override

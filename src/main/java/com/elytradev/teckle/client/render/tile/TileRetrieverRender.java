@@ -10,7 +10,7 @@ import net.minecraft.util.math.Vec3d;
 
 public class TileRetrieverRender extends TileNetworkMemberRenderer<TileRetriever> {
 
-    private ModelMachineOverlay mouthOverlay, blinkenLightsOverlay;
+    private ModelMachineOverlay lightOverlay;
 
     public TileRetrieverRender() {
         super(BlockRetriever.FACING, "teckle:blocks/retrievererror");
@@ -24,12 +24,10 @@ public class TileRetrieverRender extends TileNetworkMemberRenderer<TileRetriever
             return;
 
         EnumFacing pointTo = blockState.getValue(BlockRetriever.FACING);
-        if (mouthOverlay == null || blinkenLightsOverlay == null) {
-            mouthOverlay = new ModelMachineOverlay(this.getClass(), "teckle:blocks/retrievermouth", false);
-            blinkenLightsOverlay = new ModelMachineOverlay(this.getClass(), "teckle:blocks/retrieverblinkenlights", true);
+        if (lightOverlay == null) {
+            lightOverlay = new ModelMachineOverlay(this.getClass(), "teckle:blocks/retrieverside_on", true);
         }
-        mouthOverlay.render(getWorld(), new Vec3d(x, y, z), te.getPos(), blockState, pointTo);
-        blinkenLightsOverlay.render(getWorld(), new Vec3d(x, y, z), te.getPos(), blockState, pointTo);
+        lightOverlay.render(getWorld(), new Vec3d(x, y, z), te.getPos(), blockState, pointTo);
     }
 
 }
