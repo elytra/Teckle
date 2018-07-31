@@ -50,9 +50,8 @@ public class TeckleMCMPAddon implements IMCMPAddon {
                 @Nullable
                 @Override
                 public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-                    if (capability != null && capability == MCMPCapabilities.MULTIPART_TILE)
+                    if (capability == MCMPCapabilities.MULTIPART_TILE)
                         return (T) multipartTileTube;
-
                     return null;
                 }
             });

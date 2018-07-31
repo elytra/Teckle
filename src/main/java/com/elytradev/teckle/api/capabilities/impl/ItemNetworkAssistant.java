@@ -165,7 +165,7 @@ public class ItemNetworkAssistant implements IWorldNetworkAssistant<ItemStack> {
                     break;
             }
         } catch (Exception e) {
-            TeckleLog.error("damnit - onNodeNeighbourChange. {}", e);
+            TeckleLog.error("damnit - onNodePlaced. {}", e);
         }
     }
 

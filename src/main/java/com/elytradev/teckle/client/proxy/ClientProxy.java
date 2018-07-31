@@ -154,7 +154,7 @@ public class ClientProxy extends CommonProxy {
 
             ModelResourceLocation resourceLocation = new ModelResourceLocation(TeckleMod.RESOURCE_DOMAIN + "ingot_" + ingotType.getName(), "inventory");
             ModelLoader.setCustomModelResourceLocation(TeckleObjects.itemIngot, ingotType.getMetadata(), resourceLocation);
-            TeckleLog.info("Registering ingot model variant: " + ingotType.getMetadata() + " " + resourceLocation);
+            TeckleLog.debug("Registering ingot model variant: " + ingotType.getMetadata() + " " + resourceLocation);
         }
 
         for (int i = 0; i < ItemIngot.IngotType.values().length; i++) {
