@@ -1,0 +1,12 @@
+{
+    "parent": "block/cube",
+    "textures": {
+        "particle": "teckle:blocks/beamquarry_top_inactive",
+        "down": "teckle:blocks/beamquarry_bottom",
+        "up": "teckle:blocks/beamquarry_top",
+        "north": "teckle:blocks/beamquarry_front",
+        "east": "teckle:blocks/beamquarry_side",
+        "south": "teckle:blocks/beamquarry_side",
+        "west": "teckle:blocks/beamquarry_side"
+    }
+}

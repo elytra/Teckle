@@ -1,0 +1,9 @@
+{
+    "parent": "teckle:block/filter",
+    "textures": {
+        "side": "teckle:blocks/breakerside",
+        "particle": "teckle:blocks/breakerside",
+        "out": "teckle:blocks/breakerout",
+        "in": "teckle:blocks/breakerfront"
+    }
+}
