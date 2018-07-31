@@ -11,6 +11,8 @@ tile.teckle.nikolite_ore.name=Nikolite Ore
 tile.teckle.beamquarry.name=Beam Quarry
 tile.teckle.breaker.name=Block Breaker
 tile.teckle.placer.name=Block Placer
+tile.teckle.compacted_metal.redalloy.name=Red Alloy Block
+tile.teckle.compacted_metal.bluealloy.name=Blue Alloy Block
 
 item.teckle.paintbrush.white.name=White Paintbrush
 item.teckle.paintbrush.orange.name=Orange Paintbrush
