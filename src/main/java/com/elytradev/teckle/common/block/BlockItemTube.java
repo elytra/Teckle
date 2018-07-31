@@ -67,7 +67,7 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
     public static UnlistedBool UP = new UnlistedBool("up");
     public static UnlistedBool DOWN = new UnlistedBool("down");
     public static UnlistedBool NODE = new UnlistedBool("node");
-    public static UnlistedEnum<EnumDyeColor> COLOUR = new UnlistedEnum("colour", EnumDyeColor.class);
+    public static UnlistedEnum<EnumDyeColor> COLOUR = new UnlistedEnum<>("colour", EnumDyeColor.class);
 
     static {
         FACE_PROPERTIES.put(EnumFacing.NORTH, NORTH);

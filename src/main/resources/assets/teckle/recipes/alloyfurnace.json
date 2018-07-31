@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BBB",
+    "B B",
+    "BFB"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:brick_block"
+    },
+    "F": {
+      "item": "minecraft:furnace"
+    }
+  },
+  "result": {
+    "item": "teckle:alloyfurnace",
+    "data": 0
+  }
+}
