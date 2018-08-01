@@ -18,6 +18,7 @@ package com.elytradev.teckle.common.tile;
 
 import com.elytradev.teckle.client.gui.GuiFabricator;
 import com.elytradev.teckle.common.TeckleMod;
+import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.container.ContainerFabricator;
 import com.elytradev.teckle.common.tile.base.IElementProvider;
 import com.elytradev.teckle.common.tile.inv.AdvancedItemStackHandler;
@@ -40,6 +41,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -52,11 +54,16 @@ import java.util.stream.Collectors;
 
 public class TileFabricator extends TileEntity implements ITickable, IElementProvider {
 
-    public AdvancedItemStackHandler stackHandler = new AdvancedItemStackHandler(9);
+    public AdvancedItemStackHandler stackHandler = new AdvancedItemStackHandler(18);
+    public AdvancedItemStackHandler blueprint = new AdvancedItemStackHandler(1).withChangeListener(this::onBlueprintChanged).withSlotLimit(s -> 1).withInsertCheck((integer, stack) -> stack.getItem() == TeckleObjects.itemBlueprint);
     public IRecipe templateRecipe;
     public InventoryCrafting craftingGrid = new InventoryCrafting((Container) getServerElement(null), 3, 3);
     public int cooldown = 5;
     private NonNullList<ItemStack> templates = NonNullList.withSize(9, ItemStack.EMPTY);
+
+    public void onBlueprintChanged(int unused) {
+
+    }
 
     @Nullable
     @Override
@@ -255,7 +262,14 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
         }
 
         ItemStackHelper.loadAllItems(compound.getCompoundTag("templates"), templates);
-        stackHandler.deserializeNBT(compound.getCompoundTag("stacks"));
+        if (compound.hasKey("stacks", Constants.NBT.TAG_COMPOUND)) { //Stupid workaround needed to save backward compat
+            NBTTagCompound stacks = compound.getCompoundTag("stacks");
+            stacks.removeTag("Size");
+            stackHandler.deserializeNBT(stacks);
+        } else {
+            stackHandler.deserializeNBT(compound.getCompoundTag("inventory"));
+        }
+        blueprint.deserializeNBT(compound.getCompoundTag("blueprint"));
     }
 
     @Override
@@ -269,7 +283,8 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
 
         compound.setTag("craftingSupplies", craftingSupplies);
         compound.setTag("templates", templateData);
-        compound.setTag("stacks", stackHandler.serializeNBT());
+        compound.setTag("inventory", stackHandler.serializeNBT());
+        compound.setTag("blueprint", blueprint.serializeNBT());
 
         return compound;
     }

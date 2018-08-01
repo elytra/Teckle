@@ -38,13 +38,15 @@ public class GuiFabricator extends GuiTeckle {
 
     public GuiFabricator(TileFabricator tile, EntityPlayer player) {
         super(new ContainerFabricator(tile, player));
+        this.xSize=176;
+        this.ySize=208;
         this.fabricator = tile;
         this.player = player;
     }
 
     @Override
     public ResourceLocation getBackgroundTexture() {
-        return new ResourceLocation("teckle", "textures/gui/fabricator.png");
+        return new ResourceLocation("teckle", "textures/gui/table.png");
     }
 
     @Override
@@ -63,7 +65,7 @@ public class GuiFabricator extends GuiTeckle {
         int y = (height - ySize) / 2;
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                templates[j + i * 3] = new Template(j + i * 3, x + 7 + j * 18, y + 16 + i * 18);
+                templates[j + i * 3] = new Template(j + i * 3, x + 33 + j * 18, y + 15 + i * 18);
                 addButton(templates[j + i * 3]);
             }
         }

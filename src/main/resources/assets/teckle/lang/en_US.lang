@@ -9,8 +9,8 @@ tile.teckle.fabricator.name=Fabricator
 tile.teckle.alloyfurnace.name=Alloy Furnace
 tile.teckle.nikolite_ore.name=Nikolite Ore
 tile.teckle.beamquarry.name=Beam Quarry
-tile.teckle.breaker.name=Block Breaker
-tile.teckle.placer.name=Block Placer
+tile.teckle.breaker.name=Breaker
+tile.teckle.placer.name=Deployer (NOT IMPLEMENTED - DO NOT PLACE)
 tile.teckle.compacted_metal.redalloy.name=Red Alloy Block
 tile.teckle.compacted_metal.bluealloy.name=Blue Alloy Block
 
@@ -44,6 +44,7 @@ tooltip.teckle.node.network=Network %s %s Size: %s
 tooltip.teckle.traveller.data=Travellers
 tooltip.teckle.filter.buffer=Buffer
 tooltip.teckle.colorpicker.none=None
+tooltip.teckle.fabricator.missing=Missing Blueprint
 
 sortmodetype.compartment=Compartment
 sortmodetype.slot=Slot

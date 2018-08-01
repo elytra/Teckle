@@ -1,0 +1,9 @@
+{
+    "parent": "teckle:block/filter",
+    "textures": {
+        "side": "teckle:blocks/deployer_side",
+        "particle": "teckle:blocks/deployer_side",
+        "out": "teckle:blocks/deployer_back",
+        "in": "teckle:blocks/deployer_front"
+    }
+}

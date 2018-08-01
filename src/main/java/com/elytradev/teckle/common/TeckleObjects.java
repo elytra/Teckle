@@ -55,7 +55,10 @@ import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 import net.minecraftforge.registries.IForgeRegistry;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import static com.elytradev.teckle.common.TeckleMod.MOD_ID;
 
@@ -76,6 +79,7 @@ public class TeckleObjects {
     public static BlockFabricator blockFabricator;
     public static BlockBeamQuarry blockBeamQuarry;
     public static BlockBreaker blockBreaker;
+    public static BlockPlacer blockPlacer;
 
     public static ItemPaintbrush itemPaintBrush;
     public static ItemBlade itemBlade;
@@ -84,6 +88,7 @@ public class TeckleObjects {
     public static ItemSiliconWafer itemSiliconWafer;
     public static ItemIngot itemIngot;
     public static Item elytraLogo;
+    public static Item itemBlueprint;
 
     public static CreativeTabs creativeTab = new CreativeTabs(MOD_ID) {
         @Override
@@ -117,6 +122,7 @@ public class TeckleObjects {
         GameRegistry.registerTileEntity(TileRetriever.class, "teckleRetriever");
         GameRegistry.registerTileEntity(TileBeamQuarry.class, "teckleBeamQuarry");
         GameRegistry.registerTileEntity(TileBreaker.class, "teckleBreaker");
+        GameRegistry.registerTileEntity(TilePlacer.class, "tecklePlacer");
 
         NetworkTileRegistry.registerNetworkTile("teckle", "itemTube", NetworkTileItemTube.class);
         NetworkTileRegistry.registerNetworkTile("teckle", "filter", NetworkTileFilter.class);
@@ -224,6 +230,9 @@ public class TeckleObjects {
         blockBreaker = new BlockBreaker(Material.ROCK);
         registerBlock(registry, "breaker", blockBreaker);
 
+        blockPlacer = new BlockPlacer(Material.ROCK);
+        registerBlock(registry, "placer", blockPlacer);
+
         blockCompacted = new BlockCompacted(Material.IRON);
         registerBlock(registry, "compacted_metal", blockCompacted, false);
         ItemCompacted itemCompacted = new ItemCompacted(blockCompacted, true);
@@ -262,6 +271,9 @@ public class TeckleObjects {
 
         itemIngot = new ItemIngot();
         registerItem(registry, "ingot", itemIngot);
+
+        itemBlueprint = new ItemBlueprint();
+        registerItem(registry, "blueprint", itemBlueprint);
 
         skipItemMesh.add(itemIngot);
         itemBlocksToRegister.forEach(registry::register);
