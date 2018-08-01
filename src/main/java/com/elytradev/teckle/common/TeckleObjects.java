@@ -86,10 +86,9 @@ public class TeckleObjects {
     public static Item elytraLogo;
 
     public static CreativeTabs creativeTab = new CreativeTabs(MOD_ID) {
-
         @Override
         public ItemStack createIcon() {
-            return new ItemStack(itemPaintBrush, 1, new Random().nextInt(15));
+            return new ItemStack(blockAlloyFurnace);
         }
     };
     public static HashMap<String, Block> registeredBlocks;
