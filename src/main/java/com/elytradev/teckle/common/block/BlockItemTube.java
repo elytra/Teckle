@@ -30,6 +30,7 @@ import com.google.common.collect.Maps;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -76,6 +77,11 @@ public class BlockItemTube extends BlockContainer implements IResourceHolder {
         FACE_PROPERTIES.put(EnumFacing.WEST, WEST);
         FACE_PROPERTIES.put(EnumFacing.UP, UP);
         FACE_PROPERTIES.put(EnumFacing.DOWN, DOWN);
+    }
+
+    @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.UNDEFINED;
     }
 
     public BlockItemTube(Material materialIn) {
