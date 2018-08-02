@@ -28,7 +28,7 @@ public class ItemBlueprint extends Item {
         if (out.isEmpty())
             return super.getItemStackDisplayName(stack);
         if (out.getItem() == TeckleObjects.itemBlueprint)
-            return super.getItemStackDisplayName(stack) + "(" + super.getItemStackDisplayName(stack) + ")";
+            return super.getItemStackDisplayName(stack) + "(" + super.getItemStackDisplayName(out) + ")";
         return super.getItemStackDisplayName(stack) + "(" + out.getDisplayName() + ")";
     }
 
