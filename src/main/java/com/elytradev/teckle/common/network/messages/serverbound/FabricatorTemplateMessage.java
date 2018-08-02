@@ -49,11 +49,13 @@ public class FabricatorTemplateMessage extends TeckleMessage {
     @Override
     protected void handle(EntityPlayer sender) {
         if (sender != null && sender.world != null) {
-            TileFabricator fabricator = (TileFabricator) sender.world.getTileEntity(fabricatorPos);
-            if (!fabricator.isUsableByPlayer(sender))
-                return;
-            fabricator.setTemplateSlot(templateIndex, stack);
-            fabricator.markDirty();
+            sender.getServer().addScheduledTask(() -> {
+                TileFabricator fabricator = (TileFabricator) sender.world.getTileEntity(fabricatorPos);
+                if (!fabricator.isUsableByPlayer(sender))
+                    return;
+                fabricator.setTemplateSlot(templateIndex, stack);
+                fabricator.markDirty();
+            });
         }
     }
 }

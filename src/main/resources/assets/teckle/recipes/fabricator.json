@@ -1,9 +1,4 @@
 {
-  "conditions": [
-    {
-      "type": "false"
-    }
-  ],
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "BBB",
