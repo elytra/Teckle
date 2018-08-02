@@ -113,10 +113,10 @@ public class GuiFabricator extends GuiTeckle {
 
         @Override
         public void performAction(int mouseX, int mouseY, int mouseButton) {
-            new FabricatorTemplateMessage(fabricator.getPos(), getMouseItem(), templateIndex).sendToServer();
-
             ItemStack mouseItem = getMouseItem();
             mouseItem.setCount(1);
+            new FabricatorTemplateMessage(fabricator.getPos(), mouseItem.copy(), templateIndex).sendToServer();
+
             fabricator.setTemplateSlot(templateIndex, mouseItem);
         }
 

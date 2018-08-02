@@ -39,6 +39,8 @@ item.teckle.ingot.bluealloy.name=Blue Alloy Ingot
 item.teckle.siliconwafer.plain.name=Silicon Wafer
 item.teckle.siliconwafer.red.name=Red Doped Wafer
 item.teckle.siliconwafer.blue.name=Blue Doped Wafer
+item.teckle.blueprint.empty.name=Empty Blueprint
+item.teckle.blueprint.name=Blueprint
 
 tooltip.teckle.node.network=Network %s %s Size: %s
 tooltip.teckle.traveller.data=Travellers
