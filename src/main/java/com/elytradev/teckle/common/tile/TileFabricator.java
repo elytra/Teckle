@@ -26,6 +26,7 @@ import com.elytradev.teckle.common.util.BlueprintUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryCrafting;
+import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
@@ -240,6 +241,7 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
 
+        ItemStackHelper.loadAllItems(compound.getCompoundTag("templateData"), blueprintTemplate);
         if (compound.hasKey("stacks", Constants.NBT.TAG_COMPOUND)) { //Stupid workaround needed to save backward compat
             NBTTagCompound stacks = compound.getCompoundTag("stacks");
             stacks.removeTag("Size");
@@ -254,6 +256,9 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound = super.writeToNBT(compound);
 
+        NBTTagCompound templateData = new NBTTagCompound();
+        ItemStackHelper.saveAllItems(templateData, blueprintTemplate);
+        compound.setTag("templateData", templateData);
         compound.setTag("inventory", stackHandler.serializeNBT());
         compound.setTag("blueprint", blueprint.serializeNBT());
 
