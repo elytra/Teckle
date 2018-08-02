@@ -90,6 +90,7 @@ public class TileFabricator extends TileEntity implements ITickable, IElementPro
     public ItemStack setTemplateSlot(int index, @Nonnull ItemStack stack) {
         if(getBlueprint().isEmpty())
             return ItemStack.EMPTY;
+        stack.setCount(1);
         ItemStack result = blueprintTemplate.set(index, stack);
         BlueprintUtil.setInventoryOfBlueprint(getBlueprint(),blueprintTemplate,getWorld());
         generateBlueprintRecipe();
