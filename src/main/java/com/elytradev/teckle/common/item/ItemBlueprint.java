@@ -2,10 +2,14 @@ package com.elytradev.teckle.common.item;
 
 import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.util.BlueprintUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -17,14 +21,20 @@ public class ItemBlueprint extends Item {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public String getItemStackDisplayName(ItemStack stack) {
-        return super.getItemStackDisplayName(stack);
+        ItemStack out = BlueprintUtil.getRecipeFromBlueprint(stack, Minecraft.getMinecraft().world)
+                .map(IRecipe::getRecipeOutput).orElse(ItemStack.EMPTY);
+        if (out.isEmpty())
+            return super.getItemStackDisplayName(stack);
+        if (out.getItem() == TeckleObjects.itemBlueprint)
+            return super.getItemStackDisplayName(stack) + "(" + super.getItemStackDisplayName(stack) + ")";
+        return super.getItemStackDisplayName(stack) + "(" + out.getDisplayName() + ")";
     }
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        BlueprintUtil.getRecipeFromBlueprint(stack, worldIn).ifPresent(recipe -> tooltip.add(recipe.getRegistryName().toString()));
     }
 
 }
