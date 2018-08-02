@@ -93,6 +93,7 @@ public class GuiFabricator extends GuiTeckle {
             }
 
             GlStateManager.pushMatrix();
+            GlStateManager.disableDepth();
             GlStateManager.color(1, 1, 1, 1F / 3F);
             Minecraft.getMinecraft().getTextureManager().bindTexture(getBackgroundTexture());
             drawTexturedModalRect(x, y, 7, 16, this.width, this.height);
