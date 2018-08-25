@@ -38,15 +38,13 @@ public class GuiFabricator extends GuiTeckle {
 
     public GuiFabricator(TileFabricator tile, EntityPlayer player) {
         super(new ContainerFabricator(tile, player));
-        this.xSize=176;
-        this.ySize=208;
         this.fabricator = tile;
         this.player = player;
     }
 
     @Override
     public ResourceLocation getBackgroundTexture() {
-        return new ResourceLocation("teckle", "textures/gui/table.png");
+        return new ResourceLocation("teckle", "textures/gui/fabricator.png");
     }
 
     @Override
@@ -65,7 +63,7 @@ public class GuiFabricator extends GuiTeckle {
         int y = (height - ySize) / 2;
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                templates[j + i * 3] = new Template(j + i * 3, x + 33 + j * 18, y + 15 + i * 18);
+                templates[j + i * 3] = new Template(j + i * 3, x + 7 + j * 18, y + 16 + i * 18);
                 addButton(templates[j + i * 3]);
             }
         }
@@ -93,7 +91,6 @@ public class GuiFabricator extends GuiTeckle {
             }
 
             GlStateManager.pushMatrix();
-            GlStateManager.disableDepth();
             GlStateManager.color(1, 1, 1, 1F / 3F);
             Minecraft.getMinecraft().getTextureManager().bindTexture(getBackgroundTexture());
             drawTexturedModalRect(x, y, 7, 16, this.width, this.height);
@@ -115,8 +112,7 @@ public class GuiFabricator extends GuiTeckle {
         public void performAction(int mouseX, int mouseY, int mouseButton) {
             ItemStack mouseItem = getMouseItem();
             mouseItem.setCount(1);
-            new FabricatorTemplateMessage(fabricator.getPos(), mouseItem.copy(), templateIndex).sendToServer();
-
+            new FabricatorTemplateMessage(fabricator.getPos(), mouseItem, templateIndex).sendToServer();
             fabricator.setTemplateSlot(templateIndex, mouseItem);
         }
 

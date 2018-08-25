@@ -16,7 +16,6 @@
 
 package com.elytradev.teckle.common.container;
 
-import com.elytradev.teckle.common.TeckleLog;
 import com.elytradev.teckle.common.tile.TileFabricator;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -38,10 +37,15 @@ public class ContainerFabricator extends Container {
         this.fabricator = tile;
         this.player = player;
 
-        this.addSlotToContainer(new SlotItemHandler(tile.blueprint, 0, 8, 34));
-        for (int i = 0; i < 2; ++i) {
-            for (int j = 0; j < 9; ++j) {
-                this.addSlotToContainer(new SlotItemHandler(tile.stackHandler, j + i * 9, 8 + j * 18, 79 + i * 18));
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                this.addSlotToContainer(new InaccessibleSlot(tile.craftingGrid, j + i * 3, 8 + j * 18, 17 + i * 18));
+            }
+        }
+
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                this.addSlotToContainer(new SlotItemHandler(tile.stackHandler, j + i * 3, 116 + j * 18, 17 + i * 18));
             }
         }
 
@@ -52,12 +56,12 @@ public class ContainerFabricator extends Container {
     protected void bindPlayerInventory(InventoryPlayer inventoryplayer) {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
-                addSlotToContainer(new Slot(inventoryplayer, j + i * 9 + 9, 8 + j * 18, 126 + i * 18));
+                addSlotToContainer(new Slot(inventoryplayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
             }
         }
 
         for (int i = 0; i < 9; i++) {
-            addSlotToContainer(new Slot(inventoryplayer, i, 8 + i * 18, 184));
+            addSlotToContainer(new Slot(inventoryplayer, i, 8 + i * 18, 142));
         }
     }
 
@@ -79,11 +83,11 @@ public class ContainerFabricator extends Container {
             ItemStack itemstack1 = slot.getStack();
             itemstack = itemstack1.copy();
 
-            if (index < 18) {
-                if (!this.mergeItemStack(itemstack1, 18, inventorySlots.size(), true)) {
+            if (index < 9) {
+                if (!this.mergeItemStack(itemstack1, 9, 45, true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.mergeItemStack(itemstack1, 0, 18, false)) {
+            } else if (!this.mergeItemStack(itemstack1, 0, 9, false)) {
                 return ItemStack.EMPTY;
             }
 

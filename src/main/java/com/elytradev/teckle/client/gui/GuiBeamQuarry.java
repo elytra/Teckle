@@ -6,13 +6,13 @@ import com.elytradev.teckle.common.container.ContainerBeamQuarry;
 import com.elytradev.teckle.common.network.messages.serverbound.ChangeQuarryBoundsMessage;
 import com.elytradev.teckle.common.network.messages.serverbound.ToggleQuarryMessage;
 import com.elytradev.teckle.common.tile.TileBeamQuarry;
-import com.google.common.base.Predicate;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 
 import java.io.IOException;
+import java.util.function.Predicate;
 
 public class GuiBeamQuarry extends GuiTeckle {
 
@@ -49,9 +49,9 @@ public class GuiBeamQuarry extends GuiTeckle {
                 return false;
             }
         };
-        this.leftOffset.setValidator(fieldValidator);
-        this.forwardOffset.setValidator(fieldValidator);
-        this.rightOffset.setValidator(fieldValidator);
+        this.leftOffset.setValidator(fieldValidator::test);
+        this.forwardOffset.setValidator(fieldValidator::test);
+        this.rightOffset.setValidator(fieldValidator::test);
         this.leftOffset.setMaxStringLength(2);
         this.forwardOffset.setMaxStringLength(2);
         this.rightOffset.setMaxStringLength(2);

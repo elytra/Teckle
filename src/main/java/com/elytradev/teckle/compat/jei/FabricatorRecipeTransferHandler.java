@@ -41,8 +41,6 @@ public class FabricatorRecipeTransferHandler implements IRecipeTransferHandler<C
     @Nullable
     @Override
     public IRecipeTransferError transferRecipe(ContainerFabricator container, IRecipeLayout recipeLayout, EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
-        if (container.fabricator.getBlueprint().isEmpty())
-            return new FabricatorBlueprintError();
         if (doTransfer) {
             Map<Integer, ? extends IGuiIngredient<ItemStack>> guiIngredients = recipeLayout.getItemStacks().getGuiIngredients();
             TileFabricator fabricator = container.fabricator;
