@@ -58,6 +58,10 @@ public class AlloyRecipes {
         return Lists.newArrayList(recipes);
     }
 
+    public List<AlloyRecipe> getMasterRecipeList() {
+        return recipes;
+    }
+
     public void init() {
         recipes.clear();
         AlloyRecipe siliconBouleRecipe = new AlloyRecipe(
