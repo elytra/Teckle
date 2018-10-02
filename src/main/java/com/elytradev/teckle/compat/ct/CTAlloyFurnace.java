@@ -19,15 +19,16 @@ import stanhebben.zenscript.annotations.ZenMethod;
  */
 @ZenClass("mods.teckle.alloy_furnace")
 @ZenRegister
-@SuppressWarnings("unused") // javac doesn't know that @ZenRegister allows CT to find this class.
 public class CTAlloyFurnace {
 
     /**
-     * Creates a new AlloyRecipe and packages it into an Add action.
+     * Creates and registers a recipe for the alloy furnace based on the data provided.
+     *
+     * @param output The itemstack resulting from the recipe.
+     * @param inputs An array of ingredients required to make the recipe.
      */
     @ZenMethod
     public static void addRecipe(IItemStack output, IIngredient[] inputs) {
-        @SuppressWarnings("unchecked")
         Tuple<Object, Integer>[] inputTuples = (Tuple<Object, Integer>[]) new Tuple[inputs.length];
 
         if(inputs.length > 9) {
@@ -101,7 +102,6 @@ public class CTAlloyFurnace {
      */
     @ZenMethod
     public static void removeInputRecipe(IIngredient[] inputs) {
-        @SuppressWarnings("unchecked")
         Tuple<Object, Integer>[] inputTuples = (Tuple<Object, Integer>[]) new Tuple[inputs.length];
 
         if(inputs.length > 9) {
