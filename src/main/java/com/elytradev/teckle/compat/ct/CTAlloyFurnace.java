@@ -4,6 +4,7 @@ import com.elytradev.teckle.common.crafting.AlloyRecipe;
 import com.elytradev.teckle.common.crafting.AlloyRecipes;
 import crafttweaker.CraftTweakerAPI;
 import crafttweaker.IAction;
+import crafttweaker.annotations.ZenRegister;
 import crafttweaker.api.item.IIngredient;
 import crafttweaker.api.item.IItemStack;
 import crafttweaker.api.minecraft.CraftTweakerMC;
@@ -13,16 +14,20 @@ import net.minecraft.util.Tuple;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
-import java.util.Iterator;
-import java.util.List;
-
+/**
+ * ZenScript class for accessing Alloy Furnace recipes. Exposes functions to add recipes, remove recipes by output, remove recipes by inputs, and remove all recipes.
+ */
 @ZenClass("mods.teckle.alloy_furnace")
+@ZenRegister
+@SuppressWarnings("unused") // javac doesn't know that @ZenRegister allows CT to find this class.
 public class CTAlloyFurnace {
 
+    /**
+     * Creates a new AlloyRecipe and packages it into an Add action.
+     */
     @ZenMethod
-    @SuppressWarnings("unchecked")
     public static void addRecipe(IItemStack output, IIngredient[] inputs) {
-        ItemStack outputStack = CraftTweakerMC.getItemStack(output);
+        @SuppressWarnings("unchecked")
         Tuple<Object, Integer>[] inputTuples = (Tuple<Object, Integer>[]) new Tuple[inputs.length];
 
         if(inputs.length > 9) {
@@ -30,12 +35,16 @@ public class CTAlloyFurnace {
         }
 
         for(int i = 0; i < inputs.length; i++) {
-            inputTuples[i] = TeckleCTPlugin.convertIngredient(inputs[i]);
+            inputTuples[i] = TeckleCTUtils.convertIngredient(inputs[i]);
         }
 
+        ItemStack outputStack = CraftTweakerMC.getItemStack(output);
         CraftTweakerAPI.apply(new Add(new AlloyRecipe(outputStack, inputTuples)));
     }
 
+    /**
+     * Created by addRecipe. Registers the internal recipe with the AlloyRecipes registry.
+     */
     public static class Add implements IAction {
         private final AlloyRecipe recipe;
 
@@ -45,7 +54,7 @@ public class CTAlloyFurnace {
 
         @Override
         public void apply() {
-            AlloyRecipes.getInstance().getMasterRecipeList().add(recipe);
+            AlloyRecipes.getInstance().add(recipe);
         }
 
         @Override
@@ -54,11 +63,17 @@ public class CTAlloyFurnace {
         }
     }
 
+    /**
+     * Creates a Remove action that will remove all recipes with the matching output.
+     */
     @ZenMethod
     public static void removeRecipe(IItemStack output) {
         CraftTweakerAPI.apply(new Remove(CraftTweakerMC.getItemStack(output)));
     }
 
+    /**
+     * Removes every recipe from the AlloyRecipes registry that has the specified output.
+     */
     public static class Remove implements IAction {
         private final ItemStack output;
 
@@ -70,21 +85,23 @@ public class CTAlloyFurnace {
         public void apply() {
             AlloyRecipes
                 .getInstance()
-                .getMasterRecipeList()
-                .removeIf(
-                    (recipe) -> TeckleCTPlugin.stacksEqual(output, recipe.getCraftingResult(), output.hasTagCompound())
+                .removeMatching(
+                    recipe -> TeckleCTUtils.stacksEqual(output, recipe.getCraftingResult(), output.hasTagCompound())
             );
         }
 
         @Override
         public String describe() {
-            return "Adding Alloy Furnace recipe for "+output.toString();
+            return "Removing Alloy Furnace recipe for "+output.toString();
         }
     }
 
+    /**
+     * Creates a RemoveInput action that will remove all recipes with the matching inputs.
+     */
     @ZenMethod
-    @SuppressWarnings("unchecked")
     public static void removeInputRecipe(IIngredient[] inputs) {
+        @SuppressWarnings("unchecked")
         Tuple<Object, Integer>[] inputTuples = (Tuple<Object, Integer>[]) new Tuple[inputs.length];
 
         if(inputs.length > 9) {
@@ -92,7 +109,7 @@ public class CTAlloyFurnace {
         }
 
         for(int i = 0; i < inputs.length; i++) {
-            inputTuples[i] = TeckleCTPlugin.convertIngredient(inputs[i]);
+            inputTuples[i] = TeckleCTUtils.convertIngredient(inputs[i]);
         }
 
         NonNullList<Object> referenceInputs = (new AlloyRecipe(ItemStack.EMPTY, inputTuples)).getInputs();
@@ -100,6 +117,9 @@ public class CTAlloyFurnace {
         CraftTweakerAPI.apply(new RemoveInput(referenceInputs));
     }
 
+    /**
+     * Removes every recipe from the AlloyRecipes registry that has the specified inputs.
+     */
     public static class RemoveInput implements IAction {
         private NonNullList<Object> inputs;
 
@@ -109,74 +129,35 @@ public class CTAlloyFurnace {
 
         @Override
         public void apply() {
-
-            Iterator<AlloyRecipe> recipeIterator = AlloyRecipes.getInstance().getMasterRecipeList().iterator();
-
-            while(recipeIterator.hasNext()) {
-                AlloyRecipe recipe = recipeIterator.next();
-
-                if(recipe.getInputs().size() != inputs.size()) {
-                    continue;
-                }
-
-                boolean matches = true;
-                for(int i = 0; i < inputs.size(); i++) {
-                    Object a = recipe.getInputs().get(i);
-                    Object b = inputs.get(i);
-
-                    if(a instanceof List && b instanceof List) {
-                        List<ItemStack> listA = (List<ItemStack>)a;
-                        List<ItemStack> listB = (List<ItemStack>)b;
-
-                        if(listA.size() != listB.size()) {
-                            matches = false;
-                            break;
-                        }
-
-                        boolean matchesNested = true;
-
-                        for(int j = 0; j < listA.size(); j++) {
-                            if(!TeckleCTPlugin.stacksEqual(listA.get(j), listB.get(j), listB.get(j).hasTagCompound())) {
-                                matchesNested = false;
-                                break;
-                            }
-                        }
-
-                        if(!matchesNested) {
-                            matches = false;
-                            break;
-                        }
-
-                        // pass
-                    } else if(a instanceof ItemStack && b instanceof ItemStack && TeckleCTPlugin.stacksEqual((ItemStack)a, (ItemStack)b, ((ItemStack)b).hasTagCompound())) {
-                        // pass
-                    } else {
-                        matches = false;
-                        break;
-                    }
-                }
-
-                if(matches) {
-                    recipeIterator.remove();
-                }
-            }
+            AlloyRecipes
+                .getInstance()
+                .removeMatching(
+                    recipe -> TeckleCTUtils.recipeIngredientsMatch(recipe.getInputs(), inputs)
+            );
         }
 
         @Override
         public String describe() {
-            return "Removing matching Alloy Furnace recipes for given inputs (not stated here)";
+            return "Removing matching Alloy Furnace recipes for given inputs: "+inputs;
         }
     }
 
+    /**
+     * Creates a RemoveAll action that will remove every recipe from the Alloy Furnace.
+     * Useful if you want to disable the Alloy Furnace entirely, or want to rewrite all of its recipes.
+     */
     @ZenMethod
     public static void removeAll() {
         CraftTweakerAPI.apply(new RemoveAll());
     }
 
+    /**
+     * Removes all recipes from AlloyRecipes.
+     */
     public static class RemoveAll implements IAction {
         @Override
         public void apply() {
-            AlloyRecipes.getInstance().getMasterRecipeList().clear();
+            AlloyRecipes.getInstance().clear();
         }
 
         @Override

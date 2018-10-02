@@ -23,13 +23,11 @@ import com.elytradev.teckle.common.network.TeckleNetworking;
 import com.elytradev.teckle.common.proxy.CommonProxy;
 import com.elytradev.teckle.common.worldgen.NikoliteOreGenerator;
 import com.elytradev.teckle.common.worldnetwork.common.NetworkTileRegistry;
-import com.elytradev.teckle.compat.ct.TeckleCTPlugin;
 import mcmultipart.api.multipart.IMultipartTile;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -78,10 +76,6 @@ public class TeckleMod {
         CapabilityWorldNetworkAssistantHolder.register();
         TeckleNetworking.setupNetwork();
         GameRegistry.registerWorldGenerator(new NikoliteOreGenerator(), 2);
-
-        if(Loader.isModLoaded("crafttweaker")) {
-            TeckleCTPlugin.registerClasses();
-        }
 
         PROXY.registerRenderers(e.getModState());
     }

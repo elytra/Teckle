@@ -22,6 +22,7 @@ import com.elytradev.teckle.common.TeckleObjects;
 import com.elytradev.teckle.common.item.ItemIngot;
 import com.elytradev.teckle.common.item.ItemSiliconWafer;
 import com.google.common.base.Charsets;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
@@ -58,8 +59,23 @@ public class AlloyRecipes {
         return Lists.newArrayList(recipes);
     }
 
-    public List<AlloyRecipe> getMasterRecipeList() {
-        return recipes;
+    public void clear() {
+        recipes.clear();
+    }
+
+    public void add(AlloyRecipe recipe) {
+        recipes.add(recipe);
+    }
+
+    /**
+     * Removes every recipe that the Predicate returns true for.
+     * Example: Remove all recipes that take more than 2 inputs:
+     * <code>
+     *     AlloyRecipes.getInstance().removeMatching(recipe -> recipe.getInputs().size() > 2);
+     * </code>
+     */
+    public void removeMatching(Predicate<AlloyRecipe> matcher) {
+        recipes.removeIf(matcher);
     }
 
     public void init() {
@@ -200,10 +216,6 @@ public class AlloyRecipes {
 
     private AlloyRecipe convertFurnaceRecipe(Map.Entry<ItemStack, ItemStack> furnaceRecipe) {
         return new AlloyRecipe(furnaceRecipe.getValue(), new Tuple<>(furnaceRecipe.getKey(), null));
-    }
-
-    public void clear() {
-        recipes.clear();
     }
 
     /**
