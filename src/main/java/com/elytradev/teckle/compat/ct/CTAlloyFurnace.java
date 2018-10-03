@@ -15,7 +15,9 @@ import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
 /**
- * ZenScript class for accessing Alloy Furnace recipes. Exposes functions to register recipes, remove recipes by output, remove recipes by inputs, and remove all recipes.
+ * ZenScript class for accessing Alloy Furnace recipes.
+ *
+ * Exposes functions to register recipes, remove recipes by output, remove recipes by inputs, and remove all recipes.
  */
 @ZenClass("mods.teckle.alloy_furnace")
 @ZenRegister
@@ -31,11 +33,11 @@ public class CTAlloyFurnace {
     public static void addRecipe(IItemStack output, IIngredient[] inputs) {
         Tuple<Object, Integer>[] inputTuples = (Tuple<Object, Integer>[]) new Tuple[inputs.length];
 
-        if(inputs.length > 9) {
-            throw new RuntimeException("Alloy Furnace cannot take more than 9 inputs; got "+inputs.length+" inputs instead");
+        if (inputs.length > 9) {
+            throw new RuntimeException("Alloy Furnace cannot take more than 9 inputs; got " + inputs.length + " inputs instead");
         }
 
-        for(int i = 0; i < inputs.length; i++) {
+        for (int i = 0; i < inputs.length; i++) {
             inputTuples[i] = TeckleCTUtils.convertIngredient(inputs[i]);
         }
 
@@ -60,7 +62,7 @@ public class CTAlloyFurnace {
 
         @Override
         public String describe() {
-            return "Adding "+recipe.getCraftingResult().toString()+" recipe for Alloy Furnace";
+            return "Adding " + recipe.getCraftingResult().toString() + " recipe for Alloy Furnace";
         }
     }
 
@@ -88,15 +90,15 @@ public class CTAlloyFurnace {
         @Override
         public void apply() {
             AlloyRecipes
-                .getInstance()
-                .unregisterMatching(
-                    recipe -> TeckleCTUtils.stacksEqual(output, recipe.getCraftingResult(), output.hasTagCompound())
-            );
+                    .getInstance()
+                    .unregisterMatching(
+                            recipe -> TeckleCTUtils.stacksEqual(output, recipe.getCraftingResult(), output.hasTagCompound())
+                    );
         }
 
         @Override
         public String describe() {
-            return "Removing Alloy Furnace recipe for "+output.toString();
+            return "Removing Alloy Furnace recipe for " + output.toString();
         }
     }
 
@@ -110,11 +112,11 @@ public class CTAlloyFurnace {
     public static void removeInputRecipe(IIngredient[] inputs) {
         Tuple<Object, Integer>[] inputTuples = (Tuple<Object, Integer>[]) new Tuple[inputs.length];
 
-        if(inputs.length > 9) {
-            throw new RuntimeException("Alloy Furnace cannot take more than 9 inputs; got "+inputs.length+" inputs instead");
+        if (inputs.length > 9) {
+            throw new RuntimeException("Alloy Furnace cannot take more than 9 inputs; got " + inputs.length + " inputs instead");
         }
 
-        for(int i = 0; i < inputs.length; i++) {
+        for (int i = 0; i < inputs.length; i++) {
             inputTuples[i] = TeckleCTUtils.convertIngredient(inputs[i]);
         }
 
@@ -136,15 +138,15 @@ public class CTAlloyFurnace {
         @Override
         public void apply() {
             AlloyRecipes
-                .getInstance()
-                .unregisterMatching(
-                    recipe -> TeckleCTUtils.recipeIngredientsMatch(recipe.getInputs(), inputs)
-            );
+                    .getInstance()
+                    .unregisterMatching(
+                            recipe -> TeckleCTUtils.recipeIngredientsMatch(recipe.getInputs(), inputs)
+                    );
         }
 
         @Override
         public String describe() {
-            return "Removing matching Alloy Furnace recipes for given inputs: "+inputs;
+            return "Removing matching Alloy Furnace recipes for given inputs: " + inputs;
         }
     }
 

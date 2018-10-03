@@ -48,9 +48,6 @@ public class AlloyRecipes {
     private static final AlloyRecipes INSTANCE = new AlloyRecipes();
     private List<AlloyRecipe> recipes = new ArrayList<>();
 
-    public AlloyRecipes() {
-    }
-
     public static AlloyRecipes getInstance() {
         return INSTANCE;
     }
@@ -59,20 +56,26 @@ public class AlloyRecipes {
         return Lists.newArrayList(recipes);
     }
 
+    /**
+     * Unregisters all the currently registered Alloy Recipes.
+     */
     public void unregisterAll() {
         recipes.clear();
     }
 
+    /**
+     * Registers the given recipe for use with the Alloy Furnace.
+     *
+     * @param recipe the AlloyRecipe to register.
+     */
     public void registerRecipe(AlloyRecipe recipe) {
         recipes.add(recipe);
     }
 
     /**
-     * Removes every recipe that the Predicate returns true for.
-     * Example: Remove all recipes that take more than 2 inputs:
-     * <code>
-     *     AlloyRecipes.getInstance().unregisterMatching(recipe -> recipe.getInputs().size() > 2);
-     * </code>
+     * Removes all recipes matching the given predicate.
+     *
+     * @param matcher the predicate to check each recipe against.
      */
     public void unregisterMatching(Predicate<AlloyRecipe> matcher) {
         recipes.removeIf(matcher);
