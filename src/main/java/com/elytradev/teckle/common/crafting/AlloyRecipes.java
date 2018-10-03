@@ -59,11 +59,11 @@ public class AlloyRecipes {
         return Lists.newArrayList(recipes);
     }
 
-    public void clear() {
+    public void unregisterAll() {
         recipes.clear();
     }
 
-    public void add(AlloyRecipe recipe) {
+    public void registerRecipe(AlloyRecipe recipe) {
         recipes.add(recipe);
     }
 
@@ -71,10 +71,10 @@ public class AlloyRecipes {
      * Removes every recipe that the Predicate returns true for.
      * Example: Remove all recipes that take more than 2 inputs:
      * <code>
-     *     AlloyRecipes.getInstance().removeMatching(recipe -> recipe.getInputs().size() > 2);
+     *     AlloyRecipes.getInstance().unregisterMatching(recipe -> recipe.getInputs().size() > 2);
      * </code>
      */
-    public void removeMatching(Predicate<AlloyRecipe> matcher) {
+    public void unregisterMatching(Predicate<AlloyRecipe> matcher) {
         recipes.removeIf(matcher);
     }
 

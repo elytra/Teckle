@@ -15,7 +15,7 @@ import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
 /**
- * ZenScript class for accessing Alloy Furnace recipes. Exposes functions to add recipes, remove recipes by output, remove recipes by inputs, and remove all recipes.
+ * ZenScript class for accessing Alloy Furnace recipes. Exposes functions to register recipes, remove recipes by output, remove recipes by inputs, and remove all recipes.
  */
 @ZenClass("mods.teckle.alloy_furnace")
 @ZenRegister
@@ -55,7 +55,7 @@ public class CTAlloyFurnace {
 
         @Override
         public void apply() {
-            AlloyRecipes.getInstance().add(recipe);
+            AlloyRecipes.getInstance().registerRecipe(recipe);
         }
 
         @Override
@@ -86,7 +86,7 @@ public class CTAlloyFurnace {
         public void apply() {
             AlloyRecipes
                 .getInstance()
-                .removeMatching(
+                .unregisterMatching(
                     recipe -> TeckleCTUtils.stacksEqual(output, recipe.getCraftingResult(), output.hasTagCompound())
             );
         }
@@ -131,7 +131,7 @@ public class CTAlloyFurnace {
         public void apply() {
             AlloyRecipes
                 .getInstance()
-                .removeMatching(
+                .unregisterMatching(
                     recipe -> TeckleCTUtils.recipeIngredientsMatch(recipe.getInputs(), inputs)
             );
         }
@@ -157,7 +157,7 @@ public class CTAlloyFurnace {
     public static class RemoveAll implements IAction {
         @Override
         public void apply() {
-            AlloyRecipes.getInstance().clear();
+            AlloyRecipes.getInstance().unregisterAll();
         }
 
         @Override
