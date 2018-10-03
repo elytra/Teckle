@@ -24,7 +24,7 @@ public class CTAlloyFurnace {
     /**
      * Creates and registers a recipe for the alloy furnace based on the data provided.
      *
-     * @param output The itemstack resulting from the recipe.
+     * @param output The ItemStack resulting from the recipe.
      * @param inputs An array of ingredients required to make the recipe.
      */
     @ZenMethod
@@ -66,6 +66,9 @@ public class CTAlloyFurnace {
 
     /**
      * Creates a Remove action that will remove all recipes with the matching output.
+     *
+     * @param output The output to be matched against.
+     *               Optionally compares NBT if it is specified.
      */
     @ZenMethod
     public static void removeRecipe(IItemStack output) {
@@ -99,6 +102,9 @@ public class CTAlloyFurnace {
 
     /**
      * Creates a RemoveInput action that will remove all recipes with the matching inputs.
+     *
+     * @param inputs The inputs that will be matched against existing recipes.
+     *               NBT will be individually compared if it is specified.
      */
     @ZenMethod
     public static void removeInputRecipe(IIngredient[] inputs) {

@@ -37,8 +37,8 @@ public class TeckleCTUtils {
     /**
      * Converts from CraftTweaker ingredients to AlloyRecipe ingredients
      *
-     * @param ingredient the CraftTweaker ingredient to be converted
-     * @return the converted ingredient, or null for unsupported ingredients
+     * @param ingredient The CraftTweaker ingredient to be converted
+     * @return The converted ingredient, or null for unsupported ingredients
      */
     static Tuple<Object, Integer> convertIngredient(IIngredient ingredient) {
         // OreDict entry
@@ -85,10 +85,10 @@ public class TeckleCTUtils {
      * Checks if the provided ItemStacks are equal.
      * Optionally compares NBT values.
      *
-     * @param a the first ItemStack
-     * @param b the second ItemStack
-     * @param matchNbt whether NBT data should be checked as well
-     * @return a boolean indicating whether the stacks are equal.
+     * @param a The first ItemStack
+     * @param b The second ItemStack
+     * @param matchNbt Whether NBT data should be checked as well
+     * @return A boolean indicating whether the stacks are equal.
      */
     static boolean stacksEqual(ItemStack a, ItemStack b, boolean matchNbt) {
         if(a.isEmpty() || b.isEmpty() || a.getItem() != b.getItem()) {
@@ -122,9 +122,9 @@ public class TeckleCTUtils {
      * The second inputs alone determine whether NBT will be compared based
      * on whether they have NBT data.
      *
-     * @param inputs the list of inputs representing the recipe being tested
-     * @param filter the other list of inputs, generally used for filtering varying inputs in the first slot
-     * @return whether the input stack is equivalent to the filter
+     * @param inputs The list of inputs representing the recipe being tested
+     * @param filter The other list of inputs, generally used for filtering varying inputs in the first slot
+     * @return Whether the input stack is equivalent to the filter
      */
     static boolean recipeIngredientsMatch(NonNullList<Object> inputs, NonNullList<Object> filter) {
         if(inputs.size() != filter.size()) {
