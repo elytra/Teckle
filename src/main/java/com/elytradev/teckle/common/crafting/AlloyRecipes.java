@@ -79,52 +79,53 @@ public class AlloyRecipes {
     }
 
     public void init() {
-        recipes.clear();
+        unregisterAll();
+
         AlloyRecipe siliconBouleRecipe = new AlloyRecipe(
                 new ItemStack(TeckleObjects.itemSiliconBoule),
                 new Tuple<>("sand", 8),
                 new Tuple<>("coal", 8));
-        recipes.add(siliconBouleRecipe);
+        registerRecipe(siliconBouleRecipe);
 
         AlloyRecipe redDopedWaferRecipe = new AlloyRecipe(
                 new ItemStack(TeckleObjects.itemSiliconWafer, 1, ItemSiliconWafer.WaferType.RED.getMetadata()),
                 new Tuple<>("dustRedstone", 4),
                 new Tuple<>(new ItemStack(TeckleObjects.itemSiliconWafer, 1, 0), null));
-        recipes.add(redDopedWaferRecipe);
+        registerRecipe(redDopedWaferRecipe);
 
         AlloyRecipe blueDopedWaferRecipe = new AlloyRecipe(
                 new ItemStack(TeckleObjects.itemSiliconWafer, 1, ItemSiliconWafer.WaferType.BLUE.getMetadata()),
                 new Tuple<>("dustNikolite", 4),
                 new Tuple<>(new ItemStack(TeckleObjects.itemSiliconWafer, 1, 0), null));
-        recipes.add(blueDopedWaferRecipe);
+        registerRecipe(blueDopedWaferRecipe);
 
         AlloyRecipe brassIngotRecipe = new AlloyRecipe(
                 new ItemStack(TeckleObjects.itemIngot, 4, ItemIngot.IngotType.BRASS.getMetadata()),
                 new Tuple<>("ingotTin", 1),
                 new Tuple<>("ingotCopper", 3)
         );
-        recipes.add(brassIngotRecipe);
+        registerRecipe(brassIngotRecipe);
 
         AlloyRecipe redAlloyIngotRecipe = new AlloyRecipe(
                 new ItemStack(TeckleObjects.itemIngot, 4, ItemIngot.IngotType.RED_ALLOY.getMetadata()),
                 new Tuple<>("ingotCopper", 1),
                 new Tuple<>("dustRedstone", 4)
         );
-        recipes.add(redAlloyIngotRecipe);
+        registerRecipe(redAlloyIngotRecipe);
 
         AlloyRecipe redAlloyIngotRecipeAlt = new AlloyRecipe(
                 new ItemStack(TeckleObjects.itemIngot, 4, ItemIngot.IngotType.RED_ALLOY.getMetadata()),
                 new Tuple<>("ingotIron", 1),
                 new Tuple<>("dustRedstone", 4)
         );
-        recipes.add(redAlloyIngotRecipeAlt);
+        registerRecipe(redAlloyIngotRecipeAlt);
 
         AlloyRecipe blueAlloyIngotRecipe = new AlloyRecipe(
                 new ItemStack(TeckleObjects.itemIngot, 4, ItemIngot.IngotType.BLUE_ALLOY.getMetadata()),
                 new Tuple<>("ingotSilver", 1),
                 new Tuple<>("dustNikolite", 4)
         );
-        recipes.add(blueAlloyIngotRecipe);
+        registerRecipe(blueAlloyIngotRecipe);
 
         // Adds all the vanilla recipes to the alloy furnace.
         if (TeckleMod.CONFIG.importFurnaceRecipes)
@@ -190,7 +191,7 @@ public class AlloyRecipes {
                     Tuple<Object, Integer>[] inputsArray = new Tuple[inputs.size()];
                     inputsArray = inputs.toArray(inputsArray);
                     AlloyRecipe loadedRecipe = new AlloyRecipe(outputStack, inputsArray);
-                    recipes.add(loadedRecipe);
+                    registerRecipe(loadedRecipe);
                 }
             }
         }
