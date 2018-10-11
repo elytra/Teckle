@@ -1,7 +1,5 @@
 package com.elytradev.teckle.compat.ct;
 
-import com.elytradev.concrete.reflect.accessor.Accessor;
-import com.elytradev.concrete.reflect.accessor.Accessors;
 import crafttweaker.CraftTweakerAPI;
 import crafttweaker.api.item.IIngredient;
 import crafttweaker.api.item.IItemStack;
@@ -20,8 +18,6 @@ import java.util.List;
  * Used for comparing and converting between the various ways of representing ingredients.
  */
 public class TeckleCTUtils {
-    private static Accessor<IIngredient> internalIngredient = Accessors.findField(IngredientStack.class, "ingredient");
-
     /**
      * Converts from CraftTweaker ingredients to AlloyRecipe ingredients
      *
@@ -46,7 +42,14 @@ public class TeckleCTUtils {
         // Wrapped OreDict entry with a stack size
         if (ingredient instanceof IngredientStack) {
             IngredientStack stack = (IngredientStack) ingredient;
-            IIngredient internal = TeckleCTUtils.internalIngredient.get(stack);
+
+            IIngredient internal = (IIngredient) stack.getInternal();
+
+            if(internal==null) {
+                CraftTweakerAPI.logWarning("Got null from IngredientStack#getInternal, you most likely have an outdated version of CraftTweaker! Please update to version 4.1.11 or later.");
+                return new Tuple<>(ItemStack.EMPTY, 0);
+            }
+
             if (internal instanceof IOreDictEntry) {
                 String ore = ((IOreDictEntry) internal).getName();
 
