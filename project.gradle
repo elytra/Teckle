@@ -37,6 +37,11 @@ if (!ext.early) {
             // MCMP Maven
             url "http://maven.amadornes.com/"
         }
+        maven {
+            // CraftTweaker2 Maven
+            name "Jared"
+            url "http://maven.blamejared.com/"
+        }
     }
 
     dependencies {
@@ -50,5 +55,8 @@ if (!ext.early) {
 
         // MCMP
         deobfCompile "MCMultiPart2:MCMultiPart-exp:${mcmp_version}"
+
+        // CraftTweaker
+        compile "CraftTweaker2:CraftTweaker2-MC1120-Main:${ct_version}"
     }
 }
